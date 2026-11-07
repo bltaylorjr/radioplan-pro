@@ -13,15 +13,25 @@ jobs:
   release:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - id: chk
+        env: { K: '${{ secrets.ANDROID_KEYSTORE_B64 }}' }
+        run: if [ -n "$K" ]; then echo "ok=true" >> "$GITHUB_OUTPUT"; else echo "::notice::Android signing secrets are not set, so this run is skipped. Releases are published from the build machine instead."; fi
+      - if: steps.chk.outputs.ok == 'true'
+        uses: actions/checkout@v4
+      - if: steps.chk.outputs.ok == 'true'
+        uses: actions/setup-node@v4
         with: { node-version: 22, cache: npm }
-      - uses: dtolnay/rust-toolchain@stable
+      - if: steps.chk.outputs.ok == 'true'
+        uses: dtolnay/rust-toolchain@stable
         with: { targets: x86_64-pc-windows-gnu }
-      - run: sudo apt-get update && sudo apt-get install -y mingw-w64 nsis android-sdk-platform-23 android-sdk-build-tools aapt zipalign apksigner dalvik-exchange zip
-      - run: npm ci && npm test
-      - run: npx tauri icon app-icon.png
-      - name: Build all downloads
+      - if: steps.chk.outputs.ok == 'true'
+        run: sudo apt-get update && sudo apt-get install -y mingw-w64 nsis android-sdk-platform-23 android-sdk-build-tools aapt zipalign apksigner dalvik-exchange zip
+      - if: steps.chk.outputs.ok == 'true'
+        run: npm ci && npm test
+      - if: steps.chk.outputs.ok == 'true'
+        run: npx tauri icon app-icon.png
+      - if: steps.chk.outputs.ok == 'true'
+        name: Build all downloads
         env:
           ANDROID_KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
           STOREPASS: ${{ secrets.ANDROID_STOREPASS }}
@@ -29,7 +39,8 @@ jobs:
           test -n "$ANDROID_KEYSTORE_B64" || { echo "ANDROID_KEYSTORE_B64 secret missing"; exit 1; }
           echo "$ANDROID_KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.keystore"
           KEYSTORE="$RUNNER_TEMP/release.keystore" bash scripts/package-all.sh
-      - name: Publish release
+      - if: steps.chk.outputs.ok == 'true'
+        name: Publish release
         env: { GH_TOKEN: '${{ github.token }}' }
         run: |
           TAG="${GITHUB_REF_NAME}"; [[ "$TAG" == v* ]] || TAG="v$(node -p "require('./package.json').version")"
