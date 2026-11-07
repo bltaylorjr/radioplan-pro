@@ -1,11 +1,12 @@
 name: Build installers and publish a release
-# Push a tag such as v1.0.1 (or run manually) to build every download and publish it as the latest
-# GitHub Release. Installed apps check that release and update themselves.
+# Raising "version" in package.json (pushed to main) builds every download and publishes it as the latest
+# GitHub Release vX.Y.Z. Installed apps check that release and update themselves. Can also be run manually.
 # Secrets: ANDROID_KEYSTORE_B64 (base64 of the release keystore) and ANDROID_STOREPASS. Android only
 # accepts updates signed with the same key, so these must stay the same for the life of the app.
 on:
   push:
-    tags: ['v*']
+    branches: [main]
+    paths: [package.json]
   workflow_dispatch:
 permissions:
   contents: write
@@ -15,22 +16,26 @@ jobs:
     steps:
       - id: chk
         env: { K: '${{ secrets.ANDROID_KEYSTORE_B64 }}' }
-        run: if [ -n "$K" ]; then echo "ok=true" >> "$GITHUB_OUTPUT"; else echo "::notice::Android signing secrets are not set, so this run is skipped. Releases are published from the build machine instead."; fi
-      - if: steps.chk.outputs.ok == 'true'
-        uses: actions/checkout@v4
-      - if: steps.chk.outputs.ok == 'true'
+        run: if [ -n "$K" ]; then echo "ok=true" >> "$GITHUB_OUTPUT"; else echo "::notice::Android signing secrets are not set, so no release is built."; fi
+      - uses: actions/checkout@v4
+      - id: ver
+        env: { GH_TOKEN: '${{ github.token }}' }
+        run: |
+          V="v$(node -p "require('./package.json').version")"; echo "tag=$V" >> "$GITHUB_OUTPUT"
+          if gh release view "$V" >/dev/null 2>&1; then echo "::notice::$V is already released."; echo "ok=false" >> "$GITHUB_OUTPUT"; else echo "ok=true" >> "$GITHUB_OUTPUT"; fi
+      - if: steps.chk.outputs.ok == 'true' && steps.ver.outputs.ok == 'true'
         uses: actions/setup-node@v4
         with: { node-version: 22, cache: npm }
-      - if: steps.chk.outputs.ok == 'true'
+      - if: steps.chk.outputs.ok == 'true' && steps.ver.outputs.ok == 'true'
         uses: dtolnay/rust-toolchain@stable
         with: { targets: x86_64-pc-windows-gnu }
-      - if: steps.chk.outputs.ok == 'true'
+      - if: steps.chk.outputs.ok == 'true' && steps.ver.outputs.ok == 'true'
         run: sudo apt-get update && sudo apt-get install -y mingw-w64 nsis android-sdk-platform-23 android-sdk-build-tools aapt zipalign apksigner dalvik-exchange zip
-      - if: steps.chk.outputs.ok == 'true'
+      - if: steps.chk.outputs.ok == 'true' && steps.ver.outputs.ok == 'true'
         run: npm ci && npm test
-      - if: steps.chk.outputs.ok == 'true'
+      - if: steps.chk.outputs.ok == 'true' && steps.ver.outputs.ok == 'true'
         run: npx tauri icon app-icon.png
-      - if: steps.chk.outputs.ok == 'true'
+      - if: steps.chk.outputs.ok == 'true' && steps.ver.outputs.ok == 'true'
         name: Build all downloads
         env:
           ANDROID_KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
@@ -39,11 +44,11 @@ jobs:
           test -n "$ANDROID_KEYSTORE_B64" || { echo "ANDROID_KEYSTORE_B64 secret missing"; exit 1; }
           echo "$ANDROID_KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.keystore"
           KEYSTORE="$RUNNER_TEMP/release.keystore" bash scripts/package-all.sh
-      - if: steps.chk.outputs.ok == 'true'
+      - if: steps.chk.outputs.ok == 'true' && steps.ver.outputs.ok == 'true'
         name: Publish release
         env: { GH_TOKEN: '${{ github.token }}' }
         run: |
-          TAG="${GITHUB_REF_NAME}"; [[ "$TAG" == v* ]] || TAG="v$(node -p "require('./package.json').version")"
-          gh release create "$TAG" --title "RadioPlan Pro ${TAG#v}" --notes-file CHANGELOG.md --latest \
+          TAG="${{ steps.ver.outputs.tag }}"
+          gh release create "$TAG" --target "$GITHUB_SHA" --title "RadioPlan Pro ${TAG#v}" --notes-file CHANGELOG.md --latest \
             out/RadioPlan-Pro-Setup.exe out/RadioPlan-Pro.apk out/RadioPlan-Pro-FlashDrive.zip || \
           gh release upload "$TAG" --clobber out/RadioPlan-Pro-Setup.exe out/RadioPlan-Pro.apk out/RadioPlan-Pro-FlashDrive.zip
