@@ -11,13 +11,33 @@ export interface Company { name: string; title: string; address: string; city: s
 export interface ProjectMeta {
   name: string; number: string; client: string; engineer: string; peLicense: string;
   state: StateCode; county: string; jurisdictionNotes: string; created: string; revision: string;
+  /** Client / customer company (meta.client holds its name). */
+  clientContact?: string; clientAddress?: string; clientCity?: string; clientState?: string; clientZip?: string; clientPhone?: string; clientEmail?: string;
+  /** Project site address (where the work is). */
+  siteAddress?: string; poNumber?: string;
 }
 export interface Site {
   id: string; name: string; address: string; lat: number; lon: number; groundElevM: number | null;
   positionSource: string; positionAccuracyM: number | null;
   structure: StructureType; structureHeightM: number; antennaAglM: number; onBuilding: boolean;
   nearestAirportKm: number | null; nearestRunwayFt: number | null;
+  /** Optional transmitter at this site for multi-site network / interference analysis. */
+  tx?: SiteTx;
 }
+export interface SiteTx { enabled: boolean; fMHz: number; txPowerDbm: number; antennaId: string; azimuthDeg: number; tiltDeg: number; lossDb: number; channel: string }
+/** Model tuning applied on top of Hata/COST-231 + diffraction; set by hand or by field-survey calibration. */
+export interface PropagationTuning { offsetDb: number; slopeDbPerDecade: number; diffractionFactor: number; clutterDb: number; source: string }
+/** One acceptance criterion: the area where (signal − extraLoss) ≥ dbm must be at least requiredPct of the service area. null = use the live design value. */
+export interface AcceptanceTier { id: string; label: string; dbm: number | null; extraLossDb: number | null; requiredPct: number; color: string }
+export interface Acceptance { profile: string; tiers: AcceptanceTier[] }
+export interface NetworkDesign { channelBwKHz: number; requiredCiDb: number; acrDb: number; serviceDbm: number }
+export interface SurveyPoint { lat: number; lon: number; rssiDbm: number; t?: string }
+export interface Survey { name: string; importedAt: string; points: SurveyPoint[] }
+export interface RunRecord { id: string; at: string; label: string; inputs: Record<string, string | number>; results: { label: string; dbm: number; pct: number; requiredPct: number; pass: boolean }[]; meanDbm: number; cells: number }
+export interface Scenario extends RunRecord { notes: string; grid: { n: number; north: number; south: number; east: number; west: number; b64: string }; project: { radio: RadioDesign; propagation: PropagationTuning; tx: Site | null } }
+export interface WifiAp { bssid: string; ssid: string; channel: number; band?: string; rssiDbm: number; noiseDbm?: number }
+export interface WifiReading { id: string; x: number; y: number; lat?: number; lon?: number; t: string; aps: WifiAp[] }
+export interface WifiSurvey { readings: WifiReading[]; ssidFilter: string; targetDbm: number; radiusM: number }
 export interface RadioDesign {
   bandPreset: string; fMHz: number; txPowerDbm: number; txSiteId: string; rxSiteId: string;
   txAntennaId: string; rxAntennaId: string; feederId: string; feederLenM: number; jumperLossDb: number; connectorLossDb: number;
@@ -61,4 +81,6 @@ export interface Project {
   solar: SolarDesign; alarm: AlarmDesign; erces: ErcesDesign; lfhf: LfHfDesign; indoor: IndoorDesign; tests: TestRecord[];
   bomOverrides: Record<string, number>; taskDone: Record<string, boolean>;
   settings: { autoTerrain: boolean; terrainMarginKm: number };
+  propagation: PropagationTuning; acceptance: Acceptance; network: NetworkDesign; survey: Survey;
+  runLog: RunRecord[]; scenarios: Scenario[]; wifi: WifiSurvey;
 }

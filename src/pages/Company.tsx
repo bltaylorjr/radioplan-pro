@@ -40,7 +40,23 @@ export function CompanyPage() {
   const j = JURISDICTIONS[m.state];
   return (
     <div className="grid2">
-      <Card title="Company" tour="company-form" tip="Printed on every report header.">
+      <Card title="Project information" tour="project-form" tip="Project name and number print on every report header.">
+        <div className="form">
+          <Field label="Project name" wide><Txt value={m.name} onChange={setM('name')} /></Field>
+          <Field label="Project number"><Txt value={m.number} onChange={setM('number')} /></Field>
+          <Field label="Client PO / contract #"><Txt value={m.poNumber ?? ''} onChange={setM('poNumber')} /></Field>
+          <Field label="Project site address" wide tip="Where the work is. Use the Find Location page to turn it into GPS coordinates."><Txt value={m.siteAddress ?? ''} onChange={setM('siteAddress')} /></Field>
+          <Field label="Revision"><Txt value={m.revision} onChange={setM('revision')} /></Field>
+          <Field label="Engineer of record"><Txt value={m.engineer} onChange={setM('engineer')} /></Field>
+          <Field label="PE license #"><Txt value={m.peLicense} onChange={setM('peLicense')} /></Field>
+          <Field label="Project state (code set)" topic="compliance"><Sel<StateCode> value={m.state} onChange={(v) => update((d) => { d.meta.state = v; })} options={[['NC', 'North Carolina'], ['SC', 'South Carolina'], ['GA', 'Georgia'], ['TN', 'Tennessee']]} /></Field>
+          <Field label="County / city"><Txt value={m.county} onChange={setM('county')} /></Field>
+          <Field label="Date"><input type="date" value={m.created} onChange={(e) => setM('created')(e.target.value)} /></Field>
+          <Field label="AHJ notes" wide tip="Local amendments, permit numbers, inspector contacts."><textarea value={m.jurisdictionNotes} onChange={(e) => setM('jurisdictionNotes')(e.target.value)} rows={3} /></Field>
+        </div>
+        <JurisdictionInfo j={j} />
+      </Card>
+      <Card title="Your company information" tour="company-form" tip="Your firm. Printed on every report header.">
         <div className="form">
           <Field label="Company name"><Txt value={c.name} onChange={setC('name')} placeholder="e.g. Carolina Comm Engineering LLC" /></Field>
           <Field label="Title / department" tip="Your title or division, e.g. RF Engineering Manager."><Txt value={c.title} onChange={setC('title')} /></Field>
@@ -66,20 +82,17 @@ export function CompanyPage() {
             <span className="row"><button onClick={() => useResult(r, false)}>Use for Site A</button><button onClick={() => useResult(r, true)}>Add as new site</button></span></li>))}
         </ul>}
       </Card>
-      <Card title="Project" tour="project-form">
+      <Card title="Client / customer company" tour="client-form" tip="The company the work is for. Printed on report headers as the client.">
         <div className="form">
-          <Field label="Project name" wide><Txt value={m.name} onChange={setM('name')} /></Field>
-          <Field label="Project number"><Txt value={m.number} onChange={setM('number')} /></Field>
-          <Field label="Revision"><Txt value={m.revision} onChange={setM('revision')} /></Field>
-          <Field label="Client"><Txt value={m.client} onChange={setM('client')} /></Field>
-          <Field label="Engineer of record"><Txt value={m.engineer} onChange={setM('engineer')} /></Field>
-          <Field label="PE license #"><Txt value={m.peLicense} onChange={setM('peLicense')} /></Field>
-          <Field label="Project state (code set)" topic="compliance"><Sel<StateCode> value={m.state} onChange={(v) => update((d) => { d.meta.state = v; })} options={[['NC', 'North Carolina'], ['SC', 'South Carolina'], ['GA', 'Georgia'], ['TN', 'Tennessee']]} /></Field>
-          <Field label="County / city"><Txt value={m.county} onChange={setM('county')} /></Field>
-          <Field label="Date"><input type="date" value={m.created} onChange={(e) => setM('created')(e.target.value)} /></Field>
-          <Field label="AHJ notes" wide tip="Local amendments, permit numbers, inspector contacts."><textarea value={m.jurisdictionNotes} onChange={(e) => setM('jurisdictionNotes')(e.target.value)} rows={3} /></Field>
+          <Field label="Client company name" wide><Txt value={m.client} onChange={setM('client')} /></Field>
+          <Field label="Contact person"><Txt value={m.clientContact ?? ''} onChange={setM('clientContact')} /></Field>
+          <Field label="Street address" wide><Txt value={m.clientAddress ?? ''} onChange={setM('clientAddress')} /></Field>
+          <Field label="City"><Txt value={m.clientCity ?? ''} onChange={setM('clientCity')} /></Field>
+          <Field label="State"><Txt value={m.clientState ?? ''} onChange={setM('clientState')} /></Field>
+          <Field label="ZIP"><Txt value={m.clientZip ?? ''} onChange={setM('clientZip')} /></Field>
+          <Field label="Phone"><Txt value={m.clientPhone ?? ''} onChange={setM('clientPhone')} /></Field>
+          <Field label="Email"><Txt value={m.clientEmail ?? ''} onChange={setM('clientEmail')} /></Field>
         </div>
-        <JurisdictionInfo j={j} />
       </Card>
     </div>
   );

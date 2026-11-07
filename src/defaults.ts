@@ -1,4 +1,28 @@
-import type { Project } from './types';
+import type { Project, AcceptanceTier } from './types';
+
+/** Acceptance-criteria presets. Values are starting points the engineer must set to the project's spec. */
+export const ACCEPTANCE_PRESETS: Record<string, string> = {
+  lmr: 'Land mobile radio (90% area)',
+  publicsafety: 'Public safety (95% area, TSB-88 style)',
+  data: 'Data / broadband (95% area)',
+  custom: 'Custom',
+};
+export function acceptancePreset(id: string): AcceptanceTier[] {
+  if (id === 'publicsafety') return [
+    { id: 'ps-mob', label: 'Mobile, on street', dbm: -105, extraLossDb: 0, requiredPct: 95, color: '#1565c0' },
+    { id: 'ps-port', label: 'Portable on hip, on street', dbm: -105, extraLossDb: 10, requiredPct: 95, color: '#2e7d32' },
+    { id: 'ps-bldg', label: 'Portable, in building', dbm: -105, extraLossDb: 22, requiredPct: 95, color: '#6a1b9a' },
+  ];
+  if (id === 'data') return [
+    { id: 'd-edge', label: 'Cell edge (data)', dbm: -100, extraLossDb: 0, requiredPct: 95, color: '#1565c0' },
+    { id: 'd-good', label: 'Good throughput', dbm: -85, extraLossDb: 0, requiredPct: 80, color: '#2e7d32' },
+  ];
+  return [
+    { id: 'design', label: 'Design target (Equipment page losses)', dbm: null, extraLossDb: null, requiredPct: 90, color: '#c62828' },
+    { id: 'mobile', label: 'Mobile, on street', dbm: -105, extraLossDb: 0, requiredPct: 90, color: '#1565c0' },
+    { id: 'bldg', label: 'Portable, in building', dbm: -95, extraLossDb: 13, requiredPct: 90, color: '#6a1b9a' },
+  ];
+}
 
 export const uid = () => Math.random().toString(36).slice(2, 10);
 
@@ -29,6 +53,12 @@ export function defaultProject(): Project {
     tests: [],
     bomOverrides: {}, taskDone: {},
     settings: { autoTerrain: true, terrainMarginKm: 5 },
+    propagation: { offsetDb: 0, slopeDbPerDecade: 0, diffractionFactor: 1, clutterDb: 0, source: 'Default (uncalibrated)' },
+    acceptance: { profile: 'lmr', tiers: acceptancePreset('lmr') },
+    network: { channelBwKHz: 12.5, requiredCiDb: 17, acrDb: 60, serviceDbm: -100 },
+    survey: { name: '', importedAt: '', points: [] },
+    runLog: [], scenarios: [],
+    wifi: { readings: [], ssidFilter: '', targetDbm: -67, radiusM: 8 },
   };
 }
 

@@ -133,3 +133,10 @@ h1 { font-size: 1.45rem; margin: 2px 0 0; } h3 { font-size: 1.02rem; margin: 0; 
 .progressbar { height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; } .progressbar > div { height: 100%; background: var(--accent); }
 @media (max-width: 860px) { .topsearch { flex: 1; } .chip.terr, .chip.on { display: none; } }
 .vchk { font-size: .72rem; margin-left: 8px; padding: 1px 6px; border-radius: 8px; background: var(--warn-bg, #fff4d6); color: #7a5a00; } .vchk.ok { background: #e3f5e8; color: #1d6b34; }
+.lg.line { height: 4px; width: 18px; border-radius: 2px; vertical-align: middle; display: inline-block; }
+.tbl tr.ok-row td:last-child { color: #1d6b34; } .tbl tr.bad-row td:last-child { color: #b3261e; }
+.tbl input[type=text], .tbl input[type=number] { min-width: 0; width: 100%; }
+.tbl input[type=color] { width: 32px; height: 24px; padding: 0; border: 0; background: none; }
+.tbl-wrap { overflow-x: auto; max-width: 100%; }
+.wifi-canvas { width: 100%; height: auto; border: 1px solid var(--line, #ccc); border-radius: 6px; touch-action: none; cursor: crosshair; background: #fff; }
+.chip-list { display: flex; flex-wrap: wrap; gap: 6px; } .chip-list span { padding: 2px 8px; border-radius: 10px; background: var(--chip, #eef2f6); font-size: .8rem; }

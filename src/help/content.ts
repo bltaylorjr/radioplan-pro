@@ -37,7 +37,9 @@ Not considered: zoning, land ownership, FAA airspace, existing towers and leasin
 The cache lives in the app's storage on that device (browser profile for the USB file, app data on PC and Android). **Clear cache** frees the space.` },
 
   { id: 'company', title: 'Company & project', page: 'company', keywords: 'company title address logo license engineer client project number state county jurisdiction', summary: 'Enter your company details (used on every report header) and the project jurisdiction.',
-    body: `**Company** details (name, title, address, phone, license number and logo) are printed in the header of every report.
+    body: `**Project information**: project name, project number, client PO / contract number, project site address, revision and date.
+
+**Your company information** (name, title, address, phone, license number and logo) and the **client / customer company** (name, contact, address, phone, email) are both printed in the header of every report.
 
 **Project state** selects the code set used by the compliance checker: North Carolina, South Carolina, Georgia or Tennessee. The county is printed on reports; check whether the county or city enforces a different code edition.
 
@@ -49,8 +51,10 @@ The cache lives in the app's storage on that device (browser profile for the USB
       { target: 'task-done', title: 'Track progress', text: 'Mark each task complete when you are done; the sidebar shows a check mark.' },
     ] },
 
-  { id: 'sites', title: 'Site data & GPS', page: 'sites', keywords: 'site gps nmea gnss rtk coordinates latitude longitude elevation antenna height structure tower airport geocode address', summary: 'Record each candidate site: position (GPS), ground elevation, structure and antenna height.',
+  { id: 'sites', title: 'Site data & GPS', page: 'sites', keywords: 'site database csv import export multi-site spreadsheet gps nmea gnss rtk coordinates latitude longitude elevation antenna height structure tower airport geocode address', summary: 'Record each candidate site: position (GPS), ground elevation, structure and antenna height.',
     body: `Each **site** is a candidate tower, rooftop or building location.
+
+**Site database**: import many sites from a CSV spreadsheet. Columns are matched by name (name, latitude, longitude in decimal or DMS, ground elevation, antenna height / rad center, structure height, and optional transmitter columns: frequency, power, antenna, azimuth, tilt, line loss, channel, transmit). Missing ground elevations are looked up from USGS 3DEP. Export the sites back to CSV at any time.
 
 **Positioning options**
 - **This device's GPS**: uses the phone/tablet/PC location service with high-accuracy mode. Accuracy is shown in metres.
@@ -132,11 +136,58 @@ The profile needs terrain: either load a DEM on the Map & Terrain page or click 
 
 **Antenna pattern**: sector antennas use the 3GPP parabolic pattern with your azimuth and downtilt.
 
-The coverage % reports the share of the analysis area above the design threshold.`,
+**Street-level reference**: the map shows signal at the mobile height with no body or building loss. Each acceptance criterion adds its own extra loss, so one run answers mobile, portable and in-building questions together.
+
+**Acceptance criteria**: each criterion has a threshold (dBm), an extra loss (dB) and a required area (%). It passes when the share of the analysis area with signal − extra loss ≥ threshold is at least the required %. Its service contour is drawn on the map in the criterion's colour. Leave threshold or loss blank to follow the live Equipment-page values. Presets are starting points; public-safety work should use the agency's channel performance criterion (TSB-88 / RFP).
+
+**Model tuning**: offset (dB), distance slope (dB per decade), diffraction weighting and extra clutter loss. Set them by hand or calibrate them from drive-test data on the Field Survey page.
+
+**Run history and scenarios**: every run is logged with all of its inputs; the history table shows what changed since the previous run and how each criterion moved. Save a run as a scenario to keep its full grid for side-by-side comparison.
+
+**GIS export**: KML / KMZ (Google Earth, with heat map), GeoJSON, Esri Shapefile (.zip with sites, service areas, contours and survey points; WGS84 .prj), a georeferenced PNG with world file, and a CSV grid.`,
     tour: [
       { target: 'cov-controls', title: 'Settings', text: 'Radius, resolution and threshold. Higher resolution takes longer.' },
-      { target: 'cov-map', title: 'Heatmap', text: 'Colours show predicted received signal level.' },
+      { target: 'acceptance', title: 'Acceptance criteria', text: 'Pass/fail thresholds: signal, extra loss and the required % of area.' },
+      { target: 'tuning', title: 'Model tuning', text: 'Offset, slope, diffraction and clutter. Calibrate from field data for best accuracy.' },
+      { target: 'cov-map', title: 'Heatmap and contours', text: 'Colours show predicted signal; lines are each criterion\'s service contour.' },
+      { target: 'gis-export', title: 'Export', text: 'Hand off to Google Earth, ArcGIS or QGIS.' },
     ] },
+
+  { id: 'network', title: 'Multi-site & interference', page: 'network', keywords: 'multi site network best server interference co-channel adjacent channel c/i overlap simulcast public safety boundary', summary: 'Best-server, overlap and co-/adjacent-channel C/I analysis across all transmitting sites.',
+    body: `Turn on each transmitting site (or import a site database CSV on the Site Data page). All sites are computed on one common grid with the same model, tuning and terrain as the Coverage page.
+
+- **Best server**: which site is strongest at each location.
+- **C/I**: best-server signal divided by the power sum of every other co-channel signal plus adjacent-channel signals reduced by the adjacent-channel rejection.
+- **Overlap**: how many sites exceed the service threshold, useful for handoff and boundary planning.
+- **Interference-limited**: served by signal level but failing the required C/I.
+
+Required C/I depends on modulation and delivered audio quality; take it from TSB-88.1 or the equipment vendor. This is a planning screen, not a frequency-coordination study.`,
+    tour: [ { target: 'network-sites', title: 'Transmitters', text: 'Tick each site that transmits and set its frequency, power, antenna and azimuth.' }, { target: 'network-criteria', title: 'Criteria', text: 'Service threshold, required C/I, bandwidth and adjacent-channel rejection.' }, { target: 'network-map', title: 'Map views', text: 'Switch between best server, C/I, overlap and best signal.' } ] },
+
+  { id: 'scenarios', title: 'Scenarios & comparison', page: 'scenarios', keywords: 'scenario compare baseline what-if delta difference run history traceable', summary: 'Save coverage runs as scenarios and compare inputs, pass/fail results and a difference map.',
+    body: `Each saved scenario keeps every input that drove the run (site, power, antenna, tilt, model tuning, terrain source, criteria), its acceptance results and the full signal grid.
+
+Pick a baseline (A) and a comparison (B) to see: which inputs changed, how each criterion's area changed, the area gained and lost at each threshold, and a B − A difference map. **Restore inputs** puts a scenario's radio settings back into the project. Export the comparison as CSV for the report.`,
+    tour: [ { target: 'scenarios', title: 'Scenarios', text: 'Saved runs with their results. Show, restore or delete.' } ] },
+
+  { id: 'survey', title: 'Field survey & calibration', page: 'survey', keywords: 'drive test field survey measurement calibration tune model rssi measured predicted error rms', summary: 'Import drive-test data, compare it with the prediction and calibrate the model.',
+    body: `Import a CSV (latitude, longitude and a signal column in dBm such as rssi, signal, level or rsrp) or GeoJSON points, or record readings one at a time with the device GPS.
+
+**Calibration** fits error = measured − predicted as an offset, or offset + slope × log10(distance), by least squares. Readings at or below the receiver floor are excluded because they are censored. The page shows mean, RMS and standard deviation before and after, and error by distance band. Applying the result updates the model tuning used by Coverage, Network and Scenarios, and can set the shadow σ from the residual spread.
+
+Use survey data taken with the same transmitter, frequency and antenna height as the design. A residual spread above about 10 dB usually means a mismatch.`,
+    tour: [ { target: 'survey-import', title: 'Import', text: 'Load drive-test points or record them with GPS.' }, { target: 'calibrate', title: 'Calibrate', text: 'Fit and apply the model correction.' } ] },
+
+  { id: 'wifi', title: 'Wi-Fi survey', page: 'wifi', keywords: 'wifi wi-fi wlan survey heat map floor plan access point bssid ssid channel noise snr co-channel walk netsh nmcli airport', summary: 'Turn measured Wi-Fi readings into floor-plan heat maps of signal, noise, SNR, channel and access point.',
+    body: `1. Load the floor plan image and enter its real width and depth.
+2. Walk the space. At each stop, click your position on the plan, run a scan on the laptop and paste the output, then **Add reading**. Supported: Windows \`netsh wlan show networks mode=bssid\`, Linux \`nmcli dev wifi\` or \`iw dev wlan0 scan\`, macOS \`airport -s\` / \`airport -I\`, or CSV.
+3. Or import a survey-tool CSV with x/y (metres) or latitude/longitude per row.
+4. Outdoors, use **Add outdoor reading at my GPS position**.
+
+**Views**: signal (best AP), noise floor, SNR, channel of the strongest AP, strongest AP identity, co-channel APs heard ≥ −82 dBm, and number of APs above the target (roaming overlap). Numeric views use inverse-distance interpolation within the radius you set; channel and AP views use the nearest reading.
+
+Browsers and Android web apps cannot scan Wi-Fi themselves, so readings always come from a scan you paste or import. Windows and nmcli report signal as a percentage, converted with dBm ≈ % ÷ 2 − 100.`,
+    tour: [ { target: 'wifi-setup', title: 'Setup', text: 'Floor plan, scale, target and network filter.' }, { target: 'wifi-add', title: 'Add readings', text: 'Click your spot on the plan, paste the scan, add.' }, { target: 'wifi-map', title: 'Views', text: 'Switch between signal, noise, SNR, channel and AP maps.' } ] },
 
   { id: 'optimize', title: 'Tilt, azimuth & power', page: 'optimize', keywords: 'tilt downtilt azimuth power footprint shaping optimize sector beamwidth', summary: 'Shape the footprint: see where the main beam and −3 dB edges land and get a recommended downtilt.',
     body: `For an antenna at height h with downtilt θ and vertical beamwidth β:

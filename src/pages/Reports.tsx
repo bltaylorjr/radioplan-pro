@@ -39,7 +39,9 @@ export function ReportsPage() {
   const Head = ({ title }: { title: string }) => (
     <div className="rpt-head">
       <div className="rpt-co">{c.logoDataUrl && <img src={c.logoDataUrl} alt="" />}<div><b>{c.name || 'Company name'}</b><br />{c.title && <>{c.title}<br /></>}{[c.address, c.city, c.state, c.zip].filter(Boolean).join(', ')}<br />{[c.phone, c.email].filter(Boolean).join(' · ')}{c.license && <><br />License {c.license}</>}</div></div>
-      <div className="rpt-meta"><h2>{title}</h2><div>{m.name}{m.number && ` · #${m.number}`} · Rev {m.revision}</div><div>Client: {m.client || '—'} · {m.county ? `${m.county}, ` : ''}{JURISDICTIONS[m.state].name}</div><div>Engineer: {m.engineer || '—'}{m.peLicense && ` (PE ${m.peLicense})`} · {m.created}</div></div>
+      <div className="rpt-meta"><h2>{title}</h2><div>{m.name}{m.number && ` · #${m.number}`} · Rev {m.revision}</div><div>Client: {m.client || '—'}{m.clientContact && ` · Attn: ${m.clientContact}`}{m.poNumber && ` · PO ${m.poNumber}`}</div>
+        {(m.clientAddress || m.clientCity) && <div className="small">{[m.clientAddress, m.clientCity, m.clientState, m.clientZip].filter(Boolean).join(', ')}{(m.clientPhone || m.clientEmail) && ` · ${[m.clientPhone, m.clientEmail].filter(Boolean).join(' · ')}`}</div>}
+        <div>Site: {m.siteAddress ? `${m.siteAddress} · ` : ''}{m.county ? `${m.county}, ` : ''}{JURISDICTIONS[m.state].name}</div><div>Engineer: {m.engineer || '—'}{m.peLicense && ` (PE ${m.peLicense})`} · {m.created}</div></div>
     </div>
   );
   const Foot = () => <div className="rpt-foot">Prepared with RadioPlan Pro. Planning document — calculations and code citations must be verified by a licensed professional engineer and the Authority Having Jurisdiction.</div>;

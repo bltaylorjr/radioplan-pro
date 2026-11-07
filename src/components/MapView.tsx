@@ -22,6 +22,14 @@ export const DEFAULT_BASE = 'USGS Topo';
 
 const icon = (label: string, color: string) => L.divIcon({ className: 'site-pin', html: `<div style="background:${color}">${label}</div>`, iconSize: [28, 28], iconAnchor: [14, 28] });
 
+/** Paint any lat/lon grid to a PNG data URL with a per-cell colour function (null = transparent). */
+export function gridCanvas(g: { n: number }, color: (i: number) => [number, number, number] | null, alpha = 160): string {
+  const cv = document.createElement('canvas'); cv.width = g.n; cv.height = g.n;
+  const ctx = cv.getContext('2d')!, img = ctx.createImageData(g.n, g.n);
+  for (let i = 0; i < g.n * g.n; i++) { const c = color(i); if (c) img.data.set([c[0], c[1], c[2], alpha], i * 4); }
+  ctx.putImageData(img, 0, 0); return cv.toDataURL();
+}
+
 export function coverageCanvas(c: CoverageResult, floor: number): string {
   const cv = document.createElement('canvas'); cv.width = c.n; cv.height = c.n;
   const ctx = cv.getContext('2d')!, img = ctx.createImageData(c.n, c.n);
@@ -53,16 +61,19 @@ function addLocateControl(m: L.Map) {
   new C({ position: 'topleft' }).addTo(m);
 }
 
-export function MapView({ sites, txId, rxId, coverage, floor = -110, dem, onClick, height = 520, selectedId, center, marker, onMap, base }: {
+export function MapView({ sites, txId, rxId, coverage, floor = -110, dem, onClick, height = 520, selectedId, center, marker, onMap, base, extra, extraKey }: {
   sites: Site[]; txId?: string; rxId?: string; coverage?: CoverageResult | null; floor?: number; dem?: DemGrid | null;
   onClick?: (lat: number, lon: number) => void; height?: number; selectedId?: string;
   center?: { lat: number; lon: number; zoom?: number } | null; marker?: (LatLon & { label?: string }) | null; onMap?: (m: L.Map) => void; base?: string;
+  /** Draw additional layers (contours, survey points, network maps). Redrawn when extraKey changes. */
+  extra?: (g: L.LayerGroup) => void; extraKey?: unknown;
 }) {
   const el = useRef<HTMLDivElement>(null);
   const map = useRef<L.Map>();
   const layer = useRef<L.LayerGroup>();
   const bases = useRef<Record<string, L.TileLayer>>({});
   const clickRef = useRef(onClick); clickRef.current = onClick;
+  const extraRef = useRef(extra); extraRef.current = extra;
   useEffect(() => {
     if (!el.current || map.current) return;
     const start = center ?? sites[0] ?? { lat: 35.2, lon: -80.8 };
@@ -97,10 +108,11 @@ export function MapView({ sites, txId, rxId, coverage, floor = -110, dem, onClic
     if (tx && rx && tx !== rx) L.polyline([[tx.lat, tx.lon], [rx.lat, rx.lon]], { color: '#1565c0', weight: 3 }).addTo(g);
     sites.forEach((s, i) => {
       const color = s.id === txId ? '#c62828' : s.id === rxId ? '#1565c0' : '#555';
-      L.marker([s.lat, s.lon], { icon: icon(String.fromCharCode(65 + i), s.id === selectedId ? '#ef6c00' : color) })
+      L.marker([s.lat, s.lon], { icon: icon(i < 26 ? String.fromCharCode(65 + i) : String(i + 1), s.id === selectedId ? '#ef6c00' : color) })
         .bindPopup(`<b>${s.name}</b><br>${s.lat.toFixed(6)}, ${s.lon.toFixed(6)}<br>Ground ${s.groundElevM ?? '?'} m, antenna ${s.antennaAglM} m AGL`).addTo(g);
     });
     if (marker) L.marker([marker.lat, marker.lon], { icon: icon('★', '#ef6c00') }).bindPopup(marker.label ?? 'Search location').addTo(g);
-  }, [sites, txId, rxId, coverage, floor, dem, selectedId, marker]);
+    extraRef.current?.(g);
+  }, [sites, txId, rxId, coverage, floor, dem, selectedId, marker, extraKey]);
   return <div ref={el} className="map" style={{ height }} data-tour="map" />;
 }

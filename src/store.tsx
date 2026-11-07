@@ -55,3 +55,11 @@ export function downloadText(name: string, text: string, type = 'text/plain') {
   a.download = name; a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 2000);
 }
+
+export function downloadBytes(name: string, data: Uint8Array | Blob, type = 'application/octet-stream') {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(data instanceof Blob ? data : new Blob([data], { type }));
+  a.download = name; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+export const safeName = (s: string) => (s || 'radioplan').replace(/[^a-z0-9_-]+/gi, '_').replace(/^_+|_+$/g, '').slice(0, 60) || 'radioplan';

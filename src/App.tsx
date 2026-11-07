@@ -17,6 +17,10 @@ import { TestingPage } from './pages/Testing';
 import { IndoorPage } from './pages/Indoor';
 import { LocatePage } from './pages/Locate';
 import { AutoTerrain } from './components/AutoTerrain';
+import { ScenariosPage } from './pages/Scenarios';
+import { NetworkPage } from './pages/Network';
+import { SurveyPage } from './pages/Survey';
+import { WifiSurveyPage } from './pages/WifiSurvey';
 const TerrainPage = lazy(() => import('./pages/Terrain'));
 const CoveragePage = lazy(() => import('./pages/Coverage'));
 const View3DPage = lazy(() => import('./pages/View3D'));
@@ -30,9 +34,13 @@ export const WORKFLOW: { id: string; label: string; group: string; el: React.Rea
   { id: 'path', label: 'Path Profile / LOS / Fresnel', group: '2 · Outdoor design', el: <PathPage /> },
   { id: 'coverage', label: 'Coverage Prediction', group: '2 · Outdoor design', el: <CoveragePage /> },
   { id: 'optimize', label: 'Tilt, Azimuth & Power', group: '2 · Outdoor design', el: <OptimizePage /> },
+  { id: 'network', label: 'Multi-site & Interference', group: '2 · Outdoor design', el: <NetworkPage /> },
+  { id: 'scenarios', label: 'Scenarios & Compare', group: '2 · Outdoor design', el: <ScenariosPage /> },
+  { id: 'survey', label: 'Field Survey & Calibration', group: '2 · Outdoor design', el: <SurveyPage /> },
   { id: 'view3d', label: '3D Model', group: '2 · Outdoor design', el: <View3DPage /> },
   { id: 'grounding', label: 'Grounding & Structure', group: '2 · Outdoor design', el: <GroundingPage /> },
   { id: 'indoor', label: 'Indoor Planning', group: '3 · Indoor design', el: <IndoorPage /> },
+  { id: 'wifi', label: 'Wi-Fi Survey', group: '3 · Indoor design', el: <WifiSurveyPage /> },
   { id: 'erces', label: 'Emergency Radio (ERCES)', group: '3 · Indoor design', el: <ErcesPage /> },
   { id: 'lfhf', label: 'LF / HF Systems', group: '4 · Specialty systems', el: <LfHfPage /> },
   { id: 'alarm', label: 'Alarm Systems', group: '4 · Specialty systems', el: <AlarmPage /> },

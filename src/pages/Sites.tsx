@@ -9,6 +9,7 @@ import { parseLatLon } from '../engine/locparse';
 import { radioHorizonKm, mToFt } from '../engine/rf';
 import type { Site, StructureType } from '../types';
 import { uid } from '../defaults';
+import { SiteDatabase } from '../components/SiteDatabase';
 
 export function SitesPage() {
   const { project: p, update, rt } = useStore();
@@ -106,6 +107,7 @@ export function SitesPage() {
           <Field label="Longest runway"><Num value={s.nearestRunwayFt} nullable onChange={(v) => set('nearestRunwayFt', v)} unit="ft" /></Field>
         </div>
       </Card>
+      <SiteDatabase />
     </div>
   );
 }

@@ -17,15 +17,18 @@ download the results from the run's **Artifacts** section.
 
 ## Workflow pages (in task order)
 
-1. Company & Project (company header, address → GPS geocoding, jurisdiction) · 2. Site Data & GPS · 3. Map & Terrain ·
-4. Equipment & Link Budget · 5. Path Profile / LOS / Fresnel · 6. Coverage Prediction · 7. Tilt, Azimuth & Power · 8. 3D Model ·
-9. Grounding & Structure · 10. Indoor Planning · 11. Emergency Radio (ERCES) · 12. LF / HF · 13. Alarm Systems · 14. Solar & DC Power ·
-15. Code Compliance · 16. Materials List · 17. Reports · 18. Final Testing — plus a searchable Help manual, page help (F1),
+Find Location & Auto-Plan · Company & Project (project name/number, your company, client company, jurisdiction) ·
+Site Data & GPS (with CSV site-database import/export) · Map & Terrain · Equipment & Link Budget · Path Profile / LOS / Fresnel ·
+Coverage Prediction (acceptance criteria, pass/fail service contours, model tuning, run history, GIS export) · Tilt, Azimuth & Power ·
+Multi-site & Interference (best server, overlap, co-/adjacent-channel C/I) · Scenarios & Compare (input diff, result deltas,
+difference map) · Field Survey & Calibration (drive-test import, least-squares model calibration) · 3D Model · Grounding & Structure ·
+Indoor Planning · Wi-Fi Survey (floor plan, pasted/imported scans, signal / noise / SNR / channel / AP / co-channel views) ·
+Emergency Radio (ERCES) · LF / HF · Alarm Systems · Solar & DC Power · Code Compliance · Materials List · Reports · Final Testing — plus a searchable Help manual, page help (F1),
 "Guide me" walkthroughs and `?` tooltips on fields.
 
 ## What is real vs. simplified vs. placeholder
 
-**Implemented and unit-tested** (`npm test`, 41 tests): 4/3-earth radio horizon, earth bulge, Fresnel zones and 60 % clearance,
+**Implemented and unit-tested** (`npm test`, 81 tests): GIS export (KML/KMZ, GeoJSON, Esri Shapefile, PNG + world file, CSV grid), marching-squares service contours, acceptance pass/fail, scenario grid storage and diffs, CSV site import (decimal/DMS, header matching), drive-test calibration (offset + slope least squares), multi-site C/I, Wi-Fi scan parsers (netsh, nmcli, iw, airport, CSV), 4/3-earth radio horizon, earth bulge, Fresnel zones and 60 % clearance,
 FSPL, Okumura-Hata (urban/suburban/rural, small/large city), COST-231 Hata, MAPL range inversion, EIRP/ERP link budget,
 log-normal shadow margin and Jakes area reliability, ITU-R P.526 knife-edge diffraction, 3GPP sector pattern and downtilt footprint,
 FCC OET-65 / 47 CFR 1.1310 MPE distances, feeder loss from datasheet points, NMEA GGA parsing/averaging with checksum, UTM→WGS84,
@@ -38,7 +41,7 @@ secant-law MUF with a user-entered foF2 (not VOACAP); ERCES downlink budget is a
 
 **Placeholders / limits:** state amendment text is not bundled (the app lists each state's adopted code set and the authority to
 confirm with); equipment catalog is a starter set with typical specs; terrain is held in memory for the session (re-import after
-reopening); map tiles, geocoding and online elevation need internet; LAZ and state-plane LiDAR must be converted first.
+reopening); browsers cannot scan Wi-Fi, so Wi-Fi readings come from pasted or imported scans; C/I analysis is a planning screen, not frequency coordination; map tiles, geocoding and online elevation need internet; LAZ and state-plane LiDAR must be converted first.
 
 ## Code citations
 
