@@ -4,6 +4,7 @@ import { Card, Field, Txt, Sel, Badge } from '../components/ui';
 import { geocodeAddress, GeoResult } from '../engine/geocode';
 import { fetchElevations } from '../engine/terrain';
 import { JURISDICTIONS } from '../compliance/jurisdictions';
+import { JurisdictionInfo } from '../components/JurisdictionInfo';
 import type { StateCode } from '../types';
 import { uid } from '../defaults';
 
@@ -78,11 +79,7 @@ export function CompanyPage() {
           <Field label="Date"><input type="date" value={m.created} onChange={(e) => setM('created')(e.target.value)} /></Field>
           <Field label="AHJ notes" wide tip="Local amendments, permit numbers, inspector contacts."><textarea value={m.jurisdictionNotes} onChange={(e) => setM('jurisdictionNotes')(e.target.value)} rows={3} /></Field>
         </div>
-        <div className="jur">
-          <h4>{j.name} — adopted codes <Badge kind="beta">verify with AHJ</Badge></h4>
-          <ul><li><b>Electrical:</b> {j.electrical}</li><li><b>Building:</b> {j.building}</li><li><b>Fire:</b> {j.fire}</li><li><b>Authority:</b> {j.electricalAuthority}</li></ul>
-          <a href={j.verifyUrl} target="_blank" rel="noreferrer">Confirm current adoption ↗</a>
-        </div>
+        <JurisdictionInfo j={j} />
       </Card>
     </div>
   );

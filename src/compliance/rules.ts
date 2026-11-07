@@ -2,7 +2,7 @@
 // Section numbers follow NFPA 70 (NEC) 2020/2023, NFPA 72 (2019/2022), NFPA 1225 (2022), IFC 2021 and federal rules.
 // THESE ARE PLANNING AIDS. A licensed professional engineer / the AHJ must verify every finding and the adopted edition.
 import type { Project } from '../types';
-import { JURISDICTIONS } from './jurisdictions';
+import { JURISDICTIONS, necSection } from './jurisdictions';
 import { awgAtLeast } from '../engine/electrical';
 import { sizeSolar } from '../engine/solar';
 import { alarmBatteryAh, nacVoltageDrop, ercesDownlink } from '../engine/alarm';
@@ -13,10 +13,12 @@ import type { ProfileAnalysis } from '../engine/terrain';
 
 export type Severity = 'violation' | 'warning' | 'info';
 export type Area = 'RF / Structure' | 'Grounding & Bonding' | 'Regulatory (FAA/FCC)' | 'Solar / DC Power' | 'Fire Alarm' | 'Emergency Radio (ERCES)' | 'Jurisdiction';
-export interface Finding { id: string; severity: Severity; area: Area; code: string; section: string; title: string; detail: string; fix?: string }
+export interface Finding { id: string; severity: Severity; area: Area; code: string; section: string; title: string; detail: string; fix?: string; verified?: 'primary' | 'secondary' }
 export interface RuleContext { project: Project; profile?: ProfileAnalysis | null }
 
 const F = (f: Finding) => f;
+/** Findings whose cited section text was read in the official free eCFR on CHECKED_ON (14 CFR 77.9, 47 CFR 90.219, 47 CFR 1.1310 Table 1). */
+export const PRIMARY_CHECKED = ['faa-77-9', 'fcc-90-219'];
 
 export function txEirp(p: Project) {
   const r = p.radio;
@@ -34,12 +36,13 @@ export function evaluateCompliance(ctx: RuleContext): Finding[] {
   // ---------- Jurisdiction ----------
   out.push(F({ id: 'jur-editions', severity: 'info', area: 'Jurisdiction', code: j.name, section: 'Adopted codes',
     title: `${j.name}: verify adopted editions with the AHJ`,
-    detail: `Electrical: ${j.electrical}. Building: ${j.building}. Fire: ${j.fire}. Authority: ${j.electricalAuthority}. ${j.amendmentNotes.join(' ')} State amendment text is not bundled; confirm at ${j.verifyUrl}.` }));
+    detail: `Electrical: ${j.electrical}. ${j.necNote} Building: ${j.building}. Fire: ${j.fire}. Authority: ${j.electricalAuthority}. ${j.amendmentNotes.join(' ')} Checked against official sources on ${j.checked}; state amendment text is not bundled. Confirm at ${j.verifyUrl}.` }));
+  if (j.necStatus === 'unconfirmed') out.push(F({ id: 'jur-unconfirmed', severity: 'warning', area: 'Jurisdiction', code: j.name, section: 'Adopted NEC edition', title: `${j.name}: current NEC edition could not be confirmed`, detail: j.necNote, fix: 'Call the State Fire Marshal / local AHJ and record the adopted edition in the AHJ notes.' }));
   out.push(F({ id: 'jur-license', severity: 'info', area: 'Jurisdiction', code: j.name, section: 'Licensing', title: 'Licensing / permits', detail: j.licensing.join(' • ') + '. Electrical and low-voltage permits are typically required before installation.' }));
 
   // ---------- Grounding & bonding (NEC 810, 250, 800) ----------
   if (!g.bondingConductorAwg) out.push(F({ id: 'nec-810-15', severity: 'violation', area: 'Grounding & Bonding', code: 'NEC', section: '810.15', title: 'Antenna mast / metal structure not grounded', detail: 'Masts and metal structures supporting antennas shall be grounded in accordance with 810.21.', fix: 'Specify a bonding conductor from the mast/tower to the grounding electrode system.' }));
-  else if (!awgAtLeast(g.bondingConductorAwg, '10')) out.push(F({ id: 'nec-810-21-h', severity: 'violation', area: 'Grounding & Bonding', code: 'NEC', section: '810.21(H) / 810.58(C)', title: `Bonding conductor #${g.bondingConductorAwg} AWG is undersized`, detail: 'Antenna mast/discharge-unit bonding conductor shall be not smaller than 10 AWG copper (receiving) and, for transmitting stations, not smaller than the lead-in and not smaller than 10 AWG.', fix: 'Use #10 AWG copper minimum; industry practice (R56 / TIA-607) uses #6 AWG or larger, #2 AWG solid tinned for tower grounding.' }));
+  else if (!awgAtLeast(g.bondingConductorAwg, '10')) out.push(F({ id: 'nec-810-21-h', severity: 'violation', area: 'Grounding & Bonding', code: 'NEC', section: '810.21(H) / 810.58(B)', title: `Bonding conductor #${g.bondingConductorAwg} AWG is undersized`, detail: 'Antenna mast/discharge-unit bonding conductor shall be not smaller than 10 AWG copper (receiving) and, for transmitting stations, not smaller than the lead-in and not smaller than 10 AWG.', fix: 'Use #10 AWG copper minimum; industry practice (R56 / TIA-607) uses #6 AWG or larger, #2 AWG solid tinned for tower grounding.' }));
   if (!g.surgeProtector) out.push(F({ id: 'nec-810-20', severity: 'violation', area: 'Grounding & Bonding', code: 'NEC', section: '810.20', title: 'No antenna discharge unit (surge protector) on lead-in', detail: 'Each conductor of a lead-in from an outdoor antenna shall be provided with a listed antenna discharge unit.', fix: 'Add a listed coaxial surge protector (e.g. PolyPhaser/Times LP series) at the building entry, bonded to the entrance ground bar.' }));
   if (!g.intersystemBond) out.push(F({ id: 'nec-250-94', severity: 'violation', area: 'Grounding & Bonding', code: 'NEC', section: '250.94', title: 'No intersystem bonding termination', detail: 'An intersystem bonding termination for connecting bonding conductors of communications systems shall be provided at the service equipment/metering equipment.', fix: 'Install a listed intersystem bonding termination and bond the antenna system to it (810.21(F)).' }));
   if (g.bondingConductorLengthM > 6.0) out.push(F({ id: 'nec-800-100', severity: 'warning', area: 'Grounding & Bonding', code: 'NEC', section: '800.100(A)(4)', title: `Bonding conductor ${g.bondingConductorLengthM} m exceeds 6.0 m (20 ft)`, detail: 'For one- and two-family dwellings the bonding conductor shall be as short as practicable, not to exceed 6.0 m (20 ft); otherwise a separate electrode bonded to the system is required. Good practice for all occupancies.', fix: 'Relocate the entry point or install a supplemental electrode bonded with #6 AWG to the building electrode system.' }));
@@ -111,12 +114,22 @@ export function evaluateCompliance(ctx: RuleContext): Finding[] {
     if (e.measuredGeneralPct != null && e.measuredGeneralPct < 90) out.push(F({ id: 'nfpa1225-90', severity: 'violation', area: 'Emergency Radio (ERCES)', code: 'NFPA 1225 / IFC', section: 'NFPA 1225 §18.8.7 (90% general areas); IFC 510.4.1', title: `Measured general-area coverage ${e.measuredGeneralPct}% < 90%` , detail: 'Grid test shall show ≥ 90% of each floor meets the minimum signal and DAQ.' }));
     if (e.measuredCriticalPct != null && e.measuredCriticalPct < 99) out.push(F({ id: 'nfpa1225-99', severity: 'violation', area: 'Emergency Radio (ERCES)', code: 'NFPA 1225 / IFC', section: 'NFPA 1225 §18.8.7 (99% critical areas)', title: `Measured critical-area coverage ${e.measuredCriticalPct}% < 99%`, detail: 'Critical areas (fire command center, stairwells, elevator lobbies, standpipe cabinets, sprinkler riser rooms, exit passageways) require 99%.' }));
     if (e.standbyHours < 12) out.push(F({ id: 'ifc-510-standby', severity: 'violation', area: 'Emergency Radio (ERCES)', code: 'IFC 2021 / NFPA 1225', section: 'IFC 510.4.2.3; NFPA 1225 §18.13', title: `Secondary power ${e.standbyHours} h < 12 h`, detail: 'ERCES secondary power shall operate the system at 100% capacity for not less than 12 hours.' }));
-    if (!e.nema4Enclosure) out.push(F({ id: 'nfpa1225-nema4', severity: 'violation', area: 'Emergency Radio (ERCES)', code: 'NFPA 1225 / IFC', section: 'NFPA 1225 §18.10; IFC 510.4.2.2', title: 'BDA / battery enclosures not NEMA 4 or 4X', detail: 'Signal boosters and battery systems shall be in NEMA 4- or 4X-type enclosures.' }));
+    if (!e.nema4Enclosure) out.push(F({ id: 'nfpa1225-nema4', severity: 'violation', area: 'Emergency Radio (ERCES)', code: 'NFPA 1225 / IFC', section: 'NFPA 1225 §18.10; IFC 510.4.2.4', title: 'BDA / battery enclosures not NEMA 4 or 4X', detail: 'Signal boosters and battery systems shall be in NEMA 4- or 4X-type enclosures.' }));
     if (!e.survivabilityRated) out.push(F({ id: 'nfpa1225-surv', severity: 'violation', area: 'Emergency Radio (ERCES)', code: 'NFPA 1225 / IFC', section: 'NFPA 1225 §18.10 pathway survivability (Level 2 or per AHJ)', title: 'Backbone pathway survivability not provided', detail: 'Backbone cabling and riser shall meet the survivability level required by the AHJ (commonly 2-hour, Level 2).' }));
-    if (!e.ahjFreqApproval) out.push(F({ id: 'fcc-90-219', severity: 'violation', area: 'Emergency Radio (ERCES)', code: '47 CFR 90.219', section: '90.219(b)', title: 'No licensee consent / FCC registration for signal booster', detail: 'Industrial (Class A/B) signal boosters require consent of the FCC licensee(s) and Class B boosters must be registered with the FCC.', fix: 'Obtain written retransmission authorization from the public-safety licensee and register.' }));
+    if (!e.ahjFreqApproval) out.push(F({ id: 'fcc-90-219', severity: 'violation', area: 'Emergency Radio (ERCES)', code: '47 CFR 90.219', section: '90.219(b)(1)(i); 90.219(d)(5)', title: 'No licensee consent / FCC registration for signal booster', detail: 'Non-licensees operating signal boosters must obtain the express consent of the FCC licensee(s) (90.219(b)(1)(i)); Class B signal booster installations must be registered in the FCC signal booster database (90.219(d)(5)).', fix: 'Obtain written retransmission authorization from the public-safety licensee and register.' }));
     if (!e.annunciator) out.push(F({ id: 'ifc-510-monitor', severity: 'violation', area: 'Emergency Radio (ERCES)', code: 'IFC 2021 / NFPA 1225', section: 'IFC 510.4.2.5; NFPA 1225 §18.14', title: 'ERCES not monitored by fire alarm / no dedicated annunciator', detail: 'System shall include automatic supervisory signals (antenna malfunction, booster failure, power loss, low battery) to the fire alarm system and a dedicated annunciator.' }));
     if (dl.compressed) out.push(F({ id: 'erces-compress', severity: 'warning', area: 'Emergency Radio (ERCES)', code: 'Engineering', section: 'BDA linearity', title: 'BDA is output-limited (compression/AGC)', detail: 'Donor level × gain exceeds max output; reduce gain to avoid intermodulation and oscillation (maintain ≥ 15 dB isolation margin).' }));
   }
+  // Stamp the jurisdiction's adopted NEC edition on every NEC citation.
+  for (const f of out) if (/^NEC/.test(f.code)) {
+    f.code = f.code.replace(/^NEC/, `NEC ${j.necEdition}${j.necStatus === 'unconfirmed' ? ' (edition unconfirmed)' : ''}`);
+    f.section = f.section.split('; ').map((x) => x.replace(/^(NEC )?([\d.()A-Z/ ]+)$/, (_m, pre, sec) => (pre ?? '') + necSection(sec.trim(), j.necEdition))).join('; ');
+  }
+  // Citation provenance: 'primary' = section text read in the official free source (eCFR) on CHECKED_ON;
+  // everything else is from the code books as published but was NOT checked against the paywalled text.
+  for (const f of out) if (PRIMARY_CHECKED.some((id) => f.id.startsWith(id))) f.verified = 'primary';
+    else if (f.area === 'Jurisdiction') f.verified = j.necStatus === 'verified' ? 'primary' : undefined;
+    else f.verified ??= 'secondary';
   return out;
 }
 

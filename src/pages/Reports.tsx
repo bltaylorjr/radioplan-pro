@@ -9,6 +9,7 @@ import { sizeSolar } from '../engine/solar';
 import { alarmBatteryAh, ercesDownlink } from '../engine/alarm';
 import { PV_MODULES, byId } from '../data/catalog';
 import { JURISDICTIONS } from '../compliance/jurisdictions';
+import { JurisdictionInfo } from '../components/JurisdictionInfo';
 import { mToFt, fsplDb, mpeComplianceDistanceM } from '../engine/rf';
 import { bearingDeg } from '../engine/geo';
 import { coverageStats } from '../engine/coverage';
@@ -67,8 +68,9 @@ export function ReportsPage() {
     alarm: () => { const b = alarmBatteryAh(p.alarm); return <><table className="rpt-tbl"><thead><tr><th>Device</th><th>Qty</th><th>Standby mA</th><th>Alarm mA</th></tr></thead><tbody>{p.alarm.devices.map((d, i) => <tr key={i}><td>{d.name}</td><td>{d.qty}</td><td>{d.standbyMa}</td><td>{d.alarmMa}</td></tr>)}</tbody></table>
       <KV rows={[['Standby', `${fmt(b.standbyA, 3)} A × ${p.alarm.standbyHours} h`], ['Alarm', `${fmt(b.alarmA, 3)} A × ${p.alarm.alarmMinutes} min`], ['Required', `${fmt(b.rawAh, 2)} Ah × ${p.alarm.safetyFactor} = ${fmt(b.requiredAh, 2)} Ah`], ['Installed', `${p.alarm.installedBatteryAh} Ah`]]} /></>; },
     erces: () => { const d = ercesDownlink(p.erces); return <KV rows={[['Building', `${p.erces.floors} floors × ${p.erces.areaPerFloorSqft} ft²`], ['Donor', `${p.erces.donorRssiDbm} dBm`], ['BDA output', `${fmt(d.bdaOutputDbm)} dBm`], ['Per antenna', `${fmt(d.perAntennaDbm)} dBm (${p.erces.floors * p.erces.antennasPerFloor} antennas)`], ['Worst-point signal', `${fmt(d.edgeRssiDbm)} dBm (≥ −95 required)`], ['Secondary power', `${p.erces.standbyHours} h`]]} />; },
-    compliance: () => <table className="rpt-tbl"><thead><tr><th>Status</th><th>Code / section</th><th>Finding</th><th>Recommended fix</th></tr></thead>
-      <tbody>{findings.map((f) => <tr key={f.id} className={f.severity}><td>{f.severity === 'violation' ? 'NOT IN COMPLIANCE' : f.severity.toUpperCase()}</td><td>{f.code} §{f.section}</td><td><b>{f.title}</b><br />{f.detail}</td><td>{f.fix ?? ''}</td></tr>)}</tbody></table>,
+    compliance: () => <><JurisdictionInfo j={JURISDICTIONS[m.state]} compact /><table className="rpt-tbl"><thead><tr><th>Status</th><th>Code / section</th><th>Finding</th><th>Recommended fix</th></tr></thead>
+      <tbody>{findings.map((f) => <tr key={f.id} className={f.severity}><td>{f.severity === 'violation' ? 'NOT IN COMPLIANCE' : f.severity.toUpperCase()}</td><td>{f.code} §{f.section}{f.verified === 'primary' ? ' ✓' : ''}</td><td><b>{f.title}</b><br />{f.detail}</td><td>{f.fix ?? ''}</td></tr>)}</tbody></table>
+      <p className="small">✓ = section text checked in the official source on {JURISDICTIONS[m.state].checked}. Other sections are from the published code books and must be confirmed in the adopted edition.</p></>,
     bom: () => <table className="rpt-tbl"><thead><tr><th>Category</th><th>Item</th><th>Brand / model</th><th>Qty</th><th>Unit</th></tr></thead><tbody>{buildBom(p).map((l) => <tr key={l.key}><td>{l.category}</td><td>{l.item}</td><td>{l.brandModel}</td><td>{l.qty}</td><td>{l.unit}</td></tr>)}</tbody></table>,
     tests: () => <><table className="rpt-tbl"><thead><tr><th>Test</th><th>Standard</th><th>Acceptance</th><th>Measured</th><th>Result</th><th>Date / tech</th></tr></thead><tbody>{p.tests.map((t) => <tr key={t.id}><td>{t.item}</td><td>{t.standard}</td><td>{t.expected}</td><td>{t.measured}</td><td>{t.pass == null ? 'Pending' : t.pass ? 'PASS' : 'FAIL'}</td><td>{t.date} {t.tech}</td></tr>)}</tbody></table>
       <div className="sign"><div>Technician signature ____________________ Date ________</div><div>Engineer signature ____________________ Date ________</div></div></>,

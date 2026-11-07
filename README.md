@@ -44,6 +44,12 @@ reopening); map tiles, geocoding and online elevation need internet; LAZ and sta
 
 Rules cite NEC (NFPA 70) 2020/2023, NFPA 72, NFPA 1225, NFPA 780, IFC 2021, TIA-222-H, Motorola R56, 14 CFR Part 77 and 47 CFR.
 Section numbers can move between editions and states adopt different editions with amendments.
+## Verification status (2026-11-07)
+
+- **Adopted editions** (official state sources): NC 2020 NEC, effective 2021-11-01 (2023 NEC on indefinite delay, SL 2025-2 §5.12). SC 2020 NEC, effective 2023-01-01. GA 2023 NEC, effective 2025-01-01, plus 2026 GA amendments. TN 2017 NEC, **unconfirmed**.
+- **Checked against official text:** 14 CFR 77.9(a)/(b), 47 CFR 90.219(b)(1)(i)/(d)(5), the 47 CFR 1.1310 Table 1 MPE limits, and the ITU-R P.526-16 knife-edge J(v) approximation.
+- **Not re-checked (paywalled or no free source):** NEC, NFPA 72, NFPA 1225 and IFC 510 section numbers; the Okumura-Hata / COST-231 coefficients (standard published forms); and the OET-65 ground-reflection factor. These are flagged "confirm in code book" in the app.
+
 **This is a planning aid. A licensed professional engineer and the Authority Having Jurisdiction must verify every design.**
 
 ## Development

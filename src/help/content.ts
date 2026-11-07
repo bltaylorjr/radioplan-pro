@@ -217,7 +217,9 @@ Wall losses are typical values; measure on site for critical designs. Coverage %
 - **Warning**: recommended practice, regulatory notice, or an engineering criterion.
 - **Info**: jurisdiction, licensing and context.
 
-Citations follow NEC 2020/2023, NFPA 72 (2019/2022), NFPA 1225 (2022), IFC 2021, 14 CFR Part 77, and 47 CFR. Section numbers can move between editions. **State amendments are not bundled in this version**; the page lists each state's adopting authority so you can confirm the edition and amendments.
+Every NEC citation is stamped with the edition your project state has adopted (checked 2026-11-07): **NC 2020 NEC** (2023 NEC indefinitely delayed by SL 2025-2), **SC 2020 NEC**, **GA 2023 NEC + 2026 GA amendments**, **TN 2017 NEC (unconfirmed; no current official list found)**. The jurisdiction box shows the effective date, status and the official source links.
+
+Each finding is marked **✓ checked** when its section text was read in the official free source (eCFR: 14 CFR 77.9, 47 CFR 90.219) or **confirm in code book** when the number comes from the published NEC / NFPA / IFC books, which are paywalled and could not be re-read. Section numbers can move between editions. **State amendments are not bundled in this version**; the page lists each state's adopting authority so you can confirm the edition and amendments.
 
 This checker is a planning aid only. A licensed professional must verify compliance with the AHJ.` },
 

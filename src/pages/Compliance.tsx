@@ -1,3 +1,4 @@
+import { JurisdictionInfo } from '../components/JurisdictionInfo';
 import React, { useState } from 'react';
 import { useStore } from '../store';
 import { Card, Stat } from '../components/ui';
@@ -12,7 +13,8 @@ export function FindingList({ findings, empty }: { findings: Finding[]; empty?: 
     <ul className="findings">{list.map((f) => (
       <li key={f.id} className={`finding ${f.severity}`}>
         <div className="f-head"><span className={`sev ${f.severity}`}>{f.severity === 'violation' ? '⛔ Not in compliance' : f.severity === 'warning' ? '⚠ Warning' : 'ℹ Info'}</span>
-          <span className="cite">{f.code} §{f.section}</span></div>
+          <span className="cite">{f.code} §{f.section}</span>
+          {f.verified === 'primary' ? <span className="vchk ok" title="Section text checked in the official source">✓ checked</span> : f.verified === 'secondary' ? <span className="vchk" title="Section number from the published code book; not re-checked against the paywalled text">confirm in code book</span> : null}</div>
         <div className="f-title">{f.title}</div>
         <div className="f-detail">{f.detail}</div>
         {f.fix && <div className="f-fix"><b>Fix:</b> {f.fix}</div>}
@@ -36,7 +38,8 @@ export function CompliancePage() {
           <Stat label="Info" value={count('info')} />
         </div>
         <div className="row">Show: {(['all', 'violation', 'warning', 'info'] as const).map((s) => <button key={s} className={filter === s ? 'primary' : ''} onClick={() => setFilter(s)}>{s}</button>)}</div>
-        <p className="small muted">Section references are based on NEC 2020/2023, NFPA 72 2019/2022, NFPA 1225 2022, IFC 2021, 14 CFR 77 and 47 CFR. Editions and state amendments vary — confirm with the AHJ. Findings are a planning aid and must be verified by a licensed professional.</p>
+        <JurisdictionInfo j={j} compact />
+        <p className="small muted">NEC citations are stamped with the edition {j.name} has adopted. Each finding shows whether its section was <b>checked against the official text</b> (free eCFR for FAA/FCC rules) or is <b>from the code book, not re-checked</b> (NEC, NFPA 72, NFPA 1225 and IFC are paywalled and could not be read here). Findings are a planning aid and must be verified by a licensed professional and the AHJ.</p>
       </Card>
       {areas.map((a) => {
         const f = all.filter((x) => x.area === a && (filter === 'all' || x.severity === filter));

@@ -29,3 +29,23 @@ describe('materials & link', () => {
   it('override is respected', () => { const p = defaultProject(); p.bomOverrides.rods = 9; expect(buildBom(p).find((l) => l.key === 'rods')!.qty).toBe(9); });
   it('link budget EIRP is consistent', () => { const L = designLink(defaultProject()); expect(L.eirpDbm).toBeCloseTo(47 - L.feederLoss - 0.8 + 8.15, 3); });
 });
+
+describe('verified citations', () => {
+  it('stamps the adopted NEC edition and provenance', async () => {
+    const { defaultProject } = await import('../src/defaults');
+    const { evaluateCompliance } = await import('../src/compliance/rules');
+    const { necSection, JURISDICTIONS } = await import('../src/compliance/jurisdictions');
+    const p = structuredClone(defaultProject());
+    p.meta.state = 'NC';
+    const nc = evaluateCompliance({ project: p });
+    for (const f of nc.filter((x) => x.code.startsWith('NEC'))) expect(f.code).toMatch(/^NEC 2020/);
+    p.meta.state = 'TN';
+    const tn = evaluateCompliance({ project: p });
+    expect(tn.some((f) => f.id === 'jur-unconfirmed')).toBe(true);
+    for (const f of tn.filter((x) => x.code.startsWith('NEC'))) expect(f.code).toContain('(edition unconfirmed)');
+    expect(necSection('706.15', '2017')).toBe('706.7');
+    expect(necSection('706.15', '2020')).toBe('706.15');
+    expect(JURISDICTIONS.GA.necEdition).toBe('2023');
+    for (const f of nc) expect(f.section).not.toContain('810.58(C)');
+  });
+});
