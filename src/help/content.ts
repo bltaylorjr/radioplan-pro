@@ -1,0 +1,226 @@
+// Interactive help manual content. Each topic is searchable; `page` links a topic to a workflow page,
+// and `tour` lists guided-walkthrough steps that highlight elements marked with data-tour="...".
+export interface TourStep { target: string; title: string; text: string }
+export interface HelpTopic { id: string; title: string; page?: string; keywords: string; summary: string; body: string; tour?: TourStep[] }
+
+export const HELP: HelpTopic[] = [
+  { id: 'getting-started', title: 'Getting started', keywords: 'start overview workflow usb android install save open project', summary: 'The left sidebar is your workflow: work top to bottom from Company & Project to Testing.',
+    body: `RadioPlan Pro walks a project from first site visit to commissioning. Each page in the left sidebar is one **task**, in the order engineers normally perform them. Tick **Mark task complete** at the bottom of a page to track progress.
+
+- Your work saves automatically in this computer's browser storage.
+- Use **Save project** (top bar) to write a .radioplan.json file you can keep on the USB drive, email, or open on the Android app.
+- Press **F1** or the **?** button on any page for help on that page, or **Guide me** for a step-by-step walkthrough.
+- Small **?** bubbles next to fields explain what to enter.
+
+**Important:** code citations and calculations are planning aids. A licensed professional engineer and the Authority Having Jurisdiction must verify the design.` },
+
+  { id: 'company', title: 'Company & project', page: 'company', keywords: 'company title address logo license engineer client project number state county jurisdiction', summary: 'Enter your company details (used on every report header) and the project jurisdiction.',
+    body: `**Company** details (name, title, address, phone, license number and logo) are printed in the header of every report.
+
+**Project state** selects the code set used by the compliance checker: North Carolina, South Carolina, Georgia or Tennessee. The county is printed on reports; check whether the county or city enforces a different code edition.
+
+**Find on map** geocodes the company or project address to GPS coordinates and can create a site at that location.`,
+    tour: [
+      { target: 'company-form', title: 'Company details', text: 'Your company name, title and address appear on every report.' },
+      { target: 'company-geocode', title: 'Address to GPS', text: 'Geocode the address to latitude/longitude and send it to the map, terrain and site pages.' },
+      { target: 'project-form', title: 'Project & jurisdiction', text: 'Pick the state here. It drives which code editions are cited in the compliance warnings.' },
+      { target: 'task-done', title: 'Track progress', text: 'Mark each task complete when you are done; the sidebar shows a check mark.' },
+    ] },
+
+  { id: 'sites', title: 'Site data & GPS', page: 'sites', keywords: 'site gps nmea gnss rtk coordinates latitude longitude elevation antenna height structure tower airport geocode address', summary: 'Record each candidate site: position (GPS), ground elevation, structure and antenna height.',
+    body: `Each **site** is a candidate tower, rooftop or building location.
+
+**Positioning options**
+- **This device's GPS**: uses the phone/tablet/PC location service with high-accuracy mode. Accuracy is shown in metres.
+- **Commercial GNSS receiver**: export or log NMEA 0183 (GGA sentences) from a Trimble, Leica, Emlid, Garmin or similar receiver and import the file. The app averages the fixes, keeps the best fix class (RTK fixed > RTK float > DGPS > autonomous) and reports the 2-D standard deviation.
+- **Live serial GNSS** (Chrome/Edge desktop): connect a USB receiver and stream NMEA directly.
+- **Address**: geocode a street address (needs internet).
+
+**Ground elevation** can be fetched online (Copernicus 90 m DEM) or read from an imported DEM/LiDAR file.
+
+**Airport distance and runway length** feed the FAA Part 77 notice check.`,
+    tour: [
+      { target: 'site-list', title: 'Sites', text: 'Add, select and rename candidate sites. Site A is normally the transmitter.' },
+      { target: 'site-gps', title: 'GPS', text: 'Capture position from this device or import NMEA logs from a survey-grade receiver.' },
+      { target: 'site-structure', title: 'Structure', text: 'Structure type, height and antenna centerline. Heights drive the radio horizon and FAA checks.' },
+    ] },
+
+  { id: 'terrain', title: 'Map & terrain data', page: 'terrain', keywords: 'map topo topography dem lidar las srtm hgt geotiff asc usgs 3dep terrain elevation layers satellite offline', summary: 'View sites on topographic or satellite maps and load terrain (DEM / LiDAR) used by all calculations.',
+    body: `**Base maps**: OpenTopoMap (contours), Esri World Imagery (satellite), USGS Topo, and OpenStreetMap. Map tiles need internet; terrain files work offline once loaded.
+
+**Terrain sources** (used for path profiles, coverage and 3D):
+- **Online DEM** around the selected site (Copernicus GLO-90, ~90 m).
+- **SRTM / NASADEM .hgt** tiles (1 or 3 arc-second).
+- **GeoTIFF** DEM in WGS84 (EPSG:4326), e.g. USGS 3DEP 1/3 arc-second (~10 m).
+- **ESRI ASCII grid (.asc)** in WGS84.
+- **LiDAR LAS** point clouds (1.0-1.4, uncompressed). Choose DSM (tops of trees/buildings: best for RF obstruction) or DTM (ground class 2). For UTM files enter the UTM zone. LAZ must be decompressed first (laszip). State-plane files must be reprojected to UTM/WGS84.
+
+**Tip:** USGS 3DEP data is available free from the National Map Downloader (apps.nationalmap.gov/downloader).`,
+    tour: [
+      { target: 'map', title: 'Map', text: 'Click the map to move the selected site. Switch base layers at top-right.' },
+      { target: 'dem-import', title: 'Terrain import', text: 'Load DEM or LiDAR files, or fetch an online DEM around the selected site.' },
+    ] },
+
+  { id: 'equipment', title: 'Equipment & link budget', page: 'equipment', keywords: 'equipment radio antenna feeder coax heliax lmr eirp erp link budget mapl sensitivity margin fade shadow body loss penetration', summary: 'Choose band, radio, antenna and feeder; the app computes EIRP, ERP and Maximum Allowable Path Loss.',
+    body: `**EIRP** (Effective Isotropic Radiated Power) = TX power − feeder loss − jumper/connector loss + antenna gain (dBi). **ERP** = EIRP − 2.15 dB.
+
+**Feeder loss** is interpolated from datasheet attenuation points at your frequency and multiplied by the feeder length.
+
+**MAPL** (Maximum Allowable Path Loss) = EIRP + RX antenna gain − RX losses − RX sensitivity − margins.
+
+**Margins**
+- **Shadow fading** margin = σ × Q⁻¹(1 − edge reliability). Typical σ = 8 dB; 90% edge reliability ⇒ 10.3 dB. The app also shows the resulting **area reliability** (Jakes).
+- **Building penetration**: 10-20 dB for in-building coverage.
+- **Body loss**: 3 dB typical for handhelds.
+- **Interference margin**: 1-3 dB.
+
+The cell-edge range is the distance where the Hata/COST-231 loss equals the MAPL.`,
+    tour: [
+      { target: 'eq-band', title: 'Band', text: 'Pick a band preset or enter a custom frequency.' },
+      { target: 'eq-chain', title: 'RF chain', text: 'Transmitter power, antenna and feeder. Catalog specs are typical; confirm on the datasheet.' },
+      { target: 'eq-margins', title: 'Margins', text: 'Shadow fading, penetration and body loss margins reduce the allowable path loss.' },
+      { target: 'eq-results', title: 'Results', text: 'EIRP, ERP, MAPL and the predicted cell-edge radius.' },
+    ] },
+
+  { id: 'path', title: 'Path profile, LOS & Fresnel', page: 'path', keywords: 'path profile line of sight los fresnel zone 60 percent clearance earth curvature 4/3 k factor radio horizon knife edge diffraction obstruction', summary: 'Checks line of sight, earth bulge (k = 4/3), first Fresnel zone and 60% clearance between two sites.',
+    body: `**Radio horizon** with the standard 4/3-Earth model: d(km) ≈ 4.12 √h(m) for each antenna; the LOS distance is the sum of both.
+
+**Earth bulge** at a point: h = d₁·d₂ / (2·k·Rₑ).
+
+**First Fresnel zone radius**: r = √(λ·d₁·d₂ / d). Engineering practice keeps **at least 60% of F1 clear** of terrain and clutter.
+
+**Clutter height** adds trees/buildings on top of bare-earth DEMs (not needed for LiDAR DSM).
+
+When the path is blocked the worst obstacle is treated as a **knife edge** (ITU-R P.526) and the extra diffraction loss is reported.
+
+The profile needs terrain: either load a DEM on the Map & Terrain page or click **Fetch online profile**.`,
+    tour: [
+      { target: 'path-controls', title: 'Path settings', text: 'Choose the two sites, the k-factor and clutter height.' },
+      { target: 'path-chart', title: 'Profile chart', text: 'Brown = terrain + earth bulge, blue line = LOS, shaded = first Fresnel zone, dashed = 60% F1.' },
+      { target: 'path-results', title: 'Results', text: 'Clearance, LOS status, diffraction loss and predicted received level.' },
+    ] },
+
+  { id: 'coverage', title: 'Coverage prediction', page: 'coverage', keywords: 'coverage heatmap signal strength map okumura hata cost-231 propagation model urban suburban rural rssi prediction terrain aware', summary: 'Predicts a signal-strength map using Okumura-Hata (150-1500 MHz) or COST-231 (1500-2000 MHz) plus terrain diffraction.',
+    body: `**Models**
+- **Okumura-Hata**: 150-1500 MHz, base 30-200 m, mobile 1-10 m, 1-20 km. Urban, suburban and rural (open) corrections.
+- **COST-231 Hata**: 1500-2000 MHz extension, +3 dB for large metropolitan centres.
+- Out-of-range inputs are flagged; results are extrapolated.
+
+**Terrain-aware**: with a DEM loaded, each pixel's radial is scanned for the worst obstacle and knife-edge diffraction loss is added, so valleys and ridge shadows appear instead of a simple circle. The effective base height is taken relative to the ground at each pixel.
+
+**Antenna pattern**: sector antennas use the 3GPP parabolic pattern with your azimuth and downtilt.
+
+The coverage % reports the share of the analysis area above the design threshold.`,
+    tour: [
+      { target: 'cov-controls', title: 'Settings', text: 'Radius, resolution and threshold. Higher resolution takes longer.' },
+      { target: 'cov-map', title: 'Heatmap', text: 'Colours show predicted received signal level.' },
+    ] },
+
+  { id: 'optimize', title: 'Tilt, azimuth & power', page: 'optimize', keywords: 'tilt downtilt azimuth power footprint shaping optimize sector beamwidth', summary: 'Shape the footprint: see where the main beam and −3 dB edges land and get a recommended downtilt.',
+    body: `For an antenna at height h with downtilt θ and vertical beamwidth β:
+- Main beam hits the ground at d = h / tan θ.
+- Inner −3 dB edge at h / tan(θ + β/2); outer edge at h / tan(θ − β/2) (∞ when θ ≤ β/2).
+
+**Recommended tilt** places the upper −3 dB edge at your target cell radius: θ = atan(h/R) + β/2.
+
+Adjust power to balance uplink and downlink and to avoid interference into neighbouring cells. Re-run coverage after changes.` },
+
+  { id: 'view3d', title: '3D terrain model', page: 'view3d', keywords: '3d model view terrain mesh tower fresnel ellipsoid', summary: 'Interactive 3D terrain with towers, the radio path and the first Fresnel zone.',
+    body: `Drag to orbit, right-drag to pan, scroll to zoom. Vertical exaggeration makes terrain easier to read. The red/green line is the path (green = 60% F1 clear). The translucent ellipsoid is the first Fresnel zone.
+
+The 3D model uses the loaded DEM; if none is loaded click **Fetch online terrain**.` },
+
+  { id: 'grounding', title: 'Grounding, bonding & structure', page: 'grounding', keywords: 'grounding bonding ground rod ring surge protector lightning nec 810 250 tia-222 r56 tia-607 resistance', summary: 'Grounding electrode system, bonding conductors, surge protection and structural class for code checks.',
+    body: `Key requirements checked (NEC 2020/2023):
+- **810.15** masts and metal structures grounded; **810.21 / 810.58** bonding conductor ≥ 10 AWG copper.
+- **810.20** listed antenna discharge unit on every lead-in.
+- **250.94** intersystem bonding termination.
+- **250.52(A)(5)** rods ≥ 8 ft; **250.53(A)(3)** rods ≥ 6 ft apart; **250.53(A)(2)** single rod must be supplemented unless ≤ 25 Ω.
+- **800.100(A)(4)** bonding conductor ≤ 20 ft (dwellings).
+
+Industry practice (Motorola R56, TIA-607, TIA-222-H): ≤ 10 Ω site ground, #2 AWG tinned ring, ground kits at top/bottom/entry, structural analysis by a PE.` },
+
+  { id: 'lfhf', title: 'LF / MF / HF planning', page: 'lfhf', keywords: 'lf mf hf low frequency high frequency groundwave skywave nvis muf foF2 dipole monopole radials am broadcast', summary: 'Antenna dimensions, monopole efficiency, groundwave field strength (LF/MF) and skywave MUF / NVIS (HF).',
+    body: `**LF/MF** (30 kHz-3 MHz): short monopoles have low radiation resistance (Rr ≈ 40π²(h/λ)²), so ground-system loss dominates efficiency. 120 λ/4 radials is the broadcast standard (47 CFR 73.189). Groundwave field strength uses a flat-earth Sommerfeld-Norton approximation; regulatory studies must use ITU-R P.368 / FCC 73.184 curves. **Simplified model.**
+
+**HF** (3-30 MHz): enter the current **foF2** (from an ionosonde, e.g. the nearest GIRO/NOAA station). MUF uses the secant law with a 300 km F2 layer; FOT ≈ 85% MUF. For NVIS (0-400 km) use a horizontal dipole 0.1-0.25 λ high and a frequency below foF2. Half-wave dipole length (ft) = 468/f(MHz). **Simplified model.**` },
+
+  { id: 'solar', title: 'Solar & DC power', page: 'solar', keywords: 'solar pv photovoltaic battery autonomy charge controller nec 690 706 480 rapid shutdown voltage drop string voc conductor sizing off-grid', summary: 'Sizes PV array, battery bank and conductors for an off-grid or backup radio site with NEC 690 checks.',
+    body: `**Load**: Σ watts × hours/day ÷ inverter efficiency = Wh/day.
+**Battery**: Wh/day × autonomy days ÷ (depth of discharge × temperature factor).
+**Array**: Wh/day ÷ (worst-month peak sun hours × derate 0.77).
+
+**NEC checks**
+- **690.7** cold-corrected string Voc ≤ 600 V (dwellings) / 1000 V and ≤ controller rating. Uses the module temperature coefficient (690.7(A)(1)); Table 690.7(A) factors shown for reference.
+- **690.8(A)/(B)** conductor ampacity ≥ Isc × 1.25 × 1.25 (156%).
+- **690.12** rapid shutdown for PV on buildings.
+- **706.15 / 480.7** ESS disconnect.
+- Voltage drop ≤ 3% (informational, recommended).
+
+Peak sun hours are approximate December values; verify with NREL PVWatts.` },
+
+  { id: 'alarm', title: 'Fire alarm systems', page: 'alarm', keywords: 'fire alarm nfpa 72 battery calculation standby alarm nac voltage drop facp horn strobe smoke 760 dedicated circuit', summary: 'NFPA 72 secondary-power battery calculation, NAC voltage drop and NEC 760 power-supply checks.',
+    body: `**Battery** = (standby current × 24 h) + (alarm current × 5 min), × safety factor (20% is common practice / manufacturer guidance). EVACS / mass notification requires 15 minutes of alarm (NFPA 72 10.6.7.2.1).
+
+**NAC voltage drop** is calculated from the battery end-of-discharge voltage (20.4 V for 24 V systems) to the last device; the result must stay above the device's listed minimum (typically 16 V).
+
+**NEC 760.41(B) / NFPA 72 10.6.5**: dedicated branch circuit, red-marked, locked, labelled "FIRE ALARM CIRCUIT".` },
+
+  { id: 'erces', title: 'Emergency responder radio (ERCES / BDA)', page: 'erces', keywords: 'erces bda das emergency responder radio public safety nfpa 1225 1221 ifc 510 signal booster 90.219 -95 dbm 99 critical areas', summary: 'In-building public-safety radio coverage: downlink budget, IFC 510 / NFPA 1225 requirements and FCC booster rules.',
+    body: `**Requirements** (IFC 2021 510 / NFPA 1225 2022 Ch. 18; verify adopted edition):
+- −95 dBm minimum inbound signal; 90% of each floor, 99% in critical areas; DAQ ≥ 3.0.
+- 12 hours secondary power at 100% capacity.
+- NEMA 4/4X enclosures for BDA and batteries.
+- Pathway survivability (commonly 2-hour) for the backbone.
+- Supervisory signals to the fire alarm system and a dedicated annunciator.
+- **FCC 90.219**: licensee consent; Class B boosters must be registered.
+
+The downlink budget estimates BDA output, power per antenna after splits, and the signal at the worst point using your path-loss estimate (use the Indoor Planner for a detailed estimate).` },
+
+  { id: 'indoor', title: 'Indoor planning', page: 'indoor', keywords: 'indoor floor plan wall das wifi antenna placement heatmap itu p.1238 multi-wall cost 231 in-building', summary: 'Draw walls on a floor plan, place antennas, and see a multi-wall coverage heatmap.',
+    body: `1. Load a floor-plan image (PNG/JPG) and enter the building width and height in metres.
+2. Choose a wall material and **drag** on the plan to draw walls.
+3. Switch to **Place antenna** and click to place DAS antennas / APs with their EIRP.
+4. The heatmap uses the **COST-231 multi-wall model** (free-space loss + loss of every wall crossed). The ITU-R P.1238 site-general estimate is shown for comparison.
+
+Wall losses are typical values; measure on site for critical designs. Coverage % is compared with the target (−95 dBm for ERCES).`,
+    tour: [
+      { target: 'in-tools', title: 'Tools', text: 'Draw walls, place antennas or erase. Pick the wall material first.' },
+      { target: 'in-canvas', title: 'Floor plan', text: 'Drag to draw walls, click to place antennas. Colours show predicted signal.' },
+    ] },
+
+  { id: 'compliance', title: 'Code compliance warnings', page: 'compliance', keywords: 'code compliance nec nfpa violation warning north carolina south carolina georgia tennessee ahj amendment citation', summary: 'Lists every design item that does not meet code, citing the code and section, with a recommended fix.',
+    body: `Findings are graded:
+- **Violation**: a minimum code requirement appears not to be met.
+- **Warning**: recommended practice, regulatory notice, or an engineering criterion.
+- **Info**: jurisdiction, licensing and context.
+
+Citations follow NEC 2020/2023, NFPA 72 (2019/2022), NFPA 1225 (2022), IFC 2021, 14 CFR Part 77, and 47 CFR. Section numbers can move between editions. **State amendments are not bundled in this version**; the page lists each state's adopting authority so you can confirm the edition and amendments.
+
+This checker is a planning aid only. A licensed professional must verify compliance with the AHJ.` },
+
+  { id: 'materials', title: 'Materials list', page: 'materials', keywords: 'materials bom bill of materials quantity brand model coax connectors hangers ground kits export csv', summary: 'Bill of materials generated from your design, with editable quantities and CSV export.',
+    body: `Quantities follow the design: feeder length + 10%, hangers at the manufacturer spacing, ground kits at top/bottom/entry plus every 200 ft, connectors and weatherproofing per joint, grounding by rod count and spacing, solar modules/batteries from the solar sizing, and so on.
+
+Edit any quantity to override it; the basis column shows "(overridden)". Export to CSV for purchasing.` },
+
+  { id: 'reports', title: 'Reports', page: 'reports', keywords: 'report print pdf export kml google earth site survey link budget path coverage compliance materials test commissioning', summary: 'Engineer and technician reports with your company header; print to PDF, export KML/CSV/JSON.',
+    body: `Available reports: Site Data Sheet, Link Budget & Path Analysis, Coverage Summary, Grounding & Structure, Solar Sizing, Fire Alarm Battery Calc, ERCES Design, Code Compliance, Materials List, Commissioning / Test Report.
+
+Use **Print / Save PDF** (choose "Save as PDF" in the print dialog). **KML** opens the sites and path in Google Earth.` },
+
+  { id: 'testing', title: 'Final testing & commissioning', page: 'testing', keywords: 'test commissioning sweep vswr return loss dtf pim ground resistance fall of potential drive test grid test acceptance', summary: 'Acceptance test checklist with expected values, measured results and pass/fail.',
+    body: `Standard acceptance tests: feeder sweeps (return loss / VSWR, distance-to-fault), PIM, insertion loss, ground resistance (fall-of-potential, IEEE 81), bonding continuity, TX power and frequency, azimuth/tilt verification, drive test vs. prediction, ERCES grid test, battery run test and RF exposure survey.
+
+Enter measured values and mark pass/fail; the results print in the Commissioning report.` },
+
+  { id: 'packaging', title: 'USB, PC and Android versions', keywords: 'usb portable windows desktop install android apk offline', summary: 'One codebase runs from a USB stick, as a Windows desktop app, and as an Android app.',
+    body: `- **USB portable**: copy **RadioPlan.html** to the stick and double-click it. Everything is in one file; no install. Save project files next to it.
+- **Windows PC app**: built with Tauri (see README "Desktop build"). Produces an installer and a portable .exe.
+- **Android**: built with Capacitor (see README "Android build"). GPS uses the phone's GNSS.
+
+Map tiles and online elevation need internet; imported terrain files work offline.` },
+
+  { id: 'disclaimer', title: 'Professional responsibility', keywords: 'disclaimer liability pe engineer verify', summary: 'Results must be verified by a licensed professional.',
+    body: `RadioPlan Pro is a planning tool for qualified users. Propagation models are statistical; code citations may not reflect the edition or local amendments adopted by your AHJ. A licensed professional engineer must review and seal designs where required, and installations must be permitted and inspected by the AHJ.` },
+];
