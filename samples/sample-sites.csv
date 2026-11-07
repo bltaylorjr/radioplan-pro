@@ -1,0 +1,5 @@
+Site Name,Latitude,Longitude,Rad Center (ft),Structure,Freq MHz,Power dBm,Antenna,Azimuth,Channel,Transmit
+North Tower,35.2950,-80.8400,150,monopole,460.0125,47,sinclair-sc229,0,CH1,yes
+South Tower,35.1600,-80.8400,150,self-support lattice,460.0125,47,sinclair-sc229,0,CH1,yes
+East Tower,35.2271,-80.7200,120,monopole,460.0250,45,sinclair-sc229,0,CH2,yes
+Rooftop Rx,"35 13 37 N","80 50 35 W",60,rooftop,,,,,,no

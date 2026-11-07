@@ -1,0 +1,38 @@
+name: Build installers and publish a release
+# Push a tag such as v1.0.1 (or run manually) to build every download and publish it as the latest
+# GitHub Release. Installed apps check that release and update themselves.
+# Secrets: ANDROID_KEYSTORE_B64 (base64 of the release keystore) and ANDROID_STOREPASS. Android only
+# accepts updates signed with the same key, so these must stay the same for the life of the app.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - uses: dtolnay/rust-toolchain@stable
+        with: { targets: x86_64-pc-windows-gnu }
+      - run: sudo apt-get update && sudo apt-get install -y mingw-w64 nsis android-sdk-platform-23 android-sdk-build-tools aapt zipalign apksigner dalvik-exchange zip
+      - run: npm ci && npm test
+      - run: npx tauri icon app-icon.png
+      - name: Build all downloads
+        env:
+          ANDROID_KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+          STOREPASS: ${{ secrets.ANDROID_STOREPASS }}
+        run: |
+          test -n "$ANDROID_KEYSTORE_B64" || { echo "ANDROID_KEYSTORE_B64 secret missing"; exit 1; }
+          echo "$ANDROID_KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.keystore"
+          KEYSTORE="$RUNNER_TEMP/release.keystore" bash scripts/package-all.sh
+      - name: Publish release
+        env: { GH_TOKEN: '${{ github.token }}' }
+        run: |
+          TAG="${GITHUB_REF_NAME}"; [[ "$TAG" == v* ]] || TAG="v$(node -p "require('./package.json').version")"
+          gh release create "$TAG" --title "RadioPlan Pro ${TAG#v}" --notes-file CHANGELOG.md --latest \
+            out/RadioPlan-Pro-Setup.exe out/RadioPlan-Pro.apk out/RadioPlan-Pro-FlashDrive.zip || \
+          gh release upload "$TAG" --clobber out/RadioPlan-Pro-Setup.exe out/RadioPlan-Pro.apk out/RadioPlan-Pro-FlashDrive.zip

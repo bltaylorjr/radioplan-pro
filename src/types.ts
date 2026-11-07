@@ -80,7 +80,7 @@ export interface Project {
   version: number; company: Company; meta: ProjectMeta; sites: Site[]; radio: RadioDesign; grounding: Grounding;
   solar: SolarDesign; alarm: AlarmDesign; erces: ErcesDesign; lfhf: LfHfDesign; indoor: IndoorDesign; tests: TestRecord[];
   bomOverrides: Record<string, number>; taskDone: Record<string, boolean>;
-  settings: { autoTerrain: boolean; terrainMarginKm: number; units?: 'mi' | 'km' };
+  settings: { autoTerrain: boolean; terrainMarginKm: number; units?: 'mi' | 'km'; autoMaps?: boolean };
   propagation: PropagationTuning; acceptance: Acceptance; network: NetworkDesign; survey: Survey;
   runLog: RunRecord[]; scenarios: Scenario[]; wifi: WifiSurvey;
   /** Sync bookkeeping (per-section change times, deletions). Managed automatically. */

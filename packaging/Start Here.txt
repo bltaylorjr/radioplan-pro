@@ -1,0 +1,24 @@
+RadioPlan Pro - Start Here
+==========================
+
+WINDOWS COMPUTER (easiest)
+  Double-click "RadioPlan Pro.exe" in this folder.
+  Your projects are saved right here on the flash drive (in "RadioPlan Data"),
+  so you can plug the drive into any Windows 10 or 11 computer and keep working.
+
+  To install it on the computer instead: double-click "RadioPlan-Pro-Setup.exe"
+  (if it is in this folder) or download it from the RadioPlan Pro update page.
+  It installs by itself, puts an icon on the desktop, and keeps itself up to date.
+
+MAC
+  Double-click "Start on Mac.command". (The first time, right-click it and choose Open.)
+  Needs Google Chrome or Microsoft Edge installed.
+
+ANY OTHER COMPUTER
+  Double-click "RadioPlan.html". It opens in your web browser.
+
+Nothing else needs to be installed. Maps and terrain download by themselves when
+there is internet and are kept for use without internet.
+
+If Windows says "Windows protected your PC": click "More info", then "Run anyway".
+This appears because the app is new and not yet signed with a paid certificate.

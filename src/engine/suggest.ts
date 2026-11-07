@@ -2,7 +2,8 @@
 // work offline; online suggestions come from Photon (komoot, OpenStreetMap data), which is built for
 // search-as-you-type. (Nominatim's usage policy does not allow autocomplete, so it is used only on submit.)
 import type { GeoResult } from './geocode';
-import { readCache, STATE_CODES } from './geocode';
+import { readCache, STATE_CODES, withCounty } from './geocode';
+import { refSearch } from './refdata';
 import type { LatLon } from './geo';
 
 const RECENT_KEY = 'radioplan.recentPlaces';
@@ -24,6 +25,7 @@ export function localSuggestions(q: string, extra: GeoResult[] = [], limit = 5):
   for (const g of recentPlaces()) add(g, 'Recent');
   for (const g of extra) add(g, 'Project');
   for (const list of Object.values(readCache())) for (const g of list) add(g, 'Saved');
+  for (const g of refSearch(q, limit)) { if (out.length >= limit || seen.has(g.label)) continue; seen.add(g.label); out.push(g); }
   return out;
 }
 
@@ -33,7 +35,7 @@ export function photonToGeo(f: PhotonFeature): GeoResult {
   const first = street || p.name || '';
   const st = STATE_CODES[p.state ?? ''] ?? p.state;
   const label = [first, p.name && street && p.name !== street ? p.name : null, p.city ?? p.district, p.county, [st, p.postcode].filter(Boolean).join(' ')].filter(Boolean).join(', ');
-  return { lat: f.geometry.coordinates[1], lon: f.geometry.coordinates[0], label, state: st, county: p.county, street: street || undefined, city: p.city ?? p.district, postcode: p.postcode, source: 'Map search' };
+  return withCounty({ lat: f.geometry.coordinates[1], lon: f.geometry.coordinates[0], label, state: st, county: p.county, street: street || undefined, city: p.city ?? p.district, postcode: p.postcode, source: 'Map search' });
 }
 
 /** Online suggestions (US only), biased toward `near`. */

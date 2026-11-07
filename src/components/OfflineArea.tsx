@@ -41,6 +41,7 @@ export function OfflineArea({ viewBounds }: { viewBounds?: Bounds | null }) {
     <Card title="Offline maps & terrain" tip="Download an area while online; maps, terrain, 3D, coverage and every calculation then work with no connection (USB, PC and Android).">
       <div className="form">
         <Field label="Automatic terrain"><Check value={p.settings?.autoTerrain ?? true} onChange={(v) => update((d) => { d.settings = { ...(d.settings ?? { terrainMarginKm: 5 }), autoTerrain: v }; })} label="Download terrain for my sites automatically" /></Field>
+        <Field label="Automatic maps"><Check value={p.settings?.autoMaps ?? true} onChange={(v) => update((d) => { d.settings = { ...d.settings, autoMaps: v }; })} label="Save the topo map around my sites for offline use" /></Field>
         <Field label="Area"><span className="stack-tight"><Check value={useView} onChange={setUseView} label="Current map view" />{!useView && <DistNum km={margin} onChange={(v) => setMargin(Math.max(1, Math.min(50, v ?? 5)))} suffix=" around sites" />}</span></Field>
         <Field label="Detail (max zoom)" tip="15 ≈ street level; each extra level ×4 tiles."><Num value={zMax} step={1} onChange={(v) => setZMax(Math.max(10, Math.min(16, Math.round(v!))))} /></Field>
         <Field label="Map layers" wide><span className="row wrap">{bulk.map(([k]) => <Check key={k} value={!!layers[k]} onChange={(v) => setLayers({ ...layers, [k]: v })} label={k} />)}</span></Field>

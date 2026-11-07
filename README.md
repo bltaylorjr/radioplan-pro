@@ -4,16 +4,28 @@ Single-user planning workstation for placing radio equipment: topographic maps, 
 propagation and link budgets, 3D terrain, indoor planning, specialty systems (LF/HF, fire alarm, ERCES, solar),
 code-compliance warnings for NC / SC / GA / TN, materials lists, reports and commissioning tests.
 
-One TypeScript/React codebase ships three ways:
+## Downloads
 
-| Target | How | Output |
+Get everything from the [latest release](https://github.com/bltaylorjr/radioplan-pro/releases/latest), or use it online at
+**https://bltaylorjr.github.io/radioplan-pro/**.
+
+| Download | For | What happens |
 |---|---|---|
-| **USB stick** | `npm run build:usb` | `dist-usb/RadioPlan.html`: one self-contained file, double-click to run (Chrome/Edge/Firefox), no install |
-| **Windows PC app** | `npm run desktop:build` (needs Rust + Windows) or the GitHub Actions workflow | NSIS installer, MSI, and a portable `radioplan.exe` (uses the WebView2 runtime built into Windows 10/11) |
-| **Android app** | `npm run android` (needs Android Studio) or the GitHub Actions workflow | `app-debug.apk` to sideload |
+| `RadioPlan-Pro-Setup.exe` | Windows 10 / 11 | Double-click. Installs with no questions (no administrator rights), adds a desktop icon, opens the app, and **updates itself** when a new release is published. |
+| `RadioPlan-Pro.apk` | Android 7+ | Open on the phone, allow "install unknown apps" once, tap Install. The app offers each new version in one tap. |
+| `RadioPlan-Pro-FlashDrive.zip` | Flash drive | Unzip onto the drive. `RadioPlan Pro.exe` runs on any Windows PC and keeps projects **on the drive** ("RadioPlan Data"); Mac uses `Start on Mac.command`; anything else opens `RadioPlan.html`. |
+| Online version | Any browser | Always the latest version; projects are stored in that browser. |
 
-The workflow in `.github/workflows/build.yml` runs the tests and builds all three on every push to `main`;
-download the results from the run's **Artifacts** section.
+All versions work without internet once installed: projects, history, terrain and a set of reference data are stored inside the app
+(see **Projects & Storage**). Maps and terrain download automatically for each project when online and are kept for offline use.
+
+### Building the downloads
+
+`bash scripts/package-all.sh` builds all three into `out/` on Ubuntu (Rust with the `x86_64-pc-windows-gnu` target, `mingw-w64`, `nsis`,
+and the Ubuntu Android packages listed in `scripts/build-android-lite.sh`; no Android Studio or Gradle needed).
+`.github/workflows/release.yml` does the same when a `v*` tag is pushed and publishes a GitHub Release, which the installed apps update from.
+It needs two repository secrets: `ANDROID_KEYSTORE_B64` and `ANDROID_STOREPASS` (Android only accepts updates signed with the same key).
+`.github/workflows/web.yml` tests and publishes the online version to GitHub Pages on every push to `main`.
 
 ## Workflow pages (in task order)
 
@@ -29,7 +41,7 @@ Tools: Professional Calculators (30 RF, antenna, path, line, receiver, traffic, 
 
 ## What is real vs. simplified vs. placeholder
 
-**Implemented and unit-tested** (`npm test`, 90 tests): GIS export (KML/KMZ, GeoJSON, Esri Shapefile, PNG + world file, CSV grid), marching-squares service contours, device sync merge (per-section, item-level for lists, deletions kept), terrain download retry, address suggestions, professional calculators (Erlang B, intermod, VSWR, Dwight ground rod, voltage drop, battery and more), acceptance pass/fail, scenario grid storage and diffs, CSV site import (decimal/DMS, header matching), drive-test calibration (offset + slope least squares), multi-site C/I, Wi-Fi scan parsers (netsh, nmcli, iw, airport, CSV), 4/3-earth radio horizon, earth bulge, Fresnel zones and 60 % clearance,
+**Implemented and unit-tested** (`npm test`, 100 tests): GIS export (KML/KMZ, GeoJSON, Esri Shapefile, PNG + world file, CSV grid), marching-squares service contours, device sync merge (per-section, item-level for lists, deletions kept), terrain download retry, address suggestions, professional calculators (Erlang B, intermod, VSWR, Dwight ground rod, voltage drop, battery and more), acceptance pass/fail, scenario grid storage and diffs, CSV site import (decimal/DMS, header matching), drive-test calibration (offset + slope least squares), multi-site C/I, Wi-Fi scan parsers (netsh, nmcli, iw, airport, CSV), 4/3-earth radio horizon, earth bulge, Fresnel zones and 60 % clearance,
 FSPL, Okumura-Hata (urban/suburban/rural, small/large city), COST-231 Hata, MAPL range inversion, EIRP/ERP link budget,
 log-normal shadow margin and Jakes area reliability, ITU-R P.526 knife-edge diffraction, 3GPP sector pattern and downtilt footprint,
 FCC OET-65 / 47 CFR 1.1310 MPE distances, feeder loss from datasheet points, NMEA GGA parsing/averaging with checksum, UTM→WGS84,
@@ -66,4 +78,4 @@ npm test           # engine unit tests
 npm run build:usb  # single-file USB build
 ```
 
-Project data saves automatically in the browser/app storage; use **Save project** to write a `.radioplan.json` file.
+Projects save automatically in the app's built-in storage (IndexedDB: the app data folder on Windows, private app storage on Android, the browser profile or a chosen folder for the flash-drive HTML). **Export** writes a `.radioplan.json` file; **Projects & Storage** has history, backup/restore and the optional data folder. `scripts/build-refdata.mjs` regenerates the built-in county / ZIP / town data.

@@ -317,6 +317,17 @@ Distances follow the unit chosen on Company & Project (miles by default).` },
 
 No RadioPlan server or account is involved; data moves only between your devices or through your own cloud drive.` },
 
+  { id: 'projects', title: 'Projects & built-in storage', page: 'projects', keywords: 'save open project library storage autosave history version restore backup data folder usb flash drive offline delete duplicate copy', summary: 'Every project is saved automatically inside the app, with history, terrain and backups. No internet or account needed.',
+    body: `RadioPlan keeps a **project library inside the app**. Each change saves automatically within a second; the chip in the top bar shows **✓ Saved**.
+
+- **Projects**: open, copy, export or delete any project. **New** starts a fresh project and keeps the current one.
+- **Terrain is kept with the project**, so a downloaded or imported elevation model is there next time, even offline.
+- **History**: a version is kept every 10 minutes while you work and whenever you press **Save a version now**. **Restore** goes back to one (the current state is kept first).
+- **Backup**: **Back up all projects** saves one file with every project and its terrain. **Restore from backup** adds them on another PC or phone.
+- **Data folder** (Chrome / Edge on a computer): choose a folder on the flash drive and a copy of every project is written there, so the projects travel with the drive.
+
+Where the storage lives: the Windows app keeps it in its own data folder, the Android app in its private storage, and the flash-drive version in the computer's browser profile (use a data folder on the drive to carry projects between computers).` },
+
   { id: 'packaging', title: 'USB, PC and Android versions', keywords: 'usb portable windows desktop install android apk offline', summary: 'One codebase runs from a USB stick, as a Windows desktop app, and as an Android app.',
     body: `- **USB portable**: copy **RadioPlan.html** to the stick and double-click it. Everything is in one file; no install. Save project files next to it.
 - **Windows PC app**: built with Tauri (see README "Desktop build"). Produces an installer and a portable .exe.

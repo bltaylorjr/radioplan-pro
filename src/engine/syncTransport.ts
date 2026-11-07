@@ -1,3 +1,4 @@
+import { androidBridge, blobToB64 } from '../store';
 // Browser transports for sync: direct device-to-device WebRTC (QR / code handshake, no server),
 // the system share sheet (Bluetooth, Nearby/Quick Share, email, cloud apps) and a synced cloud-drive folder.
 import type { Project } from '../types';
@@ -48,10 +49,12 @@ export function exchange(dc: RTCDataChannel, mine: Project, onProgress?: (msg: s
 
 // ---------- Share sheet ----------
 export function canShareFiles(): boolean {
+  if (androidBridge()?.shareFile) return true;
   try { const f = new File(['x'], 'x.json', { type: 'application/json' }); return !!navigator.canShare && navigator.canShare({ files: [f] }); } catch { return false; }
 }
 export async function shareProject(p: Project, fileName: string) {
   const file = new File([JSON.stringify(toPackage(p))], fileName, { type: 'application/json' });
+  const a = androidBridge(); if (a?.shareFile) { a.shareFile(fileName, 'application/json', await blobToB64(file), `RadioPlan sync file: ${p.meta.name}`); return; }
   await navigator.share({ files: [file], title: 'RadioPlan project', text: `RadioPlan sync file: ${p.meta.name}` });
 }
 

@@ -23,7 +23,11 @@ import { SurveyPage } from './pages/Survey';
 import { WifiSurveyPage } from './pages/WifiSurvey';
 import { CalculatorsPage } from './pages/Calculators';
 import { SyncPage } from './pages/Sync';
+import { ProjectsPage } from './pages/Projects';
+import { readBackup } from './engine/projectdb';
 import { AddressInput } from './components/AddressInput';
+import { Updater } from './components/Updater';
+import { Welcome } from './components/Welcome';
 const TerrainPage = lazy(() => import('./pages/Terrain'));
 const CoveragePage = lazy(() => import('./pages/Coverage'));
 const View3DPage = lazy(() => import('./pages/View3D'));
@@ -52,12 +56,13 @@ export const WORKFLOW: { id: string; label: string; group: string; el: React.Rea
   { id: 'materials', label: 'Materials List', group: '5 · Verify & deliver', el: <MaterialsPage /> },
   { id: 'reports', label: 'Reports', group: '5 · Verify & deliver', el: <ReportsPage /> },
   { id: 'testing', label: 'Final Testing', group: '5 · Verify & deliver', el: <TestingPage /> },
+  { id: 'projects', label: 'Projects & Storage', group: '6 · Tools', el: <ProjectsPage /> },
   { id: 'calculators', label: 'Calculators', group: '6 · Tools', el: <CalculatorsPage /> },
   { id: 'sync', label: 'Sync Devices', group: '6 · Tools', el: <SyncPage /> },
 ];
 
 export default function App() {
-  const { page, go, project, update, replace, rt, setRt } = useStore();
+  const { page, go, project, update, rt, setRt, lib } = useStore();
   const [q, setQ] = useState('');
   const [online, setOnline] = useState(typeof navigator === 'undefined' ? true : navigator.onLine);
   useEffect(() => { const on = () => setOnline(true), off = () => setOnline(false); window.addEventListener('online', on); window.addEventListener('offline', off); return () => { window.removeEventListener('online', on); window.removeEventListener('offline', off); }; }, []);
@@ -76,18 +81,21 @@ export default function App() {
     window.addEventListener('keydown', k); return () => window.removeEventListener('keydown', k);
   }, []);
   useEffect(() => { setHelpOpen(false); setTour(false); setNavOpen(false); }, [page]);
-  useEffect(() => { try { if (!localStorage.getItem('radioplan.seenIntro')) { localStorage.setItem('radioplan.seenIntro', '1'); setHelpOpen(true); } } catch { /* ignore */ } }, []);
+  const [welcome, setWelcome] = useState(false);
+  useEffect(() => { try { if (!localStorage.getItem('radioplan.seenIntro')) { localStorage.setItem('radioplan.seenIntro', '1'); setWelcome(true); } } catch { /* ignore */ } }, []);
 
   const save = () => downloadText(`${(project.meta.name || 'project').replace(/[^\w-]+/g, '_')}.radioplan.json`, JSON.stringify(project, null, 2), 'application/json');
   const open = () => {
     const i = document.createElement('input'); i.type = 'file'; i.accept = '.json,application/json';
-    i.onchange = async () => { const f = i.files?.[0]; if (!f) return; try { replace(JSON.parse(await f.text())); } catch (e) { alert('Not a valid project file: ' + e); } };
+    i.onchange = async () => { const f = i.files?.[0]; if (!f) return; try { const ids = await lib.importProjects(readBackup(await f.text())); if (ids[0]) await lib.openProject(ids[0]); } catch (e) { alert('Not a valid project file: ' + e); } };
     i.click();
   };
   const groups = [...new Set(WORKFLOW.map((w) => w.group))];
   return (
     <div className={'app' + (navOpen ? ' nav-open' : '')}>
       <AutoTerrain />
+      <Updater />
+      {welcome && <Welcome onClose={() => setWelcome(false)} onHelp={() => setHelpOpen(true)} />}
       <header className="topbar">
         <button className="ghost menu" onClick={() => setNavOpen(!navOpen)} aria-label="Menu">☰</button>
         <div className="brand"><span className="logo">◉</span> RadioPlan <b>Pro</b></div>
@@ -96,11 +104,14 @@ export default function App() {
         </form>
         <span className={'chip ' + (online ? 'on' : 'off')} title={online ? 'Online: maps and terrain download automatically and are cached' : 'Offline: using cached maps and terrain'}>{online ? '● Online' : '○ Offline'}</span>
         {rt.terrainStatus && <span className="chip terr" title="Automatic terrain">{rt.terrainStatus}</span>}
+        {rt.mapStatus && <span className="chip terr" title="Automatic offline maps">{rt.mapStatus}</span>}
         <div className="proj">{project.company.name && <span className="muted">{project.company.name} · </span>}{project.meta.name} <span className="muted">({project.meta.state})</span></div>
         <div className="top-actions">
-          <button onClick={open} title="Open a .radioplan.json project file">Open</button>
-          <button onClick={save} title="Save project file">Save project</button>
-          <button onClick={() => { if (confirm('Start a new project? Unsaved work in this browser will be replaced.')) replace({} as never); }}>New</button>
+          <span className={'chip save ' + lib.saveState} title={lib.saveError || 'Projects save automatically in the app'}>{{ loading: '… Opening', saving: '● Saving', saved: '✓ Saved', error: '⚠ Not saved', unavailable: 'File only' }[lib.saveState]}</span>
+          <button onClick={() => go('projects')} title="All projects stored in the app">Projects</button>
+          <button onClick={open} title="Import a .radioplan.json project file into the app">Open file</button>
+          <button onClick={save} title="Export this project as a file">Export</button>
+          <button onClick={() => lib.newProject(undefined, 'New project')} title="Start a new project (the current one stays in Projects)">New</button>
           <button className="primary" onClick={() => setHelpOpen(!helpOpen)} title="Help for this page (F1)">? Help</button>
         </div>
       </header>
@@ -119,7 +130,7 @@ export default function App() {
         ))}
         <div className="nav-group"><a href="#help" className={isHelp ? 'active' : ''}><span className="step-dot">?</span>Help manual</a></div>
         <div className="nav-group mobile-only"><div className="nav-group-title">Project file</div>
-          <div className="row wrap" style={{ padding: '0 8px' }}><button onClick={open}>Open</button><button onClick={save}>Save</button></div></div>
+          <div className="row wrap" style={{ padding: '0 8px' }}><button onClick={() => go('projects')}>Projects</button><button onClick={open}>Open file</button><button onClick={save}>Export</button></div></div>
         <div className="progress">{Object.values(project.taskDone).filter(Boolean).length} / {WORKFLOW.length} tasks complete</div>
       </nav>
       <main className="content">

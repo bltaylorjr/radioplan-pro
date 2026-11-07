@@ -4,7 +4,9 @@
 // automatically at 15 s, 30 s, 1 min, 2 min, 4 min, then every 5 min, and immediately when the device comes back online.
 import { useEffect, useRef, useState } from 'react';
 import { useStore } from '../store';
-import { downloadTerrain, boundsAround, demCovers, retryDelayMs } from '../engine/autoterrain';
+import { downloadTerrain, boundsAround, demCovers, retryDelayMs, Bounds } from '../engine/autoterrain';
+import { countTiles, prefetchTiles } from '../engine/offline';
+import { BASEMAPS } from './MapView';
 import { sampleDem } from '../engine/terrain';
 
 export function AutoTerrain() {
@@ -47,7 +49,7 @@ export function AutoTerrain() {
           terrainStatus: partial ? `Terrain incomplete (${res.missingTiles} of ${res.tiles + res.missingTiles} tiles missing)` : `Terrain ✓ ~${res.resolutionM.toFixed(0)} m${res.fromCache === res.tiles ? ' (offline cache)' : ''}` }));
         update((d) => d.sites.forEach((s) => { if (s.groundElevM == null) { const z = sampleDem(res.dem, s); if (z != null) s.groundElevM = Math.round(z * 10) / 10; } }));
         busy.current = false;
-        if (partial) scheduleRetry(`Terrain incomplete (${res.missingTiles} tiles missing)`); else attempt.current = 0;
+        if (partial) scheduleRetry(`Terrain incomplete (${res.missingTiles} tiles missing)`); else { attempt.current = 0; autoMaps(b); }
       } catch {
         busy.current = false;
         scheduleRetry(navigator.onLine === false ? 'Offline, no cached terrain' : 'Terrain download failed');
@@ -56,6 +58,16 @@ export function AutoTerrain() {
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key, rt.dem, tick]);
+  // Automatically keep the project-area maps for offline use (USGS public-domain topo map).
+  const mapsDone = useRef('');
+  const autoMaps = async (b: Bounds) => {
+    if (p.settings?.autoMaps === false || !navigator.onLine || mapsDone.current === key) return;
+    mapsDone.current = key;
+    const url = BASEMAPS['USGS Topo']?.url; if (!url) return;
+    let zMax = 14; while (zMax > 10 && countTiles(b, 8, zMax) > 2500) zMax--;
+    const res = await prefetchTiles([url], b, 8, zMax, (d, n) => { if (d % 50 === 0 || d === n) setRt((r) => ({ ...r, mapStatus: `Saving maps for offline ${d}/${n}` })); }).catch(() => null);
+    setRt((r) => ({ ...r, mapStatus: res ? `Maps saved for offline (${res.total - res.failed} tiles)` : undefined }));
+  };
   useEffect(() => () => cancelRetry(), []); // eslint-disable-line react-hooks/exhaustive-deps
   return null;
 }

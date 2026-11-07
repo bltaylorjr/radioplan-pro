@@ -6,6 +6,7 @@ import { LatLon, destination, haversineKm, interpolate, bearingDeg } from './geo
 import { earthBulgeM, diffractionV, knifeEdgeLossDb, recommendedTiltDeg } from './rf';
 import { BAND_PRESETS, ANTENNAS } from '../data/catalog';
 import { DEFAULT_TESTS, uid } from '../defaults';
+import { withCounty } from './geocode';
 
 export interface PlanOptions { bandPreset: string; serviceRadiusKm: number; searchRadiusKm: number; towerHeightM: number; mobileHeightM: number; facilityAntennaM: number }
 export const DEFAULT_PLAN: PlanOptions = { bandPreset: 'UHF LMR', serviceRadiusKm: 10, searchRadiusKm: 3, towerHeightM: 45, mobileHeightM: 1.5, facilityAntennaM: 10 };
@@ -61,6 +62,7 @@ export function applyPlan(d: Project, target: LatLon & { label: string; state?: 
   const preset = BAND_PRESETS[o.bandPreset];
   const short = target.label.split(',').slice(0, 2).join(',').trim() || `${target.lat.toFixed(4)}, ${target.lon.toFixed(4)}`;
   d.meta.name = `Site plan — ${short}`;
+  target = withCounty({ ...target });
   if (target.state && ['NC', 'SC', 'GA', 'TN'].includes(target.state)) { d.meta.state = target.state as StateCode; notes.push(`Jurisdiction set to ${target.state}${target.county ? `, ${target.county}` : ''}.`); }
   else notes.push('Location is outside NC/SC/GA/TN (or unknown): check the project state on Company & Project.');
   if (target.county) d.meta.county = target.county;
