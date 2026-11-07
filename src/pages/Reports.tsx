@@ -19,7 +19,7 @@ import { useUnits, DistNum } from '../units';
 const REPORTS = [
   ['site', 'Site Data Sheet'], ['link', 'Link Budget & Path Analysis'], ['coverage', 'Coverage Summary'], ['grounding', 'Grounding & Structure'],
   ['solar', 'Solar / DC Power Sizing'], ['alarm', 'Fire Alarm Battery Calculation'], ['erces', 'ERCES Design Summary'],
-  ['compliance', 'Code Compliance Report'], ['bom', 'Materials List'], ['tests', 'Commissioning / Test Report'],
+  ['compliance', 'Code Compliance Report'], ['bom', 'Materials List'], ['tests', 'Commissioning / Test Report'], ['notes', 'Field Notes & Photos'],
 ] as const;
 type RK = (typeof REPORTS)[number][0];
 
@@ -35,7 +35,7 @@ ${tx && rx ? `<Placemark><name>Path ${esc(tx.name)} - ${esc(rx.name)}</name><Lin
 export function ReportsPage() {
   const { project: p, rt } = useStore();
   const u = useUnits();
-  const [sel, setSel] = useState<Record<RK, boolean>>({ site: true, link: true, coverage: true, grounding: true, solar: p.solar.enabled, alarm: p.alarm.enabled, erces: p.erces.enabled, compliance: true, bom: true, tests: p.tests.length > 0 });
+  const [sel, setSel] = useState<Record<RK, boolean>>({ site: true, link: true, coverage: true, grounding: true, solar: p.solar.enabled, alarm: p.alarm.enabled, erces: p.erces.enabled, compliance: true, bom: true, tests: p.tests.length > 0, notes: (p.fieldNotes?.length ?? 0) > 0 });
   const L = designLink(p), c = p.company, m = p.meta;
   const findings = evaluateCompliance({ project: p, profile: rt.profile }).sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity]);
   const Head = ({ title }: { title: string }) => (
@@ -50,6 +50,11 @@ export function ReportsPage() {
   const KV = ({ rows }: { rows: [string, React.ReactNode][] }) => <table className="rpt-kv"><tbody>{rows.map(([k, v]) => <tr key={k}><th>{k}</th><td>{v}</td></tr>)}</tbody></table>;
   const mod = byId(PV_MODULES, p.solar.moduleId) ?? PV_MODULES[0];
   const sections: Record<RK, () => React.ReactNode> = {
+    notes: () => <>{(p.fieldNotes ?? []).length === 0 ? <p>No field notes.</p> : [...(p.fieldNotes ?? [])].sort((a, b) => a.at.localeCompare(b.at)).map((n) => (
+      <div key={n.id} className="rpt-note"><h4>{n.title} <small>· {new Date(n.at).toLocaleString()} · {n.category}{n.siteId ? ` · Site ${n.siteId}` : ''}{n.lat != null ? ` · ${n.lat}, ${n.lon}` : ''}{n.followUp ? (n.done ? ' · follow-up done' : ' · FOLLOW-UP OPEN') : ''}</small></h4>
+        {n.text && <p style={{ whiteSpace: 'pre-wrap' }}>{n.text}</p>}
+        {n.photos.length > 0 && <div className="rpt-photos">{n.photos.map((ph) => <figure key={ph.id}><img src={ph.dataUrl} alt={ph.caption || 'Field photo'} />{ph.caption && <figcaption>{ph.caption}</figcaption>}</figure>)}</div>}
+      </div>))}</>,
     site: () => <><table className="rpt-tbl"><thead><tr><th>Site</th><th>Lat / Lon (WGS84)</th><th>Ground AMSL</th><th>Structure</th><th>Antenna AGL</th><th>Position source</th></tr></thead>
       <tbody>{p.sites.map((s) => <tr key={s.id}><td>{s.name}<br /><small>{s.address}</small></td><td>{s.lat.toFixed(6)}, {s.lon.toFixed(6)}</td><td>{s.groundElevM ?? '—'} m</td><td>{s.structure}, {s.structureHeightM} m ({mToFt(s.structureHeightM).toFixed(0)} ft)</td><td>{s.antennaAglM} m ({mToFt(s.antennaAglM).toFixed(0)} ft)</td><td>{s.positionSource}{s.positionAccuracyM != null && ` ±${s.positionAccuracyM.toFixed(1)} m`}</td></tr>)}</tbody></table>
       {rt.dem && <p>Terrain source: {rt.dem.source} ({rt.dem.name}).</p>}</>,

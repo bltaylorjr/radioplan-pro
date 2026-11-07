@@ -317,6 +317,29 @@ Distances follow the unit chosen on Company & Project (miles by default).` },
 
 No RadioPlan server or account is involved; data moves only between your devices or through your own cloud drive.` },
 
+  { id: 'library', title: 'Specifications library', page: 'library', keywords: 'specifications specs datasheet library equipment catalog low voltage antenna coax cable connector bda das fire alarm battery solar wifi poe cat6 fiber conductor compare import csv', summary: 'Search, compare and add specifications for low-voltage and radio equipment.',
+    body: `The library holds three kinds of entries:
+
+- **Typical**: products from the built-in equipment catalog with typical datasheet values.
+- **Standard**: values set by a published standard (PoE classes, cable categories, fiber types, Wi-Fi generations, RF connectors, public-safety band plans, conductor ampacity).
+- **Mine**: anything you add. No library can list every product on the market, so add the products you use with **+ Add equipment** or **Import CSV** (download the **CSV template** first). Your items stay on this device and can be exported.
+
+Search finds any word in any specification. Tick up to four items to **compare** them side by side. **Find datasheet online** searches the web for the manufacturer's PDF. For your own antennas, coax and radios, **Use in this project** adds them to the Equipment lists so the link budget and materials list use them.
+
+Always confirm values against the current manufacturer datasheet before ordering.` },
+
+  { id: 'install', title: 'Installation guides', page: 'install', keywords: 'install installation instructions wiring diagram color antenna coax grounding repeater battery erces bda das fire alarm nac solar poe cat6 t568b access point', summary: 'Step-by-step installation instructions with color wiring diagrams.',
+    body: `Each guide has a color wiring diagram, tools, safety notes, numbered steps, tests for closeout and the code articles that apply. Diagrams use the antenna and coax chosen in this project where possible. Press **Print** for a copy for the crew.
+
+Guides: antenna feedline and grounding; repeater RF and DC power; ERCES / BDA and DAS with fire alarm monitoring; fire alarm NAC circuit; off-grid solar; network cable, PoE and Wi-Fi access point (with T568B colors).
+
+These are general guidance. Follow the manufacturer's instructions, the approved drawings and the adopted codes.` },
+
+  { id: 'fieldnotes', title: 'Field notes', page: 'fieldnotes', keywords: 'field notes photos camera gps site visit punch list follow-up dictate', summary: 'Notes, photos and GPS positions taken on site, saved in the project.',
+    body: `Press **+ New note**, type (or dictate with the microphone on your phone keyboard), add photos from the camera and press **Save my GPS position**. Link a note to a site and tick **Needs follow-up** for punch-list items; filter with **Open follow-ups**.
+
+Photos are reduced to 1280 pixels so projects stay small enough to sync. Notes sync between devices like the rest of the project, export to CSV, and print in **Reports → Field Notes & Photos**.` },
+
   { id: 'projects', title: 'Projects & built-in storage', page: 'projects', keywords: 'save open project library storage autosave history version restore backup data folder usb flash drive offline delete duplicate copy', summary: 'Every project is saved automatically inside the app, with history, terrain and backups. No internet or account needed.',
     body: `RadioPlan keeps a **project library inside the app**. Each change saves automatically within a second; the chip in the top bar shows **✓ Saved**.
 

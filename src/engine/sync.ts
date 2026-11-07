@@ -7,7 +7,7 @@ export const SYNC_FORMAT = 'radioplan-sync/1';
 const SKIP = new Set(['sync', 'version']);
 /** Collections merged item-by-item: path → id function. */
 const COLLECTIONS: Record<string, (x: any) => string> = { // eslint-disable-line @typescript-eslint/no-explicit-any
-  sites: (x) => x.id, scenarios: (x) => x.id, runLog: (x) => x.id, tests: (x) => x.id,
+  sites: (x) => x.id, scenarios: (x) => x.id, runLog: (x) => x.id, tests: (x) => x.id, fieldNotes: (x) => x.id,
   'wifi.readings': (x) => x.id, 'survey.points': (x) => `${x.lat.toFixed(6)},${x.lon.toFixed(6)},${x.rssiDbm},${x.t ?? ''}`,
 };
 const get = (o: any, path: string) => path.split('.').reduce((a, k) => a?.[k], o); // eslint-disable-line @typescript-eslint/no-explicit-any

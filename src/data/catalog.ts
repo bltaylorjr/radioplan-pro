@@ -60,3 +60,11 @@ export const BAND_PRESETS: Record<string, { fMHz: number; label: string }> = {
 };
 
 export const byId = <T extends { id: string }>(list: T[], id: string) => list.find((x) => x.id === id);
+
+/** Equipment the user added from the Specifications Library and used in a project (carried in the project file). */
+export interface CustomCatalog { antennas: Antenna[]; feeders: Feeder[]; radios: Radio[] }
+export function registerCustom(c: CustomCatalog | undefined) {
+  if (!c) return;
+  const put = <T extends { id: string }>(list: T[], items: T[]) => { for (const it of items ?? []) { const i = list.findIndex((x) => x.id === it.id); if (i >= 0) list[i] = it; else list.push(it); } };
+  put(ANTENNAS, c.antennas); put(FEEDERS, c.feeders); put(RADIOS, c.radios);
+}

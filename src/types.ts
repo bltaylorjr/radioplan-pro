@@ -85,7 +85,12 @@ export interface Project {
   runLog: RunRecord[]; scenarios: Scenario[]; wifi: WifiSurvey;
   /** Sync bookkeeping (per-section change times, deletions). Managed automatically. */
   sync?: SyncMeta;
+  /** Library equipment used in this project (antennas, feeders, radios). */
+  customCatalog?: import('./data/catalog').CustomCatalog;
+  /** Field notes with optional photos and GPS. */
+  fieldNotes?: FieldNote[];
 }
+export interface FieldNote { id: string; at: string; title: string; text: string; category: string; siteId?: string; lat?: number; lon?: number; accM?: number; photos: { id: string; dataUrl: string; caption: string }[]; tags: string[]; author: string; followUp: boolean; done: boolean }
 export interface SyncMeta {
   projectId: string; deviceId: string; deviceName: string;
   sections: Record<string, { hash: string; at: number }>;

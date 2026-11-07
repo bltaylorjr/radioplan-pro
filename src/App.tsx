@@ -24,6 +24,9 @@ import { WifiSurveyPage } from './pages/WifiSurvey';
 import { CalculatorsPage } from './pages/Calculators';
 import { SyncPage } from './pages/Sync';
 import { ProjectsPage } from './pages/Projects';
+import { SpecLibraryPage } from './pages/SpecLibrary';
+import { InstallPage } from './pages/Install';
+import { FieldNotesPage } from './pages/FieldNotes';
 import { readBackup } from './engine/projectdb';
 import { AddressInput } from './components/AddressInput';
 import { Updater } from './components/Updater';
@@ -33,32 +36,35 @@ const CoveragePage = lazy(() => import('./pages/Coverage'));
 const View3DPage = lazy(() => import('./pages/View3D'));
 
 export const WORKFLOW: { id: string; label: string; group: string; el: React.ReactNode }[] = [
-  { id: 'locate', label: 'Find Location & Auto-Plan', group: '1 · Start', el: <LocatePage /> },
-  { id: 'company', label: 'Company & Project', group: '1 · Start', el: <CompanyPage /> },
-  { id: 'sites', label: 'Site Data & GPS', group: '1 · Start', el: <SitesPage /> },
-  { id: 'terrain', label: 'Map & Terrain', group: '1 · Start', el: <TerrainPage /> },
-  { id: 'equipment', label: 'Equipment & Link Budget', group: '2 · Outdoor design', el: <EquipmentPage /> },
-  { id: 'path', label: 'Path Profile / LOS / Fresnel', group: '2 · Outdoor design', el: <PathPage /> },
-  { id: 'coverage', label: 'Coverage Prediction', group: '2 · Outdoor design', el: <CoveragePage /> },
-  { id: 'optimize', label: 'Tilt, Azimuth & Power', group: '2 · Outdoor design', el: <OptimizePage /> },
-  { id: 'network', label: 'Multi-site & Interference', group: '2 · Outdoor design', el: <NetworkPage /> },
-  { id: 'scenarios', label: 'Scenarios & Compare', group: '2 · Outdoor design', el: <ScenariosPage /> },
-  { id: 'survey', label: 'Field Survey & Calibration', group: '2 · Outdoor design', el: <SurveyPage /> },
-  { id: 'view3d', label: '3D Model', group: '2 · Outdoor design', el: <View3DPage /> },
-  { id: 'grounding', label: 'Grounding & Structure', group: '2 · Outdoor design', el: <GroundingPage /> },
-  { id: 'indoor', label: 'Indoor Planning', group: '3 · Indoor design', el: <IndoorPage /> },
-  { id: 'wifi', label: 'Wi-Fi Survey', group: '3 · Indoor design', el: <WifiSurveyPage /> },
-  { id: 'erces', label: 'Emergency Radio (ERCES)', group: '3 · Indoor design', el: <ErcesPage /> },
-  { id: 'lfhf', label: 'LF / HF Systems', group: '4 · Specialty systems', el: <LfHfPage /> },
-  { id: 'alarm', label: 'Alarm Systems', group: '4 · Specialty systems', el: <AlarmPage /> },
-  { id: 'solar', label: 'Solar & DC Power', group: '4 · Specialty systems', el: <SolarPage /> },
-  { id: 'compliance', label: 'Code Compliance', group: '5 · Verify & deliver', el: <CompliancePage /> },
-  { id: 'materials', label: 'Materials List', group: '5 · Verify & deliver', el: <MaterialsPage /> },
-  { id: 'reports', label: 'Reports', group: '5 · Verify & deliver', el: <ReportsPage /> },
-  { id: 'testing', label: 'Final Testing', group: '5 · Verify & deliver', el: <TestingPage /> },
-  { id: 'projects', label: 'Projects & Storage', group: '6 · Tools', el: <ProjectsPage /> },
-  { id: 'calculators', label: 'Calculators', group: '6 · Tools', el: <CalculatorsPage /> },
-  { id: 'sync', label: 'Sync Devices', group: '6 · Tools', el: <SyncPage /> },
+  { id: 'company', label: 'Company & Project', group: '1 · Project setup', el: <CompanyPage /> },
+  { id: 'locate', label: 'Find Location & Auto-Plan', group: '1 · Project setup', el: <LocatePage /> },
+  { id: 'sites', label: 'Site Data & GPS', group: '1 · Project setup', el: <SitesPage /> },
+  { id: 'fieldnotes', label: 'Field Notes & Photos', group: '2 · Site survey', el: <FieldNotesPage /> },
+  { id: 'terrain', label: 'Map & Terrain', group: '2 · Site survey', el: <TerrainPage /> },
+  { id: 'wifi', label: 'Wi-Fi & Network Survey', group: '2 · Site survey', el: <WifiSurveyPage /> },
+  { id: 'survey', label: 'Drive Test & Calibration', group: '2 · Site survey', el: <SurveyPage /> },
+  { id: 'alarm', label: 'Fire Alarm & Batteries', group: '3 · Low-voltage design', el: <AlarmPage /> },
+  { id: 'erces', label: 'Emergency Radio (ERCES / BDA)', group: '3 · Low-voltage design', el: <ErcesPage /> },
+  { id: 'indoor', label: 'Indoor Coverage & DAS', group: '3 · Low-voltage design', el: <IndoorPage /> },
+  { id: 'solar', label: 'Solar & DC Power', group: '3 · Low-voltage design', el: <SolarPage /> },
+  { id: 'grounding', label: 'Grounding & Structure', group: '3 · Low-voltage design', el: <GroundingPage /> },
+  { id: 'equipment', label: 'Equipment & Link Budget', group: '4 · Radio & RF design', el: <EquipmentPage /> },
+  { id: 'path', label: 'Path Profile / LOS / Fresnel', group: '4 · Radio & RF design', el: <PathPage /> },
+  { id: 'coverage', label: 'Coverage Prediction', group: '4 · Radio & RF design', el: <CoveragePage /> },
+  { id: 'optimize', label: 'Tilt, Azimuth & Power', group: '4 · Radio & RF design', el: <OptimizePage /> },
+  { id: 'network', label: 'Multi-site & Interference', group: '4 · Radio & RF design', el: <NetworkPage /> },
+  { id: 'scenarios', label: 'Scenarios & Compare', group: '4 · Radio & RF design', el: <ScenariosPage /> },
+  { id: 'view3d', label: '3D Model', group: '4 · Radio & RF design', el: <View3DPage /> },
+  { id: 'lfhf', label: 'LF / HF Systems', group: '4 · Radio & RF design', el: <LfHfPage /> },
+  { id: 'compliance', label: 'Code Compliance', group: '5 · Compliance & materials', el: <CompliancePage /> },
+  { id: 'library', label: 'Specifications Library', group: '5 · Compliance & materials', el: <SpecLibraryPage /> },
+  { id: 'materials', label: 'Materials List', group: '5 · Compliance & materials', el: <MaterialsPage /> },
+  { id: 'install', label: 'Installation Guides', group: '6 · Installation', el: <InstallPage /> },
+  { id: 'testing', label: 'Final Testing', group: '7 · Testing & closeout', el: <TestingPage /> },
+  { id: 'reports', label: 'Reports & Closeout Package', group: '7 · Testing & closeout', el: <ReportsPage /> },
+  { id: 'calculators', label: 'Calculators', group: '8 · Tools', el: <CalculatorsPage /> },
+  { id: 'projects', label: 'Projects & Storage', group: '8 · Tools', el: <ProjectsPage /> },
+  { id: 'sync', label: 'Sync Devices', group: '8 · Tools', el: <SyncPage /> },
 ];
 
 export default function App() {
@@ -98,7 +104,7 @@ export default function App() {
       {welcome && <Welcome onClose={() => setWelcome(false)} onHelp={() => setHelpOpen(true)} />}
       <header className="topbar">
         <button className="ghost menu" onClick={() => setNavOpen(!navOpen)} aria-label="Menu">☰</button>
-        <div className="brand"><span className="logo">◉</span> RadioPlan <b>Pro</b></div>
+        <div className="brand" title="Low-voltage and radio system planning"><span className="logo">◉</span> RadioPlan <b>Pro</b></div>
         <form className="topsearch" onSubmit={(e) => { e.preventDefault(); if (!q.trim()) return; setRt((r) => ({ ...r, query: q, locate: null })); if (page === 'locate') { go('company'); setTimeout(() => go('locate'), 0); } else go('locate'); }}>
           <AddressInput value={q} onChange={setQ} onPick={(g) => { setRt((r) => ({ ...r, query: g.label, locate: g })); go('locate'); }} placeholder="🔎 Address, place or lat, lon" ariaLabel="Search location" />
         </form>

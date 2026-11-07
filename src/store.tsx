@@ -4,6 +4,7 @@ import { defaultProject } from './defaults';
 import type { DemGrid, ProfileAnalysis } from './engine/terrain';
 import type { CoverageResult } from './engine/coverage';
 import { stampSync } from './engine/sync';
+import { registerCustom } from './data/catalog';
 import { addVersion, BackupEntry, deleteProject, folderAllowed, folderCopySupported, getRecord, getVersion, importEntries, loadTerrain, newId, putProject, requestPersist, saveTerrain, savedDataFolder, storageAvailable, VERSION_EVERY_MS, writeToFolder } from './engine/projectdb';
 
 const KEY = 'radioplan.project.v1';
@@ -100,6 +101,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     lastDem.current = rt.dem;
     if (rt.dem) saveTerrain(projectId, rt.dem, !!rt.demAuto).catch(() => undefined);
   }, [rt.dem, ready]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Make library equipment used by this project available to the calculations.
+  useMemo(() => registerCustom(project.customCatalog), [project.customCatalog]);
 
   // Stamp per-section change times for device-to-device sync (debounced).
   const st = useRef<number>();

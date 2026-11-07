@@ -1,8 +1,9 @@
 # RadioPlan Pro
 
-Single-user planning workstation for placing radio equipment: topographic maps, GPS, terrain (DEM / LiDAR),
-propagation and link budgets, 3D terrain, indoor planning, specialty systems (LF/HF, fire alarm, ERCES, solar),
-code-compliance warnings for NC / SC / GA / TN, materials lists, reports and commissioning tests.
+Single-user planning workstation for **low-voltage systems** (fire alarm, ERCES / BDA and DAS, Wi-Fi and network cabling,
+solar / DC power, grounding) and the **radio and RF design** behind them (topographic maps, GPS, terrain, propagation, link budgets, 3D).
+Includes a specifications library, color installation guides, field notes, code-compliance warnings for NC / SC / GA / TN,
+materials lists, reports and commissioning tests.
 
 ## Downloads
 
@@ -29,19 +30,21 @@ It needs two repository secrets: `ANDROID_KEYSTORE_B64` and `ANDROID_STOREPASS` 
 
 ## Workflow pages (in task order)
 
-Find Location & Auto-Plan · Company & Project (project name/number, your company, client company, jurisdiction) ·
-Site Data & GPS (with CSV site-database import/export) · Map & Terrain · Equipment & Link Budget · Path Profile / LOS / Fresnel ·
-Coverage Prediction (acceptance criteria, pass/fail service contours, model tuning, run history, GIS export) · Tilt, Azimuth & Power ·
-Multi-site & Interference (best server, overlap, co-/adjacent-channel C/I) · Scenarios & Compare (input diff, result deltas,
-difference map) · Field Survey & Calibration (drive-test import, least-squares model calibration) · 3D Model · Grounding & Structure ·
-Indoor Planning · Wi-Fi Survey (floor plan, pasted/imported scans, signal / noise / SNR / channel / AP / co-channel views) ·
-Emergency Radio (ERCES) · LF / HF · Alarm Systems · Solar & DC Power · Code Compliance · Materials List · Reports · Final Testing ·
-Tools: Professional Calculators (30 RF, antenna, path, line, receiver, traffic, electrical, grounding and location calculators) · Sync Devices — plus a searchable Help manual, page help (F1),
-"Guide me" walkthroughs and `?` tooltips on fields.
+1. **Project setup:** Company & Project · Find Location & Auto-Plan · Site Data & GPS
+2. **Site survey:** Field Notes & Photos · Map & Terrain · Wi-Fi & Network Survey · Drive Test & Calibration
+3. **Low-voltage design:** Fire Alarm & Batteries · Emergency Radio (ERCES / BDA) · Indoor Coverage & DAS · Solar & DC Power · Grounding & Structure
+4. **Radio & RF design:** Equipment & Link Budget · Path Profile / LOS / Fresnel · Coverage Prediction · Tilt, Azimuth & Power · Multi-site & Interference · Scenarios & Compare · 3D Model · LF / HF Systems
+5. **Compliance & materials:** Code Compliance · Specifications Library · Materials List
+6. **Installation:** Installation Guides (color wiring diagrams)
+7. **Testing & closeout:** Final Testing · Reports & Closeout Package
+8. **Tools:** Calculators · Projects & Storage · Sync Devices
+
+Plus a searchable Help manual, page help (F1), "Guide me" walkthroughs and `?` tooltips. The first start asks what is being designed
+(fire alarm, ERCES, Wi-Fi, solar or radio) and where, then opens the right page.
 
 ## What is real vs. simplified vs. placeholder
 
-**Implemented and unit-tested** (`npm test`, 100 tests): GIS export (KML/KMZ, GeoJSON, Esri Shapefile, PNG + world file, CSV grid), marching-squares service contours, device sync merge (per-section, item-level for lists, deletions kept), terrain download retry, address suggestions, professional calculators (Erlang B, intermod, VSWR, Dwight ground rod, voltage drop, battery and more), acceptance pass/fail, scenario grid storage and diffs, CSV site import (decimal/DMS, header matching), drive-test calibration (offset + slope least squares), multi-site C/I, Wi-Fi scan parsers (netsh, nmcli, iw, airport, CSV), 4/3-earth radio horizon, earth bulge, Fresnel zones and 60 % clearance,
+**Implemented and unit-tested** (`npm test`, 104 tests): GIS export (KML/KMZ, GeoJSON, Esri Shapefile, PNG + world file, CSV grid), marching-squares service contours, device sync merge (per-section, item-level for lists, deletions kept), terrain download retry, address suggestions, professional calculators (Erlang B, intermod, VSWR, Dwight ground rod, voltage drop, battery and more), acceptance pass/fail, scenario grid storage and diffs, CSV site import (decimal/DMS, header matching), drive-test calibration (offset + slope least squares), multi-site C/I, Wi-Fi scan parsers (netsh, nmcli, iw, airport, CSV), 4/3-earth radio horizon, earth bulge, Fresnel zones and 60 % clearance,
 FSPL, Okumura-Hata (urban/suburban/rural, small/large city), COST-231 Hata, MAPL range inversion, EIRP/ERP link budget,
 log-normal shadow margin and Jakes area reliability, ITU-R P.526 knife-edge diffraction, 3GPP sector pattern and downtilt footprint,
 FCC OET-65 / 47 CFR 1.1310 MPE distances, feeder loss from datasheet points, NMEA GGA parsing/averaging with checksum, UTM→WGS84,
