@@ -15,11 +15,14 @@ import { MaterialsPage } from './pages/Materials';
 import { ReportsPage } from './pages/Reports';
 import { TestingPage } from './pages/Testing';
 import { IndoorPage } from './pages/Indoor';
+import { LocatePage } from './pages/Locate';
+import { AutoTerrain } from './components/AutoTerrain';
 const TerrainPage = lazy(() => import('./pages/Terrain'));
 const CoveragePage = lazy(() => import('./pages/Coverage'));
 const View3DPage = lazy(() => import('./pages/View3D'));
 
 export const WORKFLOW: { id: string; label: string; group: string; el: React.ReactNode }[] = [
+  { id: 'locate', label: 'Find Location & Auto-Plan', group: '1 · Start', el: <LocatePage /> },
   { id: 'company', label: 'Company & Project', group: '1 · Start', el: <CompanyPage /> },
   { id: 'sites', label: 'Site Data & GPS', group: '1 · Start', el: <SitesPage /> },
   { id: 'terrain', label: 'Map & Terrain', group: '1 · Start', el: <TerrainPage /> },
@@ -41,7 +44,10 @@ export const WORKFLOW: { id: string; label: string; group: string; el: React.Rea
 ];
 
 export default function App() {
-  const { page, go, project, update, replace, rt } = useStore();
+  const { page, go, project, update, replace, rt, setRt } = useStore();
+  const [q, setQ] = useState('');
+  const [online, setOnline] = useState(typeof navigator === 'undefined' ? true : navigator.onLine);
+  useEffect(() => { const on = () => setOnline(true), off = () => setOnline(false); window.addEventListener('online', on); window.addEventListener('offline', off); return () => { window.removeEventListener('online', on); window.removeEventListener('offline', off); }; }, []);
   const [helpOpen, setHelpOpen] = useState(false);
   const [tour, setTour] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
@@ -68,9 +74,15 @@ export default function App() {
   const groups = [...new Set(WORKFLOW.map((w) => w.group))];
   return (
     <div className={'app' + (navOpen ? ' nav-open' : '')}>
+      <AutoTerrain />
       <header className="topbar">
         <button className="ghost menu" onClick={() => setNavOpen(!navOpen)} aria-label="Menu">☰</button>
         <div className="brand"><span className="logo">◉</span> RadioPlan <b>Pro</b></div>
+        <form className="topsearch" onSubmit={(e) => { e.preventDefault(); if (!q.trim()) return; setRt((r) => ({ ...r, query: q, locate: null })); if (page === 'locate') { go('company'); setTimeout(() => go('locate'), 0); } else go('locate'); }}>
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="🔎 Address, place or lat, lon" aria-label="Search location" />
+        </form>
+        <span className={'chip ' + (online ? 'on' : 'off')} title={online ? 'Online: maps and terrain download automatically and are cached' : 'Offline: using cached maps and terrain'}>{online ? '● Online' : '○ Offline'}</span>
+        {rt.terrainStatus && <span className="chip terr" title="Automatic terrain">{rt.terrainStatus}</span>}
         <div className="proj">{project.company.name && <span className="muted">{project.company.name} · </span>}{project.meta.name} <span className="muted">({project.meta.state})</span></div>
         <div className="top-actions">
           <button onClick={open} title="Open a .radioplan.json project file">Open</button>

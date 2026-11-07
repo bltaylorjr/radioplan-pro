@@ -7,7 +7,11 @@ import type { CoverageResult } from './engine/coverage';
 const KEY = 'radioplan.project.v1';
 
 /** Runtime-only (not saved in the project file): large terrain grids and computed results. */
-export interface Runtime { dem: DemGrid | null; profile: ProfileAnalysis | null; coverage: CoverageResult | null }
+export interface LocateTarget { lat: number; lon: number; label: string; state?: string; county?: string }
+export interface Runtime {
+  dem: DemGrid | null; demAuto?: boolean; profile: ProfileAnalysis | null; coverage: CoverageResult | null;
+  terrainStatus?: string; locate?: LocateTarget | null; query?: string;
+}
 
 interface Ctx {
   project: Project; update: (fn: (d: Project) => void) => void; replace: (p: Project) => void;

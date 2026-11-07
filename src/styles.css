@@ -124,3 +124,11 @@ h1 { font-size: 1.45rem; margin: 2px 0 0; } h3 { font-size: 1.02rem; margin: 0; 
   .content { padding: 12px 12px 40px; } .grid2 { grid-template-columns: 1fr; } .manual { grid-template-columns: 1fr; } .manual aside { position: static; max-height: 260px; }
   .form { grid-template-columns: 1fr 1fr; }
 }
+
+.topsearch { flex: 0 1 300px; } .topsearch input { background: #0d1c2c; color: #fff; border-color: #3c5470; }
+.chip { font-size: .72rem; padding: 2px 8px; border-radius: 10px; white-space: nowrap; border: 1px solid #3c5470; color: #cfd9e4; }
+.chip.on { color: #8fe3a0; } .chip.off { color: #ffb74d; border-color: #ffb74d; } .chip.terr { max-width: 230px; overflow: hidden; text-overflow: ellipsis; }
+.locate-btn { width: 30px; height: 30px; line-height: 30px; text-align: center; font-size: 18px; background: #fff; color: #333; display: block; text-decoration: none; }
+.locate-btn.on { color: #1e88e5; font-weight: 700; }
+.progressbar { height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; } .progressbar > div { height: 100%; background: var(--accent); }
+@media (max-width: 860px) { .topsearch { flex: 1; } .chip.terr, .chip.on { display: none; } }

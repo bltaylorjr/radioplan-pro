@@ -4,6 +4,8 @@ import { Card, Field, Txt, Num, Sel, Check, Stat, fmt } from '../components/ui';
 import { parseNmeaGga, averageFixes, NmeaFix, haversineKm, bearingDeg } from '../engine/geo';
 import { fetchElevations, sampleDem } from '../engine/terrain';
 import { geocodeAddress } from '../engine/geocode';
+import { usgsPointElevation } from '../engine/autoterrain';
+import { parseLatLon } from '../engine/locparse';
 import { radioHorizonKm, mToFt } from '../engine/rf';
 import type { Site, StructureType } from '../types';
 import { uid } from '../defaults';
@@ -50,9 +52,11 @@ export function SitesPage() {
   const elev = async () => {
     const fromDem = rt.dem ? sampleDem(rt.dem, s) : null;
     if (fromDem != null) { set('groundElevM', Math.round(fromDem * 10) / 10); setMsg(`Ground elevation from ${rt.dem!.source}: ${fromDem.toFixed(1)} m.`); return; }
-    try { const [z] = await fetchElevations([s]); set('groundElevM', z); setMsg(`Ground elevation (Copernicus 90 m DEM): ${z} m.`); } catch (e) { setMsg(`Elevation lookup failed: ${(e as Error).message}`); }
+    try { const z = await usgsPointElevation(s); set('groundElevM', Math.round(z * 100) / 100); setMsg(`Ground elevation (USGS 3DEP point query): ${z.toFixed(2)} m NAVD88.`); return; } catch { /* outside US / offline */ }
+    try { const [z] = await fetchElevations([s]); set('groundElevM', z); setMsg(`Ground elevation (Copernicus 90 m DEM): ${z} m.`); } catch (e) { setMsg(`Elevation lookup failed (offline?): ${(e as Error).message}. Terrain cached for this area is used automatically when available.`); }
   };
   const geocode = async () => {
+    const ll = parseLatLon(s.address); if (ll) { setPos(ll.lat, ll.lon, 'Typed coordinates', null); setMsg('Coordinates applied.'); return; }
     try { const [r] = await geocodeAddress(s.address); if (!r) { setMsg('Address not found.'); return; } setPos(r.lat, r.lon, 'Geocoded address', 50); setMsg(`Geocoded: ${r.label}`); } catch (e) { setMsg(`Geocoding failed: ${(e as Error).message}`); }
   };
   const add = () => { const id = uid(); update((d) => { d.sites.push({ ...s, id, name: `Site ${String.fromCharCode(65 + d.sites.length)}` }); }); setSel(id); };

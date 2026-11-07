@@ -14,6 +14,28 @@ export const HELP: HelpTopic[] = [
 
 **Important:** code citations and calculations are planning aids. A licensed professional engineer and the Authority Having Jurisdiction must verify the design.` },
 
+  { id: 'locate', title: 'Find location & auto-plan', page: 'locate', keywords: 'search address location coordinates lat lon dms view satellite 3d auto plan build plan candidate tower site selection viewshed', summary: 'Type an address or coordinates, view the spot on topo/satellite/3D, and build a complete starting plan in one click.',
+    body: `**Search** with the box in the top bar or on this page. Accepted: street addresses and place names (needs internet; earlier results are remembered offline), decimal coordinates (35.2271, -80.8431), degrees-minutes-seconds (35°13'37"N 80°50'35"W) or degrees-decimal-minutes (N35 13.627 W80 50.587). You can also click the map.
+
+**View**: topographic, satellite and hybrid maps, ground elevation from the USGS 3DEP point service, and a 3D terrain model around the spot.
+
+**Build a plan** downloads terrain for the area, then tests a grid of candidate tower spots within the search radius. Each candidate is scored by how much of the service area it can see over the terrain (near line-of-sight) at your antenna height. The best spot becomes Site A, the location becomes the facility (Site B), and the band, antenna, azimuth, downtilt, feeder length, jurisdiction, coverage run, path profile, materials list, code checks and commissioning test plan are all filled in. Review and adjust every page afterwards.
+
+Not considered: zoning, land ownership, FAA airspace, existing towers and leasing. Verify on site.`,
+    tour: [ { target: 'plan', title: 'Auto-plan', text: 'Choose the band, service radius and tower height, then build the plan.' } ] },
+
+  { id: 'offline', title: 'Working offline', keywords: 'offline no internet cache download area tiles usb android field', summary: 'Download an area ahead of time; maps, terrain, 3D, calculations, reports and help then work without a connection.',
+    body: `Everything except map downloads, address search and the USGS point-elevation service runs on the device: all calculations, code checks, materials, reports, the help manual and the 3D viewer.
+
+**Before going to the field** (while online):
+1. Open the project (or search the location) so the sites are set.
+2. On **Map & Terrain**, use **Save area for offline**: choose the radius around your sites (or the current map view), the detail level and the USGS map layers.
+3. Terrain for your sites also downloads automatically and is cached.
+
+**In the field**: the top bar shows **○ Offline**. Cached map tiles and terrain load automatically. Type coordinates instead of addresses (or use GPS / click the map). Previously searched addresses still work.
+
+The cache lives in the app's storage on that device (browser profile for the USB file, app data on PC and Android). **Clear cache** frees the space.` },
+
   { id: 'company', title: 'Company & project', page: 'company', keywords: 'company title address logo license engineer client project number state county jurisdiction', summary: 'Enter your company details (used on every report header) and the project jurisdiction.',
     body: `**Company** details (name, title, address, phone, license number and logo) are printed in the header of every report.
 
@@ -219,7 +241,7 @@ Enter measured values and mark pass/fail; the results print in the Commissioning
 - **Windows PC app**: built with Tauri (see README "Desktop build"). Produces an installer and a portable .exe.
 - **Android**: built with Capacitor (see README "Android build"). GPS uses the phone's GNSS.
 
-Map tiles and online elevation need internet; imported terrain files work offline.` },
+Maps and terrain download automatically when online and are cached for offline use; see Working offline.` },
 
   { id: 'disclaimer', title: 'Professional responsibility', keywords: 'disclaimer liability pe engineer verify', summary: 'Results must be verified by a licensed professional.',
     body: `RadioPlan Pro is a planning tool for qualified users. Propagation models are statistical; code citations may not reflect the edition or local amendments adopted by your AHJ. A licensed professional engineer must review and seal designs where required, and installations must be permitted and inspected by the AHJ.` },

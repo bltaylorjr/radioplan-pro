@@ -28,6 +28,7 @@ export function defaultProject(): Project {
     indoor: { fMHz: 851, widthM: 60, heightM: 40, walls: [], antennas: [], env: 'office', targetDbm: -95, rxGainDbi: 0, currentMaterial: 'drywall', floors: 0 },
     tests: [],
     bomOverrides: {}, taskDone: {},
+    settings: { autoTerrain: true, terrainMarginKm: 5 },
   };
 }
 
