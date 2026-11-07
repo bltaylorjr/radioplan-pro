@@ -21,6 +21,9 @@ import { ScenariosPage } from './pages/Scenarios';
 import { NetworkPage } from './pages/Network';
 import { SurveyPage } from './pages/Survey';
 import { WifiSurveyPage } from './pages/WifiSurvey';
+import { CalculatorsPage } from './pages/Calculators';
+import { SyncPage } from './pages/Sync';
+import { AddressInput } from './components/AddressInput';
 const TerrainPage = lazy(() => import('./pages/Terrain'));
 const CoveragePage = lazy(() => import('./pages/Coverage'));
 const View3DPage = lazy(() => import('./pages/View3D'));
@@ -49,6 +52,8 @@ export const WORKFLOW: { id: string; label: string; group: string; el: React.Rea
   { id: 'materials', label: 'Materials List', group: '5 · Verify & deliver', el: <MaterialsPage /> },
   { id: 'reports', label: 'Reports', group: '5 · Verify & deliver', el: <ReportsPage /> },
   { id: 'testing', label: 'Final Testing', group: '5 · Verify & deliver', el: <TestingPage /> },
+  { id: 'calculators', label: 'Calculators', group: '6 · Tools', el: <CalculatorsPage /> },
+  { id: 'sync', label: 'Sync Devices', group: '6 · Tools', el: <SyncPage /> },
 ];
 
 export default function App() {
@@ -87,7 +92,7 @@ export default function App() {
         <button className="ghost menu" onClick={() => setNavOpen(!navOpen)} aria-label="Menu">☰</button>
         <div className="brand"><span className="logo">◉</span> RadioPlan <b>Pro</b></div>
         <form className="topsearch" onSubmit={(e) => { e.preventDefault(); if (!q.trim()) return; setRt((r) => ({ ...r, query: q, locate: null })); if (page === 'locate') { go('company'); setTimeout(() => go('locate'), 0); } else go('locate'); }}>
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="🔎 Address, place or lat, lon" aria-label="Search location" />
+          <AddressInput value={q} onChange={setQ} onPick={(g) => { setRt((r) => ({ ...r, query: g.label, locate: g })); go('locate'); }} placeholder="🔎 Address, place or lat, lon" ariaLabel="Search location" />
         </form>
         <span className={'chip ' + (online ? 'on' : 'off')} title={online ? 'Online: maps and terrain download automatically and are cached' : 'Offline: using cached maps and terrain'}>{online ? '● Online' : '○ Offline'}</span>
         {rt.terrainStatus && <span className="chip terr" title="Automatic terrain">{rt.terrainStatus}</span>}

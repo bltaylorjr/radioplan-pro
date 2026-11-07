@@ -3,9 +3,11 @@ import { useStore } from '../store';
 import { Card, Field, Num, Stat, fmt } from '../components/ui';
 import { tiltFootprintKm, recommendedTiltDeg, dbmToWatts } from '../engine/rf';
 import { designLink } from '../engine/design';
+import { useUnits, DistNum } from '../units';
 
 export function OptimizePage() {
   const { project: p, update, go } = useStore();
+  const u = useUnits();
   const r = p.radio, L = designLink(p);
   const h = L.tx?.antennaAglM ?? 30, vbw = L.ant?.vBwDeg ?? 10;
   const tilt = r.mechTiltDeg + r.elecTiltDeg;
@@ -26,9 +28,9 @@ export function OptimizePage() {
           <Field label="TX power"><Num value={r.txPowerDbm} onChange={(v) => update((d) => { d.radio.txPowerDbm = v!; })} unit={`dBm (${dbmToWatts(r.txPowerDbm).toFixed(1)} W)`} /></Field>
         </div>
         <div className="stats">
-          <Stat label="Main beam hits ground" value={Number.isFinite(fp.mainBeamKm) ? fmt(fp.mainBeamKm, 2) : '∞'} unit=" km" />
-          <Stat label="Inner −3 dB edge" value={fmt(fp.innerKm, 2)} unit=" km" />
-          <Stat label="Outer −3 dB edge" value={Number.isFinite(fp.outerKm) ? fmt(fp.outerKm, 2) : '∞ (above horizon)'} unit={Number.isFinite(fp.outerKm) ? ' km' : ''} />
+          <Stat label="Main beam hits ground" value={Number.isFinite(fp.mainBeamKm) ? fmt(u.d(fp.mainBeamKm), 2) : '∞'} unit={` ${u.unit}`} />
+          <Stat label="Inner −3 dB edge" value={fmt(u.d(fp.innerKm), 2)} unit={` ${u.unit}`} />
+          <Stat label="Outer −3 dB edge" value={Number.isFinite(fp.outerKm) ? fmt(u.d(fp.outerKm), 2) : '∞ (above horizon)'} unit={Number.isFinite(fp.outerKm) ? ` ${u.unit}` : ''} />
           <Stat label="Recommended total tilt" value={fmt(rec, 1)} unit="°" tip="Upper −3 dB edge at the predicted cell-edge range" tone="ok" />
         </div>
         <div className="row"><button className="primary" onClick={() => update((d) => { d.radio.elecTiltDeg = Math.max(0, Math.round((rec - d.radio.mechTiltDeg) * 10) / 10); })}>Apply recommended tilt</button><button onClick={() => go('coverage')}>Re-run coverage →</button></div>
@@ -42,8 +44,8 @@ export function OptimizePage() {
           <line x1={40} y1={yT} x2={x(lo.d)} y2={lo.yy} className="f60" />
           <line x1={40} y1={yT} x2={x(m.d)} y2={m.yy} className="los ok" />
           <line x1={x(L.rangeKm)} x2={x(L.rangeKm)} y1={y0} y2={y0 - 40} className="worst" />
-          <text x={x(L.rangeKm)} y={y0 - 44} textAnchor="middle">edge {fmt(L.rangeKm, 1)} km</text>
-          {[0, 0.25, 0.5, 0.75, 1].map((t) => <text key={t} x={x(t * maxD)} y={H - 10} textAnchor="middle">{(t * maxD).toFixed(1)}</text>)}
+          <text x={x(L.rangeKm)} y={y0 - 44} textAnchor="middle">edge {u.f(L.rangeKm, 1)}</text>
+          {[0, 0.25, 0.5, 0.75, 1].map((t) => <text key={t} x={x(t * maxD)} y={H - 10} textAnchor="middle">{u.d(t * maxD).toFixed(1)}{t === 1 ? ` ${u.unit}` : ''}</text>)}
         </svg>
         <p className="small muted">Green = main beam, dashed = −3 dB edges. Over-tilting shrinks the footprint; under-tilting causes overshoot and interference.</p>
       </Card>

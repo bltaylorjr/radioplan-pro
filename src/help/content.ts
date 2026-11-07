@@ -14,8 +14,10 @@ export const HELP: HelpTopic[] = [
 
 **Important:** code citations and calculations are planning aids. A licensed professional engineer and the Authority Having Jurisdiction must verify the design.` },
 
-  { id: 'locate', title: 'Find location & auto-plan', page: 'locate', keywords: 'search address location coordinates lat lon dms view satellite 3d auto plan build plan candidate tower site selection viewshed', summary: 'Type an address or coordinates, view the spot on topo/satellite/3D, and build a complete starting plan in one click.',
-    body: `**Search** with the box in the top bar or on this page. Accepted: street addresses and place names (needs internet; earlier results are remembered offline), decimal coordinates (35.2271, -80.8431), degrees-minutes-seconds (35°13'37"N 80°50'35"W) or degrees-decimal-minutes (N35 13.627 W80 50.587). You can also click the map.
+  { id: 'locate', title: 'Find location & auto-plan', page: 'locate', keywords: 'address suggestions autocomplete search address location coordinates lat lon dms view satellite 3d auto plan build plan candidate tower site selection viewshed', summary: 'Type an address or coordinates, view the spot on topo/satellite/3D, and build a complete starting plan in one click.',
+    body: `**Suggestions** appear as you type an address (in the top bar, here, and in the company, client and site address fields): recent places, saved results and project sites work offline; online suggestions come from Photon (OpenStreetMap data). Use ↑ ↓ and Enter, or tap one.
+
+**Search** with the box in the top bar or on this page. Accepted: street addresses and place names (needs internet; earlier results are remembered offline), decimal coordinates (35.2271, -80.8431), degrees-minutes-seconds (35°13'37"N 80°50'35"W) or degrees-decimal-minutes (N35 13.627 W80 50.587). You can also click the map.
 
 **View**: topographic, satellite and hybrid maps, ground elevation from the USGS 3DEP point service, and a 3D terrain model around the spot.
 
@@ -288,6 +290,32 @@ Use **Print / Save PDF** (choose "Save as PDF" in the print dialog). **KML** ope
     body: `Standard acceptance tests: feeder sweeps (return loss / VSWR, distance-to-fault), PIM, insertion loss, ground resistance (fall-of-potential, IEEE 81), bonding continuity, TX power and frequency, azimuth/tilt verification, drive test vs. prediction, ERCES grid test, battery run test and RF exposure survey.
 
 Enter measured values and mark pass/fail; the results print in the Commissioning report.` },
+
+  { id: 'calculators', title: 'Calculators', page: 'calculators', keywords: 'calculator dbm watts microvolt field strength eirp erp wavelength dipole isolation tilt fspl fresnel horizon diffraction hata link budget vswr return loss coax noise floor intermod mpe erlang ohm voltage drop conductor battery solar ground rod guy wire distance bearing conversion awg', summary: 'Stand-alone engineering calculators for RF, antennas, propagation, transmission lines, interference, trunking traffic, electrical power, grounding and units.',
+    body: `Type in the search box to filter (for example "vswr", "voltage drop", "erlang").
+
+- **RF levels**: dBm ↔ W ↔ dBW, dBm ↔ µV / dBµV (50 Ω), field strength ↔ received power, EIRP / ERP.
+- **Antennas**: wavelength and element lengths, dBd ↔ dBi, gain from beamwidth, antenna isolation for BDAs and co-location, downtilt to a distance.
+- **Propagation**: free-space loss, Fresnel zone and 60 % clearance, radio horizon and LOS, knife-edge diffraction (ITU-R P.526), Okumura-Hata / COST-231, point-to-point link budget.
+- **Transmission line**: VSWR ↔ return loss ↔ mismatch loss, feeder loss from the cable catalogue.
+- **Receivers & interference**: noise floor and sensitivity, intermodulation (3rd and 5th order) against receive frequencies, RF exposure distance.
+- **Traffic**: Erlang B channels for trunked systems.
+- **Electrical**: Ohm's law, voltage drop (DC, single- and three-phase), conductor sizing, battery bank, solar array.
+- **Grounding & structure**: ground rod resistance (Dwight), guy wire length.
+- **Location & units**: distance and bearing, DMS, unit and AWG conversions.
+
+Distances follow the unit chosen on Company & Project (miles by default).` },
+
+  { id: 'sync', title: 'Sync between devices', page: 'sync', keywords: 'sync synchronize share bluetooth wifi wi-fi cellular nearby quick share qr code cloud onedrive google drive dropbox merge phone pc tablet', summary: 'Keep the PC, USB, tablet and phone copies of a project in step over Wi-Fi, Bluetooth / Nearby Share, or a cloud-drive folder.',
+    body: `Every device keeps a full copy and works offline. Syncing **merges** copies: each part of the project (company, radio design, grounding, etc.) keeps the most recent change from either device, and sites, scenarios, run history, tests, survey points and Wi-Fi readings from both devices are combined. Deleting an item on one device deletes it on the other at the next sync.
+
+**Direct over Wi-Fi** (no internet needed): both devices on the same Wi-Fi or one device's hotspot. Press **Start** on one, scan its QR code with the other, then scan the reply code back. The project goes straight between the devices. When online it can also connect across cellular networks, but some carriers block direct links.
+
+**Bluetooth / Nearby Share / email**: **Share sync file** opens the system share sheet (Android: Bluetooth, Quick Share; Windows: Nearby sharing). On the other device use **Merge a sync file**.
+
+**Cellular (cloud drive)**: on Chrome or Edge for Windows/Mac, choose a folder that OneDrive, Google Drive or Dropbox syncs. Each device writes its own file every minute and merges the others. On Android, save the sync file into the Drive or OneDrive app and merge the other device's file.
+
+No RadioPlan server or account is involved; data moves only between your devices or through your own cloud drive.` },
 
   { id: 'packaging', title: 'USB, PC and Android versions', keywords: 'usb portable windows desktop install android apk offline', summary: 'One codebase runs from a USB stick, as a Windows desktop app, and as an Android app.',
     body: `- **USB portable**: copy **RadioPlan.html** to the stick and double-click it. Everything is in one file; no install. Save project files next to it.

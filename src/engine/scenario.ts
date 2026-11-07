@@ -16,7 +16,7 @@ export function snapshotInputs(p: Project, dem: DemGrid | null | undefined): Rec
     'Feeder': L.fd ? `${L.fd.brand} ${L.fd.model} ${r.feederLenM} m` : r.feederId, 'EIRP (dBm)': Math.round(L.eirpDbm * 10) / 10,
     'Azimuth (°T)': r.azimuthDeg, 'Downtilt (°)': r.mechTiltDeg + r.elecTiltDeg, 'Mobile height (m)': r.mobileHeightM,
     'RX antenna gain (dBi)': r.rxAntGainDbi, 'Environment': `${r.env} / ${r.city}`, 'k-factor': Math.round(r.kFactor * 1000) / 1000,
-    'Analysis radius (km)': r.coverageRadiusKm, 'Grid (cells/side)': r.coverageGridN, 'Terrain': dem ? dem.source : 'smooth earth',
+    'Analysis radius': `${r.coverageRadiusKm.toFixed(2)} km (${(r.coverageRadiusKm / 1.609344).toFixed(2)} mi)`, 'Grid (cells/side)': r.coverageGridN, 'Terrain': dem ? dem.source : 'smooth earth',
     'Model offset (dB)': t.offsetDb, 'Model slope (dB/decade)': t.slopeDbPerDecade, 'Diffraction factor': t.diffractionFactor, 'Clutter loss (dB)': t.clutterDb, 'Calibration': t.source,
   };
   for (const tier of resolveTiers(p)) o[`Criterion: ${tier.label}`] = `${tier.dbm} dBm + ${tier.extraLossDb} dB loss ≥ ${tier.requiredPct}%`;

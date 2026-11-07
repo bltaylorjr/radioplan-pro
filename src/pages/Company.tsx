@@ -7,6 +7,7 @@ import { JURISDICTIONS } from '../compliance/jurisdictions';
 import { JurisdictionInfo } from '../components/JurisdictionInfo';
 import type { StateCode } from '../types';
 import { uid } from '../defaults';
+import { AddressInput } from '../components/AddressInput';
 
 export function CompanyPage() {
   const { project: p, update, go } = useStore();
@@ -45,11 +46,12 @@ export function CompanyPage() {
           <Field label="Project name" wide><Txt value={m.name} onChange={setM('name')} /></Field>
           <Field label="Project number"><Txt value={m.number} onChange={setM('number')} /></Field>
           <Field label="Client PO / contract #"><Txt value={m.poNumber ?? ''} onChange={setM('poNumber')} /></Field>
-          <Field label="Project site address" wide tip="Where the work is. Use the Find Location page to turn it into GPS coordinates."><Txt value={m.siteAddress ?? ''} onChange={setM('siteAddress')} /></Field>
+          <Field label="Project site address" wide tip="Where the work is. Use the Find Location page to turn it into GPS coordinates."><AddressInput value={m.siteAddress ?? ''} onChange={setM('siteAddress')} onPick={(g) => update((d) => { d.meta.siteAddress = g.label; if (g.county) d.meta.county = g.county; if (g.state && ['NC', 'SC', 'GA', 'TN'].includes(g.state)) d.meta.state = g.state as typeof d.meta.state; })} /></Field>
           <Field label="Revision"><Txt value={m.revision} onChange={setM('revision')} /></Field>
           <Field label="Engineer of record"><Txt value={m.engineer} onChange={setM('engineer')} /></Field>
           <Field label="PE license #"><Txt value={m.peLicense} onChange={setM('peLicense')} /></Field>
           <Field label="Project state (code set)" topic="compliance"><Sel<StateCode> value={m.state} onChange={(v) => update((d) => { d.meta.state = v; })} options={[['NC', 'North Carolina'], ['SC', 'South Carolina'], ['GA', 'Georgia'], ['TN', 'Tennessee']]} /></Field>
+          <Field label="Distance units" tip="All distances and radii are shown in this unit. Heights stay in metres."><Sel<'mi' | 'km'> value={p.settings.units ?? 'mi'} onChange={(v) => update((d) => { d.settings = { ...d.settings, units: v }; })} options={[['mi', 'Miles'], ['km', 'Kilometres']]} /></Field>
           <Field label="County / city"><Txt value={m.county} onChange={setM('county')} /></Field>
           <Field label="Date"><input type="date" value={m.created} onChange={(e) => setM('created')(e.target.value)} /></Field>
           <Field label="AHJ notes" wide tip="Local amendments, permit numbers, inspector contacts."><textarea value={m.jurisdictionNotes} onChange={(e) => setM('jurisdictionNotes')(e.target.value)} rows={3} /></Field>
@@ -60,7 +62,7 @@ export function CompanyPage() {
         <div className="form">
           <Field label="Company name"><Txt value={c.name} onChange={setC('name')} placeholder="e.g. Carolina Comm Engineering LLC" /></Field>
           <Field label="Title / department" tip="Your title or division, e.g. RF Engineering Manager."><Txt value={c.title} onChange={setC('title')} /></Field>
-          <Field label="Street address" wide><Txt value={c.address} onChange={setC('address')} /></Field>
+          <Field label="Street address" wide tip="Start typing for suggestions; picking one fills city, state and ZIP."><AddressInput value={c.address} onChange={setC('address')} onPick={(g) => update((d) => { d.company.address = g.street ?? g.label.split(',')[0]; if (g.city) d.company.city = g.city; if (g.state) d.company.state = g.state; if (g.postcode) d.company.zip = g.postcode; })} /></Field>
           <Field label="City"><Txt value={c.city} onChange={setC('city')} /></Field>
           <Field label="State"><Txt value={c.state} onChange={setC('state')} /></Field>
           <Field label="ZIP"><Txt value={c.zip} onChange={setC('zip')} /></Field>
@@ -86,7 +88,7 @@ export function CompanyPage() {
         <div className="form">
           <Field label="Client company name" wide><Txt value={m.client} onChange={setM('client')} /></Field>
           <Field label="Contact person"><Txt value={m.clientContact ?? ''} onChange={setM('clientContact')} /></Field>
-          <Field label="Street address" wide><Txt value={m.clientAddress ?? ''} onChange={setM('clientAddress')} /></Field>
+          <Field label="Street address" wide tip="Start typing for suggestions."><AddressInput value={m.clientAddress ?? ''} onChange={setM('clientAddress')} onPick={(g) => update((d) => { d.meta.clientAddress = g.street ?? g.label.split(',')[0]; if (g.city) d.meta.clientCity = g.city; if (g.state) d.meta.clientState = g.state; if (g.postcode) d.meta.clientZip = g.postcode; })} /></Field>
           <Field label="City"><Txt value={m.clientCity ?? ''} onChange={setM('clientCity')} /></Field>
           <Field label="State"><Txt value={m.clientState ?? ''} onChange={setM('clientState')} /></Field>
           <Field label="ZIP"><Txt value={m.clientZip ?? ''} onChange={setM('clientZip')} /></Field>

@@ -8,9 +8,11 @@ import { parseSurvey, calibrate, Calibration } from '../engine/calibrate';
 import { primaryCoverageInputs } from '../engine/network';
 import { predictPoint } from '../engine/coverage';
 import { rssiColor } from '../engine/coverage';
+import { useUnits, DistNum } from '../units';
 
 export function SurveyPage() {
   const { project: p, update, rt, go } = useStore();
+  const u = useUnits();
   const sv = p.survey;
   const [msg, setMsg] = useState('');
   const [fitSlope, setFitSlope] = useState(true);
@@ -66,7 +68,7 @@ export function SurveyPage() {
               <tbody><tr><td>Before</td><td>{fmt(cal.before.meanErr, 1)} dB</td><td>{fmt(cal.before.rmsErr, 1)} dB</td><td>{fmt(cal.before.sdErr, 1)} dB</td><td>{cal.used} used, {cal.excluded} excluded</td></tr>
                 <tr className="ok-row"><td>After</td><td>{fmt(cal.after.meanErr, 1)} dB</td><td>{fmt(cal.after.rmsErr, 1)} dB</td><td>{fmt(cal.after.sdErr, 1)} dB</td><td></td></tr></tbody></table></div>
             <p>New tuning: offset <b>{cal.tuning.offsetDb} dB</b>{cal.fitSlope && <>, slope <b>{cal.tuning.slopeDbPerDecade} dB/decade</b></>}. Error = measured − predicted (positive means the model was pessimistic).</p>
-            <div className="tbl-wrap"><table className="tbl"><thead><tr><th>Distance</th><th>Points</th><th>Mean error before</th></tr></thead><tbody>{cal.bins.map((b) => <tr key={b.fromKm}><td>{b.fromKm}–{fmt(b.toKm, 1)} km</td><td>{b.n}</td><td>{fmt(b.meanErr, 1)} dB</td></tr>)}</tbody></table></div>
+            <div className="tbl-wrap"><table className="tbl"><thead><tr><th>Distance</th><th>Points</th><th>Mean error before</th></tr></thead><tbody>{cal.bins.map((b) => <tr key={b.fromKm}><td>{fmt(u.d(b.fromKm), 1)}–{u.f(b.toKm, 1)}</td><td>{b.n}</td><td>{fmt(b.meanErr, 1)} dB</td></tr>)}</tbody></table></div>
             {cal.after.sdErr > 10 && <p className="warnbox">Residual spread is over 10 dB: check that the survey used the same transmitter, frequency and receive antenna height as this design.</p>}
             <div className="row wrap"><button className="primary" onClick={apply}>Apply calibration</button><button onClick={() => go('coverage')}>Coverage →</button></div>
           </>}

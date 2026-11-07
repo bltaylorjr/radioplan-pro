@@ -5,9 +5,11 @@ import { ANTENNAS, FEEDERS, RADIOS, BAND_PRESETS } from '../data/catalog';
 import { designLink } from '../engine/design';
 import type { RadioDesign } from '../types';
 import { dbmToWatts, wattsToDbm } from '../engine/rf';
+import { useUnits, DistNum } from '../units';
 
 export function EquipmentPage() {
   const { project: p, update } = useStore();
+  const u = useUnits();
   const r = p.radio, L = designLink(p);
   const set = <K extends keyof RadioDesign>(k: K, v: RadioDesign[K]) => update((d) => { d.radio[k] = v; });
   const radios = RADIOS.filter((x) => r.fMHz >= x.bandMHz[0] && r.fMHz <= x.bandMHz[1]);
@@ -59,8 +61,8 @@ export function EquipmentPage() {
           <Stat label="Shadow margin" value={fmt(L.fadeMarginDb)} unit=" dB" tip="σ × Q⁻¹(1 − edge reliability)" />
           <Stat label="Total margins" value={fmt(L.totalMarginsDb)} unit=" dB" />
           <Stat label="MAPL" value={fmt(L.maplDb)} unit=" dB" tone="ok" tip="Maximum Allowable Path Loss at the cell edge" />
-          <Stat label={`Cell-edge range (${L.modelName})`} value={fmt(L.rangeKm, 2)} unit={` km (${fmt(L.rangeKm * 0.6214, 2)} mi)`} tone={L.rangeKm < 1 ? 'warn' : 'ok'} />
-          <Stat label="Radio horizon to mobile" value={fmt(L.losKm, 1)} unit=" km" tip="4/3-earth smooth-earth LOS from base to mobile antenna" />
+          <Stat label={`Cell-edge range (${L.modelName})`} value={fmt(u.d(L.rangeKm), 2)} unit={` ${u.unit}`} tone={L.rangeKm < 1 ? 'warn' : 'ok'} />
+          <Stat label="Radio horizon to mobile" value={fmt(u.d(L.losKm), 1)} unit={` ${u.unit}`} tip="4/3-earth smooth-earth LOS from base to mobile antenna" />
           <Stat label="Area reliability (Jakes)" value={fmt(L.areaReliability * 100, 1)} unit=" %" />
         </div>
         <table className="tbl budget"><tbody>
@@ -75,7 +77,7 @@ export function EquipmentPage() {
           <tr className="sum"><td>= MAPL</td><td>{fmt(L.maplDb)} dB</td></tr>
         </tbody></table>
         {L.modelWarnings.length > 0 && <div className="warnbox"><b>Model validity <Tip topic="coverage" /></b><ul>{L.modelWarnings.map((w, i) => <li key={i}>{w}</li>)}</ul></div>}
-        {L.mobileLimitedKm < L.rangeKm && <div className="warnbox">Range is limited by the radio horizon ({fmt(L.losKm, 1)} km) before path loss — raise the antenna for more range.</div>}
+        {L.mobileLimitedKm < L.rangeKm && <div className="warnbox">Range is limited by the radio horizon ({u.f(L.losKm, 1)}) before path loss — raise the antenna for more range.</div>}
       </Card>
     </div>
   );

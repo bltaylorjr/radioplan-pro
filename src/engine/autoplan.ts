@@ -56,7 +56,7 @@ export function findCandidates(dem: DemGrid, target: LatLon, o: PlanOptions, top
 }
 
 /** Pre-fill the whole project for a location and chosen candidate. Returns a list of what was set. */
-export function applyPlan(d: Project, target: LatLon & { label: string; state?: string; county?: string }, best: Candidate, o: PlanOptions): string[] {
+export function applyPlan(d: Project, target: LatLon & { label: string; state?: string; county?: string }, best: Candidate, o: PlanOptions, dist: (km: number) => string = (km) => `${km.toFixed(2)} km`): string[] {
   const notes: string[] = [];
   const preset = BAND_PRESETS[o.bandPreset];
   const short = target.label.split(',').slice(0, 2).join(',').trim() || `${target.lat.toFixed(4)}, ${target.lon.toFixed(4)}`;
@@ -88,7 +88,7 @@ export function applyPlan(d: Project, target: LatLon & { label: string; state?: 
   d.bomOverrides = {};
   if (!d.tests.length) d.tests = DEFAULT_TESTS.map((x) => ({ ...x, id: uid() }));
   d.taskDone = { company: false, sites: true, terrain: true };
-  notes.push(`Tower placed ${sameSpot ? 'at the location' : `${best.distKm.toFixed(2)} km from the location`} on ground at ${best.groundM.toFixed(0)} m; reaches ${(best.score * 100).toFixed(0)}% of the ${o.serviceRadiusKm} km service area with near line-of-sight.`);
+  notes.push(`Tower placed ${sameSpot ? 'at the location' : `${dist(best.distKm)} from the location`} on ground at ${best.groundM.toFixed(0)} m; reaches ${(best.score * 100).toFixed(0)}% of the ${dist(o.serviceRadiusKm)} service area with near line-of-sight.`);
   notes.push(`${preset?.label ?? 'Band'} at ${d.radio.fMHz} MHz, ${ant.brand} ${ant.model}, ${o.towerHeightM} m antenna, ${d.radio.feederLenM} m feeder.`);
   notes.push('Materials list, code checks and commissioning test plan were filled from this design.');
   return notes;

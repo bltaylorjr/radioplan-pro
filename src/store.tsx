@@ -3,6 +3,7 @@ import type { Project } from './types';
 import { defaultProject } from './defaults';
 import type { DemGrid, ProfileAnalysis } from './engine/terrain';
 import type { CoverageResult } from './engine/coverage';
+import { stampSync } from './engine/sync';
 
 const KEY = 'radioplan.project.v1';
 
@@ -37,6 +38,12 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     clearTimeout(t.current);
     t.current = window.setTimeout(() => { try { localStorage.setItem(KEY, JSON.stringify(project)); } catch { /* quota */ } }, 300);
   }, [project]);
+  // Stamp per-section change times for device-to-device sync (debounced).
+  const st = useRef<number>();
+  useEffect(() => {
+    clearTimeout(st.current);
+    st.current = window.setTimeout(() => setProject((p) => { const m = stampSync(p, deviceInfo()); return m ? { ...p, sync: m } : p; }), 800);
+  }, [project]);
   useEffect(() => { const h = () => setPage(location.hash.slice(1) || 'company'); window.addEventListener('hashchange', h); return () => window.removeEventListener('hashchange', h); }, []);
   const v = useMemo<Ctx>(() => ({
     project,
@@ -63,3 +70,15 @@ export function downloadBytes(name: string, data: Uint8Array | Blob, type = 'app
   setTimeout(() => URL.revokeObjectURL(a.href), 2000);
 }
 export const safeName = (s: string) => (s || 'radioplan').replace(/[^a-z0-9_-]+/gi, '_').replace(/^_+|_+$/g, '').slice(0, 60) || 'radioplan';
+
+/** This device's identity for sync (stored per browser / install). */
+export function deviceInfo(): { id: string; name: string } {
+  try {
+    const raw = localStorage.getItem('radioplan.device'); if (raw) return JSON.parse(raw);
+    const ua = navigator.userAgent;
+    const kind = /Android/i.test(ua) ? (/Mobile/i.test(ua) ? 'Android phone' : 'Android tablet') : /iPhone|iPad/i.test(ua) ? 'iPhone/iPad' : /Windows/i.test(ua) ? 'Windows PC' : /Mac/i.test(ua) ? 'Mac' : 'Computer';
+    const d = { id: Math.random().toString(36).slice(2, 10), name: kind };
+    localStorage.setItem('radioplan.device', JSON.stringify(d)); return d;
+  } catch { return { id: 'local', name: 'This device' }; }
+}
+export function setDeviceName(name: string) { const d = deviceInfo(); try { localStorage.setItem('radioplan.device', JSON.stringify({ ...d, name })); } catch { /* ignore */ } }

@@ -6,9 +6,11 @@ import { buildProfile, analyzeProfile, sampleDem, fetchElevations, ProfilePoint 
 import { designLink } from '../engine/design';
 import { fsplDb, receivedPowerDbm, radioHorizonKm, losDistanceKm, fresnelRadiusM } from '../engine/rf';
 import { interpolate, haversineKm } from '../engine/geo';
+import { useUnits, DistNum } from '../units';
 
 export function PathPage() {
   const { project: p, update, rt, setRt } = useStore();
+  const u = useUnits();
   const r = p.radio, L = designLink(p);
   const [prof, setProf] = useState<ProfilePoint[] | null>(null);
   const [msg, setMsg] = useState('');
@@ -56,9 +58,9 @@ export function PathPage() {
       </Card>
       <Card title="Results" tour="path-results">
         <div className="stats">
-          <Stat label="Path length" value={fmt(D, 2)} unit=" km" />
-          <Stat label="Radio horizon TX / RX" value={`${fmt(radioHorizonKm(tx?.antennaAglM ?? 0, r.kFactor), 1)} / ${fmt(radioHorizonKm(rx?.antennaAglM ?? 0, r.kFactor), 1)}`} unit=" km" />
-          <Stat label="Smooth-earth LOS limit" value={fmt(losDistanceKm(tx?.antennaAglM ?? 0, rx?.antennaAglM ?? 0, r.kFactor), 1)} unit=" km" tone={D <= losDistanceKm(tx?.antennaAglM ?? 0, rx?.antennaAglM ?? 0, r.kFactor) ? 'ok' : 'bad'} />
+          <Stat label="Path length" value={fmt(u.d(D), 2)} unit={` ${u.unit}`} />
+          <Stat label="Radio horizon TX / RX" value={`${fmt(u.d(radioHorizonKm(tx?.antennaAglM ?? 0, r.kFactor)), 1)} / ${fmt(u.d(radioHorizonKm(rx?.antennaAglM ?? 0, r.kFactor)), 1)}`} unit={` ${u.unit}`} />
+          <Stat label="Smooth-earth LOS limit" value={fmt(u.d(losDistanceKm(tx?.antennaAglM ?? 0, rx?.antennaAglM ?? 0, r.kFactor)), 1)} unit={` ${u.unit}`} tone={D <= losDistanceKm(tx?.antennaAglM ?? 0, rx?.antennaAglM ?? 0, r.kFactor) ? 'ok' : 'bad'} />
           <Stat label="F1 radius at midpoint" value={fmt(fresnelRadiusM(D / 2, D / 2, r.fMHz), 1)} unit=" m" tip="r = √(λ d1 d2 / d)" />
           {a && <Stat label="Minimum F1 clearance" value={fmt(a.minClearancePct, 0)} unit=" %" tone={a.meets60 ? 'ok' : a.los ? 'warn' : 'bad'} tip="≥ 60% required by engineering practice" />}
           {a && <Stat label="Line of sight" value={a.los ? 'Clear' : 'Obstructed'} tone={a.los ? 'ok' : 'bad'} />}
@@ -67,7 +69,7 @@ export function PathPage() {
           <Stat label="Predicted RX level" value={fmt(rxLvl)} unit=" dBm" tone={rxLvl - r.rxSensitivityDbm > 20 ? 'ok' : rxLvl > r.rxSensitivityDbm ? 'warn' : 'bad'} />
           <Stat label="Fade margin vs sensitivity" value={fmt(rxLvl - r.rxSensitivityDbm)} unit=" dB" tip="Point-to-point margin above receiver sensitivity" />
         </div>
-        {a && !a.meets60 && <div className="warnbox">Fresnel clearance below 60%. Raise the antenna at the end nearest the obstruction (worst point at {fmt(a.points[a.worstIndex].dKm, 2)} km) or relocate the site. <Tip topic="path" /></div>}
+        {a && !a.meets60 && <div className="warnbox">Fresnel clearance below 60%. Raise the antenna at the end nearest the obstruction (worst point at {u.f(a.points[a.worstIndex].dKm)}) or relocate the site. <Tip topic="path" /></div>}
       </Card>
     </div>
   );

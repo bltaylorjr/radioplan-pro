@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useUnits, DistNum } from '../units';
 import { useStore } from '../store';
 import { Card, Field, Num, Sel, Stat, fmt, Badge } from '../components/ui';
 import { MapView } from '../components/MapView';
@@ -12,11 +13,14 @@ import { BAND_PRESETS } from '../data/catalog';
 import { computeCoverage } from '../engine/coverage';
 import { designLink } from '../engine/design';
 import { uid } from '../defaults';
+import { AddressInput } from '../components/AddressInput';
+import { rememberPlace } from '../engine/suggest';
 
 const toDms = (v: number, pos: string, neg: string) => { const a = Math.abs(v), d = Math.floor(a), m = Math.floor((a - d) * 60), s = ((a - d) * 60 - m) * 60; return `${d}°${String(m).padStart(2, '0')}'${s.toFixed(1)}"${v >= 0 ? pos : neg}`; };
 
 export function LocatePage() {
   const { project, update, rt, setRt, go } = useStore();
+  const u = useUnits();
   const [q, setQ] = useState(rt.query ?? '');
   const [results, setResults] = useState<GeoResult[]>([]);
   const [msg, setMsg] = useState('');
@@ -30,7 +34,7 @@ export function LocatePage() {
   const [busy, setBusy] = useState(false);
   const t = rt.locate ?? null;
 
-  const choose = (g: GeoResult) => { setRt((r) => ({ ...r, locate: g })); setResults([]); setCands(null); setNotes([]); };
+  const choose = (g: GeoResult) => { rememberPlace(g); setRt((r) => ({ ...r, locate: g })); setResults([]); setCands(null); setNotes([]); };
   const search = async (text = q) => {
     if (!text.trim()) return;
     setMsg(''); setRt((r) => ({ ...r, query: text }));
@@ -67,7 +71,7 @@ export function LocatePage() {
   const usePlan = (c: Candidate) => {
     if (!t || !dem) return;
     let n: string[] = [];
-    update((d) => { n = applyPlan(d, t, c, opt); });
+    update((d) => { n = applyPlan(d, t, c, opt, (km) => u.f(km)); });
     setNotes(n);
     // compute profile + coverage on the new design
     setTimeout(() => {
@@ -94,7 +98,7 @@ export function LocatePage() {
     <div className="stack">
       <Card title="Find a location" tip="Type an address, a place name, or coordinates (decimal, DMS or degrees-minutes). Click the map to pick a spot. Coordinates and the map work offline.">
         <form className="row" onSubmit={(e) => { e.preventDefault(); search(); }}>
-          <input className="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="e.g. 600 E 4th St, Charlotte NC  ·  35.2271, -80.8431  ·  35°13'37&quot;N 80°50'35&quot;W" />
+          <AddressInput className="search" value={q} onChange={setQ} onPick={(g) => { setRt((r) => ({ ...r, query: g.label })); choose(g); }} ariaLabel="Search address, place or coordinates" placeholder="e.g. 600 E 4th St, Charlotte NC  ·  35.2271, -80.8431  ·  35°13'37&quot;N 80°50'35&quot;W" />
           <button className="primary" type="submit">🔎 Search</button>
         </form>
         {msg && <p className="note">{msg}</p>}
@@ -124,8 +128,8 @@ export function LocatePage() {
         <Card title="Build a plan for this location" tour="plan" actions={<Badge kind="beta">Auto-plan: review every result</Badge>}>
           <div className="form">
             <Field label="System / band"><Sel value={opt.bandPreset} onChange={(v) => setOpt({ ...opt, bandPreset: v })} options={Object.entries(BAND_PRESETS).filter(([, v]) => v.fMHz).map(([k, v]) => [k, v.label] as [string, string])} /></Field>
-            <Field label="Service radius" tip="How far around the location you need coverage."><Num value={opt.serviceRadiusKm} onChange={(v) => setOpt({ ...opt, serviceRadiusKm: Math.max(0.5, Math.min(30, v!)) })} unit="km" /></Field>
-            <Field label="Tower search radius" tip="How far from the location a tower may be placed. 0 = at the location."><Num value={opt.searchRadiusKm} onChange={(v) => setOpt({ ...opt, searchRadiusKm: Math.max(0, Math.min(10, v!)) })} unit="km" /></Field>
+            <Field label="Service radius" tip="How far around the location you need coverage."><DistNum km={opt.serviceRadiusKm} onChange={(v) => setOpt({ ...opt, serviceRadiusKm: Math.max(0.5, Math.min(30, v ?? 10)) })} /></Field>
+            <Field label="Tower search radius" tip="How far from the location a tower may be placed. 0 = at the location."><DistNum km={opt.searchRadiusKm} onChange={(v) => setOpt({ ...opt, searchRadiusKm: Math.max(0, Math.min(10, v ?? 0)) })} /></Field>
             <Field label="Antenna height (tower)"><Num value={opt.towerHeightM} onChange={(v) => setOpt({ ...opt, towerHeightM: v! })} unit="m" /></Field>
             <Field label="Facility antenna height"><Num value={opt.facilityAntennaM} onChange={(v) => setOpt({ ...opt, facilityAntennaM: v! })} unit="m" /></Field>
           </div>
@@ -134,7 +138,7 @@ export function LocatePage() {
             {rt.profile && <p>Path tower → facility: {rt.profile.los ? 'line of sight' : 'obstructed'}, {fmt(rt.profile.minClearancePct, 0)}% Fresnel clearance ({rt.profile.meets60 ? 'meets' : 'below'} 60%).</p>}
             <div className="row wrap"><button onClick={() => go('equipment')}>Review equipment →</button><button onClick={() => go('path')}>Path profile →</button><button onClick={() => go('coverage')}>Coverage →</button><button onClick={() => go('compliance')}>Code checks →</button><button onClick={() => go('materials')}>Materials →</button><button onClick={() => go('reports')}>Reports →</button></div></div>}
           {cands && cands.length > 1 && <table className="tbl"><thead><tr><th>#</th><th>Position</th><th>Ground</th><th>From location</th><th>Area reached</th><th>LOS to facility</th><th /></tr></thead>
-            <tbody>{cands.map((c, i) => <tr key={i}><td>{i + 1}</td><td>{c.lat.toFixed(5)}, {c.lon.toFixed(5)}</td><td>{fmt(c.groundM, 0)} m</td><td>{fmt(c.distKm, 2)} km</td><td>{fmt(c.score * 100, 0)}%</td><td>{c.targetLos ? 'Yes' : 'No'}</td><td><button onClick={() => usePlan(c)}>Use</button></td></tr>)}</tbody></table>}
+            <tbody>{cands.map((c, i) => <tr key={i}><td>{i + 1}</td><td>{c.lat.toFixed(5)}, {c.lon.toFixed(5)}</td><td>{fmt(c.groundM, 0)} m</td><td>{u.f(c.distKm)}</td><td>{fmt(c.score * 100, 0)}%</td><td>{c.targetLos ? 'Yes' : 'No'}</td><td><button onClick={() => usePlan(c)}>Use</button></td></tr>)}</tbody></table>}
           <p className="small muted">Candidates are scored by how much of the service area each spot can see over the terrain (near line-of-sight, &lt; 6 dB knife-edge loss) with your antenna height. Zoning, land ownership, FAA airspace and leasing are not considered — verify on site.</p>
         </Card>
       </>}

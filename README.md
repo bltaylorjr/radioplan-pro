@@ -23,12 +23,13 @@ Coverage Prediction (acceptance criteria, pass/fail service contours, model tuni
 Multi-site & Interference (best server, overlap, co-/adjacent-channel C/I) · Scenarios & Compare (input diff, result deltas,
 difference map) · Field Survey & Calibration (drive-test import, least-squares model calibration) · 3D Model · Grounding & Structure ·
 Indoor Planning · Wi-Fi Survey (floor plan, pasted/imported scans, signal / noise / SNR / channel / AP / co-channel views) ·
-Emergency Radio (ERCES) · LF / HF · Alarm Systems · Solar & DC Power · Code Compliance · Materials List · Reports · Final Testing — plus a searchable Help manual, page help (F1),
+Emergency Radio (ERCES) · LF / HF · Alarm Systems · Solar & DC Power · Code Compliance · Materials List · Reports · Final Testing ·
+Tools: Professional Calculators (30 RF, antenna, path, line, receiver, traffic, electrical, grounding and location calculators) · Sync Devices — plus a searchable Help manual, page help (F1),
 "Guide me" walkthroughs and `?` tooltips on fields.
 
 ## What is real vs. simplified vs. placeholder
 
-**Implemented and unit-tested** (`npm test`, 81 tests): GIS export (KML/KMZ, GeoJSON, Esri Shapefile, PNG + world file, CSV grid), marching-squares service contours, acceptance pass/fail, scenario grid storage and diffs, CSV site import (decimal/DMS, header matching), drive-test calibration (offset + slope least squares), multi-site C/I, Wi-Fi scan parsers (netsh, nmcli, iw, airport, CSV), 4/3-earth radio horizon, earth bulge, Fresnel zones and 60 % clearance,
+**Implemented and unit-tested** (`npm test`, 90 tests): GIS export (KML/KMZ, GeoJSON, Esri Shapefile, PNG + world file, CSV grid), marching-squares service contours, device sync merge (per-section, item-level for lists, deletions kept), terrain download retry, address suggestions, professional calculators (Erlang B, intermod, VSWR, Dwight ground rod, voltage drop, battery and more), acceptance pass/fail, scenario grid storage and diffs, CSV site import (decimal/DMS, header matching), drive-test calibration (offset + slope least squares), multi-site C/I, Wi-Fi scan parsers (netsh, nmcli, iw, airport, CSV), 4/3-earth radio horizon, earth bulge, Fresnel zones and 60 % clearance,
 FSPL, Okumura-Hata (urban/suburban/rural, small/large city), COST-231 Hata, MAPL range inversion, EIRP/ERP link budget,
 log-normal shadow margin and Jakes area reliability, ITU-R P.526 knife-edge diffraction, 3GPP sector pattern and downtilt footprint,
 FCC OET-65 / 47 CFR 1.1310 MPE distances, feeder loss from datasheet points, NMEA GGA parsing/averaging with checksum, UTM→WGS84,
@@ -41,12 +42,13 @@ secant-law MUF with a user-entered foF2 (not VOACAP); ERCES downlink budget is a
 
 **Placeholders / limits:** state amendment text is not bundled (the app lists each state's adopted code set and the authority to
 confirm with); equipment catalog is a starter set with typical specs; terrain is held in memory for the session (re-import after
-reopening); browsers cannot scan Wi-Fi, so Wi-Fi readings come from pasted or imported scans; C/I analysis is a planning screen, not frequency coordination; map tiles, geocoding and online elevation need internet; LAZ and state-plane LiDAR must be converted first.
+reopening); browsers cannot scan Wi-Fi, so Wi-Fi readings come from pasted or imported scans; C/I analysis is a planning screen, not frequency coordination; sync merges per section and the newest edit to a section (for example company info) wins, while lists such as sites merge item by item; browsers cannot do Bluetooth file transfer directly, so Bluetooth goes through the phone share sheet (Nearby/Quick Share); cellular sync uses a shared cloud-drive folder (OneDrive, Google Drive, Dropbox) or a direct link that needs both devices online; distances display in miles by default (Company page switches to km); map tiles, geocoding and online elevation need internet; LAZ and state-plane LiDAR must be converted first.
 
 ## Code citations
 
 Rules cite NEC (NFPA 70) 2020/2023, NFPA 72, NFPA 1225, NFPA 780, IFC 2021, TIA-222-H, Motorola R56, 14 CFR Part 77 and 47 CFR.
 Section numbers can move between editions and states adopt different editions with amendments.
+
 ## Verification status (2026-11-07)
 
 - **Adopted editions** (official state sources): NC 2020 NEC, effective 2021-11-01 (2023 NEC on indefinite delay, SL 2025-2 §5.12). SC 2020 NEC, effective 2023-01-01. GA 2023 NEC, effective 2025-01-01, plus 2026 GA amendments. TN 2017 NEC, **unconfirmed**.

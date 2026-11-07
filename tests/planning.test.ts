@@ -154,3 +154,14 @@ describe('Wi-Fi survey parsing', () => {
     expect(ap.cats[1 * 20 + 2]).toContain('a1'); expect(ap.cats[1 * 20 + 17]).toContain('a2');
   });
 });
+
+describe('address suggestions', () => {
+  it('matches word prefixes and converts Photon features', async () => {
+    const { matches, photonToGeo } = await import('../src/engine/suggest');
+    expect(matches('600 East 4th Street, Charlotte, NC', '600 e 4th')).toBe(true);
+    expect(matches('600 East 4th Street, Charlotte, NC', 'raleigh')).toBe(false);
+    const g = photonToGeo({ geometry: { coordinates: [-80.84, 35.22] }, properties: { housenumber: '600', street: 'East 4th Street', city: 'Charlotte', county: 'Mecklenburg County', state: 'North Carolina', postcode: '28202', countrycode: 'US' } });
+    expect(g).toMatchObject({ lat: 35.22, lon: -80.84, street: '600 East 4th Street', city: 'Charlotte', state: 'NC', postcode: '28202' });
+    expect(g.label).toBe('600 East 4th Street, Charlotte, Mecklenburg County, NC 28202');
+  });
+});

@@ -11,10 +11,11 @@ import { resolveTiers, evaluateAcceptance, contourSegments, mapLevel } from '../
 import { makeRunRecord, makeScenario, diffInputs } from '../engine/scenario';
 import { ACCEPTANCE_PRESETS, acceptancePreset, uid } from '../defaults';
 import type { AcceptanceTier } from '../types';
+import { useUnits, DistNum } from '../units';
 
 export default function CoveragePage() {
   const { project: p, update, rt, setRt, go } = useStore();
-  const r = p.radio, L0 = designLink(p), t = p.propagation;
+  const r = p.radio, L0 = designLink(p), t = p.propagation, u = useUnits();
   const [busy, setBusy] = useState(false);
   const [ms, setMs] = useState(0);
   const [scName, setScName] = useState('');
@@ -47,7 +48,7 @@ export default function CoveragePage() {
     <div className="stack">
       <Card title="Coverage settings" tour="cov-controls">
         <div className="form">
-          <Field label="Analysis radius"><Num value={r.coverageRadiusKm} onChange={(v) => update((d) => { d.radio.coverageRadiusKm = v!; })} unit="km" /></Field>
+          <Field label="Analysis radius"><DistNum km={r.coverageRadiusKm} onChange={(v) => update((d) => { d.radio.coverageRadiusKm = Math.max(0.5, v ?? 15); })} /></Field>
           <Field label="Resolution (cells per side)" tip="70 = fast; 150 = detailed (slower)."><Num value={r.coverageGridN} step={10} onChange={(v) => update((d) => { d.radio.coverageGridN = Math.max(20, Math.min(250, Math.round(v!))); })} /></Field>
           <Field label="Design threshold" tip={`Suggested: sensitivity + shadow + interference margin = ${designThreshold.toFixed(1)} dBm. Used by the "Design target" criterion.`}><Num value={r.coverageThresholdDbm} onChange={(v) => update((d) => { d.radio.coverageThresholdDbm = v!; })} unit="dBm" /></Field>
           <Field label="Model"><span className="muted">{r.fMHz > 1500 ? 'COST-231 Hata' : 'Okumura-Hata'} + ITU-R P.526 knife-edge · {r.env} · {rt.dem ? `terrain: ${rt.dem.source}` : 'no terrain loaded (smooth earth)'}</span></Field>
@@ -74,7 +75,7 @@ export default function CoveragePage() {
         <Card title="Propagation model tuning" tour="tuning" tip="Adjust the model to local conditions, or calibrate it automatically from drive-test data on the Field Survey page.">
           <div className="form">
             <Field label="Offset" tip="Added to every prediction. Positive = stronger."><Num value={t.offsetDb} onChange={(v) => setTune('offsetDb', v ?? 0)} unit="dB" /></Field>
-            <Field label="Distance slope correction" tip="Added per decade of distance (dB × log10 d km). Negative = signal falls off faster."><Num value={t.slopeDbPerDecade} onChange={(v) => setTune('slopeDbPerDecade', v ?? 0)} unit="dB/decade" /></Field>
+            <Field label="Distance slope correction" tip="Added per decade of distance (dB × log10 of distance in km; a decade is ×10 in distance). Negative = signal falls off faster."><Num value={t.slopeDbPerDecade} onChange={(v) => setTune('slopeDbPerDecade', v ?? 0)} unit="dB/decade" /></Field>
             <Field label="Diffraction weighting" tip="1 = full ITU-R P.526 knife-edge loss; 0.5 = half (rounded hills); 0 = ignore terrain obstruction."><Num value={t.diffractionFactor} step={0.1} onChange={(v) => setTune('diffractionFactor', Math.max(0, Math.min(2, v ?? 1)))} /></Field>
             <Field label="Extra clutter loss" tip="Foliage / building clutter not captured by the environment class."><Num value={t.clutterDb} onChange={(v) => setTune('clutterDb', v ?? 0)} unit="dB" /></Field>
             <Field label="k-factor"><Num value={r.kFactor} step={0.01} onChange={(v) => update((d) => { d.radio.kFactor = v ?? 4 / 3; })} /></Field>

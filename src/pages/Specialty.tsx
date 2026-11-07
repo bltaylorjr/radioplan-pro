@@ -10,12 +10,14 @@ import { PV_MODULES, byId } from '../data/catalog';
 import { AWG_SIZES, LV_RESISTANCE_OHM_PER_KFT } from '../engine/electrical';
 import { wavelengthM } from '../engine/rf';
 import type { Project } from '../types';
+import { useUnits, DistNum } from '../units';
 
 function useArea(area: Area) { const { project, rt } = useStore(); return evaluateCompliance({ project, profile: rt.profile }).filter((f) => f.area === area); }
 type Upd = (fn: (d: Project) => void) => void;
 
 export function LfHfPage() {
   const { project: p, update } = useStore();
+  const u = useUnits();
   const l = p.lfhf;
   const set = <K extends keyof typeof l>(k: K, v: (typeof l)[K]) => update((d) => { d.lfhf[k] = v; });
   const lam = wavelengthM(l.fMHz);
@@ -33,9 +35,9 @@ export function LfHfPage() {
           <Field label="Ground-system loss resistance" tip="≈ 2 Ω with 120 λ/4 radials; 10-30 Ω with a few rods."><Num value={l.groundLossOhm} onChange={(v) => set('groundLossOhm', v!)} unit="Ω" /></Field>
           <Field label="Radials"><Num value={l.radials} step={1} onChange={(v) => set('radials', Math.round(v!))} unit="× λ/4" /></Field>
           <Field label="Soil conductivity" tip="Piedmont clay ≈ 0.004-0.008 S/m; sandy coastal plain ≈ 0.002; mountains ≈ 0.001; seawater 5."><Num value={l.soilSigma} onChange={(v) => set('soilSigma', v!)} unit="S/m" /></Field>
-          <Field label="Distance to receiver"><Num value={l.distanceKm} onChange={(v) => set('distanceKm', v!)} unit="km" /></Field>
+          <Field label="Distance to receiver"><DistNum km={l.distanceKm} onChange={(v) => set('distanceKm', v ?? l.distanceKm)} /></Field>
           <Field label="foF2 (critical frequency)" tip="From the nearest ionosonde (e.g. Wallops Is., Eglin) or a real-time foF2 map."><Num value={l.foF2} onChange={(v) => set('foF2', v!)} unit="MHz" /></Field>
-          <Field label="Skywave hop distance"><Num value={l.hopKm} onChange={(v) => set('hopKm', v!)} unit="km" /></Field>
+          <Field label="Skywave hop distance"><DistNum km={l.hopKm} onChange={(v) => set('hopKm', v ?? l.hopKm)} /></Field>
         </div>
       </Card>
       <Card title="Results">
@@ -48,12 +50,12 @@ export function LfHfPage() {
         </div>
         <h4>Groundwave (Sommerfeld-Norton, flat earth)</h4>
         <div className="stats">
-          <Stat label={`Field at ${l.distanceKm} km`} value={fmt(field, 3)} unit=" mV/m" />
+          <Stat label={`Field at ${u.f(l.distanceKm, 0)}`} value={fmt(field, 3)} unit=" mV/m" />
           <Stat label="Field strength" value={fmt(mvmToDbuV(field), 1)} unit=" dBµV/m" />
         </div>
         <h4>HF skywave</h4>
         <div className="stats">
-          <Stat label={`MUF (${l.hopKm} km hop)`} value={fmt(muf, 1)} unit=" MHz" tip="Secant law, F2 at 300 km" />
+          <Stat label={`MUF (${u.f(l.hopKm, 0)} hop)`} value={fmt(muf, 1)} unit=" MHz" tip="Secant law, F2 at 300 km" />
           <Stat label="FOT (85%)" value={fmt(fotMHz(muf), 1)} unit=" MHz" />
           <Stat label="Take-off angle" value={fmt(takeoffAngleDeg(l.hopKm), 1)} unit="°" />
           <Stat label="NVIS frequency" value={fmt(nv.freqMHz, 2)} unit=" MHz" />

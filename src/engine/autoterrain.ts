@@ -32,10 +32,22 @@ async function decodeTile(blob: Blob): Promise<Float32Array> {
   return out;
 }
 
-export interface AutoTerrainResult { dem: DemGrid; zoom: number; tiles: number; fromCache: number; resolutionM: number }
+export interface AutoTerrainResult { dem: DemGrid; zoom: number; tiles: number; fromCache: number; resolutionM: number; missingTiles: number }
+
+const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+/** Run `fn`, retrying failures with exponential backoff (baseMs, 3×, 9×, …). */
+export async function withRetry<T>(fn: () => Promise<T>, attempts = 3, baseMs = 600, sleep: (ms: number) => Promise<unknown> = wait): Promise<T> {
+  let last: unknown;
+  for (let a = 0; a < attempts; a++) {
+    try { return await fn(); } catch (e) { last = e; if (a < attempts - 1) await sleep(baseMs * Math.pow(3, a)); }
+  }
+  throw last;
+}
+/** Delay before whole-download retry n (0-based): 15 s, 30 s, 1 min, 2 min, 4 min, then every 5 min. */
+export const retryDelayMs = (n: number) => Math.min(15000 * Math.pow(2, n), 300000);
 
 /** Download (or load from cache) terrain covering `b` and resample it to a WGS84 DemGrid. */
-export async function downloadTerrain(b: Bounds, opts: { maxTiles?: number; maxCells?: number; onProgress?: (done: number, total: number) => void } = {}): Promise<AutoTerrainResult> {
+export async function downloadTerrain(b: Bounds, opts: { maxTiles?: number; maxCells?: number; onProgress?: (done: number, total: number) => void; retries?: number; sleep?: (ms: number) => Promise<unknown> } = {}): Promise<AutoTerrainResult> {
   const z = chooseZoom(b, opts.maxTiles ?? 48);
   const r = tileRange(b, z);
   const tiles = new Map<string, Float32Array>();
@@ -43,7 +55,7 @@ export async function downloadTerrain(b: Bounds, opts: { maxTiles?: number; maxC
   const jobs: Promise<void>[] = [];
   for (let x = r.x0; x <= r.x1; x++) for (let y = r.y0; y <= r.y1; y++) {
     jobs.push((async () => {
-      const { blob, fromCache: c } = await cachedFetchBlob(TERRARIUM_URL(z, x, y));
+      const { blob, fromCache: c } = await withRetry(() => cachedFetchBlob(TERRARIUM_URL(z, x, y)), opts.retries ?? 3, 600, opts.sleep);
       if (c) fromCache++;
       tiles.set(`${x}/${y}`, await decodeTile(blob));
       opts.onProgress?.(++done, r.count);
@@ -76,7 +88,7 @@ export async function downloadTerrain(b: Bounds, opts: { maxTiles?: number; maxC
   }
   return {
     dem: { name: `Auto terrain z${z}`, ncols, nrows, west: b.west, north: b.north, cellDeg, cellDegY, data, nodata: NaN, source: `USGS 3DEP / SRTM via AWS Terrain Tiles (z${z}, ~${resM.toFixed(0)} m)` },
-    zoom: z, tiles: r.count - failed, fromCache, resolutionM: resM,
+    zoom: z, tiles: r.count - failed, fromCache, resolutionM: resM, missingTiles: failed,
   };
 }
 

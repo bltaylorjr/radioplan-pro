@@ -80,7 +80,17 @@ export interface Project {
   version: number; company: Company; meta: ProjectMeta; sites: Site[]; radio: RadioDesign; grounding: Grounding;
   solar: SolarDesign; alarm: AlarmDesign; erces: ErcesDesign; lfhf: LfHfDesign; indoor: IndoorDesign; tests: TestRecord[];
   bomOverrides: Record<string, number>; taskDone: Record<string, boolean>;
-  settings: { autoTerrain: boolean; terrainMarginKm: number };
+  settings: { autoTerrain: boolean; terrainMarginKm: number; units?: 'mi' | 'km' };
   propagation: PropagationTuning; acceptance: Acceptance; network: NetworkDesign; survey: Survey;
   runLog: RunRecord[]; scenarios: Scenario[]; wifi: WifiSurvey;
+  /** Sync bookkeeping (per-section change times, deletions). Managed automatically. */
+  sync?: SyncMeta;
+}
+export interface SyncMeta {
+  projectId: string; deviceId: string; deviceName: string;
+  sections: Record<string, { hash: string; at: number }>;
+  /** ids present in each collection at the last stamp, to detect deletions */
+  items: Record<string, string[]>;
+  tombstones: Record<string, number>;
+  peers: Record<string, { name: string; at: number }>;
 }

@@ -10,9 +10,12 @@ import { radioHorizonKm, mToFt } from '../engine/rf';
 import type { Site, StructureType } from '../types';
 import { uid } from '../defaults';
 import { SiteDatabase } from '../components/SiteDatabase';
+import { useUnits, DistNum } from '../units';
+import { AddressInput } from '../components/AddressInput';
 
 export function SitesPage() {
   const { project: p, update, rt } = useStore();
+  const u = useUnits();
   const [selId, setSel] = useState(p.sites[0]?.id);
   const s = p.sites.find((x) => x.id === selId) ?? p.sites[0];
   const [msg, setMsg] = useState('');
@@ -77,15 +80,15 @@ export function SitesPage() {
           <button onClick={() => update((d) => { d.radio.rxSiteId = s.id; })}>Set as RX / far end</button>
         </div>
         {other && <div className="stats">
-          <Stat label={`Distance to ${other.name}`} value={fmt(haversineKm(s, other), 2)} unit=" km" />
+          <Stat label={`Distance to ${other.name}`} value={fmt(u.d(haversineKm(s, other)), 2)} unit={` ${u.unit}`} />
           <Stat label="Bearing" value={fmt(bearingDeg(s, other), 1)} unit="°T" />
-          <Stat label="Radio horizon (4/3 earth)" value={fmt(radioHorizonKm(s.antennaAglM), 1)} unit=" km" tip="d = √(2·k·Re·h) ≈ 4.12·√h(m)" />
+          <Stat label="Radio horizon (4/3 earth)" value={fmt(u.d(radioHorizonKm(s.antennaAglM)), 1)} unit={` ${u.unit}`} tip="d = √(2·k·Re·h) ≈ 4.12·√h(m)" />
         </div>}
       </Card>
       <Card title={`Edit: ${s.name}`} tour="site-gps">
         <div className="form">
           <Field label="Site name"><Txt value={s.name} onChange={(v) => set('name', v)} /></Field>
-          <Field label="Street address" wide><span className="row"><Txt value={s.address} onChange={(v) => set('address', v)} /><button onClick={geocode} disabled={!s.address}>📍 Geocode</button></span></Field>
+          <Field label="Street address" wide><span className="row"><AddressInput value={s.address} onChange={(v) => set('address', v)} onPick={(g) => { setPos(g.lat, g.lon, 'Address suggestion', 50); setMsg(`Located: ${g.label}`); }} /><button onClick={geocode} disabled={!s.address}>📍 Geocode</button></span></Field>
           <Field label="Latitude (WGS84)" tip="Decimal degrees, north positive."><Num value={s.lat} onChange={(v) => setPos(v!, s.lon, 'Manual', null)} unit="°" /></Field>
           <Field label="Longitude (WGS84)" tip="Decimal degrees, west negative (e.g. -80.84)."><Num value={s.lon} onChange={(v) => setPos(s.lat, v!, 'Manual', null)} unit="°" /></Field>
           <Field label="Ground elevation (AMSL)" tip="Ground height above mean sea level (NAVD88)."><span className="row"><Num value={s.groundElevM} nullable onChange={(v) => set('groundElevM', v)} unit="m" /><button onClick={elev}>Lookup</button></span></Field>
@@ -103,7 +106,7 @@ export function SitesPage() {
           <Field label="Structure height AGL" tip="Overall height including appurtenances (for FAA Part 77)."><Num value={s.structureHeightM} onChange={(v) => set('structureHeightM', v!)} unit={`m (${mToFt(s.structureHeightM).toFixed(0)} ft)`} /></Field>
           <Field label="Antenna centerline AGL"><Num value={s.antennaAglM} onChange={(v) => set('antennaAglM', v!)} unit={`m (${mToFt(s.antennaAglM).toFixed(0)} ft)`} /></Field>
           <Field label="On / in a building"><Check value={s.onBuilding} onChange={(v) => set('onBuilding', v)} label="Yes" /></Field>
-          <Field label="Nearest public-use airport" tip="Distance to nearest runway for 14 CFR 77.9(b)."><Num value={s.nearestAirportKm} nullable onChange={(v) => set('nearestAirportKm', v)} unit="km" /></Field>
+          <Field label="Nearest public-use airport" tip="Distance to nearest runway for 14 CFR 77.9(b)."><DistNum km={s.nearestAirportKm} nullable onChange={(v) => set('nearestAirportKm', v)} /></Field>
           <Field label="Longest runway"><Num value={s.nearestRunwayFt} nullable onChange={(v) => set('nearestRunwayFt', v)} unit="ft" /></Field>
         </div>
       </Card>

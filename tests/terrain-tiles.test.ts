@@ -58,3 +58,14 @@ describe('auto plan', () => {
     expect(p.meta.state).toBe('SC'); expect(p.sites[0].lat).toBeCloseTo(c.lat); expect(p.tests.length).toBeGreaterThan(5); expect(notes.length).toBeGreaterThan(2);
   });
 });
+
+describe('terrain retry', () => {
+  it('retries a failing call with backoff and then succeeds', async () => {
+    const { withRetry, retryDelayMs } = await import('../src/engine/autoterrain');
+    const waits: number[] = []; let n = 0;
+    const v = await withRetry(async () => { if (++n < 3) throw new Error('net'); return 'ok'; }, 3, 600, async (ms) => { waits.push(ms); });
+    expect(v).toBe('ok'); expect(waits).toEqual([600, 1800]);
+    await expect(withRetry(async () => { throw new Error('down'); }, 2, 1, async () => {})).rejects.toThrow('down');
+    expect([0, 1, 2, 3, 4, 9].map(retryDelayMs)).toEqual([15000, 30000, 60000, 120000, 240000, 300000]);
+  });
+});

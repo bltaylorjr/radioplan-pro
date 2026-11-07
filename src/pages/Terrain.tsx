@@ -7,9 +7,11 @@ import type { Bounds } from '../engine/autoterrain';
 import type L from 'leaflet';
 import { downloadTerrain, boundsAround } from '../engine/autoterrain';
 import { parseEsriAscii, parseHgt, parseGeoTiff, parseLas, fetchDemArea, sampleDem, DemGrid } from '../engine/terrain';
+import { useUnits, DistNum } from '../units';
 
 export default function TerrainPage() {
   const { project: p, update, rt, setRt } = useStore();
+  const u = useUnits();
   const [selId, setSel] = useState(p.sites[0]?.id);
   const [msg, setMsg] = useState('');
   const [busy, setBusy] = useState(false);
@@ -68,7 +70,7 @@ export default function TerrainPage() {
             <Field label="Z units"><Check value={las.feet} onChange={(v) => setLas({ ...las, feet: v })} label="Elevations in US feet" /></Field>
           </div>
           <h4>Download terrain (USGS 3DEP)</h4>
-          <div className="row"><Num value={radius} onChange={(v) => setRadius(v!)} unit="km radius" /><button disabled={busy} onClick={online}>🌐 Fetch around {sel?.name}</button></div>
+          <div className="row"><DistNum km={radius} onChange={(v) => setRadius(Math.max(0.5, v ?? 10))} suffix=" radius" /><button disabled={busy} onClick={online}>🌐 Fetch around {sel?.name}</button></div>
           {msg && <p className="note">{msg}</p>}
         </Card>
         <Card title="Loaded terrain">

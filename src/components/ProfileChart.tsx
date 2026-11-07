@@ -1,7 +1,9 @@
 import React from 'react';
 import type { ProfileAnalysis } from '../engine/terrain';
+import { useUnits } from '../units';
 
 export function ProfileChart({ a, height = 320 }: { a: ProfileAnalysis; height?: number }) {
+  const u = useUnits();
   const W = 900, H = height, pl = 56, pr = 30, pt = 20, pb = 36;
   const pts = a.points;
   const ys = pts.flatMap((p) => [p.effGroundM, p.losM + p.f1M, p.losM - p.f1M]);
@@ -18,7 +20,7 @@ export function ProfileChart({ a, height = 320 }: { a: ProfileAnalysis; height?:
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="chart" role="img" aria-label="Path profile">
       {ticksY.map((t) => <g key={t}><line x1={pl} x2={W - pr} y1={y(t)} y2={y(t)} className="grid" /><text x={pl - 6} y={y(t) + 4} textAnchor="end">{t.toFixed(0)}</text></g>)}
-      {ticksX.map((t) => <text key={t} x={x(t)} y={H - pb + 18} textAnchor="middle">{t.toFixed(1)} km</text>)}
+      {ticksX.map((t) => <text key={t} x={x(t)} y={H - pb + 18} textAnchor="middle">{u.d(t).toFixed(1)} {u.unit}</text>)}
       <text x={pl + 6} y={pt + 4} className="axis">Elevation, m AMSL</text>
       <polygon points={[...fzTop, ...fzBot].join(' ')} className="fresnel" />
       <path d={ground} className="ground" />

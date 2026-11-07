@@ -14,6 +14,7 @@ import { mToFt, fsplDb, mpeComplianceDistanceM } from '../engine/rf';
 import { bearingDeg } from '../engine/geo';
 import { coverageStats } from '../engine/coverage';
 import type { Project } from '../types';
+import { useUnits, DistNum } from '../units';
 
 const REPORTS = [
   ['site', 'Site Data Sheet'], ['link', 'Link Budget & Path Analysis'], ['coverage', 'Coverage Summary'], ['grounding', 'Grounding & Structure'],
@@ -33,6 +34,7 @@ ${tx && rx ? `<Placemark><name>Path ${esc(tx.name)} - ${esc(rx.name)}</name><Lin
 
 export function ReportsPage() {
   const { project: p, rt } = useStore();
+  const u = useUnits();
   const [sel, setSel] = useState<Record<RK, boolean>>({ site: true, link: true, coverage: true, grounding: true, solar: p.solar.enabled, alarm: p.alarm.enabled, erces: p.erces.enabled, compliance: true, bom: true, tests: p.tests.length > 0 });
   const L = designLink(p), c = p.company, m = p.meta;
   const findings = evaluateCompliance({ project: p, profile: rt.profile }).sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity]);
@@ -52,18 +54,18 @@ export function ReportsPage() {
       <tbody>{p.sites.map((s) => <tr key={s.id}><td>{s.name}<br /><small>{s.address}</small></td><td>{s.lat.toFixed(6)}, {s.lon.toFixed(6)}</td><td>{s.groundElevM ?? '—'} m</td><td>{s.structure}, {s.structureHeightM} m ({mToFt(s.structureHeightM).toFixed(0)} ft)</td><td>{s.antennaAglM} m ({mToFt(s.antennaAglM).toFixed(0)} ft)</td><td>{s.positionSource}{s.positionAccuracyM != null && ` ±${s.positionAccuracyM.toFixed(1)} m`}</td></tr>)}</tbody></table>
       {rt.dem && <p>Terrain source: {rt.dem.source} ({rt.dem.name}).</p>}</>,
     link: () => <><KV rows={[
-      ['Path', `${L.tx?.name} → ${L.rx?.name}: ${fmt(L.pathKm, 2)} km, bearing ${L.tx && L.rx ? fmt(bearingDeg(L.tx, L.rx), 1) : '—'}°T`],
+      ['Path', `${L.tx?.name} → ${L.rx?.name}: ${u.f(L.pathKm)}, bearing ${L.tx && L.rx ? fmt(bearingDeg(L.tx, L.rx), 1) : '—'}°T`],
       ['Frequency', `${p.radio.fMHz} MHz`], ['TX power', `${p.radio.txPowerDbm} dBm`],
       ['Antenna', `${L.ant?.brand} ${L.ant?.model} (${L.ant?.gainDbi} dBi)`], ['Feeder', `${L.fd?.model}, ${p.radio.feederLenM} m, ${fmt(L.feederLoss, 2)} dB`],
       ['EIRP / ERP', `${fmt(L.eirpDbm)} dBm (${fmt(L.eirpW, 0)} W) / ${fmt(L.erpDbm)} dBm`],
       ['Margins', `shadow ${fmt(L.fadeMarginDb)} dB (σ ${p.radio.shadowSigmaDb} dB, ${(p.radio.edgeReliability * 100).toFixed(0)}% edge), penetration ${p.radio.penetrationLossDb}, body ${p.radio.bodyLossDb}, interference ${p.radio.interferenceMarginDb} dB`],
-      ['MAPL', `${fmt(L.maplDb)} dB`], [`Cell-edge range (${L.modelName}, ${p.radio.env})`, `${fmt(L.rangeKm, 2)} km`],
-      ['Radio horizon (k=' + p.radio.kFactor.toFixed(2) + ')', `TX ${fmt(L.horizonTxKm, 1)} km; LOS to RX ${fmt(L.losKm, 1)} km`],
+      ['MAPL', `${fmt(L.maplDb)} dB`], [`Cell-edge range (${L.modelName}, ${p.radio.env})`, u.f(L.rangeKm)],
+      ['Radio horizon (k=' + p.radio.kFactor.toFixed(2) + ')', `TX ${u.f(L.horizonTxKm, 1)}; LOS to RX ${u.f(L.losKm, 1)}`],
       ['Free-space loss over path', `${fmt(fsplDb(p.radio.fMHz, Math.max(L.pathKm, 0.01)))} dB`],
       ...(rt.profile ? [['Min. Fresnel clearance', `${fmt(rt.profile.minClearancePct, 0)}% of F1 (${rt.profile.meets60 ? 'meets' : 'FAILS'} 60%), LOS ${rt.profile.los ? 'clear' : 'obstructed'}, diffraction ${fmt(rt.profile.diffractionLossDb)} dB`] as [string, string]] : []),
       ['RF exposure', `General-public MPE distance ${fmt(mpeComplianceDistanceM(L.eirpW, p.radio.fMHz, 'general'), 1)} m (OET-65)`],
     ]} />{rt.profile ? <ProfileChart a={rt.profile} height={260} /> : <p className="muted">Path profile not computed this session.</p>}</>,
-    coverage: () => <KV rows={[['Model', `${L.modelName}, ${p.radio.env}, ${p.radio.city}`], ['Analysis radius', `${p.radio.coverageRadiusKm} km`], ['Threshold', `${p.radio.coverageThresholdDbm} dBm`],
+    coverage: () => <KV rows={[['Model', `${L.modelName}, ${p.radio.env}, ${p.radio.city}`], ['Analysis radius', u.f(p.radio.coverageRadiusKm, 1)], ['Threshold', `${p.radio.coverageThresholdDbm} dBm`],
       ['Area above threshold', rt.coverage ? `${fmt(coverageStats(rt.coverage, p.radio.coverageThresholdDbm).pct, 1)} %` : 'not computed this session'], ['Azimuth / tilt', `${p.radio.azimuthDeg}°T / ${p.radio.mechTiltDeg + p.radio.elecTiltDeg}°`], ['Terrain', rt.dem ? rt.dem.source : 'smooth earth']]} />,
     grounding: () => { const g = p.grounding; return <KV rows={[['Bonding conductor', `#${g.bondingConductorAwg} AWG Cu, ${g.bondingConductorLengthM} m`], ['Ground ring', `#${g.groundRingAwg} AWG tinned`], ['Rods', `${g.groundRods} × ${g.rodLengthFt} ft at ${g.rodSpacingFt} ft spacing`], ['Feeder ground kits', g.towerGroundKits], ['Surge protector / IBT', `${g.surgeProtector ? 'Yes' : 'No'} / ${g.intersystemBond ? 'Yes' : 'No'}`], ['Measured resistance', g.measuredResistanceOhm != null ? `${g.measuredResistanceOhm} Ω` : 'not measured'], ['TIA-222-H', `Risk Category ${g.structureClass}${g.ice ? ', ice' : ''}`]]} />; },
     solar: () => { const r = sizeSolar({ ...p.solar, module: mod, onBuilding: L.tx?.onBuilding ?? false }); return <KV rows={[['Daily load', `${fmt(r.dailyWh, 0)} Wh/day`], ['Battery', `${fmt(r.batteryAh, 0)} Ah @ ${p.solar.systemVdc} V, ${p.solar.autonomyDays} days, ${p.solar.depthOfDischarge * 100}% DoD`], ['Array', `${r.modulesTotal} × ${mod.brand} ${mod.model} (${r.strings} strings × ${r.modulesPerString})`], ['Peak sun hours', `${p.solar.peakSunHours} (${p.solar.pshLocation})`], ['Cold Voc (690.7)', `${fmt(r.maxStringVoc, 1)} V`], ['690.8 currents', `${fmt(r.circuitCurrentA, 1)} A max circuit; ${fmt(r.conductorAmpsRequired, 1)} A conductor`], ['PV conductor / OCPD', `#${r.pvConductor?.awg} AWG / ${r.pvOcpdA} A`]]} />; },
