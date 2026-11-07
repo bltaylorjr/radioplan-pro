@@ -41,8 +41,10 @@ describe('verified citations', () => {
     for (const f of nc.filter((x) => x.code.startsWith('NEC'))) expect(f.code).toMatch(/^NEC 2020/);
     p.meta.state = 'TN';
     const tn = evaluateCompliance({ project: p });
-    expect(tn.some((f) => f.id === 'jur-unconfirmed')).toBe(true);
-    for (const f of tn.filter((x) => x.code.startsWith('NEC'))) expect(f.code).toContain('(edition unconfirmed)');
+    expect(tn.some((f) => f.id === 'jur-unconfirmed')).toBe(false);
+    for (const f of tn.filter((x) => x.code.startsWith('NEC'))) expect(f.code).toMatch(/^NEC 2017/);
+    p.meta.county = 'Knox County';
+    expect(evaluateCompliance({ project: p }).find((f) => f.id === 'jur-local')?.title).toMatch(/exempt/);
     expect(necSection('706.15', '2017')).toBe('706.7');
     expect(necSection('706.15', '2020')).toBe('706.15');
     expect(JURISDICTIONS.GA.necEdition).toBe('2023');

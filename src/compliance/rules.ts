@@ -3,6 +3,7 @@
 // THESE ARE PLANNING AIDS. A licensed professional engineer / the AHJ must verify every finding and the adopted edition.
 import type { Project } from '../types';
 import { JURISDICTIONS, necSection } from './jurisdictions';
+import { localRule } from './codesets';
 import { awgAtLeast } from '../engine/electrical';
 import { sizeSolar } from '../engine/solar';
 import { alarmBatteryAh, nacVoltageDrop, ercesDownlink } from '../engine/alarm';
@@ -38,6 +39,8 @@ export function evaluateCompliance(ctx: RuleContext): Finding[] {
     title: `${j.name}: verify adopted editions with the AHJ`,
     detail: `Electrical: ${j.electrical}. ${j.necNote} Building: ${j.building}. Fire: ${j.fire}. Authority: ${j.electricalAuthority}. ${j.amendmentNotes.join(' ')} Checked against official sources on ${j.checked}; state amendment text is not bundled. Confirm at ${j.verifyUrl}.` }));
   if (j.necStatus === 'unconfirmed') out.push(F({ id: 'jur-unconfirmed', severity: 'warning', area: 'Jurisdiction', code: j.name, section: 'Adopted NEC edition', title: `${j.name}: current NEC edition could not be confirmed`, detail: j.necNote, fix: 'Call the State Fire Marshal / local AHJ and record the adopted edition in the AHJ notes.' }));
+  { const lr = localRule(p.meta.state, p.meta.county, p.meta.city);
+    out.push(F({ id: 'jur-local', severity: lr.exempt ? 'warning' : 'info', area: 'Jurisdiction', code: j.name, section: 'Local enforcement', title: lr.exempt ? `Local exempt jurisdiction: use its adopted codes` : 'Local enforcement', detail: lr.text, fix: lr.exempt ? 'Get the adopted editions and local amendments from the city or county codes department and note them in the AHJ notes.' : undefined })); }
   out.push(F({ id: 'jur-license', severity: 'info', area: 'Jurisdiction', code: j.name, section: 'Licensing', title: 'Licensing / permits', detail: j.licensing.join(' • ') + '. Electrical and low-voltage permits are typically required before installation.' }));
 
   // ---------- Grounding & bonding (NEC 810, 250, 800) ----------

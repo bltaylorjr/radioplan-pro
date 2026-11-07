@@ -57,7 +57,7 @@ export function findCandidates(dem: DemGrid, target: LatLon, o: PlanOptions, top
 }
 
 /** Pre-fill the whole project for a location and chosen candidate. Returns a list of what was set. */
-export function applyPlan(d: Project, target: LatLon & { label: string; state?: string; county?: string }, best: Candidate, o: PlanOptions, dist: (km: number) => string = (km) => `${km.toFixed(2)} km`): string[] {
+export function applyPlan(d: Project, target: LatLon & { label: string; state?: string; county?: string; city?: string }, best: Candidate, o: PlanOptions, dist: (km: number) => string = (km) => `${km.toFixed(2)} km`): string[] {
   const notes: string[] = [];
   const preset = BAND_PRESETS[o.bandPreset];
   const short = target.label.split(',').slice(0, 2).join(',').trim() || `${target.lat.toFixed(4)}, ${target.lon.toFixed(4)}`;
@@ -66,6 +66,7 @@ export function applyPlan(d: Project, target: LatLon & { label: string; state?: 
   if (target.state && ['NC', 'SC', 'GA', 'TN'].includes(target.state)) { d.meta.state = target.state as StateCode; notes.push(`Jurisdiction set to ${target.state}${target.county ? `, ${target.county}` : ''}.`); }
   else notes.push('Location is outside NC/SC/GA/TN (or unknown): check the project state on Company & Project.');
   if (target.county) d.meta.county = target.county;
+  if (target.city) d.meta.city = target.city; else if (target.county) d.meta.city = undefined;
   const sameSpot = best.distKm < 0.05;
   const base = d.sites[0];
   d.sites = [

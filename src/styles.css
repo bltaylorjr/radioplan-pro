@@ -188,3 +188,13 @@ ol.steps li { margin-bottom: 6px; } .warn-h { color: #d97706; }
 label.button { display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--line); border-radius: 6px; padding: 6px 12px; cursor: pointer; }
 .rpt-note { break-inside: avoid; margin-bottom: 12px; } .rpt-photos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; } .rpt-photos figure { margin: 0; } .rpt-photos img { width: 100%; border-radius: 4px; } .rpt-photos figcaption { font-size: .75rem; }
 .big-chip { font-size: .95rem; padding: 7px 12px; }
+/* Codes by location */
+.warn-text { color: var(--warn); } .nowrap { white-space: nowrap; }
+.codes-tbl td { vertical-align: top; }
+.county-list { max-height: 560px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; margin-top: 8px; }
+.county-row { border-bottom: 1px solid var(--line); } .county-row.mine { background: color-mix(in srgb, var(--ok) 10%, transparent); }
+.county-head { width: 100%; justify-content: flex-start; flex-wrap: wrap; white-space: normal; text-align: left; border: 0; border-radius: 0; gap: 8px; }
+.county-head .pill { margin-left: 0; border: 1px solid var(--line); } .pill.warn { background: var(--warn); color: #111; border-color: transparent; }
+.county-key { flex-basis: 100%; }
+.county-body { padding: 4px 12px 12px; }
+.codes-here { overflow-x: auto; }

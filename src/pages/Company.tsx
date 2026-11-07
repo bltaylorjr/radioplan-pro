@@ -8,6 +8,8 @@ import { JurisdictionInfo } from '../components/JurisdictionInfo';
 import type { StateCode } from '../types';
 import { uid } from '../defaults';
 import { AddressInput } from '../components/AddressInput';
+import { applyAddress } from '../compliance/place';
+import { CodesHere } from '../components/CodesHere';
 
 export function CompanyPage() {
   const { project: p, update, go } = useStore();
@@ -46,17 +48,19 @@ export function CompanyPage() {
           <Field label="Project name" wide><Txt value={m.name} onChange={setM('name')} /></Field>
           <Field label="Project number"><Txt value={m.number} onChange={setM('number')} /></Field>
           <Field label="Client PO / contract #"><Txt value={m.poNumber ?? ''} onChange={setM('poNumber')} /></Field>
-          <Field label="Project site address" wide tip="Where the work is. Use the Find Location page to turn it into GPS coordinates."><AddressInput value={m.siteAddress ?? ''} onChange={setM('siteAddress')} onPick={(g) => update((d) => { d.meta.siteAddress = g.label; if (g.county) d.meta.county = g.county; if (g.state && ['NC', 'SC', 'GA', 'TN'].includes(g.state)) d.meta.state = g.state as typeof d.meta.state; })} /></Field>
+          <Field label="Project site address" wide tip="Where the work is. Use the Find Location page to turn it into GPS coordinates."><AddressInput value={m.siteAddress ?? ''} onChange={setM('siteAddress')} onPick={(g) => update((d) => applyAddress(d, g))} /></Field>
           <Field label="Revision"><Txt value={m.revision} onChange={setM('revision')} /></Field>
           <Field label="Engineer of record"><Txt value={m.engineer} onChange={setM('engineer')} /></Field>
           <Field label="PE license #"><Txt value={m.peLicense} onChange={setM('peLicense')} /></Field>
           <Field label="Project state (code set)" topic="compliance"><Sel<StateCode> value={m.state} onChange={(v) => update((d) => { d.meta.state = v; })} options={[['NC', 'North Carolina'], ['SC', 'South Carolina'], ['GA', 'Georgia'], ['TN', 'Tennessee']]} /></Field>
           <Field label="Distance units" tip="All distances and radii are shown in this unit. Heights stay in metres."><Sel<'mi' | 'km'> value={p.settings.units ?? 'mi'} onChange={(v) => update((d) => { d.settings = { ...d.settings, units: v }; })} options={[['mi', 'Miles'], ['km', 'Kilometres']]} /></Field>
-          <Field label="County / city"><Txt value={m.county} onChange={setM('county')} /></Field>
+          <Field label="County" tip="Filled from the project address. Picks the local code rules."><Txt value={m.county} onChange={setM('county')} /></Field>
+          <Field label="City / town" tip="Filled from the project address. In Tennessee it decides whether an exempt city enforces its own codes."><Txt value={m.city ?? ''} onChange={setM('city')} /></Field>
           <Field label="Date"><input type="date" value={m.created} onChange={(e) => setM('created')(e.target.value)} /></Field>
           <Field label="AHJ notes" wide tip="Local amendments, permit numbers, inspector contacts."><textarea value={m.jurisdictionNotes} onChange={(e) => setM('jurisdictionNotes')(e.target.value)} rows={3} /></Field>
         </div>
-        <JurisdictionInfo j={j} />
+        <CodesHere compact />
+        <JurisdictionInfo j={j} compact />
       </Card>
       <Card title="Your company information" tour="company-form" tip="Your firm. Printed on every report header.">
         <div className="form">

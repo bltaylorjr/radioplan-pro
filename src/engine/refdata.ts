@@ -80,3 +80,8 @@ export function refSearch(q: string, limit = 6): GeoResult[] {
   const score = (g: GeoResult) => (norm(g.city ?? g.county ?? '') === name || norm(g.county ?? '').replace(/ county$/, '') === name ? 0 : 1) + (isCounty === !!(g.county && !g.city) ? 0 : 0.5);
   return out.sort((a, b) => score(a) - score(b)).slice(0, limit);
 }
+
+/** Every built-in county: name ("X County"), state, FIPS and centre point. */
+export function allCounties(): { county: string; state: string; fips: string; lat: number; lon: number }[] {
+  return REF.counties.map((c) => ({ county: countyLabel(c), state: c.s, fips: c.f, ...countyCenter(c) })).sort((a, b) => a.state.localeCompare(b.state) || a.county.localeCompare(b.county));
+}

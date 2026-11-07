@@ -9,6 +9,7 @@ import { sizeSolar } from '../engine/solar';
 import { alarmBatteryAh, ercesDownlink } from '../engine/alarm';
 import { PV_MODULES, byId } from '../data/catalog';
 import { JURISDICTIONS } from '../compliance/jurisdictions';
+import { CodesHere } from '../components/CodesHere';
 import { JurisdictionInfo } from '../components/JurisdictionInfo';
 import { mToFt, fsplDb, mpeComplianceDistanceM } from '../engine/rf';
 import { bearingDeg } from '../engine/geo';
@@ -43,7 +44,7 @@ export function ReportsPage() {
       <div className="rpt-co">{c.logoDataUrl && <img src={c.logoDataUrl} alt="" />}<div><b>{c.name || 'Company name'}</b><br />{c.title && <>{c.title}<br /></>}{[c.address, c.city, c.state, c.zip].filter(Boolean).join(', ')}<br />{[c.phone, c.email].filter(Boolean).join(' · ')}{c.license && <><br />License {c.license}</>}</div></div>
       <div className="rpt-meta"><h2>{title}</h2><div>{m.name}{m.number && ` · #${m.number}`} · Rev {m.revision}</div><div>Client: {m.client || '—'}{m.clientContact && ` · Attn: ${m.clientContact}`}{m.poNumber && ` · PO ${m.poNumber}`}</div>
         {(m.clientAddress || m.clientCity) && <div className="small">{[m.clientAddress, m.clientCity, m.clientState, m.clientZip].filter(Boolean).join(', ')}{(m.clientPhone || m.clientEmail) && ` · ${[m.clientPhone, m.clientEmail].filter(Boolean).join(' · ')}`}</div>}
-        <div>Site: {m.siteAddress ? `${m.siteAddress} · ` : ''}{m.county ? `${m.county}, ` : ''}{JURISDICTIONS[m.state].name}</div><div>Engineer: {m.engineer || '—'}{m.peLicense && ` (PE ${m.peLicense})`} · {m.created}</div></div>
+        <div>Site: {m.siteAddress ? `${m.siteAddress} · ` : ''}{m.city ? `${m.city}, ` : ''}{m.county ? `${m.county}, ` : ''}{JURISDICTIONS[m.state].name}</div><div>Engineer: {m.engineer || '—'}{m.peLicense && ` (PE ${m.peLicense})`} · {m.created}</div></div>
     </div>
   );
   const Foot = () => <div className="rpt-foot">Prepared with RadioPlan Pro. Planning document — calculations and code citations must be verified by a licensed professional engineer and the Authority Having Jurisdiction.</div>;
@@ -77,7 +78,7 @@ export function ReportsPage() {
     alarm: () => { const b = alarmBatteryAh(p.alarm); return <><table className="rpt-tbl"><thead><tr><th>Device</th><th>Qty</th><th>Standby mA</th><th>Alarm mA</th></tr></thead><tbody>{p.alarm.devices.map((d, i) => <tr key={i}><td>{d.name}</td><td>{d.qty}</td><td>{d.standbyMa}</td><td>{d.alarmMa}</td></tr>)}</tbody></table>
       <KV rows={[['Standby', `${fmt(b.standbyA, 3)} A × ${p.alarm.standbyHours} h`], ['Alarm', `${fmt(b.alarmA, 3)} A × ${p.alarm.alarmMinutes} min`], ['Required', `${fmt(b.rawAh, 2)} Ah × ${p.alarm.safetyFactor} = ${fmt(b.requiredAh, 2)} Ah`], ['Installed', `${p.alarm.installedBatteryAh} Ah`]]} /></>; },
     erces: () => { const d = ercesDownlink(p.erces); return <KV rows={[['Building', `${p.erces.floors} floors × ${p.erces.areaPerFloorSqft} ft²`], ['Donor', `${p.erces.donorRssiDbm} dBm`], ['BDA output', `${fmt(d.bdaOutputDbm)} dBm`], ['Per antenna', `${fmt(d.perAntennaDbm)} dBm (${p.erces.floors * p.erces.antennasPerFloor} antennas)`], ['Worst-point signal', `${fmt(d.edgeRssiDbm)} dBm (≥ −95 required)`], ['Secondary power', `${p.erces.standbyHours} h`]]} />; },
-    compliance: () => <><JurisdictionInfo j={JURISDICTIONS[m.state]} compact /><table className="rpt-tbl"><thead><tr><th>Status</th><th>Code / section</th><th>Finding</th><th>Recommended fix</th></tr></thead>
+    compliance: () => <><CodesHere /><JurisdictionInfo j={JURISDICTIONS[m.state]} compact /><table className="rpt-tbl"><thead><tr><th>Status</th><th>Code / section</th><th>Finding</th><th>Recommended fix</th></tr></thead>
       <tbody>{findings.map((f) => <tr key={f.id} className={f.severity}><td>{f.severity === 'violation' ? 'NOT IN COMPLIANCE' : f.severity.toUpperCase()}</td><td>{f.code} §{f.section}{f.verified === 'primary' ? ' ✓' : ''}</td><td><b>{f.title}</b><br />{f.detail}</td><td>{f.fix ?? ''}</td></tr>)}</tbody></table>
       <p className="small">✓ = section text checked in the official source on {JURISDICTIONS[m.state].checked}. Other sections are from the published code books and must be confirmed in the adopted edition.</p></>,
     bom: () => <table className="rpt-tbl"><thead><tr><th>Category</th><th>Item</th><th>Brand / model</th><th>Qty</th><th>Unit</th></tr></thead><tbody>{buildBom(p).map((l) => <tr key={l.key}><td>{l.category}</td><td>{l.item}</td><td>{l.brandModel}</td><td>{l.qty}</td><td>{l.unit}</td></tr>)}</tbody></table>,

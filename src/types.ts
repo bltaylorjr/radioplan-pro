@@ -15,6 +15,8 @@ export interface ProjectMeta {
   clientContact?: string; clientAddress?: string; clientCity?: string; clientState?: string; clientZip?: string; clientPhone?: string; clientEmail?: string;
   /** Project site address (where the work is). */
   siteAddress?: string; poNumber?: string;
+  /** City or town of the project site (from the address); used to pick local codes. */
+  city?: string;
 }
 export interface Site {
   id: string; name: string; address: string; lat: number; lon: number; groundElevM: number | null;

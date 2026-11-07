@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useStore } from '../store';
 import { AddressInput } from './AddressInput';
+import { applyAddress } from '../compliance/place';
 import { geocodeAddress, withCounty, GeoResult } from '../engine/geocode';
 import type { StateCode } from '../types';
 
@@ -31,9 +32,7 @@ export function Welcome({ onClose, onHelp }: { onClose: () => void; onHelp: () =
     if (loc) withCounty(loc);
     update((d) => {
       if (company.trim()) d.company.name = company.trim();
-      d.meta.siteAddress = loc?.label ?? label;
-      if (loc?.state && ['NC', 'SC', 'GA', 'TN'].includes(loc.state)) d.meta.state = loc.state as StateCode;
-      if (loc?.county) d.meta.county = loc.county;
+      if (loc) applyAddress(d, loc); else d.meta.siteAddress = label;
       if (loc && d.sites[0]) { d.sites[0].lat = loc.lat; d.sites[0].lon = loc.lon; d.sites[0].address = loc.label; d.sites[0].groundElevM = null; }
       if (job === 'alarm') d.alarm.enabled = true;
       if (job === 'erces') d.erces.enabled = true;
