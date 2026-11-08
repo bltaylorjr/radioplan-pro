@@ -108,7 +108,7 @@ export function CodesByPlace() {
   return (
     <>
       <div className="form">
-        <label className="field"><span>State</span><select value={st} onChange={(e) => { setSt(e.target.value as StateCode); setCounty(''); setCity(''); }} aria-label="State">{(['NC', 'SC', 'GA', 'TN'] as StateCode[]).map((s) => <option key={s} value={s}>{CODE_SETS[s].name}</option>)}</select></label>
+        <label className="field"><span>State</span><select value={st} onChange={(e) => { setSt(e.target.value as StateCode); setCounty(''); setCity(''); }} aria-label="State">{(['NC', 'SC', 'GA', 'TN', 'VA'] as StateCode[]).map((s) => <option key={s} value={s}>{CODE_SETS[s].name}</option>)}</select></label>
         <label className="field"><span>County</span><select value={county} onChange={(e) => { setCounty(e.target.value); setCity(''); }} aria-label="County"><option value="">— whole state —</option>{counties.map((c) => <option key={c.fips} value={c.county}>{c.county}{localRule(st, c.county).exempt || localCodes(st, c.county)?.level === 'county' ? ' ★' : ''}</option>)}</select></label>
         <label className="field"><span>City or town</span><select value={city} onChange={(e) => { const c = cities.find((x) => x.city === e.target.value); setCity(e.target.value); if (c && !county) setCounty(c.county); }} aria-label="City"><option value="">— none —</option>{cities.map((c) => <option key={c.city + c.county} value={c.city}>{c.city}{county ? '' : ` (${c.county})`}{ownCity(c) ? ' ★' : ''}</option>)}</select></label>
       </div>

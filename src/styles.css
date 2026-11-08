@@ -315,3 +315,20 @@ body { font-size: clamp(15px, 0.6vw + 12.5px, 17px); }
 @media (max-width: 800px) { .theory-wrap { grid-template-columns: 1fr; } .theory-index { position: static; max-height: 300px; } }
 .theory-fig { margin: 10px 0; padding: 8px; border: 1px solid var(--line, #ddd); border-radius: 8px; background: #fff; color: #222; }
 .theory-fig svg { width: 100%; height: auto; max-width: 720px; display: block; }
+/* Full page view for maps, 3D views and diagrams */
+.fullview { position: relative; }
+.fullview-open { display: flex; justify-content: flex-end; margin: 0 0 4px; }
+.fullview-open .small-btn { font-size: .85rem; padding: 3px 10px; }
+.fullview-on { position: fixed; inset: 0; z-index: 4000; background: var(--bg, #fff); display: flex; flex-direction: column; padding: 8px 12px 12px; }
+.fullview-bar { display: flex; align-items: center; gap: 12px; padding: 0 0 8px; }
+.fullview-bar b { flex: 1; font-size: 1.1rem; }
+.fullview-bar button { font-size: 1.05rem; padding: 10px 22px; }
+.fullview-on .fullview-body { flex: 1; min-height: 0; overflow: auto; display: flex; flex-direction: column; }
+.fullview-on .fullview-body > * { flex: 1; min-height: 0; }
+.fullview-on .map, .fullview-on .three, .fullview-on .bldg3d { height: 100% !important; min-height: 300px; }
+.fullview-on figure { margin: 0; display: flex; flex-direction: column; }
+.fullview-on figure > svg, .fullview-on .fullview-body > svg, .fullview-on .bp-sheet.on svg, .fullview-on .theory-fig svg { flex: 1; width: 100% !important; height: 100% !important; max-height: none !important; max-width: none !important; min-height: 0; }
+.fullview-on .bp-set, .fullview-on .bp-sheet.on { height: 100%; display: flex; flex-direction: column; }
+.fullview-on .canvas-wrap { display: flex; align-items: center; justify-content: center; }
+.fullview-on canvas.plan { width: auto !important; height: 100% !important; max-width: 100%; }
+@media print { .fullview-open { display: none; } }

@@ -4,7 +4,7 @@ import type { SolarLoad } from './engine/solar';
 import type { AlarmDevice } from './engine/alarm';
 import type { Wall } from './engine/indoor';
 
-export type StateCode = 'NC' | 'SC' | 'GA' | 'TN';
+export type StateCode = 'NC' | 'SC' | 'GA' | 'TN' | 'VA';
 export type StructureType = 'monopole' | 'self-support lattice' | 'guyed lattice' | 'rooftop' | 'water tank' | 'wood pole';
 
 export interface Company { name: string; title: string; address: string; city: string; state: string; zip: string; phone: string; email: string; license: string; logoDataUrl?: string }

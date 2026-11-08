@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { FullView } from '../components/FullView';
 import { useStore } from '../store';
 import { Card, Field, Num, Sel, Stat, fmt, Txt } from '../components/ui';
 import { WALL_MATERIALS, multiWallLossDb, p1238LossDb, wallLossDb } from '../engine/indoor';
@@ -99,7 +100,7 @@ export function IndoorPage() {
           <button className={view === '3d' ? 'primary' : ''} onClick={() => setView('3d')}>🧊 3D walls</button>
           {view === '3d' && <span className="small muted">Walls stand about 10 ft ({WALL_H} m) tall in their material colour; the heat map is on the floor. Drag to turn, scroll to zoom. Switch to 2D to draw.</span>}
         </div>
-        {view === '2d' ? <div className="canvas-wrap"><canvas ref={cv} className="plan" onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerLeave={up} style={{ aspectRatio: `${d.widthM} / ${d.heightM}` }} /></div> : <Indoor3D d={d} grid={grid} />}
+        {view === '2d' ? <FullView title="Floor plan & coverage"><div className="canvas-wrap"><canvas ref={cv} className="plan" onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerLeave={up} style={{ aspectRatio: `${d.widthM} / ${d.heightM}` }} /></div> </FullView> : <Indoor3D d={d} grid={grid} />}
         <div className="legend">{RSSI_SCALE.map((s) => <span key={s.min}><span className="lg" style={{ background: `rgb(${s.color.join(',')})` }} />{s.label}</span>)}</div>
         <div className="stats">
           <Stat label={`Floor area ≥ ${d.targetDbm} dBm`} value={fmt(grid.pct, 1)} unit=" %" tone={grid.pct >= 99 ? 'ok' : grid.pct >= 90 ? 'warn' : 'bad'} tip="ERCES: 90% general, 99% critical areas" />

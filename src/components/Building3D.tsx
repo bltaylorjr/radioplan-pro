@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { FullView } from './FullView';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import type { AutoResult, Kind } from '../engine/autodesign';
@@ -47,9 +48,9 @@ export function Building3D({ r, lengthFt, widthFt, floorHeightFt, floor, hidden 
     }
     const ctl = new OrbitControls(cam, renderer.domElement); ctl.target.set(0, (floors * FH) / 3, 0); ctl.update();
     let raf = 0; const loop = () => { raf = requestAnimationFrame(loop); ctl.update(); renderer.render(scene, cam); }; loop();
-    const onResize = () => { const nw = el.clientWidth; const nh = Math.max(360, Math.min(620, nw * 0.62)); cam.aspect = nw / nh; cam.updateProjectionMatrix(); renderer.setSize(nw, nh); };
+    const onResize = () => { const nw = el.clientWidth; const nh = el.closest('.fullview-on') ? Math.max(300, el.clientHeight) : Math.max(360, Math.min(620, nw * 0.62)); cam.aspect = nw / nh; cam.updateProjectionMatrix(); renderer.setSize(nw, nh); };
     window.addEventListener('resize', onResize);
     return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', onResize); ctl.dispose(); renderer.dispose(); scene.traverse((o) => { const m = o as THREE.Mesh; m.geometry?.dispose?.(); }); };
   }, [r, lengthFt, widthFt, floorHeightFt, floor, hidden]);
-  return <div ref={mount} className="bldg3d" aria-label="3D model of the building and equipment" />;
+  return <FullView title="3D building model"><div ref={mount} className="bldg3d" aria-label="3D model of the building and equipment" /></FullView>;
 }

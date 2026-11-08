@@ -1,4 +1,5 @@
 import React from 'react';
+import { FullView } from './FullView';
 import type { ProfileAnalysis } from '../engine/terrain';
 import { useUnits } from '../units';
 
@@ -18,7 +19,7 @@ export function ProfileChart({ a, height = 320 }: { a: ProfileAnalysis; height?:
   const ticksY = Array.from({ length: 6 }, (_, i) => ymin + ((ymax - ymin) * i) / 5);
   const ticksX = Array.from({ length: 6 }, (_, i) => (a.distanceKm * i) / 5);
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="chart" role="img" aria-label="Path profile">
+    <FullView title="Path profile"><svg viewBox={`0 0 ${W} ${H}`} className="chart" role="img" aria-label="Path profile">
       {ticksY.map((t) => <g key={t}><line x1={pl} x2={W - pr} y1={y(t)} y2={y(t)} className="grid" /><text x={pl - 6} y={y(t) + 4} textAnchor="end">{t.toFixed(0)}</text></g>)}
       {ticksX.map((t) => <text key={t} x={x(t)} y={H - pb + 18} textAnchor="middle">{u.d(t).toFixed(1)} {u.unit}</text>)}
       <text x={pl + 6} y={pt + 4} className="axis">Elevation, m AMSL</text>
@@ -30,6 +31,6 @@ export function ProfileChart({ a, height = 320 }: { a: ProfileAnalysis; height?:
       <line x1={x(0)} y1={y(pts[0].groundM)} x2={x(0)} y2={y(pts[0].losM)} className="tower" />
       <line x1={x(a.distanceKm)} y1={y(pts[pts.length - 1].groundM)} x2={x(a.distanceKm)} y2={y(pts[pts.length - 1].losM)} className="tower" />
       {w && <g><circle cx={x(w.dKm)} cy={y(w.effGroundM)} r={5} className="worst" /><text x={x(w.dKm) + 8} y={y(w.effGroundM) - 8} className="worst-t">{w.clearancePct.toFixed(0)}% F1</text></g>}
-    </svg>
+    </svg></FullView>
   );
 }

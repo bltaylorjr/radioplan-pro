@@ -9,11 +9,11 @@ export function placeFromText(text: string, preferState?: string): { state: Stat
   const zipM = t.match(/\b(\d{5})(?:-\d{4})?\b/);
   if (zipM) for (const tw of towns()) if (tw.zips.includes(zipM[1])) return { state: tw.state as StateCode, county: countyAt(tw.lat, tw.lon)?.county, city: tw.city, lat: tw.lat, lon: tw.lon };
   const low = t.toLowerCase();
-  const stM = low.match(/\b(nc|sc|ga|tn|north carolina|south carolina|georgia|tennessee)\b/);
-  const st = stM ? ({ 'north carolina': 'NC', 'south carolina': 'SC', georgia: 'GA', tennessee: 'TN' } as Record<string, string>)[stM[1]] ?? stM[1].toUpperCase() : undefined;
+  const stM = low.match(/\b(nc|sc|ga|tn|va|north carolina|south carolina|georgia|tennessee|virginia)\b/);
+  const st = stM ? ({ 'north carolina': 'NC', 'south carolina': 'SC', georgia: 'GA', tennessee: 'TN', virginia: 'VA' } as Record<string, string>)[stM[1]] ?? stM[1].toUpperCase() : undefined;
   const parts = low.split(',').map((x) => x.trim()).filter(Boolean);
   // Try each comma part (the town is usually just before the state) as a town name.
-  const cands = parts.length > 1 ? [...parts.slice(0, -1).reverse(), parts[parts.length - 1].replace(/\b(nc|sc|ga|tn|north carolina|south carolina|georgia|tennessee)\b.*$/, '').trim()] : [low];
+  const cands = parts.length > 1 ? [...parts.slice(0, -1).reverse(), parts[parts.length - 1].replace(/\b(nc|sc|ga|tn|va|north carolina|south carolina|georgia|tennessee|virginia)\b.*$/, '').trim()] : [low];
   for (const c of cands) {
     if (!c) continue;
     const hits = towns().filter((tw) => tw.city.toLowerCase() === c && (!st || tw.state === st));
@@ -26,7 +26,7 @@ export function placeFromText(text: string, preferState?: string): { state: Stat
 export const countyOfTown = (city: string, state: string) => { const tw = towns().find((t) => t.state === state && t.city.toLowerCase() === city.trim().toLowerCase()); return tw ? countyAt(tw.lat, tw.lon)?.county : undefined; };
 
 export interface Place { state: StateCode; county?: string; city?: string; from: string }
-const STATES = ['NC', 'SC', 'GA', 'TN'];
+const STATES = ['NC', 'SC', 'GA', 'TN', 'VA'];
 
 /** Nearest built-in town (ZIP post-office name) within maxKm of a point. */
 export function nearestTown(lat: number, lon: number, maxKm = 6): string | undefined {

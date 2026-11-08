@@ -22,6 +22,7 @@ const NC_SRC = { licensing: 'https://nclicensing.org/wp-content/uploads/2026/05/
 const SC_SRC = { llr: 'https://llr.sc.gov/bcc/PDFfiles/Building%20Codes%20in%20Effect%20for%20South%20Carolina%20Final.pdf', icc: 'https://www.icc-nta.org/code-update/south-carolina-adopts-new-building-codes/', gvl: 'https://www.greenvillecounty.org/buildingsafety/forms/CurrentCodeListICC.pdf', bcc: 'https://llr.sc.gov/bcc/BCAdoption.aspx' };
 const GA_SRC = { cur: 'https://dca.georgia.gov/community-assistance/construction-codes/current-state-minimum-codes-construction', ann: 'https://dca.georgia.gov/announcement/2025-12-09/new-codes-jan-2026', mp: 'https://dca.georgia.gov/community-assistance/construction-codes/mandatory-and-permissive-state-codes', enf: 'https://dca.georgia.gov/community-assistance/construction-codes/enforcement-state-minimum-codes', grey: 'https://dca.georgia.gov/document/document/grey-sheet-ib-codes-info-sheetpdf/download' };
 const TN_SRC = { hist: 'https://www.tn.gov/commerce/fire/codes-enforcement/history.html', ex: 'https://www.tn.gov/commerce/fire/codes-enforcement/exempt-jurisdictions.html', enf: 'https://www.tn.gov/commerce/fire/codes-enforcement.html', mtas: 'https://www.mtas.tennessee.edu/reference/statewide-building-standards' };
+const VA_SRC = { codes: 'https://www.dhcd.virginia.gov/codes', vcc: 'https://law.lis.virginia.gov/admincode/title13/agency5/chapter63/section10/', appE: 'https://law.lis.virginia.gov/admincode/title13/agency5/chapter63/section365/', usbc: 'https://law.lis.virginia.gov/admincode/title13/agency5/chapter63/', c2024: 'https://www.dhcd.virginia.gov/2024-code-development-cycle', s98: 'https://law.lis.virginia.gov/vacode/title36/chapter6/section36-98/', s105: 'https://law.lis.virginia.gov/vacode/title36/chapter6/section36-105/', sfmo: 'https://www.vdfp.virginia.gov/about-us/virginia-state-fire-marshals-office/' };
 const REF_NOTE = 'Edition comes from the referenced-standards chapter of the adopted fire code, not from a state page. Confirm with the fire marshal.';
 
 export const CODE_SETS: Record<StateCode, StateCodeSet> = {
@@ -147,6 +148,36 @@ export const CODE_SETS: Record<StateCode, StateCodeSet> = {
     ahj: 'SFMO (Codes Enforcement) outside exempt jurisdictions; the city or county codes department inside one; the local fire marshal for fire code.',
     sources: [TN_SRC.hist, TN_SRC.ex, TN_SRC.enf, TN_SRC.mtas],
   },
+  VA: {
+    state: 'VA', name: 'Virginia',
+    summary: 'The 2021 Virginia Uniform Statewide Building Code (USBC) and the 2021 Statewide Fire Prevention Code (SFPC) took effect Jan 18, 2024, based on the 2021 I-codes and the 2020 NEC. The USBC applies statewide and overrides local building codes. The 2024 codes are still being written.',
+    current: [
+      { cat: 'Building', code: '2021 Virginia Construction Code (USBC Part I; 2021 IBC chapters 2-35 with Virginia changes)', effective: '2024-01-18', status: 'verified', src: VA_SRC.vcc },
+      { cat: 'Residential', code: '2021 IRC as used by the Virginia Construction Code', effective: '2024-01-18', status: 'verified', note: 'Listed among the 2021 model codes the Virginia Construction Code uses.', src: VA_SRC.vcc },
+      { cat: 'Fire', code: '2021 Virginia Statewide Fire Prevention Code (SFPC)', effective: '2024-01-18', status: 'verified', note: 'Based on the 2021 International Fire Code; ERCES requirements are in its Section 510.', src: VA_SRC.codes },
+      { cat: 'Fire alarm', code: 'NFPA 72, 2019 edition (referenced by the 2021 IBC / IFC)', status: 'secondary', note: REF_NOTE },
+      { cat: 'Emergency responder radio', code: '2021 SFPC / IFC Section 510 and IBC Section 918 with NFPA 1221 (2019)', status: 'secondary', note: REF_NOTE },
+      { cat: 'Electrical', code: 'NEC 2020 (NFPA 70) as used by the 2021 USBC', effective: '2024-01-18', status: 'verified', note: 'DHCD: Virginia adopted the 2021 I-codes and the 2020 National Electrical Code effective Jan 18, 2024.', src: VA_SRC.codes },
+      { cat: 'Plumbing', code: '2021 IPC (Virginia Plumbing Code)', effective: '2024-01-18', status: 'verified', src: VA_SRC.vcc },
+      { cat: 'Mechanical', code: '2021 IMC (Virginia Mechanical Code)', effective: '2024-01-18', status: 'verified', src: VA_SRC.vcc },
+      { cat: 'Fuel gas', code: '2021 IFGC (Virginia Fuel Gas Code)', effective: '2024-01-18', status: 'verified', src: VA_SRC.vcc },
+      { cat: 'Energy', code: '2021 IECC (Virginia Energy Conservation Code)', effective: '2024-01-18', status: 'verified', src: VA_SRC.vcc },
+      { cat: 'Existing building', code: '2021 Virginia Existing Building Code (USBC Part II)', effective: '2024-01-18', status: 'verified', note: 'The IEBC edition is not named on the pages read; confirm with the building official.', src: VA_SRC.usbc },
+      { cat: 'Property maintenance', code: '2021 Virginia Maintenance Code (USBC Part III)', effective: '2024-01-18', status: 'verified', permissive: true, note: 'A locality may choose to inspect and enforce it for existing buildings (Va. Code 36-105(C)).', src: VA_SRC.s105 },
+      { cat: 'Accessibility', code: 'IBC Chapter 11 plus Appendix E (supplementary accessibility), made part of the code', status: 'verified', note: 'The ICC A117.1 edition is not named on the pages read; confirm it.', src: VA_SRC.appE },
+      { cat: 'Other', code: '2021 Industrialized Building Safety Regulations; 2021 Amusement Device Regulations', effective: '2024-01-18', status: 'verified', src: VA_SRC.codes },
+    ],
+    upcoming: [{ title: '2024 Virginia codes (in development)', effective: 'Not set', codes: ['2024 Virginia Construction Code, Existing Building Code, Maintenance Code and Statewide Fire Prevention Code'],
+      note: 'DHCD workgroups met through January 2026 on the 2024 cycle. The Board of Housing and Community Development adopts the codes; no effective date has been published.', src: VA_SRC.c2024 }],
+    enforcement: [
+      'The local building department enforces the USBC for construction and rehabilitation (Va. Code 36-105(A)). A county or city without one must contract with another locality or an approved state agency.',
+      'Towns under 3,500 people may enforce the USBC themselves; otherwise the county enforces it for them (36-105(A)).',
+      'The State Fire Marshal\'s Office does not issue permits for fire protection systems; those go to the local building official. Ask the local fire official who enforces the SFPC where you are.',
+    ],
+    localAmendments: 'The USBC overrides local building codes and regulations (Va. Code 36-98). Localities may not amend it, except narrow single-family items (foundations or crawl spaces, certain materials or finishes, window area) and zoning-type conditions.',
+    ahj: 'County or city building official (independent cities have their own); the local fire official or the State Fire Marshal\'s Office for the SFPC.',
+    sources: [VA_SRC.codes, VA_SRC.vcc, VA_SRC.c2024, VA_SRC.s98, VA_SRC.s105, VA_SRC.sfmo],
+  },
 };
 
 // Tennessee exempt jurisdictions for commercial buildings (SFMO list, checked CHECKED_ON).
@@ -159,6 +190,7 @@ export interface LocalRule { exempt: boolean; by?: 'city' | 'county'; text: stri
 /** Which local rule applies at a county and (optional) city. */
 export function localRule(state: StateCode, county?: string, city?: string): LocalRule {
   const s = CODE_SETS[state];
+  if (state === 'VA') return { exempt: false, text: `${county ? county + ': ' : ''}the Virginia USBC applies, enforced by the local building department. ${s.localAmendments}` };
   if (state !== 'TN') return { exempt: false, text: `${county ? county + ': ' : ''}state codes apply. ${s.localAmendments}` };
   const c = norm(city), k = norm(county);
   if (c && TN_EXEMPT_CITIES.some((x) => norm(x) === c)) return { exempt: true, by: 'city', text: `${city} is an SFMO exempt jurisdiction: the city does commercial plan review and inspections under its own adopted codes.` };

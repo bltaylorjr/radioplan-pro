@@ -1,4 +1,4 @@
-// Built-in reference data (no internet needed): county boundaries, ZIP codes and towns for NC, SC, GA, TN.
+// Built-in reference data (no internet needed): county boundaries, ZIP codes and towns for NC, SC, GA, TN, VA.
 import data from '../data/refdata.json';
 import type { GeoResult } from './geocode';
 

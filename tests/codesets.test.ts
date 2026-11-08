@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { CODE_SETS, localRule, codesFor, keyCodes } from '../src/compliance/codesets';
 import { allCounties } from '../src/engine/refdata';
-import { applyAddress, projectPlace, nearestTown } from '../src/compliance/place';
+import { applyAddress, projectPlace, nearestTown, placeFromText } from '../src/compliance/place';
 import { defaultProject } from '../src/defaults';
 
 describe('code sets by location', () => {
@@ -13,8 +13,8 @@ describe('code sets by location', () => {
     expect(keyCodes('NC')).toContain('2018 NC Building Code');
     expect(CODE_SETS.SC.upcoming[0].effective).toBe('2027-01-01');
   });
-  it('covers all 400 counties', () => {
-    const c = allCounties(); expect(c.length).toBe(400);
+  it('covers all 533 counties and independent cities', () => {
+    const c = allCounties(); expect(c.length).toBe(533);
     for (const x of c) expect(codesFor(x.state as 'NC', x.county).set.current.length).toBeGreaterThan(5);
   });
   it('detects Tennessee exempt jurisdictions', () => {
@@ -31,5 +31,18 @@ describe('code sets by location', () => {
     expect(p.meta.state).toBe('TN'); expect(p.meta.county).toBe('Knox County'); expect(p.meta.city).toBe('Knoxville');
     expect(projectPlace(p).from).toBe('project address');
     expect(nearestTown(0, 0)).toBeUndefined();
+  });
+});
+
+describe('Virginia', () => {
+  it('has the 2021 USBC, the 2020 NEC and the no-local-amendments rule', () => {
+    const c = codesFor('VA', 'Fairfax County');
+    expect(c.set.current.find((e) => e.cat === 'Electrical')?.code).toMatch(/NEC 2020/);
+    expect(c.set.current.find((e) => e.cat === 'Building')?.effective).toBe('2024-01-18');
+    expect(c.local.text).toMatch(/USBC/);
+  });
+  it('reads a Virginia address', () => {
+    const p = placeFromText('Roanoke, VA');
+    expect(p?.state).toBe('VA');
   });
 });

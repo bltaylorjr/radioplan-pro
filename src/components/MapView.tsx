@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { FullView } from './FullView';
 import L from 'leaflet';
 import type { Site } from '../types';
 import type { CoverageResult } from '../engine/coverage';
@@ -149,5 +150,5 @@ export function MapView({ sites, txId, rxId, coverage, floor = -110, dem, onClic
     if (marker) L.marker([marker.lat, marker.lon], { icon: icon('★', '#ef6c00') }).bindPopup(marker.label ?? 'Search location').addTo(g);
     extraRef.current?.(g);
   }, [sites, txId, rxId, coverage, floor, dem, selectedId, marker, extraKey]);
-  return <div ref={el} className="map" style={{ height }} data-tour="map" />;
+  return <FullView title="Map"><div ref={el} className="map" style={{ height }} data-tour="map" /></FullView>;
 }

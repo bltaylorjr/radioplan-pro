@@ -1,4 +1,5 @@
 // Runs between sites: draw the route on the map, measure it over the terrain, and see the conduit, cable,
+import { FullView } from './FullView';
 // handholes and crew-hours that follow. Measured runs feed the Materials list and the proposal's labor.
 import React, { useState } from 'react';
 import L from 'leaflet';
@@ -19,12 +20,12 @@ function Profile({ m }: { m: RunMeasure }) {
   const X = (x: number) => P + ((x - x0) / (x1 - x0)) * (W - P - 6), Y = (z: number) => H - 16 - ((z - z0) / (z1 - z0)) * (H - 26);
   const d = m.profile.map((p, i) => `${i ? 'L' : 'M'}${X(p[0]).toFixed(1)},${Y(p[1]).toFixed(1)}`).join(' ');
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="run-profile" role="img" aria-label="Ground profile along the route">
+    <FullView title="Ground profile along the route"><svg viewBox={`0 0 ${W} ${H}`} className="run-profile" role="img" aria-label="Ground profile along the route">
       <path d={`${d} L${X(x1)},${H - 16} L${P},${H - 16} Z`} fill="rgba(138,90,43,.18)" />
       <path d={d} fill="none" stroke="#8a5a2b" strokeWidth="2" />
       <text x={2} y={Y(z1) + 4} fontSize="10">{z1} ft</text><text x={2} y={Y(z0)} fontSize="10">{z0} ft</text>
       <text x={P} y={H - 3} fontSize="10">0</text><text x={W - 6} y={H - 3} fontSize="10" textAnchor="end">{x1.toLocaleString()} ft</text>
-    </svg>
+    </svg></FullView>
   );
 }
 

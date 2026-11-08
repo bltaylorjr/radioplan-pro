@@ -1,3 +1,11 @@
+# LvPlan Pro 1.5.33
+
+- **Full page view** for maps, 3D views and diagrams: press **⛶ Full page** above any map, 3D model, drawing sheet, floor plan, wiring or theory diagram, or profile chart to show it on its own full screen, with a big **✕ Close** button (Esc also closes). Maps and 3D views keep their position and zoom.
+- **Virginia added.** Pick Virginia as the project state, or type a Virginia address, town or ZIP code, and the app fills in the county or independent city by itself (works offline: all 95 counties, 38 independent cities and Virginia ZIP codes are built in).
+- Codes for Virginia: the 2021 Virginia Uniform Statewide Building Code (Virginia Construction Code, 2021 IBC/IRC base) and the 2021 Statewide Fire Prevention Code, effective Jan 18, 2024, with the 2020 NEC. The USBC overrides local building codes (Va. Code 36-98), so the app says so instead of listing local amendments. The 2024 Virginia codes are still being written and have no effective date yet.
+- Contacts: DHCD State Building Codes Office, the Virginia State Fire Marshal's Office and the DPOR Board for Contractors, copied from their own pages. The Library has a Virginia licensing entry (Class A/B/C, ELE with the ESC and FAS specialties).
+- Not yet checked on an official page: DCJS private security registration for alarm and electronic security work (the DCJS site would not load), and the ICC A117.1 and IEBC editions Virginia uses. The app marks these "confirm".
+
 # LvPlan Pro 1.5.32
 
 - The introduction video opens and plays by itself the first time the app is opened on a device (once only; the ▶ Video button plays it again any time). If the device will not start it with sound, a big **🔊 Tap to turn on the sound** button shows. **Skip the video** goes straight to the welcome screen.

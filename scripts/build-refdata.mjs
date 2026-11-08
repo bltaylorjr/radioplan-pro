@@ -1,11 +1,11 @@
-// Generates src/data/refdata.json: county boundaries, ZIP codes and towns for NC, SC, GA and TN,
+// Generates src/data/refdata.json: county boundaries, ZIP codes and towns for NC, SC, GA, TN and VA,
 // so county / jurisdiction lookup and place search work with no internet.
 // Sources: us-atlas (US Census Bureau cartographic boundaries, 1:10m), zipcodes (US ZIP centroids).
 import fs from 'node:fs';
 import { createRequire } from 'node:module';
 import { feature } from 'topojson-client';
 const require = createRequire(import.meta.url);
-const STATES = { '37': 'NC', '45': 'SC', '13': 'GA', '47': 'TN' };
+const STATES = { '37': 'NC', '45': 'SC', '13': 'GA', '47': 'TN', '51': 'VA' };
 const topo = JSON.parse(fs.readFileSync('node_modules/us-atlas/counties-10m.json', 'utf8'));
 const r4 = (v) => Math.round(v * 1e4);
 const counties = [];
@@ -20,7 +20,9 @@ for (const f of feature(topo, topo.objects.counties).features) {
     for (const [x, y] of ring) { const X = r4(x), Y = r4(y); out.push(X - px, Y - py); px = X; py = Y; w = Math.min(w, x); e = Math.max(e, x); s = Math.min(s, y); n = Math.max(n, y); }
     rings.push(out);
   }
-  counties.push({ f: String(f.id), n: f.properties.name, s: st, b: [w, s, e, n].map((v) => +v.toFixed(4)), r: rings });
+  // Virginia's independent cities (FIPS 51510 and up) share names with counties (Richmond, Fairfax, Roanoke…): label them "… city".
+  const nm = st === 'VA' && +String(f.id).slice(2) >= 510 && !/ city$/i.test(f.properties.name) ? `${f.properties.name} city` : f.properties.name;
+  counties.push({ f: String(f.id), n: nm, s: st, b: [w, s, e, n].map((v) => +v.toFixed(4)), r: rings });
 }
 const { codes } = require('zipcodes/lib/codes.js');
 const zips = Object.values(codes).filter((z) => Object.values(STATES).includes(z.state) && Number.isFinite(z.latitude))

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { FullView } from './FullView';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { sampleDem, demBounds, buildProfile, analyzeProfile, DemGrid, ProfileAnalysis } from '../engine/terrain';
@@ -122,5 +123,5 @@ export function Terrain3D(props: Terrain3DProps) {
     return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', onR); ctl.dispose(); renderer.dispose(); geo.dispose(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dem, props.profile, exag, showF, sites, fMHz, props.txId, props.rxId, marker?.lat, marker?.lon, comm]);
-  return <div ref={mount} className="three" style={props.height ? { height: props.height } : undefined} />;
+  return <FullView title="3D terrain model"><div ref={mount} className="three" style={props.height ? { height: props.height } : undefined} /></FullView>;
 }

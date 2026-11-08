@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { FullView } from '../components/FullView';
 import { useStore, downloadText, downloadBytes, safeName } from '../store';
 import { Card } from '../components/ui';
 import { autoDesign, defaultInputs, AutoResult, BLDG, Kind, KIND_LABEL, Device } from '../engine/autodesign';
@@ -222,7 +223,7 @@ export function BlueprintsPage() {
       <Card title="Sheets" className="no-print" actions={<select value={view} onChange={(e) => setView(+e.target.value)} aria-label="Sheet to view">{sheets.map((s, i) => <option key={s.no} value={i}>{s.no}: {s.title}</option>)}</select>}>
         <p className="small muted">Shown scaled to fit the screen. Every sheet below prints at full size.</p>
       </Card>
-      <div className="bp-set">{sheets.map((s, i) => <div key={s.no} className={'bp-sheet' + (i === view ? ' on' : '')}><Sheet c={c} sh={s} idx={i} /></div>)}</div>
+      <FullView title={`Drawing sheet ${sheets[view]?.no ?? ''}`}><div className="bp-set">{sheets.map((s, i) => <div key={s.no} className={'bp-sheet' + (i === view ? ' on' : '')}><Sheet c={c} sh={s} idx={i} /></div>)}</div></FullView>
       <p className="small muted no-print">Device locations come from a rules-of-thumb layout and must be adjusted to the real floor plan. A licensed engineer or a NICET-certified designer (as the AHJ requires) must review, complete and seal the drawings before submittal. Check the AHJ’s own submittal requirements for sheet size, number of copies and electronic format.</p>
     </div>
   );

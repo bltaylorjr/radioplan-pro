@@ -71,6 +71,20 @@ export const JURISDICTIONS: Record<StateCode, Jurisdiction> = {
     sources: ['https://www.tn.gov/commerce/fire/codes-enforcement/history.html', 'https://www.tn.gov/commerce/fire/codes-enforcement/exempt-jurisdictions.html'],
     checked: CHECKED_ON,
   },
+  VA: {
+    state: 'VA', name: 'Virginia', necEdition: '2020', necEffective: '2024-01-18', necStatus: 'verified',
+    necNote: 'DHCD: effective Jan 18, 2024, Virginia adopted the 2021 I-codes as referenced in the Virginia Construction Code and the 2021 Statewide Fire Prevention Code, and the 2020 National Electrical Code. The 2024 code cycle is still in development.',
+    electrical: 'NEC 2020 (NFPA 70) as used by the 2021 Virginia USBC, effective 2024-01-18',
+    building: '2021 Virginia Uniform Statewide Building Code (Virginia Construction Code, 2021 IBC/IRC base), effective 2024-01-18',
+    fire: '2021 Virginia Statewide Fire Prevention Code (2021 IFC base), effective 2024-01-18',
+    electricalAuthority: 'Virginia Department of Housing and Community Development (DHCD), State Building Codes Office; local building departments enforce',
+    fireAuthority: 'Local fire official and the Virginia State Fire Marshal\'s Office (Department of Fire Programs)',
+    licensing: ['Contractors: DPOR Board for Contractors, Class A/B/C license with a specialty. ELE (electrical) covers the electronic/communication service (ESC) and fire alarm systems (FAS) specialties (18VAC50-22-20)', 'Electricians: DPOR tradesman certification', 'Alarm and electronic security businesses and technicians may also need DCJS private security registration; confirm with DCJS'],
+    amendmentNotes: ['The USBC overrides local building codes (Va. Code 36-98); there are no local electrical amendments.'],
+    verifyUrl: 'https://www.dhcd.virginia.gov/codes',
+    sources: ['https://www.dhcd.virginia.gov/codes', 'https://law.lis.virginia.gov/admincode/title13/agency5/chapter63/section10/', 'https://law.lis.virginia.gov/vacode/title36/chapter6/section36-98/'],
+    checked: '2026-11-08',
+  },
 };
 
 /** NEC section numbers that changed between editions (planning subset). */

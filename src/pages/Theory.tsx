@@ -1,4 +1,5 @@
 // Low-voltage principles: a reading page with a clickable index, levels, search, and the related
+import { FullView } from '../components/FullView';
 // calculators shown right under each section. Works offline (the text is built into the app).
 import React, { useMemo, useState } from 'react';
 import { THEORY, LEVELS, type Level } from '../data/theory';
@@ -43,7 +44,7 @@ export function TheoryPage() {
                 <article key={s.id} id={`th-${s.id}`} className="theory-sec">
                   <h3>{s.title} <span className={`lvl lvl-${s.level.toLowerCase()}`}>{s.level}</span></h3>
                   <Md text={s.body} />
-                  {s.diagrams?.map((d) => { const td = THEORY_DIAGRAMS[d], g = GUIDES.find((x) => x.id === d); return td || g ? <figure key={d} className="theory-fig"><figcaption><b>{td ? td.title : `Wiring diagram: ${g!.title}`}</b></figcaption>{td ? <td.el /> : g!.diagram(guideCtx(project))}</figure> : null; })}
+                  {s.diagrams?.map((d) => { const td = THEORY_DIAGRAMS[d], g = GUIDES.find((x) => x.id === d); return td || g ? <FullView key={d} title={td ? td.title : `Wiring diagram: ${g!.title}`}><figure className="theory-fig"><figcaption><b>{td ? td.title : `Wiring diagram: ${g!.title}`}</b></figcaption>{td ? <td.el /> : g!.diagram(guideCtx(project))}</figure></FullView> : null; })}
                   {(s.pages?.length || s.calcs?.length) ? <div className="row wrap">
                     {s.pages?.map(([id, label]) => <button key={id + label} onClick={() => go(id)}>Open {label} →</button>)}
                     {s.calcs?.length ? <button onClick={() => setOpen((o) => ({ ...o, [s.id]: !o[s.id] }))}>{open[s.id] ? 'Hide calculators' : `🧮 Calculators (${s.calcs.length})`}</button> : null}

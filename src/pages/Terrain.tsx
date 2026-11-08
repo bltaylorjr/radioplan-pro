@@ -64,7 +64,7 @@ export default function TerrainPage() {
           </div>
           <h4>LiDAR options</h4>
           <div className="form">
-            <Field label="UTM zone (projected LAS)" tip="NC/SC/GA east: 17; west TN & west GA: 16. Leave blank for geographic LAS."><Num value={las.utmZone} nullable onChange={(v) => setLas({ ...las, utmZone: v })} /></Field>
+            <Field label="UTM zone (projected LAS)" tip="NC/SC/GA east and western VA: 17; eastern VA (east of 78° W): 18; west TN & west GA: 16. Leave blank for geographic LAS."><Num value={las.utmZone} nullable onChange={(v) => setLas({ ...las, utmZone: v })} /></Field>
             <Field label="Grid cell size"><Num value={las.cellM} onChange={(v) => setLas({ ...las, cellM: v! })} unit="m" /></Field>
             <Field label="Surface"><Sel value={las.mode} onChange={(v) => setLas({ ...las, mode: v })} options={[['dsm', 'DSM (trees & buildings)'], ['dtm', 'DTM (bare earth, class 2)']]} /></Field>
             <Field label="Z units"><Check value={las.feet} onChange={(v) => setLas({ ...las, feet: v })} label="Elevations in US feet" /></Field>

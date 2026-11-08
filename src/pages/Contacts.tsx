@@ -10,7 +10,7 @@ import { uid } from '../defaults';
 import { CONTACTS, RESOURCES, CONTACT_KINDS, RESOURCE_KINDS, Contact, Resource, Level, atPlace, lookupUrl, mergeMine } from '../data/contacts';
 import type { StateCode } from '../types';
 
-const STATES: StateCode[] = ['NC', 'SC', 'GA', 'TN'];
+const STATES: StateCode[] = ['NC', 'SC', 'GA', 'TN', 'VA'];
 type Mine<T> = T & { replaces?: string };
 interface Store<T> { mine: Mine<T>[]; hidden: string[] }
 const KEYS = { contacts: 'contacts.v1', resources: 'resources.v1' } as const;
@@ -36,7 +36,7 @@ export function ContactsPage() {
     const z = v.replace(/[^0-9]/g, '').slice(0, 5); setZip(z); setZipMsg('');
     if (z.length < 5) return;
     const f = placeFromText(z);
-    if (!f) { setZipMsg('ZIP code not found in NC, SC, GA or TN.'); return; }
+    if (!f) { setZipMsg('ZIP code not found in NC, SC, GA, TN or VA.'); return; }
     setSt(f.state); setCounty(f.county ?? ''); setCity(f.city ?? '');
     setZipMsg(`${z} is ${[f.city, f.county, CODE_SETS[f.state].name].filter(Boolean).join(', ')}.`);
   };

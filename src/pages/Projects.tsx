@@ -172,7 +172,7 @@ export function ProjectsPage() {
 
       <Card title="Built-in reference data" tip="Installed with the app and used automatically when there is no internet.">
         <ul className="small">
-          <li><b>Codes and rules:</b> adopted NEC editions and code sets for NC, SC, GA and TN, compliance rules with code sections, FCC / FAA limits.</li>
+          <li><b>Codes and rules:</b> adopted NEC editions and code sets for NC, SC, GA, TN and VA, compliance rules with code sections, FCC / FAA limits.</li>
           <li><b>Places:</b> {ref.counties} county boundaries, {ref.towns.toLocaleString()} towns and {ref.zips.toLocaleString()} ZIP codes for {ref.states.join(', ')}. County and jurisdiction are found offline, and searches for a town, ZIP or county work offline.</li>
           <li><b>Engineering data:</b> equipment and antenna catalog, cable loss tables, conductor ampacity, 30 calculators, help manual and guided tours.</li>
           <li><b>Downloaded automatically for each project when online:</b> USGS terrain (kept with the project) and the USGS topo map around the sites (kept for offline use).</li>

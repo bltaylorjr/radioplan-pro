@@ -1,4 +1,5 @@
 import React from 'react';
+import { FullView } from './FullView';
 import type { AutoResult, Kind } from '../engine/autodesign';
 import { KIND_LABEL } from '../engine/autodesign';
 import { KIND_COLOR } from './Building3D';
@@ -15,7 +16,7 @@ export function FloorPlan2D({ r, lengthFt, widthFt, floor, hidden }: { r: AutoRe
     <div className="plan2d">{list.map((f) => {
       const here = all.filter((d) => d.floor === f || (d.outdoor && f === 0));
       return (
-        <figure key={f}>
+        <FullView key={f} title={`Floor ${f + 1} plan`}><figure>
           <figcaption className="small"><b>Floor {f + 1}</b> · {here.length} items · {lengthFt} × {widthFt} ft</figcaption>
           <svg viewBox={`${x0} ${y0} ${w} ${h}`} role="img" aria-label={`Floor ${f + 1} plan`} style={{ width: '100%', height: 'auto', maxHeight: 520, background: 'var(--panel)' }}>
             <defs><pattern id={`g${f}`} width="10" height="10" patternUnits="userSpaceOnUse"><path d="M10 0H0V10" fill="none" stroke="var(--line)" strokeWidth={0.3} /></pattern></defs>
@@ -24,7 +25,7 @@ export function FloorPlan2D({ r, lengthFt, widthFt, floor, hidden }: { r: AutoRe
             {here.filter((d) => d.kind === 'tr').map((d, i) => <text key={'t' + i} x={d.x + dot * 2} y={d.y + dot} fontSize={dot * 2.6} fill="var(--text)">TR</text>)}
             <g transform={`translate(${x0 + pad / 2} ${y0 + h - pad / 3})`}><line x1={0} y1={0} x2={bar} y2={0} stroke="var(--text)" strokeWidth={dot / 2.5} /><text x={0} y={-dot} fontSize={dot * 2.4} fill="var(--text)">{bar} ft</text></g>
           </svg>
-        </figure>);
+        </figure></FullView>);
     })}</div>
   );
 }

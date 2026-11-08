@@ -63,8 +63,8 @@ export function applyPlan(d: Project, target: LatLon & { label: string; state?: 
   const short = target.label.split(',').slice(0, 2).join(',').trim() || `${target.lat.toFixed(4)}, ${target.lon.toFixed(4)}`;
   d.meta.name = `Site plan — ${short}`;
   target = withCounty({ ...target });
-  if (target.state && ['NC', 'SC', 'GA', 'TN'].includes(target.state)) { d.meta.state = target.state as StateCode; notes.push(`Jurisdiction set to ${target.state}${target.county ? `, ${target.county}` : ''}.`); }
-  else notes.push('Location is outside NC/SC/GA/TN (or unknown): check the project state on Company & Project.');
+  if (target.state && ['NC', 'SC', 'GA', 'TN', 'VA'].includes(target.state)) { d.meta.state = target.state as StateCode; notes.push(`Jurisdiction set to ${target.state}${target.county ? `, ${target.county}` : ''}.`); }
+  else notes.push('Location is outside NC/SC/GA/TN/VA (or unknown): check the project state on Company & Project.');
   if (target.county) d.meta.county = target.county;
   if (target.city) d.meta.city = target.city; else if (target.county) d.meta.city = undefined;
   const sameSpot = best.distKm < 0.05;

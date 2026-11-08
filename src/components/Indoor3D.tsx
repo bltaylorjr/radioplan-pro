@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { FullView } from './FullView';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { WALL_MATERIALS } from '../engine/indoor';
@@ -53,9 +54,9 @@ export function Indoor3D({ d, grid }: { d: IndoorDesign; grid: { nx: number; ny:
     }
     const ctl = new OrbitControls(cam, renderer.domElement); ctl.target.set(0, 0, 0); ctl.maxPolarAngle = Math.PI / 2.05; ctl.update();
     let raf = 0; const loop = () => { raf = requestAnimationFrame(loop); ctl.update(); renderer.render(scene, cam); }; loop();
-    const onResize = () => { const nw = el.clientWidth; const nh = Math.max(340, Math.min(560, nw * 0.6)); cam.aspect = nw / nh; cam.updateProjectionMatrix(); renderer.setSize(nw, nh); };
+    const onResize = () => { const nw = el.clientWidth; const nh = el.closest('.fullview-on') ? Math.max(300, el.clientHeight) : Math.max(340, Math.min(560, nw * 0.6)); cam.aspect = nw / nh; cam.updateProjectionMatrix(); renderer.setSize(nw, nh); };
     window.addEventListener('resize', onResize);
     return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', onResize); ctl.dispose(); tex.dispose(); renderer.dispose(); scene.traverse((o) => { (o as THREE.Mesh).geometry?.dispose?.(); }); };
   }, [d.walls, d.antennas, d.widthM, d.heightM, grid]);
-  return <div ref={mount} className="bldg3d indoor3d" aria-label="3D view of the walls and coverage" />;
+  return <FullView title="3D walls and coverage"><div ref={mount} className="bldg3d indoor3d" aria-label="3D view of the walls and coverage" /></FullView>;
 }

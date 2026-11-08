@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { FullView } from '../components/FullView';
 import { useStore } from '../store';
 import { Card } from '../components/ui';
 import { projectSystems } from '../data/systems';
@@ -18,7 +19,7 @@ function Diagram({ title, w = 760, h, boxes, wires, labels = [], legend }: {
   legend: [string, string][];
 }) {
   return (
-    <figure className="diagram">
+    <FullView title={title}><figure className="diagram">
       <svg viewBox={`0 0 ${w} ${h + 34}`} role="img" aria-label={title}>
         <title>{title}</title>
         {wires.map((x, i) => <path key={i} d={x.d} fill="none" stroke={x.c} strokeWidth={x.w ?? 4} strokeDasharray={x.dash} strokeLinecap="round" strokeLinejoin="round" />)}
@@ -34,7 +35,7 @@ function Diagram({ title, w = 760, h, boxes, wires, labels = [], legend }: {
         </g>
       </svg>
       <figcaption>{title}</figcaption>
-    </figure>
+    </figure></FullView>
   );
 }
 
@@ -150,7 +151,7 @@ export const GUIDES: Guide[] = [
     tools: ['DC clamp meter', 'MC4 crimp and disconnect tools', 'Torque screwdriver', 'Irradiance meter (optional)'],
     safety: ['PV modules make voltage whenever light hits them: cover them or open the disconnect before wiring.', 'Use DC-rated breakers and fuses only.'],
     steps: [
-      'Mount the array facing true south (in NC/SC/GA/TN), tilted about equal to the latitude for year-round output.',
+      'Mount the array facing true south (in NC/SC/GA/TN/VA), tilted about equal to the latitude for year-round output.',
       'Wire modules in series / parallel per the Solar & DC Power page; check the cold-weather Voc stays below the controller and module limits.',
       'Run PV conductors (red +, black −) to a combiner with string fuses if 3 or more strings are paralleled, then to a PV disconnect.',
       'Wire the PV disconnect to the charge controller PV input. Wire the controller battery output through a fuse / breaker to the battery bank.',
