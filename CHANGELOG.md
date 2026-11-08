@@ -1,3 +1,7 @@
+# RadioPlan Pro 1.5.18
+
+- The **introduction video** now has spoken narration for every page and tool (a natural voice reads each step along with the captions). Press **▶ Video** at the top of any page.
+
 # RadioPlan Pro 1.5.17
 
 - **⚙ Custom project type** (Project Systems & Toolkits, and Company & Project): tick only the systems on the job, then the pages and tools you want (**Suggest for my systems** fills it in). The left menu, step numbers, Next / Previous and checklist totals follow your pick; troubleshooting, installation, service and library pages show your systems first. **Show all** at the bottom of the menu brings every page back.

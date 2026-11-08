@@ -5,7 +5,7 @@ export interface HelpTopic { id: string; title: string; page?: string; keywords:
 
 export const HELP: HelpTopic[] = [
   { id: 'getting-started', title: 'Getting started', keywords: 'start intro video tour overview workflow usb android install save open project', summary: 'The left sidebar is your workflow: work top to bottom from Company & Project to Testing.',
-    body: `RadioPlan Pro walks a project from first site visit to commissioning. Press **▶ Intro video** at the top of the screen for a captioned tour of every page and tool (it plays offline). Each page in the left sidebar is one **task**, in the order engineers normally perform them. Pages where work gets checked off (site survey, permits, installation, testing, closeout) have a **checklist** at the bottom; the sidebar shows ✓ when a checklist is finished.
+    body: `RadioPlan Pro walks a project from first site visit to commissioning. Press **▶ Intro video** at the top of the screen for a captioned tour of every page and tool (captioned and narrated; it plays offline). Each page in the left sidebar is one **task**, in the order engineers normally perform them. Pages where work gets checked off (site survey, permits, installation, testing, closeout) have a **checklist** at the bottom; the sidebar shows ✓ when a checklist is finished.
 
 - Your work saves automatically in this computer's browser storage.
 - Use **Save project** (top bar) to write a .radioplan.json file you can keep on the USB drive, email, or open on the Android app.
