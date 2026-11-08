@@ -1,3 +1,7 @@
+# LvPlan Pro 1.5.34
+
+- Introduction video: the narration and title card now name all five states (NC, SC, GA, TN and VA), and the map scene shows the **⛶ Full page** button and **✕ Close**.
+
 # LvPlan Pro 1.5.33
 
 - **Full page view** for maps, 3D views and diagrams: press **⛶ Full page** above any map, 3D model, drawing sheet, floor plan, wiring or theory diagram, or profile chart to show it on its own full screen, with a big **✕ Close** button (Esc also closes). Maps and 3D views keep their position and zoom.
