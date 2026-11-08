@@ -1,3 +1,7 @@
+# RadioPlan Pro 1.5.5
+
+- Screens adapt to the device: text scales with the screen, forms drop to one column on phones, buttons wrap instead of running off the edge, wide tables scroll inside their card, and very large monitors keep a readable width. Checked on every page at phone (360 px), tablet (768 and 1024 px) and desktop (1920 px) sizes.
+
 # RadioPlan Pro 1.5.4
 
 - Imperial or metric: **Measurements** on Company & Project switches number boxes, results and distances between feet, inches, square feet and miles, and metres, millimetres, square metres and kilometres. Switching does not change your data.

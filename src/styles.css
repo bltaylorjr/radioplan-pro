@@ -249,3 +249,31 @@ label.button { display: inline-flex; align-items: center; gap: 4px; border: 1px 
 .keep-list { display: grid; gap: 6px; margin: 4px 0 10px; } .keep-list .check { display: block; } .keep-list .muted { font-size: .8rem; }
 .step-dot.tool { background: transparent; color: var(--muted, #888); }
 .copyright { text-align: center; color: var(--muted, #888); font-size: .8rem; margin: 8px 0 4px; }
+
+/* ---------- Device-adaptive layout (1.5.5): readable on phones, tablets, laptops and large monitors ---------- */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+img, video, canvas { max-width: 100%; }
+/* Text scales gently with the screen: 15px on phones up to 17px on very large monitors. */
+body { font-size: clamp(15px, 0.6vw + 12.5px, 17px); }
+/* Wide tables scroll inside their card instead of stretching the page. */
+.card table, .rpt-page table, .tbl { max-width: 100%; }
+.card > table, .card > div > table:not(.tbl-wrap table), .rpt-tbl, .codes-tbl { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+/* Very large monitors: keep lines readable instead of stretching across the screen. */
+@media (min-width: 1800px) { .content > * { max-width: 1680px; margin-left: auto; margin-right: auto; } }
+/* Tablets */
+@media (max-width: 1024px) { .content { padding: 14px 14px 40px; } }
+/* Phones */
+@media (max-width: 600px) {
+  button, .btn { white-space: normal; text-align: left; min-height: 40px; }
+  .row, .row.wrap { flex-wrap: wrap; }
+  .form, .calc .form { grid-template-columns: 1fr; }
+  .num input { min-width: 0; }
+  .card { padding: 12px; }
+  .card header { flex-wrap: wrap; gap: 8px; }
+  h1 { font-size: 1.35rem; }
+  .stats { grid-template-columns: 1fr 1fr; }
+  .page-foot button { flex: 1 1 45%; justify-content: center; }
+  input, select, textarea { font-size: 16px; } /* stops phones zooming in when a box is tapped */
+}
+@media (max-width: 380px) { .stats { grid-template-columns: 1fr; } }
+@media (max-width: 600px) { .page-nav select { order: -1; flex: 1 1 100%; } .page-nav button { flex: 1 1 auto; justify-content: center; } }
