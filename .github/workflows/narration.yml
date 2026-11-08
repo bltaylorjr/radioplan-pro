@@ -1,0 +1,35 @@
+# Makes the spoken narration for the introduction video (one WAV per segment) with the Piper
+# text-to-speech voice. Run by hand: the input is base64 JSON [{"id": "...", "text": "..."}].
+name: Narration for the intro video
+on:
+  workflow_dispatch:
+    inputs:
+      lines: { description: 'base64 JSON list of {id, text}', required: true }
+      voice: { description: 'Piper voice', required: false, default: 'en_US-lessac-high' }
+permissions:
+  contents: read
+jobs:
+  speak:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.11' }
+      - run: pip install piper-tts==1.2.0
+      - name: Download voice
+        run: |
+          V="${{ inputs.voice }}"; L=${V%%-*}; LANG=${L%%_*}; REST=${V#*-}; NAME=${REST%-*}; Q=${REST##*-}
+          base="https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/$LANG/$L/$NAME/$Q/$V"
+          curl -sSfL -o voice.onnx "$base.onnx"; curl -sSfL -o voice.onnx.json "$base.onnx.json"
+      - name: Speak each segment
+        env: { LINES: '${{ inputs.lines }}' }
+        run: |
+          mkdir -p out
+          echo "$LINES" | base64 -d > lines.json
+          python - <<'PY'
+          import json, subprocess
+          for l in json.load(open('lines.json')):
+              subprocess.run(['piper', '--model', 'voice.onnx', '--output_file', f"out/{l['id']}.wav", '--sentence_silence', '0.35'], input=l['text'].encode(), check=True)
+          PY
+          ls -la out
+      - uses: actions/upload-artifact@v4
+        with: { name: narration, path: out }
