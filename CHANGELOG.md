@@ -1,3 +1,8 @@
+# RadioPlan Pro 1.5.2
+
+- Code Compliance: one "Codes by state, county and city" picker with three dropdowns replaces the long county and city lists. ★ marks places with their own code list or inspections.
+- Plumbing, mechanical and fuel gas codes are hidden; tick them under "Also show" to include them.
+
 # RadioPlan Pro 1.5.1
 
 - New projects start in Asheville, NC (Buncombe County) instead of Charlotte.

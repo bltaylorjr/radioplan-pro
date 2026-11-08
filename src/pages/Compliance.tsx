@@ -1,5 +1,5 @@
 import { JurisdictionInfo } from '../components/JurisdictionInfo';
-import { CodesHere, CountyCodes, CityCodes } from '../components/CodesHere';
+import { CodesHere, CodesByPlace, OptionalCodes } from '../components/CodesHere';
 import React, { useState } from 'react';
 import { useStore } from '../store';
 import { Card, Stat } from '../components/ui';
@@ -42,9 +42,8 @@ export function CompliancePage() {
         <JurisdictionInfo j={j} compact />
         <p className="small muted">NEC citations are stamped with the edition {j.name} has adopted. Each finding shows whether its section was <b>checked against the official text</b> (free eCFR for FAA/FCC rules) or is <b>from the code book, not re-checked</b> (NEC, NFPA 72, NFPA 1225 and IFC are paywalled and could not be read here). Findings are a planning aid and must be verified by a licensed professional and the AHJ.</p>
       </Card>
-      <Card title="Codes for the project address" tip="Fire, building, electrical and related codes for the county and city of the project address. Change the address on Company & Project and this updates."><CodesHere /></Card>
-      <Card title="Codes by county" tip="Every county in NC, SC, GA and TN. Open one to see its codes, or use it for this project."><CountyCodes /></Card>
-      <Card title="Codes by city" tip="Every city and town in NC, SC, GA and TN. Cities that adopt their own codes are marked."><CityCodes /></Card>
+      <Card title="Codes for the project address" tip="Fire, building, electrical and related codes for the county and city of the project address. Change the address on Company & Project and this updates."><OptionalCodes /><CodesHere /></Card>
+      <Card title="Codes by state, county and city" tip="Pick the state, then the county, then the city to see the codes there, or use that place for this project."><CodesByPlace /></Card>
       {areas.map((a) => {
         const f = all.filter((x) => x.area === a && (filter === 'all' || x.severity === filter));
         return f.length ? <Card key={a} title={a}><FindingList findings={f} /></Card> : null;

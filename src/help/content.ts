@@ -274,7 +274,9 @@ Every NEC citation is stamped with the edition your project state has adopted (c
 
 Each finding is marked **✓ checked** when its section text was read in the official free source (eCFR: 14 CFR 77.9, 47 CFR 90.219) or **confirm in code book** when the number comes from the published NEC / NFPA / IFC books, which are paywalled and could not be re-read. Section numbers can move between editions. **State amendments are not bundled in this version**; the page lists each state's adopting authority so you can confirm the edition and amendments.
 
-This checker is a planning aid only. A licensed professional must verify compliance with the AHJ.` },
+This checker is a planning aid only. A licensed professional must verify compliance with the AHJ.
+
+**Codes for the project address** lists the building, fire, fire alarm, electrical, life safety and related codes for the project's city and county. **Codes by state, county and city** lets you look up any other place: pick the state, then the county, then the city (★ marks places with their own code list or inspections), and **Use for this project** if you like. Plumbing, mechanical and fuel gas codes are hidden; tick them under **Also show** to include them.` },
 
   { id: 'materials', title: 'Materials list', page: 'materials', keywords: 'materials bom bill of materials quantity brand model coax cable boxes add item import excel export csv auto calculate', summary: 'Bill of materials worked out from the project, plus items you add; editable, with CSV and Excel export.',
     body: `The list fills in by itself from the project. Radio, grounding, solar, fire alarm and ERCES lines follow those design pages. **Auto-design** lines (equipment, cable, boxes, supports) come from the project type and the building size and devices on **Auto-Design & 3D Model**. Change any of those and the list updates. Untick **Calculate equipment and materials from the project** to leave the auto-design lines out.

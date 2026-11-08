@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useStore } from '../store';
 import { CODE_SETS, codesFor, keyCodes, localRule, CodeEntry, CodesHere as Here } from '../compliance/codesets';
 import { projectPlace } from '../compliance/place';
@@ -14,13 +14,30 @@ const STATUS: Record<CodeEntry['status'], [string, string]> = {
 };
 const host = (u: string) => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch { return u; } };
 
+/** Trade codes hidden unless ticked: low-voltage work rarely needs them. */
+export const OPTIONAL_CATS = ['Plumbing', 'Mechanical', 'Fuel gas'] as const;
+const OPT_KEY = 'radioplan.codeExtras', OPT_EVENT = 'radioplan-code-extras';
+const readOpt = (): string[] => { try { return JSON.parse(localStorage.getItem(OPT_KEY) || '[]'); } catch { return []; } };
+export function useOptionalCats(): [string[], (v: string[]) => void] {
+  const [v, setV] = useState<string[]>(readOpt);
+  useEffect(() => { const on = () => setV(readOpt()); window.addEventListener(OPT_EVENT, on); return () => window.removeEventListener(OPT_EVENT, on); }, []);
+  return [v, (n) => { try { localStorage.setItem(OPT_KEY, JSON.stringify(n)); } catch { /* ignore */ } setV(n); window.dispatchEvent(new Event(OPT_EVENT)); }];
+}
+/** Check boxes to include plumbing, mechanical and fuel gas codes. */
+export function OptionalCodes() {
+  const [on, set] = useOptionalCats();
+  return <div className="row wrap small"><span className="muted">Also show:</span>{OPTIONAL_CATS.map((c) => <label key={c} className="check"><input type="checkbox" checked={on.includes(c)} onChange={(e) => set(e.target.checked ? [...on, c] : on.filter((x) => x !== c))} /> {c === 'Fuel gas' ? 'Fuel gas' : c} code</label>)}</div>;
+}
+const visible = (cat: string, on: string[]) => !(OPTIONAL_CATS as readonly string[]).includes(cat) || on.includes(cat);
+
 /** Codes a city or county adopted itself, from its own web page. */
 export function LocalTable({ l }: { l: LocalCodeSet }) {
+  const [on] = useOptionalCats();
   return (
     <div className="local-codes">
       <p className="small"><b>Adopted by {l.name}{l.level === 'city' ? ` (city)` : ''}</b> · <a href={l.src} target="_blank" rel="noreferrer">{host(l.src)}</a> · read {LOCAL_CHECKED}{l.stale && <span className="warn-text"> · page may be out of date</span>}</p>
       <table className="rpt-tbl codes-tbl"><thead><tr><th>Type</th><th>Code in effect</th><th>Effective</th></tr></thead>
-        <tbody>{l.codes.map((e, i) => <tr key={i}><td>{e.cat}</td><td>{e.code}</td><td className="nowrap">{e.effective ?? '—'}</td></tr>)}</tbody></table>
+        <tbody>{l.codes.filter((e) => visible(e.cat, on)).map((e, i) => <tr key={i}><td>{e.cat}</td><td>{e.code}</td><td className="nowrap">{e.effective ?? '—'}</td></tr>)}</tbody></table>
       <p className="small muted">{l.note}</p>
     </div>
   );
@@ -28,8 +45,8 @@ export function LocalTable({ l }: { l: LocalCodeSet }) {
 
 /** The code table for one place. */
 export function CodeTable({ h, compact }: { h: Here; compact?: boolean }) {
-  const s = h.set;
-  const list = compact ? s.current.filter((e) => ['Building', 'Residential', 'Fire', 'Fire alarm', 'Emergency responder radio', 'Electrical', 'Life safety'].includes(e.cat)) : s.current;
+  const s = h.set; const [on] = useOptionalCats();
+  const list = (compact ? s.current.filter((e) => ['Building', 'Residential', 'Fire', 'Fire alarm', 'Emergency responder radio', 'Electrical', 'Life safety'].includes(e.cat)) : s.current).filter((e) => visible(e.cat, on));
   return (
     <div className="codes-here">
       <p className={'small' + (h.local.exempt ? ' warn-text' : '')}><b>Local enforcement:</b> {h.local.text}</p>
@@ -67,39 +84,6 @@ export function CodesHere({ compact }: { compact?: boolean }) {
   );
 }
 
-/** Browse every county in the four states and set one as the project's. */
-export function CountyCodes() {
-  const { project: p, update } = useStore();
-  const all = useMemo(allCounties, []);
-  const [st, setSt] = useState<StateCode | 'all'>(p.meta.state);
-  const [q, setQ] = useState('');
-  const [open, setOpen] = useState<string | null>(null);
-  const list = all.filter((c) => (st === 'all' || c.state === st) && c.county.toLowerCase().includes(q.toLowerCase().trim()));
-  return (
-    <>
-      <div className="row wrap">
-        <select value={st} onChange={(e) => setSt(e.target.value as StateCode | 'all')} aria-label="State"><option value="all">All 4 states</option>{(['NC', 'SC', 'GA', 'TN'] as StateCode[]).map((s) => <option key={s} value={s}>{CODE_SETS[s].name}</option>)}</select>
-        <input className="lib-search" style={{ flex: 1, minWidth: 160, marginBottom: 0 }} value={q} onChange={(e) => setQ(e.target.value)} placeholder="🔎 Find a county" aria-label="Find a county" />
-        <span className="small muted">{list.length} counties</span>
-      </div>
-      <div className="county-list">{list.map((c) => {
-        const k = c.fips, lr = localRule(c.state as StateCode, c.county); const mine = p.meta.county === c.county && p.meta.state === c.state;
-        return (
-          <div key={k} className={'county-row' + (mine ? ' mine' : '')}>
-            <button className="ghost county-head" aria-expanded={open === k} onClick={() => setOpen(open === k ? null : k)}>
-              <b>{c.county}, {c.state}</b>{lr.exempt && <span className="pill warn">exempt (own codes)</span>}{mine && <span className="pill">this project</span>}
-              <span className="small muted county-key">{keyCodes(c.state as StateCode)}</span></button>
-            {open === k && <div className="county-body">
-              <CodeTable h={codesFor(c.state as StateCode, c.county)} />
-              {!mine && <button onClick={() => update((d) => { d.meta.state = c.state as StateCode; d.meta.county = c.county; d.meta.city = undefined; })}>Use {c.county} for this project</button>}
-              <a className="small" style={{ marginLeft: 12 }} href={`https://www.google.com/search?q=${encodeURIComponent(`${c.county} ${CODE_SETS[c.state as StateCode].name} building inspections department`)}`} target="_blank" rel="noreferrer">Find the local inspections office ↗</a>
-            </div>}
-          </div>);
-      })}</div>
-    </>
-  );
-}
-
 const cityCache = new Map<string, { city: string; state: string; county: string; lat: number; lon: number }[]>();
 /** Every town in a state with the county it sits in (from the built-in map data). */
 export function citiesIn(st: StateCode) {
@@ -108,39 +92,32 @@ export function citiesIn(st: StateCode) {
   return l;
 }
 
-/** Browse cities and towns, with the codes that apply in each. */
-export function CityCodes() {
+/** Codes for any place: pick the state, then the county, then the city. */
+export function CodesByPlace() {
   const { project: p, update } = useStore();
-  const [st, setSt] = useState<StateCode>(p.meta.state);
-  const [q, setQ] = useState('');
-  const [onlyLocal, setOnlyLocal] = useState(false);
-  const [open, setOpen] = useState<string | null>(null);
-  const all = useMemo(() => citiesIn(st), [st]);
-  const list = all.filter((c) => c.city.toLowerCase().includes(q.toLowerCase().trim()) && (!onlyLocal || localCodes(st, c.county, c.city)?.level === 'city' || localRule(st, c.county, c.city).by === 'city'));
-  const shown = list.slice(0, 150);
+  const here = projectPlace(p);
+  const [st, setSt] = useState<StateCode>(here.state);
+  const [county, setCounty] = useState(here.county ?? '');
+  const [city, setCity] = useState(here.city ?? '');
+  const counties = useMemo(() => allCounties().filter((c) => c.state === st), [st]);
+  const cities = useMemo(() => citiesIn(st).filter((c) => !county || c.county === county), [st, county]);
+  const h = codesFor(st, county || undefined, city || undefined);
+  const where = [city, county, CODE_SETS[st].name].filter(Boolean).join(', ');
+  const mine = here.state === st && (here.county ?? '') === county && (here.city ?? '') === city;
+  const ownCity = (c: { city: string; county: string }) => localCodes(st, c.county, c.city)?.level === 'city' || localRule(st, c.county, c.city).by === 'city';
   return (
     <>
-      <div className="row wrap">
-        <select value={st} onChange={(e) => setSt(e.target.value as StateCode)} aria-label="State for cities">{(['NC', 'SC', 'GA', 'TN'] as StateCode[]).map((s) => <option key={s} value={s}>{CODE_SETS[s].name}</option>)}</select>
-        <input className="lib-search" style={{ flex: 1, minWidth: 160, marginBottom: 0 }} value={q} onChange={(e) => setQ(e.target.value)} placeholder="🔎 Find a city or town" aria-label="Find a city" />
-        <label className="check"><input type="checkbox" checked={onlyLocal} onChange={(e) => setOnlyLocal(e.target.checked)} /> Only cities with their own codes</label>
-        <span className="small muted">{list.length} places{list.length > shown.length ? ` (first ${shown.length} shown; type to narrow)` : ''}</span>
+      <div className="form">
+        <label className="field"><span>State</span><select value={st} onChange={(e) => { setSt(e.target.value as StateCode); setCounty(''); setCity(''); }} aria-label="State">{(['NC', 'SC', 'GA', 'TN'] as StateCode[]).map((s) => <option key={s} value={s}>{CODE_SETS[s].name}</option>)}</select></label>
+        <label className="field"><span>County</span><select value={county} onChange={(e) => { setCounty(e.target.value); setCity(''); }} aria-label="County"><option value="">— whole state —</option>{counties.map((c) => <option key={c.fips} value={c.county}>{c.county}{localRule(st, c.county).exempt || localCodes(st, c.county)?.level === 'county' ? ' ★' : ''}</option>)}</select></label>
+        <label className="field"><span>City or town</span><select value={city} onChange={(e) => { const c = cities.find((x) => x.city === e.target.value); setCity(e.target.value); if (c && !county) setCounty(c.county); }} aria-label="City"><option value="">— none —</option>{cities.map((c) => <option key={c.city + c.county} value={c.city}>{c.city}{county ? '' : ` (${c.county})`}{ownCity(c) ? ' ★' : ''}</option>)}</select></label>
       </div>
-      <div className="county-list">{shown.map((c) => {
-        const k = c.city + c.county, h = codesFor(st, c.county, c.city), own = h.localSet?.level === 'city' || h.local.by === 'city';
-        const mine = (p.meta.city ?? '').toLowerCase() === c.city.toLowerCase() && p.meta.state === st;
-        return (
-          <div key={k} className={'county-row' + (mine ? ' mine' : '')}>
-            <button className="ghost county-head" aria-expanded={open === k} onClick={() => setOpen(open === k ? null : k)}>
-              <b>{c.city}, {st}</b><span className="small muted">{c.county}</span>{h.localSet?.level === 'city' && <span className="pill">local code list ✓</span>}{own && !h.localSet && <span className="pill warn">own codes (ask the city)</span>}{mine && <span className="pill">this project</span>}</button>
-            {open === k && <div className="county-body">
-              <CodeTable h={h} />
-              {!mine && <button onClick={() => update((d) => { d.meta.state = st; d.meta.county = c.county; d.meta.city = c.city; })}>Use {c.city} for this project</button>}
-              <a className="small" style={{ marginLeft: 12 }} href={`https://www.google.com/search?q=${encodeURIComponent(`${c.city} ${st} building codes adopted inspections`)}`} target="_blank" rel="noreferrer">Find the city's codes page ↗</a>
-            </div>}
-          </div>);
-      })}</div>
-      <p className="small muted">{LOCAL_CODES.length} cities and counties have their own code list built in, read from their official pages on {LOCAL_CHECKED}. Other places follow the state codes, but many cities enforce them through their own inspections office: check with the city.</p>
+      <div className="row wrap"><h4 style={{ margin: 0 }}>📍 {where}</h4>{mine ? <span className="pill">this project</span> : <>
+        <button onClick={() => update((d) => { d.meta.state = st; d.meta.county = county; d.meta.city = city || undefined; })} disabled={!county}>Use for this project</button>
+        <button className="ghost" onClick={() => { setSt(here.state); setCounty(here.county ?? ''); setCity(here.city ?? ''); }}>Back to the project location</button></>}</div>
+      <p className="small muted">★ = has its own code list or does its own inspections.</p>
+      <CodeTable h={h} />
+      {county && <a className="small" href={`https://www.google.com/search?q=${encodeURIComponent(`${city || county} ${CODE_SETS[st].name} building codes adopted inspections`)}`} target="_blank" rel="noreferrer">Find the local codes page ↗</a>}
     </>
   );
 }
