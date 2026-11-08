@@ -1,3 +1,7 @@
+# LvPlan Pro 1.5.25
+
+- Introduction video: new background music in an '80s hard-rock style (original track: power-chord guitars, driving drums and bass, synth brass and tapped-guitar fills), kept under the narration.
+
 # LvPlan Pro 1.5.24
 
 - Introduction video: a new background beat (an original swung groove with claps, electric piano and bass), kept under the narration.
