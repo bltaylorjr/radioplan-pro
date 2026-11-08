@@ -19,6 +19,9 @@ describe('auto-design', () => {
   });
   it('adds applied auto-design lines to the materials list', () => {
     const p = defaultProject(); p.meta.projectType = 'cctv';
+    expect(buildBom(defaultProject()).some((l) => l.category.startsWith('Auto-design'))).toBe(false);
+    expect(buildBom(p).some((l) => l.category.startsWith('Auto-design'))).toBe(true);
+    p.autoDesign = { ...defaultInputs(), applied: false };
     expect(buildBom(p).some((l) => l.category.startsWith('Auto-design'))).toBe(false);
     p.autoDesign = { ...defaultInputs(), applied: true };
     expect(buildBom(p).some((l) => l.category.startsWith('Auto-design'))).toBe(true);
@@ -78,4 +81,14 @@ describe('contacts and web resources', () => {
     expect(m.find((c) => c.id === CONTACTS[1].id)).toBeUndefined();
     expect(m.find((c) => c.id === 'x')?.mine).toBe(true);
   });
+});
+
+import { HELP } from '../src/help/content';
+import { WORKFLOW_LABELS } from '../src/data/pageLabels';
+describe('help', () => {
+  it('every page in the menu has its own help topic', () => {
+    const missing = Object.keys(WORKFLOW_LABELS).filter((id) => !HELP.some((h) => h.page === id));
+    expect(missing).toEqual([]);
+  });
+  it('topic ids are unique', () => { expect(new Set(HELP.map((h) => h.id)).size).toBe(HELP.length); });
 });

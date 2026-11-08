@@ -28,6 +28,7 @@ import { SpecLibraryPage } from './pages/SpecLibrary';
 import { InstallPage } from './pages/Install';
 import { FieldNotesPage } from './pages/FieldNotes';
 import { ContactsPage } from './pages/Contacts';
+import { BlueprintsPage } from './pages/Blueprints';
 import { SelfRepair } from './components/SelfRepair';
 import { Checklist } from './components/Checklist';
 import { CHECKLISTS, checklistFor, progressOf } from './data/checklists';
@@ -69,9 +70,10 @@ export const WORKFLOW: { id: string; label: string; group: string; el: React.Rea
   { id: 'compliance', label: 'Code Compliance', group: '5 · Planning: codes & materials', el: <CompliancePage /> },
   { id: 'library', label: 'Specifications Library', group: '5 · Planning: codes & materials', el: <SpecLibraryPage /> },
   { id: 'materials', label: 'Materials List', group: '5 · Planning: codes & materials', el: <MaterialsPage /> },
+  { id: 'blueprints', label: 'Blueprints & Drawing Sets', group: '5 · Planning: codes & materials', el: <BlueprintsPage /> },
   { id: 'install', label: 'Installation Guides', group: '6 · Installation', el: <InstallPage /> },
   { id: 'testing', label: 'Final Testing', group: '7 · Testing & closeout', el: <TestingPage /> },
-  { id: 'reports', label: 'Reports & Closeout Package', group: '7 · Testing & closeout', el: <ReportsPage /> },
+  { id: 'reports', label: 'Reports, Proposals & Closeout', group: '7 · Testing & closeout', el: <ReportsPage /> },
   { id: 'troubleshoot', label: 'Troubleshooting Wizard', group: '8 · Troubleshooting & repair', el: <TroubleshootPage /> },
   { id: 'service', label: 'Service & Maintenance', group: '8 · Troubleshooting & repair', el: <ServicePage /> },
   { id: 'contacts', label: 'Contacts & Web Resources', group: '9 · Tools', el: <ContactsPage /> },
@@ -167,7 +169,7 @@ export default function App() {
                 <button onClick={() => setHelpOpen(true)}>? Page help</button>
               </div>
             </div>
-            <SelfRepair page={current.id}><Suspense fallback={<div className="card">Loading…</div>}>{current.el}</Suspense>{checklistFor(current.id) && <div data-tour="checklist" style={{ marginTop: 16 }}><Checklist def={checklistFor(current.id)!} /></div>}</SelfRepair>
+            <SelfRepair page={current.id}><Suspense fallback={<div className="card">Loading…</div>}>{current.el}</Suspense>{checklistFor(current.id) && <div data-tour="checklist" className="no-print" style={{ marginTop: 16 }}><Checklist def={checklistFor(current.id)!} /></div>}</SelfRepair>
             <footer className="page-foot">
               <button disabled={idx <= 0} onClick={() => go(WORKFLOW[idx - 1].id)}>← {WORKFLOW[idx - 1]?.label ?? 'Back'}</button>
               <span />

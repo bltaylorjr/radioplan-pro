@@ -276,15 +276,17 @@ Each finding is marked **✓ checked** when its section text was read in the off
 
 This checker is a planning aid only. A licensed professional must verify compliance with the AHJ.` },
 
-  { id: 'materials', title: 'Materials list', page: 'materials', keywords: 'materials bom bill of materials quantity brand model coax connectors hangers ground kits export csv', summary: 'Bill of materials generated from your design, with editable quantities and CSV export.',
-    body: `Quantities follow the design: feeder length + 10%, hangers at the manufacturer spacing, ground kits at top/bottom/entry plus every 200 ft, connectors and weatherproofing per joint, grounding by rod count and spacing, solar modules/batteries from the solar sizing, and so on.
+  { id: 'materials', title: 'Materials list', page: 'materials', keywords: 'materials bom bill of materials quantity brand model coax cable boxes add item import excel export csv auto calculate', summary: 'Bill of materials worked out from the project, plus items you add; editable, with CSV and Excel export.',
+    body: `The list fills in by itself from the project. Radio, grounding, solar, fire alarm and ERCES lines follow those design pages. **Auto-design** lines (equipment, cable, boxes, supports) come from the project type and the building size and devices on **Auto-Design & 3D Model**. Change any of those and the list updates. Untick **Calculate equipment and materials from the project** to leave the auto-design lines out.
 
-Edit any quantity to override it; the basis column shows "(overridden)". Export to CSV for purchasing.` },
+**+ Add item** adds anything else, typed in or picked from the specifications library; edit or remove your items in the table. Edit any calculated quantity to override it ("(overridden)" shows in the basis). You can also import a parts list from Excel or CSV on **Projects & Storage → Import files** (columns item and qty). Export to CSV here, or to Excel from the Reports page.` },
 
-  { id: 'reports', title: 'Reports', page: 'reports', keywords: 'report print pdf export kml google earth site survey link budget path coverage compliance materials test commissioning', summary: 'Engineer and technician reports with your company header; print to PDF, export KML/CSV/JSON.',
-    body: `Available reports: Site Data Sheet, Link Budget & Path Analysis, Coverage Summary, Grounding & Structure, Solar Sizing, Fire Alarm Battery Calc, ERCES Design, Code Compliance, Materials List, Commissioning / Test Report.
+  { id: 'reports', title: 'Reports, proposals and closeout', page: 'reports', keywords: 'report proposal quote bid price build plan closeout package survey print pdf word excel export html kml sections warranty schedule', summary: 'Proposal, build plan, closeout package, site survey and engineering reports, with sections you pick; print, PDF, Word, Excel.',
+    body: `Pick a **Report**: Project proposal, Build plan, Closeout package, Site survey report, or Engineering reports. Each starts with the usual sections ticked; tick or untick any, or open **Add more sections** for the rest (floor plans, device schedule, checklists, inspection contacts, maintenance schedule, documents index, warranty, radio and power reports).
 
-Use **Print / Save PDF** (choose "Save as PDF" in the print dialog). **KML** opens the sites and path in Google Earth.` },
+**Proposal options** set the labor rate and hours (estimated from the device count if left blank), materials cost, markup, tax, start date and duration (for the schedule), exclusions and payment terms. They are saved with the project.
+
+**Print / Save as PDF** prints the report (choose "Save as PDF" as the printer). **Word** saves a .doc that opens in Word, LibreOffice and Google Docs. **Excel** saves a workbook with the materials list and every table in the report. **Web page**, **Materials CSV** and **KML** are also there. Drawing sheets for permits are on **Blueprints & Drawing Sets**.` },
 
   { id: 'testing', title: 'Final testing & commissioning', page: 'testing', keywords: 'test commissioning sweep vswr return loss dtf pim ground resistance fall of potential drive test grid test acceptance', summary: 'Acceptance test checklist with expected values, measured results and pass/fail.',
     body: `Standard acceptance tests: feeder sweeps (return loss / VSWR, distance-to-fault), PIM, insertion loss, ground resistance (fall-of-potential, IEEE 81), bonding continuity, TX power and frequency, azimuth/tilt verification, drive test vs. prediction, ERCES grid test, battery run test and RF exposure survey.
@@ -326,7 +328,9 @@ No RadioPlan server or account is involved; data moves only between your devices
 
 Search finds any word in any specification. Tick up to four items to **compare** them side by side. **Find datasheet online** searches the web for the manufacturer's PDF. For your own antennas, coax and radios, **Use in this project** adds them to the Equipment lists so the link budget and materials list use them.
 
-Always confirm values against the current manufacturer datasheet before ordering.` },
+Always confirm values against the current manufacturer datasheet before ordering.
+
+**Datasheets offline:** open an item and use **Save datasheet for offline** (when it has a datasheet link) or **Find datasheet online**, save the PDF, then **Attach saved PDF**. The PDF is kept inside the app and opens with **Open saved datasheet** without internet. It is included in backups.` },
 
   { id: 'install', title: 'Installation guides', page: 'install', keywords: 'install installation instructions wiring diagram color antenna coax grounding repeater battery erces bda das fire alarm nac solar poe cat6 t568b access point', summary: 'Step-by-step installation instructions with color wiring diagrams.',
     body: `Each guide has a color wiring diagram, tools, safety notes, numbered steps, tests for closeout and the code articles that apply. Diagrams use the antenna and coax chosen in this project where possible. Press **Print** for a copy for the crew.
@@ -357,6 +361,29 @@ Type what you measured and press **✓ OK** or **✗ Not OK**. A failed step tel
     body: `Pick the **state**, then the **county**, then the **city**. The page shows the state, county and city offices for that place, and the **Web resources** tab shows code pages and other links. Tap a phone number to call or an address to open the map.
 
 Built-in numbers were copied from each office's official page on the date shown. Where none is built in, **Look it up** searches the web; then **+ Add contact** keeps it. **Edit** makes your own copy, and **Remove** hides an entry. Pick **★ My contacts** in the state list to see only the ones you added.` },
+  { id: 'blueprints', title: 'Blueprints and drawing sets', page: 'blueprints', keywords: 'blueprint drawing sheet permit submittal shop drawings title block scale arch d ansi riser legend symbols dxf cad autocad pdf nfpa 72 seal', summary: 'Permit and shop-drawing sheets with title block, standard sheet sizes, architectural scales, riser, schedules and CAD export.',
+    body: `The drawing set is made from the **Auto-Design** layout: a **cover sheet** (project data, codes in effect for the address, sheet index, symbols legend, general notes), a **floor plan** per floor for each discipline (FA fire alarm, T telecom, SS security, NC nurse call, AV paging and sound, RF DAS and ERCES), a **riser diagram**, and **schedules** (device counts per floor, equipment, and for fire alarm the battery calculation and sequence of operations).
+
+Every sheet has a **title block** (your company, project, seal box, revisions, drawn and checked by, date, scale, sheet number). Pick the **sheet size** (ARCH D 24 × 36 in is usual for permits) and the **plan scale** (1/8" = 1'-0" and so on, or the largest that fits). Add a **revision** line each time you reissue.
+
+**Print / Save as PDF** prints each sheet at full size: print at 100%, not "fit to page". **CAD drawing (.dxf)** opens in AutoCAD and other CAD programs, in feet, one layer per system. **SVG** sheets can be opened in drawing programs. For fire alarm, the **NFPA 72 shop drawing checklist** shows which required items the set covers and which you still add (voltage drop, candela, point-to-point wiring). A licensed engineer or NICET-certified designer, as the AHJ requires, must review and seal the drawings.` },
+  { id: 'import', title: 'Importing and exporting files', keywords: 'import export file excel xlsx csv kml kmz gpx geojson pdf word photos documents attach open any format dxf', summary: 'Import any file into a project; export to PDF, Word, Excel, CSV, KML, DXF and more.',
+    body: `**Import files** (on Projects & Storage and on the Reports page) takes any file:
+- **Excel (.xlsx) or CSV** with latitude and longitude columns → sites; with item and qty → Materials list; with name and phone or email → My contacts.
+- **KML, KMZ, GPX, GeoJSON** points → sites.
+- **Photos** → Field Notes & Photos.
+- **RadioPlan project or backup files** → Projects.
+- **Anything else** (PDF, Word, CAD drawings, permits, data sheets) is kept with the project under **Documents**, syncs with it and is listed in the closeout package. Files up to 15 MB.
+
+Export: Reports page (PDF, Word, Excel, HTML, CSV, KML), Blueprints (PDF, DXF, SVG), Materials (CSV), Map pages (KML, KMZ, GeoJSON, Shapefile), and the project file itself (top bar **Export**).` },
+  { id: 'checklists', title: 'Checklists', keywords: 'checklist check off progress task survey permit install testing closeout punch', summary: 'Checklists on the survey, permit, installation, testing and closeout pages, saved with the project.',
+    body: `Checklists sit at the bottom of **Field Notes** (site survey), **Code Compliance** (permit and submittal), **Installation Guides**, **Final Testing** and **Reports** (closeout). Installation and testing lists include the steps for every system on the project. Tick items as you go; add your own with **Add your own item**. The sidebar shows ✓ when a page's checklist is finished, and the bottom of the menu shows the total. Checklists print in the Build plan and Closeout reports.` },
+  { id: 'selfrepair', title: 'Updates and self-repair', keywords: 'update automatic repair crash error fix broken damaged restore version recover offline database', summary: 'The app updates itself and repairs damaged data automatically.',
+    body: `**Updates:** the app checks for a new version every hour when online. On Windows it installs the update by itself; on Android and the flash drive it shows a one-tap download. The built-in codes, contacts and reference data are updated with each new version.
+
+**Self-repair:** when a project opens, missing or damaged values are filled in with safe defaults. If a page stops working, the app repairs the project data and opens it again; if that does not fix it, it goes back to the last saved version (your newer work is kept in Projects → History). After an update, it reloads itself to pick up the new program files.
+
+**Offline database:** projects, history, terrain, your specifications library, saved datasheets, contacts and web links are all kept in a database inside the app and work with no internet. **Back up all projects** saves all of it in one file.` },
   { id: 'fieldnotes', title: 'Field notes', page: 'fieldnotes', keywords: 'field notes photos camera gps site visit punch list follow-up dictate', summary: 'Notes, photos and GPS positions taken on site, saved in the project.',
     body: `Press **+ New note**, type (or dictate with the microphone on your phone keyboard), add photos from the camera and press **Save my GPS position**. Link a note to a site and tick **Needs follow-up** for punch-list items; filter with **Open follow-ups**.
 

@@ -1,3 +1,15 @@
+# RadioPlan Pro 1.5.0
+
+- Report builder: pick Project proposal, Build plan, Closeout package, Site survey report or Engineering reports, then tick the sections you want (cover letter, scope of work, recommended equipment, materials, price, schedule, terms, floor plans, device schedule, codes, inspection contacts, checklists, test report, maintenance schedule, documents, photos, color wiring diagrams, warranty and sign-off, and the radio and power reports). Proposal options set labor, materials, markup, tax, dates, exclusions and payment terms.
+- Print and export: print or save as PDF, Word (.docx with photos and diagrams), Excel (.xlsx), web page, CSV and KML.
+- New Blueprints & Drawing Sets page: cover sheet (codes, sheet index, symbols, general notes), a plan per floor at an architectural scale with north arrow, scale bar, dimensions and tagged devices, riser diagram, and schedules (device schedule, equipment, fire alarm battery calculation and sequence of operations). Title block with seal box and revisions on every sheet; ARCH D, ARCH E1, ARCH C, ANSI D, ANSI B and Letter sizes; export to PDF, CAD (.dxf) and SVG. NFPA 72 shop drawing checklist.
+- Import any file: Excel or CSV becomes sites, materials or contacts; KML, KMZ, GPX and GeoJSON become sites; photos go to Field Notes; project files open; anything else (PDF, Word, CAD, permits) is kept with the project under Documents.
+- The Materials list now fills in by itself from the project type, building and devices. Tower, feedline and site grounding lines only appear on radio projects.
+- Specifications library: save each item's datasheet (PDF) inside the app so it opens offline.
+- Backups now include your library, contacts, web links and saved datasheets.
+- Help: a screenshot of each page, color wiring diagrams where they apply, how-to video search links, and new topics for blueprints, reports, importing and exporting, checklists, and updates and self-repair.
+- Reports and the report builder fit on phone screens.
+
 # RadioPlan Pro 1.4.0
 
 - New Auto-Design page: describe the building and the app recommends head-end equipment, lays out devices for every system on the project, and estimates materials from the layout. It uses the site terrain for placement advice. Shown as a 2D floor plan or a 3D model, by floor, and can be added to the Materials list.

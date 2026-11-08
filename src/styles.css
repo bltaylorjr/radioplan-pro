@@ -234,3 +234,15 @@ label.button { display: inline-flex; align-items: center; gap: 4px; border: 1px 
 .checklist-card h4 { margin: 10px 0 4px; }
 .meter { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; margin-bottom: 8px; }
 .meter i { display: block; height: 100%; background: var(--ok, #2e7d32); }
+.help-media figure { margin: 10px 0; }
+.help-media img { max-width: 100%; border: 1px solid var(--line); border-radius: 8px; }
+.help-diagram svg { max-width: 100%; height: auto; }
+.rpt-diagram svg { max-width: 100%; height: auto; }
+@media screen { .bp-svg { width: 100%; height: auto; } .bp-sheet { display: none; } .bp-sheet.on { display: block; box-shadow: 0 1px 6px rgba(0,0,0,.2); } }
+@media print { .bp-sheet { display: block !important; page-break-after: always; } .bp-sheet .bp-svg { width: 100%; height: 100%; } }
+.field > select, .field > input, .field > textarea { min-width: 0; max-width: 100%; }
+.form { min-width: 0; }
+.card > header { flex-wrap: wrap; }
+.report, .stack > * { min-width: 0; }
+@media screen { .rpt-page { overflow-x: auto; max-width: 100%; } }
+@media (max-width: 600px) { .rpt-head { flex-direction: column; } .rpt-page { padding: 14px; } }

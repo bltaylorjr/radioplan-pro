@@ -40,7 +40,7 @@ export function AutoDesignPage() {
       if (c('smoke') + c('hornstrobe') + c('pull')) { d.alarm.enabled = true; d.alarm.devices = [{ name: 'Smoke detector (addressable)', qty: c('smoke'), standbyMa: 0.3, alarmMa: 0.3 }, { name: 'Manual pull station', qty: c('pull'), standbyMa: 0.3, alarmMa: 0.3 }, { name: 'Horn/strobe 75 cd', qty: c('hornstrobe'), standbyMa: 0, alarmMa: 140 }].filter((v) => v.qty > 0); d.alarm.standbyHours = 24; d.alarm.alarmMinutes = projectSystems(d.meta).some((s) => s.id === 'massnotif') ? 15 : 5; }
       if (c('das')) { d.erces.floors = x.floors; d.erces.areaPerFloorSqft = x.lengthFt * x.widthFt; d.erces.antennasPerFloor = Math.max(1, Math.round(c('das') / Math.max(1, x.floors))); if (projectSystems(d.meta).some((s) => s.id === 'erces')) d.erces.enabled = true; }
     });
-    setMsg('Added to the Materials list, and the Fire Alarm and ERCES pages were updated with these quantities ✓');
+    setMsg('In the Materials list, and the Fire Alarm and ERCES pages were updated with these quantities ✓');
   };
   return (
     <div className="grid">
@@ -80,11 +80,11 @@ export function AutoDesignPage() {
           <tbody>{r.equipment.map((e) => <tr key={e.system + e.key}><td>{e.system}</td><td>{e.item}</td><td>{e.spec}</td><td>{e.qty} {e.unit}</td><td className="small muted">{e.basis}</td></tr>)}</tbody></table></div>}
       </Card>
 
-      <Card title="5. Material estimate" className="wide" actions={<button className="primary" disabled={!r.equipment.length && !r.materials.length} onClick={applyDesigns}>{p.autoDesign?.applied ? 'Update Materials list' : 'Add to Materials list'}</button>}>
+      <Card title="5. Material estimate" className="wide" actions={<button className="primary" disabled={!r.equipment.length && !r.materials.length} onClick={applyDesigns}>{p.autoDesign?.applied !== false ? 'Update Fire Alarm & ERCES pages' : 'Add to Materials list'}</button>}>
         {!r.materials.length ? <p className="muted">No materials yet.</p> : <div className="tbl-wrap"><table className="tbl"><thead><tr><th>System</th><th>Material</th><th>Spec</th><th>Qty</th><th>Basis</th></tr></thead>
           <tbody>{r.materials.map((m) => <tr key={m.system + m.key}><td>{m.system}</td><td>{m.item}</td><td>{m.spec}</td><td>{m.qty.toLocaleString()} {m.unit}</td><td className="small muted">{m.basis}</td></tr>)}</tbody></table></div>}
         {msg && <p className="note" role="status">{msg}</p>}
-        {p.autoDesign?.applied && <p className="small">These lines are in the <a href="#materials" onClick={(e) => { e.preventDefault(); go('materials'); }}>Materials list</a> and update when you change the inputs. <button className="ghost" onClick={() => update((d) => { if (d.autoDesign) d.autoDesign.applied = false; })}>Remove from Materials list</button></p>}
+        {p.autoDesign?.applied !== false && <p className="small">These lines are in the <a href="#materials" onClick={(e) => { e.preventDefault(); go('materials'); }}>Materials list</a> and update when you change the inputs. <button className="ghost" onClick={() => update((d) => { if (d.autoDesign) d.autoDesign.applied = false; })}>Remove from Materials list</button></p>}
         <p className="small muted">Starting-point quantities from rules of thumb (stated in each basis). A designer must check device spacing, candela, audibility, coverage and cable lengths against the adopted codes, the manufacturer and the AHJ.</p>
       </Card>
     </div>

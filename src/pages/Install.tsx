@@ -37,10 +37,10 @@ function Diagram({ title, w = 760, h, boxes, wires, labels = [], legend }: {
   );
 }
 
-interface Guide { id: string; title: string; applies: string; tools: string[]; safety: string[]; steps: string[]; test: string[]; codes: string[]; diagram: (ctx: Ctx) => React.ReactNode }
-interface Ctx { ant: string; feeder: string; battAh: string }
+export interface Guide { id: string; title: string; applies: string; tools: string[]; safety: string[]; steps: string[]; test: string[]; codes: string[]; diagram: (ctx: Ctx) => React.ReactNode }
+export interface Ctx { ant: string; feeder: string; battAh: string }
 
-const GUIDES: Guide[] = [
+export const GUIDES: Guide[] = [
   {
     id: 'antenna', title: 'Antenna, feedline and grounding', applies: 'Tower, pole or rooftop antenna with coax to an equipment room or cabinet',
     tools: ['Torque wrench and connector tools for the cable type', 'Cable cutter / prep tool', 'Weatherproofing kit (butyl + cold shrink or tape)', 'Grounding kits (top, bottom, entry)', 'Cable/antenna analyzer'],
@@ -210,6 +210,11 @@ const GUIDES: Guide[] = [
     },
   },
 ];
+
+/** Labels for the diagrams from the project's own equipment. */
+export function guideCtx(p: import('../types').Project): Ctx { const ant = byId(ANTENNAS, p.radio.txAntennaId), fd = byId(FEEDERS, p.radio.feederId); return { ant: ant ? ant.model.slice(0, 28) : 'per plan', feeder: fd ? fd.model : 'Feedline per plan', battAh: p.alarm ? 'size per battery calc' : 'per plan' }; }
+/** Which wiring diagrams apply to which systems. */
+export const GUIDES_FOR: Record<string, string[]> = { firealarm: ['nac'], massnotif: ['nac'], erces: ['erces'], das: ['erces'], cabling: ['poe'], wifi: ['poe'], cctv: ['poe'], access: ['poe'], fiber: ['poe'], intercom: ['poe'], radio: ['antenna', 'repeater'], solar: ['solar'], callbox: ['solar'] };
 
 export function InstallPage() {
   const { project: p } = useStore();

@@ -122,7 +122,38 @@ export async function backupAll(): Promise<string> {
     const { project, ...record } = r; const t = await loadTerrain(s.id);
     entries.push({ record, project, terrain: t ? encodeDem(t) : null });
   }
-  return JSON.stringify(makeBackup(entries));
+  return JSON.stringify({ ...makeBackup(entries), kv: await kvDump() });
+}
+const b64 = (u: Uint8Array) => { let s = ''; for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode(...u.subarray(i, i + 0x8000)); return btoa(s); };
+const unb64 = (s: string) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+/** Everything in the app's own database besides projects: your library, contacts, web links and saved datasheets. */
+export async function kvDump(): Promise<Record<string, unknown>> {
+  const keys = await run<IDBValidKey[]>('kv', 'readonly', (s) => s.getAllKeys()).catch(() => [] as IDBValidKey[]);
+  const out: Record<string, unknown> = {};
+  for (const k of keys) {
+    const v = await kvGet<unknown>(String(k)); if (v === undefined) continue;
+    const blob = (v as { blob?: Blob })?.blob;
+    out[String(k)] = blob instanceof Blob ? { ...(v as object), blob: { __b64: b64(new Uint8Array(await blob.arrayBuffer())), type: blob.type } } : v;
+  }
+  return out;
+}
+/** Put library, contacts and datasheets from a backup back, adding to what is on this device. */
+export async function kvRestore(kv: Record<string, unknown> | undefined): Promise<number> {
+  let n = 0;
+  for (const [k, raw] of Object.entries(kv ?? {})) {
+    let v = raw as Record<string, unknown> | unknown[];
+    const enc = (v as { blob?: { __b64?: string; type?: string } })?.blob;
+    if (enc?.__b64) v = { ...(v as object), blob: new Blob([unb64(enc.__b64)], { type: enc.type }) };
+    const cur = await kvGet<unknown>(k);
+    const ids = (a: unknown[]) => new Set(a.map((x) => (x as { id?: string })?.id));
+    if (Array.isArray(v) && Array.isArray(cur)) { const have = ids(cur); v = [...cur, ...v.filter((x) => !have.has((x as { id?: string })?.id))]; }
+    else if (v && !Array.isArray(v) && Array.isArray((v as { mine?: unknown[] }).mine) && cur && Array.isArray((cur as { mine?: unknown[] }).mine)) {
+      const c = cur as { mine: unknown[]; hidden?: string[] }, have = ids(c.mine), nv = v as { mine: unknown[]; hidden?: string[] };
+      v = { mine: [...c.mine, ...nv.mine.filter((x) => !have.has((x as { id?: string })?.id))], hidden: [...new Set([...(c.hidden ?? []), ...(nv.hidden ?? [])])] };
+    } else if (cur !== undefined) continue;
+    await kvSet(k, v); n++;
+  }
+  return n;
 }
 /** Import entries; existing ids are kept as separate copies unless `overwrite`. Returns the new ids. */
 export async function importEntries(entries: BackupEntry[], overwrite = false): Promise<string[]> {

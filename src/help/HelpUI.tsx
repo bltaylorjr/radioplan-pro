@@ -1,3 +1,4 @@
+import { HelpMedia } from './HelpMedia';
 import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { HELP, HelpTopic, TourStep } from './content';
 
@@ -39,6 +40,7 @@ export function HelpManual({ initial }: { initial?: string }) {
         <h2>{topic.title}</h2>
         <p className="lead">{topic.summary}</p>
         <Md text={topic.body} />
+        <HelpMedia topic={topic} />
         {topic.page && <p><a className="btn" href={`#${topic.page}`}>Go to this page →</a></p>}
       </article>
     </div>
@@ -90,6 +92,7 @@ export function HelpPanel({ topic, onClose, onTour }: { topic: HelpTopic; onClos
       <header><h3>Help: {topic.title}</h3><button className="ghost" onClick={onClose} aria-label="Close help">✕</button></header>
       <p className="lead">{topic.summary}</p>
       <Md text={topic.body} />
+      <HelpMedia topic={topic} compact />
       <div className="row">
         {onTour && topic.tour && <button className="primary" onClick={onTour}>▶ Guide me through this page</button>}
         <a className="btn" href={`#help/${topic.id}`}>Open full manual</a>

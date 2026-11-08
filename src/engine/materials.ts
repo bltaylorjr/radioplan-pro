@@ -1,5 +1,6 @@
 // Materials list (bill of materials) generator. Quantities are derived from the design; the user can override any line.
-import { autoDesign } from './autodesign';
+import { autoDesign, defaultInputs } from './autodesign';
+import { projectSystems } from '../data/systems';
 import type { Project } from '../types';
 import { ANTENNAS, FEEDERS, RADIOS, PV_MODULES, byId } from '../data/catalog';
 import { mToFt } from './rf';
@@ -20,7 +21,9 @@ export function buildBom(p: Project): BomLine[] {
   const tx = p.sites.find((s) => s.id === r.txSiteId) ?? p.sites[0];
   const ant = byId(ANTENNAS, r.txAntennaId), fd = byId(FEEDERS, r.feederId);
   const radio = RADIOS.find((x) => r.fMHz >= x.bandMHz[0] && r.fMHz <= x.bandMHz[1]);
-  if (tx) {
+  // Tower, feedline, site grounding and HF lines only for radio projects (or projects with no type picked yet).
+  const sys = projectSystems(p.meta).map((s) => s.id), rf = !sys.length || sys.includes('radio'), tower = rf || sys.includes('solar') || sys.includes('callbox');
+  if (tx && rf) {
     const vertFt = mToFt(tx.antennaAglM), runFt = mToFt(r.feederLenM);
     if (radio) add('RF equipment', 'radio', 'Base station / repeater', `${radio.brand} ${radio.model}`, 1, 'ea', `Band match ${r.fMHz} MHz`);
     if (ant) {
@@ -40,12 +43,14 @@ export function buildBom(p: Project): BomLine[] {
     add('Grounding', 'surge', 'Coaxial surge protector (antenna discharge unit)', 'PolyPhaser / Times LP, band-matched', 1, 'ea', 'NEC 810.20, at entry');
   }
   const g = p.grounding;
+  if (tower) {
   add('Grounding', 'rods', `Ground rod 5/8" × ${g.rodLengthFt} ft copper-bonded`, 'UL 467 listed', g.groundRods, 'ea', 'Design');
   add('Grounding', 'ring', `Ground ring #${g.groundRingAwg} AWG solid tinned Cu`, 'Bare tinned copper', Math.ceil(Math.max(g.groundRods, 1) * g.rodSpacingFt * 1.1), 'ft', 'Rods × spacing + 10%');
   add('Grounding', 'cad', 'Exothermic weld connections', 'Cadweld / ERICO, mold per conductor', g.groundRods * 2 + 4, 'shot', '2 per rod + tower legs/bars');
   add('Grounding', 'tgb', 'Tower ground bar + master ground bar', 'Tinned copper, insulated standoffs', 2, 'ea', 'TGB + MGB (TIA-607)');
   add('Grounding', 'bond', `Bonding conductor #${g.bondingConductorAwg || '6'} AWG Cu green`, 'THHN/THWN green or bare', Math.ceil(mToFt(g.bondingConductorLengthM) * 1.1), 'ft', 'Design length + 10%');
   add('Grounding', 'ibt', 'Intersystem bonding termination', 'Listed IBT', g.intersystemBond ? 1 : 1, 'ea', 'NEC 250.94');
+  }
 
   if (p.solar.enabled) {
     const s = p.solar, mod = byId(PV_MODULES, s.moduleId) ?? PV_MODULES[0];
@@ -81,7 +86,7 @@ export function buildBom(p: Project): BomLine[] {
     add('ERCES / DAS', 'surv', '2-hour rated pathway (enclosure or CI cable)', 'Listed 2-hr system', e.floors * 15, 'ft', 'Riser survivability');
   }
   if (p.indoor.antennas.length) add('Indoor', 'in-ant', 'Indoor antennas / APs (indoor plan)', [...new Set(p.indoor.antennas.map((a) => a.model))].join(', '), p.indoor.antennas.length, 'ea', 'Indoor planner');
-  if (p.lfhf.mode === 'HF') {
+  if (!rf) { /* no HF / LF antenna lines */ } else if (p.lfhf.mode === 'HF') {
     const len = halfWaveDipoleFt(p.lfhf.fMHz);
     add('HF / LF', 'hf-wire', `Antenna wire #12 Cu-clad steel (λ/2 @ ${p.lfhf.fMHz} MHz)`, 'Hard-drawn copperweld', Math.ceil(len * 1.1), 'ft', `468/f = ${len.toFixed(1)} ft + 10% trim`);
     add('HF / LF', 'hf-balun', '1:1 current balun', '5 kW-rated', 1, 'ea', 'Feedpoint');
@@ -89,8 +94,9 @@ export function buildBom(p: Project): BomLine[] {
   } else {
     add('HF / LF', 'lf-radials', `Ground radials #10 Cu (${p.lfhf.radials} × λ/4)`, 'Bare copper', Math.ceil(p.lfhf.radials * mToFt(75 / p.lfhf.fMHz)), 'ft', '47 CFR 73.189 practice: 120 × λ/4');
   }
-  if (p.autoDesign?.applied) {
-    const r = autoDesign(p, p.autoDesign);
+  // Equipment and materials worked out from the project type, building and devices. On unless turned off.
+  if (p.autoDesign?.applied !== false) {
+    const r = autoDesign(p, { ...defaultInputs(), ...(p.autoDesign ?? {}) });
     for (const m of [...r.equipment, ...r.materials]) add(`Auto-design: ${m.system}`, `ad-${m.key}`, m.item, m.spec, m.qty, m.unit, m.basis);
   }
   for (const x of p.bomExtra ?? []) L.push({ key: `x-${x.id}`, category: x.category || 'Added items', item: x.item, brandModel: x.brandModel, qty: x.qty, unit: x.unit, basis: x.notes || 'Added by you', extraId: x.id });

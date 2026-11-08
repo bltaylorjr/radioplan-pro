@@ -99,6 +99,12 @@ export interface Project {
   bomExtra?: BomExtra[];
   /** Auto-design inputs; when applied, its equipment and materials join the Materials list. */
   autoDesign?: import('./engine/autodesign').AutoInputs & { applied?: boolean };
+  /** Drawing set settings (sheet size, scale, revisions). */
+  blueprint?: Blueprint;
+  /** Proposal pricing, schedule and terms. */
+  proposal?: Proposal;
+  /** Files attached to the project (drawings, PDFs, data sheets, photos). */
+  documents?: ProjectDoc[];
   /** Checklist ticks, key = list:item. */
   checklists?: Record<string, boolean>;
   /** Checklist items you added. */
@@ -106,6 +112,9 @@ export interface Project {
   /** PM tasks done: key = system id + task, value = last date done (YYYY-MM-DD). */
   pmDone?: Record<string, string>;
 }
+export interface Blueprint { size: string; scale: string; drawnBy: string; checkedBy: string; revisions: { rev: string; date: string; desc: string }[]; off: string[] }
+export interface Proposal { laborRate: number; laborHours: number; materialsCost: number; markupPct: number; taxPct: number; startDate: string; weeks: number; validDays: number; paymentTerms: string; exclusions: string; notes: string }
+export interface ProjectDoc { id: string; name: string; type: string; size: number; dataUrl: string; addedAt: string; note: string }
 export interface BomExtra { id: string; category: string; item: string; brandModel: string; qty: number; unit: string; notes: string }
 export interface ServiceCall { id: string; date: string; system: string; equipment: string; problem: string; cause: string; fix: string; parts: string; hours: number; tech: string; status: 'open' | 'done' }
 export interface FieldNote { id: string; at: string; title: string; text: string; category: string; siteId?: string; lat?: number; lon?: number; accM?: number; photos: { id: string; dataUrl: string; caption: string }[]; tags: string[]; author: string; followUp: boolean; done: boolean }

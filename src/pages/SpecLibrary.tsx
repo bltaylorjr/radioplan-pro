@@ -1,3 +1,4 @@
+import { Datasheet } from '../components/Datasheet';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useStore, downloadText } from '../store';
 import { Card } from '../components/ui';
@@ -182,10 +183,7 @@ export function SpecLibraryPage() {
         <p className="muted small">{item.category}{item.sub ? ` · ${item.sub}` : ''} · {item.origin ? 'Loaded from project' : item.kind}{item.reference ? ` · ${item.reference}` : ''}{item.projects?.length ? ` · Used in: ${item.projects.join(', ')}` : ''}</p>
         <table className="tbl"><tbody>{Object.entries(item.specs).map(([k, v]) => <tr key={k}><th style={{ width: '45%' }}>{k}</th><td>{String(v)}</td></tr>)}</tbody></table>
         {item.notes && <p className="note">{item.notes}</p>}
-        <div className="row wrap">
-          {item.datasheet && /^https?:\/\//.test(item.datasheet) && <a className="button" href={item.datasheet} target="_blank" rel="noreferrer">Open datasheet</a>}
-          {item.brand !== 'Standard' && <a className="button" href={searchUrl(item)} target="_blank" rel="noreferrer">Find datasheet online</a>}
-        </div>
+        <Datasheet item={item} searchUrl={searchUrl(item)} />
         {item.kind !== 'Standard' && <p className="small muted">{item.kind === 'Product (typical)' ? 'Typical values for planning. Confirm the current manufacturer datasheet before ordering.' : 'Entered by you.'}</p>}
       </Card>}
 

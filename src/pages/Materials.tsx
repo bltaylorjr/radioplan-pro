@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { defaultInputs } from '../engine/autodesign';
 import { useStore, downloadText } from '../store';
 import { Card } from '../components/ui';
 import { buildBom, bomToCsv } from '../engine/materials';
@@ -35,7 +36,8 @@ export function MaterialsPage() {
         </div>
         <div className="row wrap" style={{ justifyContent: 'flex-end' }}><button onClick={() => setAdd(null)}>Cancel</button><button className="primary" disabled={!add.item.trim()} onClick={save}>Add to materials list</button></div>
       </div>}
-      {!p.autoDesign?.applied && <p className="small muted">Tip: <a href="#autodesign" onClick={(e) => { e.preventDefault(); go('autodesign'); }}>Auto-Design</a> can add equipment and cable quantities for the project's systems to this list.</p>}
+      <p className="small"><label className="check"><input type="checkbox" checked={p.autoDesign?.applied !== false} onChange={(e) => update((d) => { d.autoDesign = { ...defaultInputs(), ...(d.autoDesign ?? {}), applied: e.target.checked }; })} /> Calculate equipment and materials from the project</label>
+        {' '}<span className="muted">Lines marked “Auto-design” come from the project type and the building size and devices on <a href="#autodesign" onClick={(e) => { e.preventDefault(); go('autodesign'); }}>Auto-Design</a>; change those and this list updates.</span></p>
       <div className="tbl-wrap"><table className="tbl bom"><thead><tr><th>Item</th><th>Brand / model</th><th>Qty</th><th>Unit</th><th>Basis</th><th /></tr></thead>
         {cats.map((c) => (
           <tbody key={c}><tr className="cat"><td colSpan={6}>{c}</td></tr>

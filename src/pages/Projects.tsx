@@ -1,8 +1,9 @@
+import { ImportFiles } from '../components/ImportFiles';
 import React, { useEffect, useState } from 'react';
 import { useStore, downloadText, safeName } from '../store';
 import { Card, Stat } from '../components/ui';
 import {
-  listProjects, listVersions, importEntries, getRecord, backupAll, readBackup, storageInfo, requestPersist, fmtBytes,
+  listProjects, listVersions, importEntries, getRecord, backupAll, readBackup, kvRestore, storageInfo, requestPersist, fmtBytes,
   folderCopySupported, pickDataFolder, savedDataFolder, forgetDataFolder, folderAllowed, writeToFolder, readFolder,
   ProjectSummary, VersionRecord, StorageInfo, BackupEntry,
 } from '../engine/projectdb';
@@ -140,10 +141,12 @@ export function ProjectsPage() {
         <p className="small muted">Sources: {REF_SOURCE}.</p>
       </Card>
 
-      <Card title="Backup" tip="One file holds every project, with history-free current versions and their terrain. Use it to move to a new PC or phone.">
+      <ImportFiles />
+
+      <Card title="Backup" tip="One file holds every project with its terrain, plus your specifications library, contacts, web links and saved datasheets. Use it to move to a new PC or phone.">
         <div className="row wrap">
           <button disabled={busy} onClick={() => act('Backup', async () => { const t = await backupAll(); downloadText(`radioplan-backup-${new Date().toISOString().slice(0, 10)}.json`, t, 'application/json'); return `Backup saved (${fmtBytes(t.length)}) ✓`; })}>Back up all projects</button>
-          <button disabled={busy} onClick={() => pickFiles(false, async (e) => `Restored ${(await lib.importProjects(e)).length} project(s) from backup ✓`)}>Restore from backup</button>
+          <button disabled={busy} onClick={() => { const i = document.createElement('input'); i.type = 'file'; i.accept = '.json,application/json'; i.onchange = () => act('Restore', async () => { const f = i.files?.[0]; if (!f) return ''; const t = await f.text(); const n = (await lib.importProjects(readBackup(t))).length; const k = await kvRestore((JSON.parse(t) as { kv?: Record<string, unknown> }).kv); window.dispatchEvent(new Event('radioplan-speclib')); return `Restored ${n} project(s)${k ? ` and ${k} library, contact and datasheet record(s)` : ''} from backup ✓`; }); i.click(); }}>Restore from backup</button>
         </div>
         <p className="muted">Restoring adds the projects in the backup. Projects already on this device are kept.</p>
       </Card>
