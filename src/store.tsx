@@ -1,3 +1,4 @@
+import { autoLoadEquipment } from './data/projectEquipment';
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import type { Project } from './types';
 import { defaultProject } from './defaults';
@@ -93,6 +94,13 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         mirrorToFolder(projectId, project);
       } catch (e) { setSaveState('error'); setSaveError(String((e as Error)?.message ?? e)); }
     }, 400);
+  }, [project, ready]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Equipment added to the project goes into the specifications library automatically.
+  const eqT = useRef<number>();
+  useEffect(() => {
+    if (!ready || saveState === 'unavailable') return;
+    clearTimeout(eqT.current); eqT.current = window.setTimeout(() => { autoLoadEquipment(project); }, 2500);
   }, [project, ready]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Keep the downloaded / imported terrain with the project so it is there next time without internet.

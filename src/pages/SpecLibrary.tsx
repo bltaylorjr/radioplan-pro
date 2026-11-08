@@ -2,13 +2,12 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useStore, downloadText } from '../store';
 import { Card } from '../components/ui';
 import { builtInSpecs, CATEGORIES, TEMPLATES, SpecItem, SpecValue } from '../data/speclib';
-import { kvGet, kvSet, newId } from '../engine/projectdb';
+import { newId } from '../engine/projectdb';
+import { loadMyItems, saveMyItems, SPECLIB_EVENT, autoLoadEquipment } from '../data/projectEquipment';
 import { parseCsv, toCsv } from '../engine/csv';
 import type { Antenna, Feeder, Radio } from '../data/catalog';
 
-const KEY = 'speclib';
-export async function loadMyItems(): Promise<SpecItem[]> { return (await kvGet<SpecItem[]>(KEY)) ?? []; }
-async function saveMyItems(items: SpecItem[]) { await kvSet(KEY, items); }
+export { loadMyItems };
 
 const num = (v: SpecValue | undefined) => { const n = typeof v === 'number' ? v : parseFloat(String(v ?? '').replace(/[^0-9.\-]/g, '')); return Number.isFinite(n) ? n : null; };
 const BASE_COLS = ['category', 'subcategory', 'brand', 'model', 'datasheet', 'notes'];
@@ -101,11 +100,17 @@ export function SpecLibraryPage() {
   const [cmp, setCmp] = useState<string[]>([]);
   const [edit, setEdit] = useState<SpecItem | null>(null);
   const [msg, setMsg] = useState('');
-  useEffect(() => { loadMyItems().then(setMine).catch(() => setMine([])); }, []);
+  const [inProj, setInProj] = useState(false);
+  useEffect(() => {
+    const load = () => loadMyItems().then(setMine).catch(() => setMine([]));
+    autoLoadEquipment(project).then(load); window.addEventListener(SPECLIB_EVENT, load);
+    return () => window.removeEventListener(SPECLIB_EVENT, load);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const all = useMemo(() => [...mine, ...builtIn], [mine, builtIn]);
   const counts = useMemo(() => { const c: Record<string, number> = {}; for (const i of all) c[i.category] = (c[i.category] ?? 0) + 1; return c; }, [all]);
   const words = q.toLowerCase().split(/\s+/).filter(Boolean);
-  const list = all.filter((i) => (cat === 'All' || i.category === cat) && words.every((w) => `${i.brand} ${i.model} ${i.sub} ${i.category} ${Object.entries(i.specs).join(' ')} ${i.notes ?? ''}`.toLowerCase().includes(w)));
+  const pname = project.meta.name || 'Project';
+  const list = all.filter((i) => (cat === 'All' || i.category === cat) && (!inProj || (i.projects ?? []).includes(pname)) && words.every((w) => `${i.brand} ${i.model} ${i.sub} ${i.category} ${Object.entries(i.specs).join(' ')} ${i.notes ?? ''}`.toLowerCase().includes(w)));
   const item = all.find((i) => i.id === sel) ?? null;
   const used = new Set([...(project.customCatalog?.antennas ?? []), ...(project.customCatalog?.feeders ?? []), ...(project.customCatalog?.radios ?? [])].map((x) => x.id));
 
@@ -146,6 +151,8 @@ export function SpecLibraryPage() {
         <div className="chips" role="tablist">
           {['All', ...CATEGORIES.filter((c) => counts[c])].map((c) => <button key={c} role="tab" aria-selected={cat === c} className={'chip-btn' + (cat === c ? ' on' : '')} onClick={() => setCat(c)}>{c} <span className="muted">{c === 'All' ? all.length : counts[c]}</span></button>)}
         </div>
+        <label className="check small"><input type="checkbox" checked={inProj} onChange={(e) => setInProj(e.target.checked)} /> Only equipment in this project ({mine.filter((m) => (m.projects ?? []).includes(pname)).length})</label>
+        <p className="small muted">Equipment you add to a project (antennas, cable, radios, PV modules, fire alarm devices, BDA and materials) is loaded here automatically as <b>From project</b>. Open one and press <b>Edit</b> to correct its specifications.</p>
         {msg && <p className="note" role="status">{msg}</p>}
         <div className="tbl-wrap"><table className="tbl lib">
           <thead><tr><th></th><th>Category</th><th>Manufacturer</th><th>Model</th><th>Key specs</th><th>Source</th></tr></thead>
@@ -154,7 +161,7 @@ export function SpecLibraryPage() {
               <td onClick={(e) => e.stopPropagation()}><input type="checkbox" aria-label="Compare" checked={cmp.includes(i.id)} disabled={!cmp.includes(i.id) && cmp.length >= 4} onChange={(e) => setCmp(e.target.checked ? [...cmp, i.id] : cmp.filter((x) => x !== i.id))} /></td>
               <td>{i.category}</td><td>{i.brand}</td><td><b>{i.model}</b></td>
               <td className="small">{Object.entries(i.specs).slice(0, 3).map(([k, v]) => `${k.replace(/ \(.*\)/, '')}: ${v}`).join(' · ')}</td>
-              <td><span className={'pill ' + (i.kind === 'My item' ? 'ok' : '')} style={{ marginLeft: 0 }}>{i.kind === 'My item' ? 'Mine' : i.kind === 'Standard' ? 'Standard' : 'Typical'}</span></td>
+              <td><span className={'pill ' + (i.kind === 'My item' ? 'ok' : '')} style={{ marginLeft: 0 }}>{i.origin ? 'From project' : i.kind === 'My item' ? 'Mine' : i.kind === 'Standard' ? 'Standard' : 'Typical'}</span></td>
             </tr>))}
           </tbody>
         </table></div>
@@ -165,9 +172,14 @@ export function SpecLibraryPage() {
         {item.kind === 'My item' && <button onClick={() => setEdit(item)}>Edit</button>}
         {item.kind !== 'My item' && <button onClick={() => setEdit({ ...item, id: newId(), kind: 'My item', brand: item.brand, model: `${item.model} (my copy)` })}>Copy to my library</button>}
         {['Antennas', 'Coax & feeders', 'Radios & repeaters', 'ERCES / BDA & DAS'].includes(item.category) && item.kind === 'My item' && <button className="primary" onClick={() => useInProject(item)}>{used.has(`lib-${item.id}`) ? 'Update in project' : 'Use in this project'}</button>}
+        {item.kind === 'My item' && item.category === 'Fire alarm' && project.alarm.devices.some((d) => d.name.trim() === item.model) && <button className="primary" onClick={() => {
+          const sb = num(item.specs['Standby current (mA)']), al = num(item.specs['Alarm current (mA)']);
+          update((d) => { d.alarm.devices = d.alarm.devices.map((x) => x.name.trim() === item.model ? { ...x, standbyMa: sb ?? x.standbyMa, alarmMa: al ?? x.alarmMa } : x); });
+          setMsg(`Battery calculation now uses ${item.model}: ${sb ?? '—'} mA standby, ${al ?? '—'} mA alarm ✓`);
+        }}>Update project devices</button>}
         {item.kind === 'My item' && <button className="danger" onClick={async () => { if (confirm(`Remove ${item.model} from your library?`)) { await persist(mine.filter((m) => m.id !== item.id)); setSel(null); } }}>Delete</button>}
       </div>}>
-        <p className="muted small">{item.category}{item.sub ? ` · ${item.sub}` : ''} · {item.kind}{item.reference ? ` · ${item.reference}` : ''}</p>
+        <p className="muted small">{item.category}{item.sub ? ` · ${item.sub}` : ''} · {item.origin ? 'Loaded from project' : item.kind}{item.reference ? ` · ${item.reference}` : ''}{item.projects?.length ? ` · Used in: ${item.projects.join(', ')}` : ''}</p>
         <table className="tbl"><tbody>{Object.entries(item.specs).map(([k, v]) => <tr key={k}><th style={{ width: '45%' }}>{k}</th><td>{String(v)}</td></tr>)}</tbody></table>
         {item.notes && <p className="note">{item.notes}</p>}
         <div className="row wrap">

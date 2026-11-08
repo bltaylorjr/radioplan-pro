@@ -2,15 +2,18 @@
 //  - "Product (typical)": manufacturer products from the app's equipment catalog, typical datasheet values.
 //  - "Standard": values fixed by a published standard (IEEE, TIA, FCC band plans, NEC tables).
 // Always confirm product values against the current manufacturer datasheet before procurement.
-import { ANTENNAS, FEEDERS, RADIOS, PV_MODULES } from './catalog';
+import { ANTENNAS, FEEDERS, RADIOS, PV_MODULES, Antenna, Feeder, Radio, PvModule } from './catalog';
 import { AWG_SIZES, AMPACITY_75C_CU, AMPACITY_90C_CU, RESISTANCE_OHM_PER_KFT } from '../engine/electrical';
 
+const P = 'Product (typical)' as const, S = 'Standard' as const;
 export type SpecValue = string | number;
 export interface SpecItem {
   id: string; category: string; sub: string; brand: string; model: string;
   specs: Record<string, SpecValue>;
   kind: 'Product (typical)' | 'Standard' | 'My item';
   reference?: string; datasheet?: string; notes?: string; added?: number;
+  /** Set when the item was loaded automatically from equipment added to a project. */
+  origin?: string; projects?: string[];
 }
 export const CATEGORIES = [
   'Antennas', 'Coax & feeders', 'Connectors', 'Radios & repeaters', 'ERCES / BDA & DAS', 'Public safety bands',
@@ -39,17 +42,15 @@ export const TEMPLATES: Record<string, string[]> = {
   'Other': ['Type', 'Voltage', 'Current', 'Notes'],
 };
 
-const P = 'Product (typical)' as const, S = 'Standard' as const;
-const builtFromCatalog = (): SpecItem[] => [
-  ...ANTENNAS.map((a) => ({ id: `cat-ant-${a.id}`, category: 'Antennas', sub: a.type, brand: a.brand, model: a.model, kind: P,
-    specs: { 'Type': a.type, 'Band low (MHz)': a.bandMHz[0], 'Band high (MHz)': a.bandMHz[1], 'Gain (dBi)': a.gainDbi, 'H beamwidth (°)': a.hBwDeg, 'V beamwidth (°)': a.vBwDeg, 'Connector': a.connector, 'Weight (lb)': a.weightLb, 'Wind area (sq ft)': a.windAreaSqft, 'Mount': a.mount } })),
-  ...FEEDERS.map((f) => ({ id: `cat-fd-${f.id}`, category: 'Coax & feeders', sub: f.size, brand: f.brand, model: f.model, kind: P,
-    specs: { 'Size': f.size, ...Object.fromEntries(f.points.map(([m, l]) => [`Loss @${m} MHz (dB/100 ft)`, l])), 'Min bend radius (in)': f.minBendIn, 'Connector': f.connector, 'Hanger': f.hanger, 'Hanger spacing (ft)': f.hangerSpacingFt, 'Ground kit': f.groundKit } })),
-  ...RADIOS.map((r) => ({ id: `cat-rad-${r.id}`, category: /BDA/.test(r.type) ? 'ERCES / BDA & DAS' : 'Radios & repeaters', sub: r.type, brand: r.brand, model: r.model, kind: P,
-    specs: { 'Type': r.type, 'Band low (MHz)': r.bandMHz[0], 'Band high (MHz)': r.bandMHz[1], 'Max power (W)': r.maxPowerW, 'Sensitivity (dBm)': r.sensitivityDbm, 'DC input (V)': r.dcInputV, 'TX current (A)': r.drawTxA, 'RX current (A)': r.drawRxA } })),
-  ...PV_MODULES.map((m) => ({ id: `cat-pv-${m.id}`, category: 'Solar & DC power', sub: 'PV module', brand: m.brand, model: m.model, kind: P,
-    specs: { 'Type': 'PV module', 'Pmax (W)': m.pmaxW, 'Voc (V)': m.vocV, 'Vmp (V)': m.vmpV, 'Isc (A)': m.iscA, 'Imp (A)': m.impA, 'Temp coeff Voc (%/°C)': m.tempCoeffVocPctPerC } })),
-];
+export const antennaSpec = (a: Antenna): SpecItem => ({ id: `cat-ant-${a.id}`, category: 'Antennas', sub: a.type, brand: a.brand, model: a.model, kind: P,
+  specs: { 'Type': a.type, 'Band low (MHz)': a.bandMHz[0], 'Band high (MHz)': a.bandMHz[1], 'Gain (dBi)': a.gainDbi, 'H beamwidth (°)': a.hBwDeg, 'V beamwidth (°)': a.vBwDeg, 'Connector': a.connector, 'Weight (lb)': a.weightLb, 'Wind area (sq ft)': a.windAreaSqft, 'Mount': a.mount } });
+export const feederSpec = (f: Feeder): SpecItem => ({ id: `cat-fd-${f.id}`, category: 'Coax & feeders', sub: f.size, brand: f.brand, model: f.model, kind: P,
+  specs: { 'Size': f.size, ...Object.fromEntries(f.points.map(([m, l]) => [`Loss @${m} MHz (dB/100 ft)`, l])), 'Min bend radius (in)': f.minBendIn, 'Connector': f.connector, 'Hanger': f.hanger, 'Hanger spacing (ft)': f.hangerSpacingFt, 'Ground kit': f.groundKit } });
+export const radioSpec = (r: Radio): SpecItem => ({ id: `cat-rad-${r.id}`, category: /BDA/.test(r.type) ? 'ERCES / BDA & DAS' : 'Radios & repeaters', sub: r.type, brand: r.brand, model: r.model, kind: P,
+  specs: { 'Type': r.type, 'Band low (MHz)': r.bandMHz[0], 'Band high (MHz)': r.bandMHz[1], 'Max power (W)': r.maxPowerW, 'Sensitivity (dBm)': r.sensitivityDbm, 'DC input (V)': r.dcInputV, 'TX current (A)': r.drawTxA, 'RX current (A)': r.drawRxA } });
+export const pvSpec = (m: PvModule): SpecItem => ({ id: `cat-pv-${m.id}`, category: 'Solar & DC power', sub: 'PV module', brand: m.brand, model: m.model, kind: P,
+  specs: { 'Type': 'PV module', 'Pmax (W)': m.pmaxW, 'Voc (V)': m.vocV, 'Vmp (V)': m.vmpV, 'Isc (A)': m.iscA, 'Imp (A)': m.impA, 'Temp coeff Voc (%/°C)': m.tempCoeffVocPctPerC } });
+const builtFromCatalog = (): SpecItem[] => [...ANTENNAS.map(antennaSpec), ...FEEDERS.map(feederSpec), ...RADIOS.map(radioSpec), ...PV_MODULES.map(pvSpec)];
 
 const std = (id: string, category: string, sub: string, model: string, specs: Record<string, SpecValue>, reference: string, notes?: string): SpecItem =>
   ({ id: `std-${id}`, category, sub, brand: 'Standard', model, specs, kind: S, reference, notes });
