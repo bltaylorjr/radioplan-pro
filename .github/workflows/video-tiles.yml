@@ -1,6 +1,6 @@
 # Public-domain USGS map tiles and open terrain tiles around the demo project (Asheville, NC), so the
 # intro video shows filled-in maps (the recording machine cannot reach the tile servers).
-# Only USGS (public domain) and the AWS open elevation dataset are used. Run by hand; small area.
+# Only USGS (public domain), the AWS open elevation dataset and OpenStreetMap tower points are used. Run by hand; small area.
 name: Map tiles for the intro video
 on:
   workflow_dispatch:
@@ -43,6 +43,27 @@ jobs:
                           except Exception:
                               bad += 1
           print('tiles ok', ok, 'failed', bad)
+          PY
+          # Existing towers / comm sites (OpenStreetMap via Overpass) for the same small area, as the app requests them.
+          python3 - <<'PY'
+          import os, urllib.request, urllib.parse
+          lat, lon = float(os.environ['LAT']), float(os.environ['LON'])
+          os.makedirs('tiles/towers', exist_ok=True)
+          import math
+          for la in (math.floor(lat / .25) * .25 - .25, math.floor(lat / .25) * .25, math.floor(lat / .25) * .25 + .25):
+              for lo in (math.floor(lon / .25) * .25 - .25, math.floor(lon / .25) * .25, math.floor(lon / .25) * .25 + .25):
+                  bb = f'({la},{lo},{la + .25},{lo + .25})'
+                  q = ('[out:json][timeout:30];('
+                       f'nwr["man_made"~"^(mast|tower|communications_tower|antenna|telecommunication|monitoring_station)$"]["tower:type"!~"^(cooling|lighting|observation|bell_tower|watchtower|minaret|defensive|clock)$"]{bb};'
+                       f'nwr["tower:type"~"communication|radar|transmission"]{bb};'
+                       f'nwr["communication:mobile_phone"]{bb};nwr["communication:radio"]{bb};nwr["communication:television"]{bb};'
+                       f'nwr["telecom"~"exchange|service_device|data_center"]{bb};'
+                       ');out center tags 1500;')
+                  req = urllib.request.Request('https://overpass-api.de/api/interpreter', data=urllib.parse.urlencode({'data': q}).encode(), headers={'User-Agent': 'LvPlanPro-video-demo/1.0'})
+                  try:
+                      body = urllib.request.urlopen(req, timeout=90).read()
+                      open(f'tiles/towers/{la:.2f},{lo:.2f}.json', 'wb').write(body); print('towers', la, lo, len(body))
+                  except Exception as e: print('towers failed', la, lo, e)
           PY
           zip -qr tiles.zip tiles
       - name: Publish as a pre-release asset (never "latest")
