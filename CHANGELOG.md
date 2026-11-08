@@ -1,3 +1,7 @@
+# LvPlan Pro 1.5.24
+
+- Introduction video: a new background beat (an original swung groove with claps, electric piano and bass), kept under the narration.
+
 # LvPlan Pro 1.5.23
 
 - Introduction video: louder, clearer narration (normal listening level) with the upbeat background music kept under the voice.
