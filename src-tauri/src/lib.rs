@@ -59,7 +59,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![app_info, install_update])
         .setup(|app| {
             let mut w = WebviewWindowBuilder::new(app, "main", WebviewUrl::default())
-                .title("RadioPlan Pro")
+                .title("LvPlan Pro")
                 .inner_size(1440.0, 920.0)
                 .min_inner_size(900.0, 600.0);
             if let Some(dir) = portable_data_dir() {
@@ -69,5 +69,5 @@ pub fn run() {
             Ok(())
         })
         .run(tauri::generate_context!())
-        .expect("error while running RadioPlan Pro");
+        .expect("error while running LvPlan Pro");
 }

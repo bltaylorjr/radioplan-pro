@@ -50,7 +50,7 @@ export function readBackup(text: string): BackupEntry[] {
   const j = JSON.parse(text.replace(/^﻿/, ''));
   if (j?.format === BACKUP_FORMAT && Array.isArray(j.projects)) return j.projects as BackupEntry[];
   const p: Project | undefined = j?.format?.startsWith?.('radioplan-sync') ? j.project : j;
-  if (!p || typeof p !== 'object' || !p.meta || !p.radio) throw new Error('Not a RadioPlan project, sync or backup file');
+  if (!p || typeof p !== 'object' || !p.meta || !p.radio) throw new Error('Not a LvPlan project, sync or backup file');
   const r = summarize('', p, Date.now()); const { project: _p, ...record } = r; void _p;
   return [{ record, project: p }];
 }

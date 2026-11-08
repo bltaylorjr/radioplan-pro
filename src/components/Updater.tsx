@@ -31,8 +31,8 @@ export function Updater() {
   const plat = platform();
   return (
     <div className="update-bar" role="status">
-      {state === 'installing' ? <span>⬇ Installing RadioPlan Pro {info.version}. The app will close and reopen by itself in about a minute. Your work is saved.</span> : <>
-        <span>🎉 RadioPlan Pro {info.version} is available.</span>
+      {state === 'installing' ? <span>⬇ Installing LvPlan Pro {info.version}. The app will close and reopen by itself in about a minute. Your work is saved.</span> : <>
+        <span>🎉 LvPlan Pro {info.version} is available.</span>
         {plat === 'android' && info.url && <button className="primary" onClick={() => { location.href = info.url!; }}>Download update</button>}
         {plat === 'windows' && info.url && <button className="primary" onClick={() => { setState('installing'); installWindowsUpdate(info.url!).catch((e) => { setState('error'); setErr(String(e)); }); }}>Install update</button>}
         {(plat === 'usb' || !info.url) && <a className="button primary" href={info.url ?? info.page} target="_blank" rel="noreferrer">Download update</a>}

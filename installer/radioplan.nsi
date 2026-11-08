@@ -1,12 +1,14 @@
-; RadioPlan Pro Windows installer (per-user, no administrator rights needed).
+; LvPlan Pro Windows installer (per-user, no administrator rights needed).
 ; Build: makensis -DVERSION=x.y.z -DSRC=<folder with radioplan.exe + WebView2Loader.dll> radioplan.nsi
 Unicode true
 !include "MUI2.nsh"
 !ifndef VERSION
   !define VERSION "0.1.0"
 !endif
-!define APP "RadioPlan Pro"
-!define EXE "RadioPlan Pro.exe"
+!define APP "LvPlan Pro"
+!define EXE "LvPlan Pro.exe"
+; Earlier versions were named "RadioPlan Pro": their program file and shortcuts are removed on update.
+!define OLDAPP "RadioPlan Pro"
 !define UNKEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\RadioPlanPro"
 Name "${APP}"
 OutFile "${OUT}"
@@ -23,8 +25,8 @@ VIAddVersionKey "LegalCopyright" ""
 !define MUI_ICON "${ICON}"
 !define MUI_UNICON "${ICON}"
 ; One-click: no questions. Shows progress, then starts the app.
-!define MUI_INSTFILESPAGE_FINISHHEADER_TEXT "RadioPlan Pro is installed"
-!define MUI_INSTFILESPAGE_FINISHHEADER_SUBTEXT "It will open now. Next time, use the RadioPlan Pro icon on your desktop."
+!define MUI_INSTFILESPAGE_FINISHHEADER_TEXT "LvPlan Pro is installed"
+!define MUI_INSTFILESPAGE_FINISHHEADER_SUBTEXT "It will open now. Next time, use the LvPlan Pro icon on your desktop."
 !insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_UNPAGE_CONFIRM
 !insertmacro MUI_UNPAGE_INSTFILES
@@ -52,6 +54,7 @@ FunctionEnd
 Section "Install"
   ; Close a running copy so an update can replace it (projects are saved continuously).
   nsExec::Exec 'taskkill /IM "${EXE}" /F'
+  nsExec::Exec 'taskkill /IM "${OLDAPP}.exe" /F'
   Sleep 500
   SetOutPath "$INSTDIR"
   File "/oname=${EXE}" "${SRC}\radioplan.exe"
@@ -59,6 +62,11 @@ Section "Install"
   File "/oname=RadioPlan.ico" "${ICON}"
   File "${SRC}\README.md"
   WriteUninstaller "$INSTDIR\Uninstall.exe"
+  Delete "$INSTDIR\${OLDAPP}.exe"
+  Delete "$DESKTOP\${OLDAPP}.lnk"
+  Delete "$SMPROGRAMS\${OLDAPP}\${OLDAPP}.lnk"
+  Delete "$SMPROGRAMS\${OLDAPP}\Uninstall ${OLDAPP}.lnk"
+  RMDir "$SMPROGRAMS\${OLDAPP}"
   CreateDirectory "$SMPROGRAMS\${APP}"
   CreateShortcut "$SMPROGRAMS\${APP}\${APP}.lnk" "$INSTDIR\${EXE}" "" "$INSTDIR\RadioPlan.ico"
   CreateShortcut "$SMPROGRAMS\${APP}\Uninstall ${APP}.lnk" "$INSTDIR\Uninstall.exe"

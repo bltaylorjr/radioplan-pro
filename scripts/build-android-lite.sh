@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Builds RadioPlan Pro for Android without Gradle (Ubuntu packages: android-sdk-platform-23,
+# Builds LvPlan Pro for Android without Gradle (Ubuntu packages: android-sdk-platform-23,
 # android-sdk-build-tools, aapt, zipalign, apksigner, dalvik-exchange; plus a JDK).
 # Usage: KEYSTORE=path STOREPASS=... bash scripts/build-android-lite.sh   → out/RadioPlan-Pro.apk
 set -euo pipefail
@@ -20,7 +20,7 @@ $BT/dx --dex --min-sdk-version=24 --output=$W/classes.dex $W/classes
 (cd $W && zip -q -j base.apk classes.dex)
 $BT/zipalign -f -p 4 $W/base.apk $W/aligned.apk
 KEYSTORE=${KEYSTORE:-android-lite/debug.keystore}; STOREPASS=${STOREPASS:-android}
-if [ ! -f "$KEYSTORE" ]; then keytool -genkeypair -keystore "$KEYSTORE" -storepass "$STOREPASS" -keypass "$STOREPASS" -alias radioplan -keyalg RSA -keysize 3072 -validity 10000 -dname "CN=RadioPlan Pro" >/dev/null 2>&1; fi
+if [ ! -f "$KEYSTORE" ]; then keytool -genkeypair -keystore "$KEYSTORE" -storepass "$STOREPASS" -keypass "$STOREPASS" -alias radioplan -keyalg RSA -keysize 3072 -validity 10000 -dname "CN=LvPlan Pro" >/dev/null 2>&1; fi
 $BT/apksigner sign --ks "$KEYSTORE" --ks-pass "pass:$STOREPASS" --ks-key-alias radioplan --out out/RadioPlan-Pro.apk $W/aligned.apk
 $BT/apksigner verify --print-certs out/RadioPlan-Pro.apk | head -3
 ls -la out/RadioPlan-Pro.apk

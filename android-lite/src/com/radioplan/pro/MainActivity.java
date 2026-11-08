@@ -30,7 +30,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * RadioPlan Pro for Android: the full app runs offline from the APK's assets, served on a private https
+ * LvPlan Pro for Android: the full app runs offline from the APK's assets, served on a private https
  * origin so that built-in storage (IndexedDB), GPS and the camera work as in a browser.
  */
 public class MainActivity extends Activity {
@@ -186,7 +186,7 @@ public class MainActivity extends Activity {
                     i.putExtra(Intent.EXTRA_STREAM, u);
                     i.putExtra(Intent.EXTRA_TEXT, text);
                     i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    startActivity(Intent.createChooser(i, "Share RadioPlan file"));
+                    startActivity(Intent.createChooser(i, "Share LvPlan file"));
                 }});
             } catch (IOException e) { toast("Could not share: " + e.getMessage()); }
         }

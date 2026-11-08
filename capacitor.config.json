@@ -1,6 +1,6 @@
 {
   "appId": "com.radioplan.pro",
-  "appName": "RadioPlan Pro",
+  "appName": "LvPlan Pro",
   "webDir": "dist",
   "android": { "allowMixedContent": false }
 }

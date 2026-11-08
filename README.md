@@ -1,4 +1,4 @@
-# RadioPlan Pro
+# LvPlan Pro
 
 Single-user planning workstation for **low-voltage systems** (fire alarm, ERCES / BDA and DAS, Wi-Fi and network cabling,
 solar / DC power, grounding) and the **radio and RF design** behind them (topographic maps, GPS, terrain, propagation, link budgets, 3D).
@@ -14,7 +14,7 @@ Get everything from the [latest release](https://github.com/bltaylorjr/radioplan
 |---|---|---|
 | `RadioPlan-Pro-Setup.exe` | Windows 10 / 11 | Double-click. Installs with no questions (no administrator rights), adds a desktop icon, opens the app, and **updates itself** when a new release is published. |
 | `RadioPlan-Pro.apk` | Android 7+ | Open on the phone, allow "install unknown apps" once, tap Install. The app offers each new version in one tap. |
-| `RadioPlan-Pro-FlashDrive.zip` | Flash drive | Unzip onto the drive. `RadioPlan Pro.exe` runs on any Windows PC and keeps projects **on the drive** ("RadioPlan Data"); Mac uses `Start on Mac.command`; anything else opens `RadioPlan.html`. |
+| `RadioPlan-Pro-FlashDrive.zip` | Flash drive | Unzip onto the drive. `LvPlan Pro.exe` runs on any Windows PC and keeps projects **on the drive** ("RadioPlan Data"); Mac uses `Start on Mac.command`; anything else opens `RadioPlan.html`. |
 | Online version | Any browser | Always the latest version; projects are stored in that browser. |
 
 All versions work without internet once installed: projects, history, terrain and a set of reference data are stored inside the app

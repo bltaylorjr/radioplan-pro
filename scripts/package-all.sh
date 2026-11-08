@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Builds every RadioPlan Pro download into out/:
+# Builds every LvPlan Pro download into out/:
 #   RadioPlan-Pro-Setup.exe        one-click Windows installer (auto-updating)
 #   RadioPlan-Pro.apk              Android app
 #   RadioPlan-Pro-FlashDrive.zip   unzip onto a flash drive: portable Windows app + Mac/any-browser version
@@ -16,12 +16,12 @@ cp README.md "$WIN/README.md"
 makensis -V2 -DVERSION="$VERSION" -DSRC="$PWD/$WIN" -DICON="$PWD/src-tauri/icons/icon.ico" -DOUT="$PWD/out/RadioPlan-Pro-Setup.exe" installer/radioplan.nsi
 bash scripts/build-android-lite.sh
 # Flash-drive package
-U=out/usb/RadioPlan\ Pro; rm -rf out/usb; mkdir -p "$U/RadioPlan Data" "$U/samples"
-cp "$WIN/radioplan.exe" "$U/RadioPlan Pro.exe"; cp "$WIN/WebView2Loader.dll" "$U/"
+U=out/usb/LvPlan\ Pro; rm -rf out/usb; mkdir -p "$U/RadioPlan Data" "$U/samples"
+cp "$WIN/radioplan.exe" "$U/LvPlan Pro.exe"; cp "$WIN/WebView2Loader.dll" "$U/"
 cp dist-usb/RadioPlan.html "$U/"; cp packaging/"Start Here.txt" packaging/"Start on Mac.command" "$U/"; chmod +x "$U/Start on Mac.command"
 cp out/RadioPlan-Pro-Setup.exe "$U/"
 echo "Projects, maps and terrain for the portable version are kept in this folder." > "$U/RadioPlan Data/About this folder.txt"
 cp samples/* "$U/samples/" 2>/dev/null || true
-rm -f out/RadioPlan-Pro-FlashDrive.zip; (cd out/usb && zip -qr -X ../RadioPlan-Pro-FlashDrive.zip "RadioPlan Pro")
+rm -f out/RadioPlan-Pro-FlashDrive.zip; (cd out/usb && zip -qr -X ../RadioPlan-Pro-FlashDrive.zip "LvPlan Pro")
 printf '{"version":"%s"}\n' "$VERSION" > out/version.json
 ls -la out

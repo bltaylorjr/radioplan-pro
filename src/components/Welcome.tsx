@@ -37,7 +37,7 @@ export function Welcome({ onClose, onHelp }: { onClose: () => void; onHelp: () =
   return (
     <div className="welcome-back" role="dialog" aria-modal="true" aria-labelledby="welcome-h">
       <div className="welcome">
-        <h2 id="welcome-h">Welcome to RadioPlan Pro</h2>
+        <h2 id="welcome-h">Welcome to LvPlan Pro</h2>
         <p>Everything is installed and works without internet. Your work saves by itself.</p>
         <label className="big-label">Your company name (optional)
           <input value={company} onChange={(e) => setCompany(e.target.value)} placeholder="e.g. Taylor Communications" />

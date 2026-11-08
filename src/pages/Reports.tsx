@@ -121,7 +121,7 @@ export function ReportsPage() {
         <div>Site: {m.siteAddress ? `${m.siteAddress} · ` : ''}{m.city ? `${m.city}, ` : ''}{m.county ? `${m.county}, ` : ''}{JURISDICTIONS[m.state].name}</div><div>Engineer: {m.engineer || '—'}{m.peLicense && ` (PE ${m.peLicense})`} · {m.created}</div></div>
     </div>
   );
-  const Foot = () => <div className="rpt-foot">Prepared with RadioPlan Pro. Planning document — calculations and code citations must be verified by a licensed professional engineer and the Authority Having Jurisdiction.</div>;
+  const Foot = () => <div className="rpt-foot">Prepared with LvPlan Pro. Planning document — calculations and code citations must be verified by a licensed professional engineer and the Authority Having Jurisdiction.</div>;
   const KV = ({ rows }: { rows: [string, React.ReactNode][] }) => <table className="rpt-kv"><tbody>{rows.map(([k, v]) => <tr key={k}><th>{k}</th><td>{v}</td></tr>)}</tbody></table>;
   const mod = byId(PV_MODULES, p.solar.moduleId) ?? PV_MODULES[0];
   const ck = (id: string) => () => { const def = CHECKLISTS.find((c) => c.id === id)!; const items = itemsOf(def, p); const groups = [...new Set(items.map((i) => i.group ?? ''))];

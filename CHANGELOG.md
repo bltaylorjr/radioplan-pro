@@ -1,3 +1,8 @@
+# LvPlan Pro 1.5.19
+
+- **New name: LvPlan Pro** (was RadioPlan Pro) on every screen, the window title, the installer, shortcuts, the Android app and the help. Your projects, settings and flash-drive data are kept; the Windows update replaces the old desktop and Start-menu shortcuts.
+- Introduction video: American male narrator with a slower, clearer pace and soft background music; the title card no longer says "and radio".
+
 # RadioPlan Pro 1.5.18
 
 - The **introduction video** now has spoken narration for every page and tool (a natural voice reads each step along with the captions). Press **▶ Video** at the top of any page.

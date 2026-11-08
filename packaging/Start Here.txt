@@ -1,13 +1,13 @@
-RadioPlan Pro - Start Here
+LvPlan Pro - Start Here
 ==========================
 
 WINDOWS COMPUTER (easiest)
-  Double-click "RadioPlan Pro.exe" in this folder.
+  Double-click "LvPlan Pro.exe" in this folder.
   Your projects are saved right here on the flash drive (in "RadioPlan Data"),
   so you can plug the drive into any Windows 10 or 11 computer and keep working.
 
   To install it on the computer instead: double-click "RadioPlan-Pro-Setup.exe"
-  (if it is in this folder) or download it from the RadioPlan Pro update page.
+  (if it is in this folder) or download it from the LvPlan Pro update page.
   It installs by itself, puts an icon on the desktop, and keeps itself up to date.
 
 MAC

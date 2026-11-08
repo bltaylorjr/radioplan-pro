@@ -156,9 +156,9 @@ export function ProjectsPage() {
               <td><button disabled={busy} onClick={() => { if (confirm('Go back to this version? The current state is kept in history first.')) act('Restore', () => lib.restoreVersion(v.vid!)); }}>Restore</button></td></tr>)}</tbody></table></div>)}
       </Card>
 
-      <Card title="Version & updates" tip="New versions are published on the RadioPlan Pro GitHub page. The Windows app installs them by itself; Android and the flash drive offer a one-tap download.">
-        <p>RadioPlan Pro version <b>{APP_VERSION}</b> · {place.kind}</p>
-        <label className="check"><input type="checkbox" checked={autoUp} onChange={(e) => { setAutoUpdate(e.target.checked); setAutoUp(e.target.checked); }} /> Keep RadioPlan Pro up to date automatically</label>
+      <Card title="Version & updates" tip="New versions are published on the LvPlan Pro GitHub page. The Windows app installs them by itself; Android and the flash drive offer a one-tap download.">
+        <p>LvPlan Pro version <b>{APP_VERSION}</b> · {place.kind}</p>
+        <label className="check"><input type="checkbox" checked={autoUp} onChange={(e) => { setAutoUpdate(e.target.checked); setAutoUp(e.target.checked); }} /> Keep LvPlan Pro up to date automatically</label>
         <div className="row wrap">
           <button disabled={busy || !navigator.onLine} onClick={() => act('Check for updates', async () => { const u = await checkForUpdate(); markChecked(); return u ? `Version ${u.version} is available. ${u.url ? 'It will be offered at the bottom of the screen; restart the app to install it now.' : ''}` : 'You have the latest version ✓'; })}>Check for updates now</button>
         </div>

@@ -84,7 +84,7 @@ export function fromPackage(text: string): Project {
   const j = JSON.parse(text);
   if (j?.format === SYNC_FORMAT && j.project) return j.project as Project;
   if (j?.meta && j?.radio) return j as Project; // plain .radioplan.json project file
-  throw new Error('Not a RadioPlan project or sync file.');
+  throw new Error('Not a LvPlan project or sync file.');
 }
 
 // ---- compact text codes for the Wi-Fi direct handshake (QR / copy-paste) ----

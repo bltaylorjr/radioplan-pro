@@ -1,9 +1,9 @@
 {
   "name": "radioplan",
-  "version": "1.5.18",
+  "version": "1.5.19",
   "private": true,
   "type": "module",
-  "description": "RadioPlan Pro - radio site and equipment planning workstation (single-user)",
+  "description": "LvPlan Pro - radio site and equipment planning workstation (single-user)",
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",

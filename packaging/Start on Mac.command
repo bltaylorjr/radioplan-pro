@@ -1,5 +1,5 @@
 #!/bin/bash
-# Opens RadioPlan Pro in its own window, keeping projects on this drive.
+# Opens LvPlan Pro in its own window, keeping projects on this drive.
 DIR="$(cd "$(dirname "$0")" && pwd)"
 PROFILE="$DIR/RadioPlan Data/Browser"
 mkdir -p "$PROFILE"

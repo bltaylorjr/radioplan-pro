@@ -1,7 +1,7 @@
 [package]
 name = "radioplan"
 version = "0.1.0"
-description = "RadioPlan Pro - radio site planning workstation"
+description = "LvPlan Pro - radio site planning workstation"
 edition = "2021"
 
 [lib]

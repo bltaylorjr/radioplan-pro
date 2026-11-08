@@ -137,7 +137,7 @@ export default function App() {
       {welcome && <Welcome onClose={() => setWelcome(false)} onHelp={() => setHelpOpen(true)} />}
       <header className="topbar">
         <button className="ghost menu" onClick={() => setNavOpen(!navOpen)} aria-label="Menu">☰</button>
-        <div className="brand" title="Low-voltage and radio system planning"><span className="logo">◉</span> RadioPlan <b>Pro</b></div>
+        <div className="brand" title="Low-voltage system planning"><span className="logo">◉</span> LvPlan <b>Pro</b></div>
         <span className={'chip ' + (online ? 'on' : 'off')} title={online ? 'Online: maps and terrain download automatically and are cached' : 'Offline: using cached maps and terrain'}>{online ? '● Online' : '○ Offline'}</span>
         {rt.terrainStatus && <span className="chip terr" title="Automatic terrain">{rt.terrainStatus}</span>}
         {rt.mapStatus && <span className="chip terr" title="Automatic offline maps">{rt.mapStatus}</span>}
@@ -197,7 +197,7 @@ export default function App() {
             <p className="disclaimer">Planning aid only. Calculations and code citations must be verified by a licensed professional and the Authority Having Jurisdiction.</p>
           </>
         )}
-        <p className="copyright no-print">© {new Date().getFullYear()} Bobby Taylor. All rights reserved. · RadioPlan Pro {APP_VERSION}</p>
+        <p className="copyright no-print">© {new Date().getFullYear()} Bobby Taylor. All rights reserved. · LvPlan Pro {APP_VERSION}</p>
       </main>
       {video && <IntroVideo onClose={() => setVideo(false)} />}
       {helpOpen && !isHelp && <HelpPanel topic={topic} onClose={() => setHelpOpen(false)} onTour={topic.tour ? () => { setHelpOpen(false); setTour(true); } : undefined} />}

@@ -49,6 +49,6 @@ jobs:
         env: { GH_TOKEN: '${{ github.token }}' }
         run: |
           TAG="${{ steps.ver.outputs.tag }}"
-          gh release create "$TAG" --target "$GITHUB_SHA" --title "RadioPlan Pro ${TAG#v}" --notes-file CHANGELOG.md --latest \
+          gh release create "$TAG" --target "$GITHUB_SHA" --title "LvPlan Pro ${TAG#v}" --notes-file CHANGELOG.md --latest \
             out/RadioPlan-Pro-Setup.exe out/RadioPlan-Pro.apk out/RadioPlan-Pro-FlashDrive.zip || \
           gh release upload "$TAG" --clobber out/RadioPlan-Pro-Setup.exe out/RadioPlan-Pro.apk out/RadioPlan-Pro-FlashDrive.zip

@@ -9,7 +9,7 @@ export function IntroVideo({ onClose }: { onClose: () => void }) {
   return (
     <div className="intro-video" role="dialog" aria-label="Introduction video" onClick={onClose}>
       <div className="intro-video-box" onClick={(e) => e.stopPropagation()}>
-        <header className="row"><h3 style={{ margin: 0, flex: 1 }}>▶ RadioPlan Pro introduction</h3><button className="ghost" onClick={onClose} aria-label="Close video">✕</button></header>
+        <header className="row"><h3 style={{ margin: 0, flex: 1 }}>▶ LvPlan Pro introduction</h3><button className="ghost" onClick={onClose} aria-label="Close video">✕</button></header>
         {!failed
           ? <video src="./intro.mp4" controls autoPlay playsInline onError={() => setFailed(true)} />
           : <video src={ONLINE} controls autoPlay playsInline />}

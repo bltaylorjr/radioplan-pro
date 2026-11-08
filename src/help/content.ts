@@ -5,7 +5,7 @@ export interface HelpTopic { id: string; title: string; page?: string; keywords:
 
 export const HELP: HelpTopic[] = [
   { id: 'getting-started', title: 'Getting started', keywords: 'start intro video tour overview workflow usb android install save open project', summary: 'The left sidebar is your workflow: work top to bottom from Company & Project to Testing.',
-    body: `RadioPlan Pro walks a project from first site visit to commissioning. Press **▶ Intro video** at the top of the screen for a captioned tour of every page and tool (captioned and narrated; it plays offline). Each page in the left sidebar is one **task**, in the order engineers normally perform them. Pages where work gets checked off (site survey, permits, installation, testing, closeout) have a **checklist** at the bottom; the sidebar shows ✓ when a checklist is finished.
+    body: `LvPlan Pro walks a project from first site visit to commissioning. Press **▶ Intro video** at the top of the screen for a captioned tour of every page and tool (captioned and narrated; it plays offline). Each page in the left sidebar is one **task**, in the order engineers normally perform them. Pages where work gets checked off (site survey, permits, installation, testing, closeout) have a **checklist** at the bottom; the sidebar shows ✓ when a checklist is finished.
 
 - Your work saves automatically in this computer's browser storage.
 - Use **Save project** (top bar) to write a .radioplan.json file you can keep on the USB drive, email, or open on the Android app.
@@ -325,7 +325,7 @@ Distances and lengths follow **Measurements** on Company & Project: Imperial (ft
 
 **Cellular (cloud drive)**: on Chrome or Edge for Windows/Mac, choose a folder that OneDrive, Google Drive or Dropbox syncs. Each device writes its own file every minute and merges the others. On Android, save the sync file into the Drive or OneDrive app and merge the other device's file.
 
-No RadioPlan server or account is involved; data moves only between your devices or through your own cloud drive.` },
+No LvPlan server or account is involved; data moves only between your devices or through your own cloud drive.` },
 
   { id: 'library', title: 'Specifications library', page: 'library', keywords: 'specifications specs datasheet manual service manual technician programming repair parts library equipment catalog low voltage antenna coax cable connector bda das fire alarm battery solar wifi poe cat6 fiber conductor compare import csv', summary: 'Search, compare and add specifications for low-voltage and radio equipment.',
     body: `**Manuals:** pick an item, then under *Service, technician and installation manuals* choose the type and use **Attach file** (PDF, picture, video), **Add link** or **Find … online**. The **Service & technician resources** card holds manuals that aren't tied to one item. All of them open offline and are in backups.
@@ -394,7 +394,7 @@ Every sheet has a **title block** (your company, project, seal box, revisions, d
 - **Excel (.xlsx) or CSV** with latitude and longitude columns → sites; with item and qty → Materials list; with name and phone or email → My contacts.
 - **KML, KMZ, GPX, GeoJSON** points → sites.
 - **Photos** → Field Notes & Photos.
-- **RadioPlan project or backup files** → Projects.
+- **LvPlan project or backup files** → Projects.
 - **Anything else** (PDF, Word, CAD drawings, permits, data sheets) is kept with the project under **Documents**, syncs with it and is listed in the closeout package. Files up to 15 MB.
 
 Export: Reports page (PDF, Word, Excel, HTML, CSV, KML), Blueprints (PDF, DXF, SVG), Materials (CSV), Map pages (KML, KMZ, GeoJSON, Shapefile), and the project file itself (top bar **Export**).` },
@@ -419,7 +419,7 @@ Photos are reduced to 1280 pixels so projects stay small enough to sync. Notes s
 - **Copy address / Copy GPS** to paste into a text or another app.
 - Offline, the map uses saved tiles; directions need internet.` },
   { id: 'projects', title: 'Projects & built-in storage', page: 'projects', keywords: 'save open project library storage autosave history version restore backup data folder usb flash drive offline delete duplicate copy reuse template similar previous project based on', summary: 'Every project is saved automatically inside the app, with history, terrain and backups. No internet or account needed.',
-    body: `RadioPlan keeps a **project library inside the app**. Each change saves automatically within a second; the chip in the top bar shows **✓ Saved**.
+    body: `LvPlan keeps a **project library inside the app**. Each change saves automatically within a second; the chip in the top bar shows **✓ Saved**.
 
 - **Projects**: open, copy, export or delete any project. **New** starts a fresh project and keeps the current one.
 - **Start a new project from a previous one**: for a similar design and build, press **Reuse** on a project (or pick it in the card), type the new name and tick what to carry over: project type, design, equipment and materials, pricing, drawing settings, your checklist items, and optionally the client, sites and attached files. Field notes, photos, tests, service calls and checklist ticks start empty. The old project is not changed.
@@ -438,5 +438,5 @@ Where the storage lives: the Windows app keeps it in its own data folder, the An
 Maps and terrain download automatically when online and are cached for offline use; see Working offline.` },
 
   { id: 'disclaimer', title: 'Professional responsibility', keywords: 'disclaimer liability pe engineer verify', summary: 'Results must be verified by a licensed professional.',
-    body: `RadioPlan Pro is a planning tool for qualified users. Propagation models are statistical; code citations may not reflect the edition or local amendments adopted by your AHJ. A licensed professional engineer must review and seal designs where required, and installations must be permitted and inspected by the AHJ.` },
+    body: `LvPlan Pro is a planning tool for qualified users. Propagation models are statistical; code citations may not reflect the edition or local amendments adopted by your AHJ. A licensed professional engineer must review and seal designs where required, and installations must be permitted and inspected by the AHJ.` },
 ];

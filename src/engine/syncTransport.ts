@@ -54,8 +54,8 @@ export function canShareFiles(): boolean {
 }
 export async function shareProject(p: Project, fileName: string) {
   const file = new File([JSON.stringify(toPackage(p))], fileName, { type: 'application/json' });
-  const a = androidBridge(); if (a?.shareFile) { a.shareFile(fileName, 'application/json', await blobToB64(file), `RadioPlan sync file: ${p.meta.name}`); return; }
-  await navigator.share({ files: [file], title: 'RadioPlan project', text: `RadioPlan sync file: ${p.meta.name}` });
+  const a = androidBridge(); if (a?.shareFile) { a.shareFile(fileName, 'application/json', await blobToB64(file), `LvPlan sync file: ${p.meta.name}`); return; }
+  await navigator.share({ files: [file], title: 'LvPlan project', text: `LvPlan sync file: ${p.meta.name}` });
 }
 
 // ---------- Cloud-drive folder (File System Access API: Chrome / Edge desktop) ----------
