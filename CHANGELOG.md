@@ -1,3 +1,7 @@
+# RadioPlan Pro 1.5.11
+
+- New **Map & Directions** page (Tools): the project site address on a map with the client contact, one-tap driving directions in Google Maps, Apple Maps or Waze from where you are or from your office, your position and straight-line distance, and copy address / GPS.
+
 # RadioPlan Pro 1.5.10
 
 - Required fields are highlighted only after you press **Save project information** (new button on Company & Project) or try to print or export a report with information missing. The * marks stay so you can see which fields are required.

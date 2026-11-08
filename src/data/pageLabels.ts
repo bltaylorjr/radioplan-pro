@@ -26,6 +26,7 @@ export const WORKFLOW_LABELS: Record<string, string> = {
   library: 'Specifications Library',
   materials: 'Materials List',
   blueprints: 'Blueprints & Drawing Sets',
+  directions: 'Map & Directions',
   install: 'Installation Guides',
   testing: 'Final Testing',
   troubleshoot: 'Troubleshooting Wizard',

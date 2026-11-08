@@ -403,6 +403,13 @@ Export: Reports page (PDF, Word, Excel, HTML, CSV, KML), Blueprints (PDF, DXF, S
 
 Photos are reduced to 1280 pixels so projects stay small enough to sync. Notes sync between devices like the rest of the project, export to CSV, and print in **Reports → Field Notes & Photos**.` },
 
+  { id: 'directions', title: 'Map & directions', page: 'directions', keywords: 'map directions route drive navigate google apple waze gps address location office', summary: 'The project site on a map, with one-tap driving directions from where you are or from your office.',
+    body: `Shows the **project site address** from Company & Project at Site A's position, with the client contact for the crew.
+
+- **Directions:** Google Maps, Apple Maps or Waze open with turn-by-turn directions from where you are now. **From your office** uses your company street address.
+- **Show me on the map** adds your current position and the straight-line distance and direction to the site.
+- **Copy address / Copy GPS** to paste into a text or another app.
+- Offline, the map uses saved tiles; directions need internet.` },
   { id: 'projects', title: 'Projects & built-in storage', page: 'projects', keywords: 'save open project library storage autosave history version restore backup data folder usb flash drive offline delete duplicate copy reuse template similar previous project based on', summary: 'Every project is saved automatically inside the app, with history, terrain and backups. No internet or account needed.',
     body: `RadioPlan keeps a **project library inside the app**. Each change saves automatically within a second; the chip in the top bar shows **✓ Saved**.
 

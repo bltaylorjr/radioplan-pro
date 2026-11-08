@@ -4,6 +4,7 @@ import { HELP } from './help/content';
 import { HelpManual, HelpPanel, Tour } from './help/HelpUI';
 import { evaluateCompliance } from './compliance/rules';
 import { CompanyPage } from './pages/Company';
+import { DirectionsPage } from './pages/Directions';
 import { SitesPage } from './pages/Sites';
 import { EquipmentPage } from './pages/Equipment';
 import { PathPage } from './pages/Path';
@@ -76,6 +77,7 @@ export const WORKFLOW: { id: string; label: string; group: string; el: React.Rea
   { id: 'reports', label: 'Reports, Proposals & Closeout', group: '6 · Testing & closeout', el: <ReportsPage /> },
   { id: 'troubleshoot', label: 'Troubleshooting Wizard', group: '7 · Troubleshooting & repair', el: <TroubleshootPage /> },
   { id: 'service', label: 'Service & Maintenance', group: '7 · Troubleshooting & repair', el: <ServicePage /> },
+  { id: 'directions', label: 'Map & Directions', group: 'Tools', el: <DirectionsPage /> },
   { id: 'install', label: 'Installation Guides', group: 'Tools', el: <InstallPage /> },
   { id: 'library', label: 'Specifications Library', group: 'Tools', el: <SpecLibraryPage /> },
   { id: 'contacts', label: 'Contacts & Web Resources', group: 'Tools', el: <ContactsPage /> },
