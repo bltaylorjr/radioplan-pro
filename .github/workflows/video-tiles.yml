@@ -1,0 +1,52 @@
+# Public-domain USGS map tiles and open terrain tiles around the demo project (Asheville, NC), so the
+# intro video shows filled-in maps (the recording machine cannot reach the tile servers).
+# Only USGS (public domain) and the AWS open elevation dataset are used. Run by hand; small area.
+name: Map tiles for the intro video
+on:
+  workflow_dispatch:
+    inputs:
+      lat: { required: false, default: '35.5951' }
+      lon: { required: false, default: '-82.5515' }
+permissions:
+  contents: write
+jobs:
+  tiles:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Download tiles
+        env: { LAT: '${{ inputs.lat }}', LON: '${{ inputs.lon }}' }
+        run: |
+          python3 - <<'PY'
+          import math, os, urllib.request
+          lat, lon = float(os.environ['LAT']), float(os.environ['LON'])
+          base = 'https://basemap.nationalmap.gov/arcgis/rest/services/'
+          L = {
+            'usgstopo': (base + 'USGSTopo/MapServer/tile/{z}/{y}/{x}', 16),
+            'usgsimg': (base + 'USGSImageryOnly/MapServer/tile/{z}/{y}/{x}', 16),
+            'usgsimgtopo': (base + 'USGSImageryTopo/MapServer/tile/{z}/{y}/{x}', 16),
+            'usgsrelief': (base + 'USGSShadedReliefOnly/MapServer/tile/{z}/{y}/{x}', 16),
+            'terrarium': ('https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png', 14),
+          }
+          ok = bad = 0
+          for key, (url, zmax) in L.items():
+              for z in range(4, zmax + 1):
+                  n = 2 ** z; x0 = int((lon + 180) / 360 * n)
+                  y0 = int((1 - math.asinh(math.tan(math.radians(lat))) / math.pi) / 2 * n)
+                  r = 4 if z >= 8 else 2
+                  for x in range(x0 - r, x0 + r + 1):
+                      for y in range(y0 - r, y0 + r + 1):
+                          p = f'tiles/{key}/{z}/{x}/{y}'
+                          os.makedirs(os.path.dirname(p), exist_ok=True)
+                          try:
+                              req = urllib.request.Request(url.format(z=z, x=x, y=y), headers={'User-Agent': 'LvPlanPro-video-demo/1.0'})
+                              open(p, 'wb').write(urllib.request.urlopen(req, timeout=30).read()); ok += 1
+                          except Exception:
+                              bad += 1
+          print('tiles ok', ok, 'failed', bad)
+          PY
+          zip -qr tiles.zip tiles
+      - name: Publish as a pre-release asset (never "latest")
+        env: { GH_TOKEN: '${{ github.token }}' }
+        run: |
+          gh release view narration -R "$GITHUB_REPOSITORY" >/dev/null 2>&1 || gh release create narration -R "$GITHUB_REPOSITORY" --prerelease --latest=false --title "Intro video narration (not an app release)" --notes "Voice files for the introduction video. Not an app update."
+          gh release upload narration tiles.zip --clobber -R "$GITHUB_REPOSITORY"
