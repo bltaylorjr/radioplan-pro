@@ -286,3 +286,6 @@ body { font-size: clamp(15px, 0.6vw + 12.5px, 17px); }
 .req-box.missing { border-left: 3px solid #d32f2f; padding-left: 8px; }
 .req-note { border-left-color: #d32f2f; }
 .manuals { margin: 12px 0; border-top: 1px solid var(--line); padding-top: 8px; } .manual-list { list-style: none; padding: 0; margin: 2px 0 8px; } .manual-list li { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.intro-video { position: fixed; inset: 0; z-index: 3100; background: rgba(10,20,35,.75); display: flex; align-items: center; justify-content: center; padding: 16px; }
+.intro-video-box { background: var(--panel, #fff); color: inherit; border-radius: 10px; padding: 12px 14px; width: min(1000px, 100%); max-height: 100%; overflow: auto; box-shadow: 0 10px 40px rgba(0,0,0,.4); }
+.intro-video-box video { width: 100%; max-height: 75vh; background: #000; border-radius: 6px; margin-top: 8px; }

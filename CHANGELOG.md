@@ -1,3 +1,8 @@
+# RadioPlan Pro 1.5.16
+
+- **▶ Video** button at the top of every page plays the introduction video (a captioned tour of every page and tool). The video is built into the app, so it plays offline; it is re-recorded with every update.
+- **How-to videos** buttons in Help now search YouTube for the page you are on (and your project's systems on Troubleshooting, Installation, Service, Testing and similar pages) instead of "Getting started". **Help manual** in the sidebar opens the topic for the page you were on.
+
 # RadioPlan Pro 1.5.15
 
 - **Contacts and web resources**: new **or ZIP code** box beside the state, county and city pickers. Type a 5-digit ZIP and all three are set for you.

@@ -2,6 +2,7 @@ import React, { Suspense, lazy, useEffect, useState } from 'react';
 import { useStore, downloadText } from './store';
 import { HELP } from './help/content';
 import { HelpManual, HelpPanel, Tour } from './help/HelpUI';
+import { IntroVideo } from './components/IntroVideo';
 import { evaluateCompliance } from './compliance/rules';
 import { CompanyPage } from './pages/Company';
 import { DirectionsPage } from './pages/Directions';
@@ -96,10 +97,13 @@ export default function App() {
   useEffect(() => { const on = () => setOnline(true), off = () => setOnline(false); window.addEventListener('online', on); window.addEventListener('offline', off); return () => { window.removeEventListener('online', on); window.removeEventListener('offline', off); }; }, []);
   const [helpOpen, setHelpOpen] = useState(false);
   const [tour, setTour] = useState(false);
+  const [video, setVideo] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
   const isHelp = page.startsWith('help');
   const current = WORKFLOW.find((w) => w.id === page) ?? (isHelp ? null : WORKFLOW[0]);
   const topic = HELP.find((h) => h.page === current?.id) ?? HELP[0];
+  const [lastTopic, setLastTopic] = useState('');
+  useEffect(() => { if (!isHelp && current) setLastTopic(topic.id); }, [isHelp, current, topic.id]);
   const idx = current ? WORKFLOW.indexOf(current) : -1;
   const findings = evaluateCompliance({ project, profile: rt.profile });
   const nViol = findings.filter((f) => f.severity === 'violation').length;
@@ -139,6 +143,7 @@ export default function App() {
           <button onClick={open} title="Import a .radioplan.json project file into the app">Open file</button>
           <button onClick={save} title="Export this project as a file">Export</button>
           <button onClick={() => lib.newProject(undefined, 'New project')} title="Start a new project (the current one stays in Projects)">New</button>
+          <button onClick={() => setVideo(true)} title="Watch the introduction video: a tour of every tool">▶ Video</button>
           <button className="primary" onClick={() => setHelpOpen(!helpOpen)} title="Help for this page (F1)">? Help</button>
         </div>
       </header>
@@ -156,7 +161,7 @@ export default function App() {
             ))}
           </div>
         ))}
-        <div className="nav-group"><a href="#help" className={isHelp ? 'active' : ''}><span className="step-dot">?</span>Help manual</a></div>
+        <div className="nav-group"><a href={lastTopic ? `#help/${lastTopic}` : '#help'} className={isHelp ? 'active' : ''}><span className="step-dot">?</span>Help manual</a></div>
         <div className="nav-group mobile-only"><div className="nav-group-title">Project file</div>
           <div className="row wrap" style={{ padding: '0 8px' }}><button onClick={() => go('projects')}>Projects</button><button onClick={open}>Open file</button><button onClick={save}>Export</button></div></div>
         <div className="progress">{(() => { const t = CHECKLISTS.map((c) => progressOf(c, project)).reduce((a, b) => ({ done: a.done + b.done, total: a.total + b.total }), { done: 0, total: 0 }); return `Checklists: ${t.done} of ${t.total} items done`; })()}</div>
@@ -187,6 +192,7 @@ export default function App() {
         )}
         <p className="copyright no-print">© {new Date().getFullYear()} Bobby Taylor. All rights reserved. · RadioPlan Pro {APP_VERSION}</p>
       </main>
+      {video && <IntroVideo onClose={() => setVideo(false)} />}
       {helpOpen && !isHelp && <HelpPanel topic={topic} onClose={() => setHelpOpen(false)} onTour={topic.tour ? () => { setHelpOpen(false); setTour(true); } : undefined} />}
       {tour && topic.tour && <Tour steps={topic.tour} onClose={() => setTour(false)} />}
     </div>
