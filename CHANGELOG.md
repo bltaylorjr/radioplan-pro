@@ -1,3 +1,7 @@
+# RadioPlan Pro 1.5.8
+
+- Required project information: project name, project type, client, site address, city, county, state and your company name are marked *. Empty ones are outlined in red with a list at the top of Company & Project, a count on the menu, and a reminder on Reports.
+
 # RadioPlan Pro 1.5.7
 
 - County and state fill in by themselves from the city, the new **Site ZIP code** box or the site address on Company & Project (built-in data, works offline). Projects whose county doesn't match their city (for example Asheville with Mecklenburg County) are corrected when opened.

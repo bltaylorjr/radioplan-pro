@@ -29,6 +29,7 @@ import { htmlToDocx } from '../engine/docx';
 import { downloadBytes, safeName } from '../store';
 import { fmtBytes } from '../engine/projectdb';
 import { useUnits, DistNum } from '../units';
+import { missingRequired } from '../engine/required';
 
 const REPORTS = [
   ['cover', 'Cover letter & summary'], ['scope', 'Scope of work'], ['autoequip', 'Recommended equipment'], ['bom', 'Materials list'], ['price', 'Price'],
@@ -209,6 +210,7 @@ export function ReportsPage() {
   return (
     <div className="stack">
       <Card title="Report builder" className="no-print" tip="Pick a report, tick the sections to include, then print, save as PDF, or export to Word, Excel and other formats.">
+        {missingRequired(p).length > 0 && <p className="note req-note" role="alert">⚠ Required project information is missing: <b>{missingRequired(p).map((x) => x.label).join(', ')}</b>. <a href="#company">Fill it in on Company & Project</a> so the report is complete.</p>}
         <div className="form">
           <label className="field wide"><span>Report</span><select value={P.id} onChange={(e) => choosePkg(e.target.value)} aria-label="Report">{PACKAGES.map((x) => <option key={x.id} value={x.id}>{x.label}</option>)}</select></label>
         </div>

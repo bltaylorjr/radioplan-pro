@@ -11,6 +11,7 @@ import { AddressInput } from '../components/AddressInput';
 import { applyAddress, placeFromText } from '../compliance/place';
 import { CodesHere } from '../components/CodesHere';
 import { ProjectTypePicker } from '../components/SystemsUI';
+import { missingRequired, isMissing } from '../engine/required';
 
 export function CompanyPage() {
   const { project: p, update, go } = useStore();
@@ -46,23 +47,24 @@ export function CompanyPage() {
   const j = JURISDICTIONS[m.state];
   return (
     <div className="grid2">
-      <Card title="Project information" tour="project-form" tip="Project name and number print on every report header.">
+      <Card title="Project information" tour="project-form" tip="Project name and number print on every report header. Fields marked * are required.">
+        {(() => { const miss = missingRequired(p); return miss.length ? <p className="note req-note" role="alert">⚠ Required before reports, proposals and drawings: <b>{miss.map((x) => x.label).join(', ')}</b>. Fields marked <span className="req-star">*</span> are required.</p> : <p className="small ok-text">✓ All required project information is filled in.</p>; })()}
         <div className="form">
-          <Field label="Project name" wide><Txt value={m.name} onChange={setM('name')} /></Field>
+          <Field label="Project name" wide required missing={isMissing(p, 'name')}><Txt value={m.name} onChange={setM('name')} /></Field>
         </div>
-        <ProjectTypePicker compact />
+        <div className={isMissing(p, 'type') ? 'req-box missing' : 'req-box'}>{isMissing(p, 'type') && <p className="req-msg small">Project type * Required</p>}<ProjectTypePicker compact /></div>
         <div className="form">
           <Field label="Project number"><Txt value={m.number} onChange={setM('number')} /></Field>
           <Field label="Client PO / contract #"><Txt value={m.poNumber ?? ''} onChange={setM('poNumber')} /></Field>
-          <Field label="Project site address" wide tip="Where the work is. Use the Find Location page to turn it into GPS coordinates."><span onBlur={() => fillPlace(m.siteAddress ?? '')}><AddressInput value={m.siteAddress ?? ''} onChange={setM('siteAddress')} onPick={(g) => update((d) => applyAddress(d, g))} /></span></Field>
+          <Field label="Project site address" wide required missing={isMissing(p, 'address')} tip="Where the work is. Use the Find Location page to turn it into GPS coordinates."><span onBlur={() => fillPlace(m.siteAddress ?? '')}><AddressInput value={m.siteAddress ?? ''} onChange={setM('siteAddress')} onPick={(g) => update((d) => applyAddress(d, g))} /></span></Field>
           <Field label="Site ZIP code" tip="Fills the state, county and city."><input type="text" inputMode="numeric" maxLength={10} value={m.siteZip ?? ''} onChange={(e) => { const z = e.target.value; setM('siteZip')(z); if (/^\d{5}$/.test(z)) fillPlace(z); }} /></Field>
           <Field label="Revision"><Txt value={m.revision} onChange={setM('revision')} /></Field>
           <Field label="Engineer of record"><Txt value={m.engineer} onChange={setM('engineer')} /></Field>
           <Field label="PE license #"><Txt value={m.peLicense} onChange={setM('peLicense')} /></Field>
-          <Field label="Project state (code set)" topic="compliance"><Sel<StateCode> value={m.state} onChange={(v) => update((d) => { d.meta.state = v; })} options={[['NC', 'North Carolina'], ['SC', 'South Carolina'], ['GA', 'Georgia'], ['TN', 'Tennessee']]} /></Field>
+          <Field label="Project state (code set)" topic="compliance" required><Sel<StateCode> value={m.state} onChange={(v) => update((d) => { d.meta.state = v; })} options={[['NC', 'North Carolina'], ['SC', 'South Carolina'], ['GA', 'Georgia'], ['TN', 'Tennessee']]} /></Field>
           <Field label="Measurements" tip="Imperial shows feet, inches, square feet and miles; metric shows metres, millimetres, square metres and kilometres. Every page and report follows this choice; switching never changes your data."><Sel<'mi' | 'km'> value={p.settings.units ?? 'mi'} onChange={(v) => update((d) => { d.settings = { ...d.settings, units: v }; })} options={[['mi', 'Imperial (ft, in, mi)'], ['km', 'Metric (m, mm, km)']]} /></Field>
-          <Field label="City / town" tip="Type the city or town; the county and state fill in by themselves. In Tennessee it decides whether an exempt city enforces its own codes."><span onBlur={() => fillPlace(`${m.city ?? ''}, ${m.state}`, true)}><Txt value={m.city ?? ''} onChange={setM('city')} /></span></Field>
-          <Field label="County" tip="Filled from the city, ZIP code or address. Picks the local code rules."><Txt value={m.county} onChange={setM('county')} /></Field>
+          <Field label="City / town" required missing={isMissing(p, 'city')} tip="Type the city or town; the county and state fill in by themselves. In Tennessee it decides whether an exempt city enforces its own codes."><span onBlur={() => fillPlace(`${m.city ?? ''}, ${m.state}`, true)}><Txt value={m.city ?? ''} onChange={setM('city')} /></span></Field>
+          <Field label="County" required missing={isMissing(p, 'county')} tip="Filled from the city, ZIP code or address. Picks the local code rules."><Txt value={m.county} onChange={setM('county')} /></Field>
           <Field label="Date"><input type="date" value={m.created} onChange={(e) => setM('created')(e.target.value)} /></Field>
           <Field label="AHJ notes" wide tip="Local amendments, permit numbers, inspector contacts."><textarea value={m.jurisdictionNotes} onChange={(e) => setM('jurisdictionNotes')(e.target.value)} rows={3} /></Field>
         </div>
@@ -71,7 +73,7 @@ export function CompanyPage() {
       </Card>
       <Card title="Your company information" tour="company-form" tip="Your firm. Printed on every report header.">
         <div className="form">
-          <Field label="Company name"><Txt value={c.name} onChange={setC('name')} placeholder="e.g. Carolina Comm Engineering LLC" /></Field>
+          <Field label="Company name" required missing={isMissing(p, 'company')}><Txt value={c.name} onChange={setC('name')} placeholder="e.g. Carolina Comm Engineering LLC" /></Field>
           <Field label="Title / department" tip="Your title or division, e.g. RF Engineering Manager."><Txt value={c.title} onChange={setC('title')} /></Field>
           <Field label="Street address" wide tip="Start typing for suggestions; picking one fills city, state and ZIP."><AddressInput value={c.address} onChange={setC('address')} onPick={(g) => update((d) => { d.company.address = g.street ?? g.label.split(',')[0]; if (g.city) d.company.city = g.city; if (g.state) d.company.state = g.state; if (g.postcode) d.company.zip = g.postcode; })} /></Field>
           <Field label="City"><Txt value={c.city} onChange={setC('city')} /></Field>
@@ -97,7 +99,7 @@ export function CompanyPage() {
       </Card>
       <Card title="Client / customer company" tour="client-form" tip="The company the work is for. Printed on report headers as the client.">
         <div className="form">
-          <Field label="Client company name" wide><Txt value={m.client} onChange={setM('client')} /></Field>
+          <Field label="Client company name" wide required missing={isMissing(p, 'client')}><Txt value={m.client} onChange={setM('client')} /></Field>
           <Field label="Contact person"><Txt value={m.clientContact ?? ''} onChange={setM('clientContact')} /></Field>
           <Field label="Street address" wide tip="Start typing for suggestions."><AddressInput value={m.clientAddress ?? ''} onChange={setM('clientAddress')} onPick={(g) => update((d) => { d.meta.clientAddress = g.street ?? g.label.split(',')[0]; if (g.city) d.meta.clientCity = g.city; if (g.state) d.meta.clientState = g.state; if (g.postcode) d.meta.clientZip = g.postcode; })} /></Field>
           <Field label="City"><Txt value={m.clientCity ?? ''} onChange={setM('clientCity')} /></Field>

@@ -18,6 +18,7 @@ import { IndoorPage } from './pages/Indoor';
 import { LocatePage } from './pages/Locate';
 import { APP_VERSION } from './engine/update';
 import { MeasureCtx } from './components/ui';
+import { missingRequired } from './engine/required';
 import { AutoTerrain } from './components/AutoTerrain';
 import { ScenariosPage } from './pages/Scenarios';
 import { NetworkPage } from './pages/Network';
@@ -100,6 +101,7 @@ export default function App() {
   const idx = current ? WORKFLOW.indexOf(current) : -1;
   const findings = evaluateCompliance({ project, profile: rt.profile });
   const nViol = findings.filter((f) => f.severity === 'violation').length;
+  const nReq = missingRequired(project).length;
 
   useEffect(() => {
     const k = (e: KeyboardEvent) => { if (e.key === 'F1') { e.preventDefault(); setHelpOpen((x) => !x); } };
@@ -147,6 +149,7 @@ export default function App() {
                 {(() => { const cl = checklistFor(w.id), pr = cl && progressOf(cl, project), full = !!pr && pr.total > 0 && pr.done === pr.total; return <span className={'step-dot' + (full ? ' done' : '') + (stepNo(w) ? '' : ' tool')} title={pr ? `${pr.done} of ${pr.total} checklist items done` : undefined}>{full ? '✓' : stepNo(w) ?? '•'}</span>; })()}
                 {w.label}
                 {w.id === 'compliance' && nViol > 0 && <span className="pill bad">{nViol}</span>}
+                {w.id === 'company' && nReq > 0 && <span className="pill bad" title={`${nReq} required field(s) empty`}>{nReq}</span>}
               </a>
             ))}
           </div>

@@ -12,10 +12,10 @@ export function Tip({ text, topic }: { text?: string; topic?: string }) {
   );
 }
 
-export function Field({ label, tip, topic, children, tour, wide }: { label: string; tip?: string; topic?: string; children: React.ReactNode; tour?: string; wide?: boolean }) {
+export function Field({ label, tip, topic, children, tour, wide, required, missing }: { label: string; tip?: string; topic?: string; children: React.ReactNode; tour?: string; wide?: boolean; required?: boolean; missing?: boolean }) {
   return (
-    <label className={'field' + (wide ? ' wide' : '')} data-tour={tour}>
-      <span className="field-label">{label} {(tip || topic) && <Tip text={tip} topic={topic} />}</span>
+    <label className={'field' + (wide ? ' wide' : '') + (required ? ' req' : '') + (missing ? ' missing' : '')} data-tour={tour}>
+      <span className="field-label">{label}{required && <span className="req-star" title="Required"> *</span>} {(tip || topic) && <Tip text={tip} topic={topic} />}{missing && <span className="req-msg"> Required</span>}</span>
       {children}
     </label>
   );

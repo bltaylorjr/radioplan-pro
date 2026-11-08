@@ -43,6 +43,8 @@ The cache lives in the app's storage on that device (browser profile for the USB
 
 **Measurements:** choose Imperial (feet, inches, square feet, miles) or Metric (metres, millimetres, square metres, kilometres). Number boxes, results and distances switch at once; your data is not changed.
 
+**Required fields (*):** project name, project type, client, site address, city, county, state and your company name. Empty ones are outlined in red, listed at the top of the page and counted on the menu until they are filled in.
+
 **Your company information** (name, title, address, phone, license number and logo) and the **client / customer company** (name, contact, address, phone, email) are both printed in the header of every report.
 
 **Project state** selects the code set used by the compliance checker: North Carolina, South Carolina, Georgia or Tennessee. The county is printed on reports; check whether the county or city enforces a different code edition.

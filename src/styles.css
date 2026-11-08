@@ -280,3 +280,8 @@ body { font-size: clamp(15px, 0.6vw + 12.5px, 17px); }
 .place-links a { text-decoration: none; border-bottom: 1px dashed currentColor; }
 .install details { border-top: 1px solid var(--line); padding: 8px 0; } .install details > summary { cursor: pointer; font-weight: 600; padding: 4px 0; } .install details > summary::marker { color: var(--accent); }
 .mfr-recs { margin: 10px 0; } .mfr-recs details { border-top: 1px solid var(--line); padding: 4px 0; } .mfr-recs summary { cursor: pointer; font-weight: 600; }
+.req-star { color: #d32f2f; font-weight: 700; }
+.req-msg { color: #d32f2f; font-size: .78rem; font-weight: 600; }
+.field.missing input, .field.missing select, .field.missing textarea, .field.missing .addr > input { border-color: #d32f2f; box-shadow: 0 0 0 1px #d32f2f33; }
+.req-box.missing { border-left: 3px solid #d32f2f; padding-left: 8px; }
+.req-note { border-left-color: #d32f2f; }
