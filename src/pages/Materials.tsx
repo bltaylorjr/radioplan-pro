@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { defaultInputs } from '../engine/autodesign';
-import { useStore, downloadText } from '../store';
+import { useStore, downloadText, downloadBytes, safeName } from '../store';
+import { tablePdf } from '../engine/pdf';
 import { Card } from '../components/ui';
 import { buildBom, bomToCsv } from '../engine/materials';
 import { builtInSpecs, SpecItem } from '../data/speclib';
@@ -21,9 +22,24 @@ export function MaterialsPage() {
   const setX = (id: string, k: keyof BomExtra, v: string | number) => update((d) => { d.bomExtra = (d.bomExtra ?? []).map((x) => (x.id === id ? { ...x, [k]: v } : x)); });
   const fromLib = (id: string) => { const it = lib.find((i) => i.id === id); if (it) setAdd({ ...blank(), category: it.category, item: it.sub || it.category, brandModel: `${it.brand} ${it.model}`.trim() }); };
   const save = () => { if (!add || !add.item.trim()) return; update((d) => { d.bomExtra = [...(d.bomExtra ?? []), { ...add, item: add.item.trim() }]; }); setAdd(null); };
+  const materialsPdf = () => {
+    const site = [p.meta.siteAddress, p.meta.city, p.meta.state, p.meta.siteZip].filter(Boolean).join(', ');
+    const co = [p.company.name, p.company.phone, p.company.email].filter(Boolean).join('  ·  ');
+    return tablePdf({
+      title: 'Materials list',
+      subtitle: [
+        `Project: ${p.meta.name || '—'}${p.meta.number ? `  (No. ${p.meta.number})` : ''}${p.meta.client ? `  ·  Client: ${p.meta.client}` : ''}`,
+        ...(site ? [`Site: ${site}`] : []), ...(co ? [`Prepared by: ${co}`] : []),
+        `Date: ${new Date().toLocaleDateString()}  ·  ${lines.length} line items`,
+      ],
+      columns: [{ title: 'Item', width: 190 }, { title: 'Brand / model', width: 170 }, { title: 'Qty', width: 50, align: 'right' }, { title: 'Unit', width: 45 }, { title: 'Basis', width: 265 }],
+      rows: cats.flatMap((c) => [{ group: c }, ...lines.filter((l) => l.category === c).map((l) => ({ cells: [l.item, l.brandModel, String(l.qty), l.unit, l.basis] }))]),
+      footer: 'Quantities are estimates; verify against the drawings before ordering.',
+    });
+  };
   return (
     <Card title="Materials list (bill of materials)" tip="Quantities follow the design; edit a quantity to override it. Add your own lines with + Add item."
-      actions={<span className="row wrap"><button className="primary" onClick={() => setAdd(blank())}>+ Add item</button><button onClick={() => update((d) => { d.bomOverrides = {}; })}>Reset overrides</button><button onClick={() => downloadText(`${p.meta.name || 'project'}-materials.csv`, bomToCsv(lines), 'text/csv')}>⬇ Export CSV</button></span>}>
+      actions={<span className="row wrap"><button className="primary" onClick={() => setAdd(blank())}>+ Add item</button><button onClick={() => update((d) => { d.bomOverrides = {}; })}>Reset overrides</button><button onClick={() => downloadText(`${p.meta.name || 'project'}-materials.csv`, bomToCsv(lines), 'text/csv')}>⬇ Export CSV</button><button onClick={() => downloadBytes(`${safeName(p.meta.name || 'project')}-materials.pdf`, materialsPdf(), 'application/pdf')}>⬇ Export PDF</button></span>}>
       {add && <div className="add-mat">
         <div className="form">
           <label className="field wide"><span>Pick from the specifications library (optional)</span><select value="" onChange={(e) => fromLib(e.target.value)} aria-label="Pick from library"><option value="">— or type below —</option>{lib.map((i) => <option key={i.id} value={i.id}>{i.category}: {i.brand} {i.model}</option>)}</select></label>

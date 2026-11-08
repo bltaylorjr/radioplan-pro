@@ -1,3 +1,8 @@
+# LvPlan Pro 1.5.21
+
+- **Materials list → Export PDF**: saves the bill of materials as a PDF file (project, site, your company, grouped by category, page numbers), ready to email or print. Works on the Windows app, Android and the browser.
+- Introduction video: a more natural American male narrator with corrected pronunciation, a slower pace with more time on each page, filled-in maps, and soft background music.
+
 # LvPlan Pro 1.5.20
 
 - **Skip this step** button at the bottom of every step page. A skipped step is greyed out in the menu, Next / Previous pass over it and its checklist leaves the totals. Open it from the menu and press **Don't skip it** to bring it back. Skips are saved with the project (and carried over when you reuse a project).
