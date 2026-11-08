@@ -1,3 +1,7 @@
+# LvPlan Pro 1.5.23
+
+- Introduction video: louder, clearer narration (normal listening level) with the upbeat background music kept under the voice.
+
 # LvPlan Pro 1.5.22
 
 - Introduction video: upbeat background music (an original track) that dips under the narrator's voice.
