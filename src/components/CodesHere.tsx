@@ -4,6 +4,8 @@ import { CODE_SETS, codesFor, keyCodes, localRule, CodeEntry, CodesHere as Here 
 import { projectPlace } from '../compliance/place';
 import { allCounties } from '../engine/refdata';
 import type { StateCode } from '../types';
+import { LOCAL_CODES, LOCAL_CHECKED, LocalCodeSet, localCodes } from '../compliance/citycodes';
+import { towns, countyAt } from '../engine/refdata';
 
 const STATUS: Record<CodeEntry['status'], [string, string]> = {
   verified: ['✓ state source', 'Read on an official state page on the date checked'],
@@ -12,6 +14,18 @@ const STATUS: Record<CodeEntry['status'], [string, string]> = {
 };
 const host = (u: string) => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch { return u; } };
 
+/** Codes a city or county adopted itself, from its own web page. */
+export function LocalTable({ l }: { l: LocalCodeSet }) {
+  return (
+    <div className="local-codes">
+      <p className="small"><b>Adopted by {l.name}{l.level === 'city' ? ` (city)` : ''}</b> · <a href={l.src} target="_blank" rel="noreferrer">{host(l.src)}</a> · read {LOCAL_CHECKED}{l.stale && <span className="warn-text"> · page may be out of date</span>}</p>
+      <table className="rpt-tbl codes-tbl"><thead><tr><th>Type</th><th>Code in effect</th><th>Effective</th></tr></thead>
+        <tbody>{l.codes.map((e, i) => <tr key={i}><td>{e.cat}</td><td>{e.code}</td><td className="nowrap">{e.effective ?? '—'}</td></tr>)}</tbody></table>
+      <p className="small muted">{l.note}</p>
+    </div>
+  );
+}
+
 /** The code table for one place. */
 export function CodeTable({ h, compact }: { h: Here; compact?: boolean }) {
   const s = h.set;
@@ -19,6 +33,8 @@ export function CodeTable({ h, compact }: { h: Here; compact?: boolean }) {
   return (
     <div className="codes-here">
       <p className={'small' + (h.local.exempt ? ' warn-text' : '')}><b>Local enforcement:</b> {h.local.text}</p>
+      {h.localSet && <LocalTable l={h.localSet} />}
+      {h.localSet && <p className="small"><b>State codes ({s.name})</b>{h.localSet.level === 'city' || h.local.exempt ? ' apply where the local list is silent.' : ':'}</p>}
       <table className="rpt-tbl codes-tbl"><thead><tr><th>Type</th><th>Code in effect</th><th>Effective</th><th>Status</th></tr></thead>
         <tbody>{list.map((e, i) => (
           <tr key={i}><td>{e.cat}{e.permissive ? <span className="small muted"> (local option)</span> : null}</td>
@@ -80,6 +96,51 @@ export function CountyCodes() {
             </div>}
           </div>);
       })}</div>
+    </>
+  );
+}
+
+const cityCache = new Map<string, { city: string; state: string; county: string; lat: number; lon: number }[]>();
+/** Every town in a state with the county it sits in (from the built-in map data). */
+export function citiesIn(st: StateCode) {
+  let l = cityCache.get(st);
+  if (!l) { l = towns().filter((t) => t.state === st).map((t) => ({ city: t.city, state: t.state, county: countyAt(t.lat, t.lon)?.county ?? '', lat: t.lat, lon: t.lon })).sort((a, b) => a.city.localeCompare(b.city)); cityCache.set(st, l); }
+  return l;
+}
+
+/** Browse cities and towns, with the codes that apply in each. */
+export function CityCodes() {
+  const { project: p, update } = useStore();
+  const [st, setSt] = useState<StateCode>(p.meta.state);
+  const [q, setQ] = useState('');
+  const [onlyLocal, setOnlyLocal] = useState(false);
+  const [open, setOpen] = useState<string | null>(null);
+  const all = useMemo(() => citiesIn(st), [st]);
+  const list = all.filter((c) => c.city.toLowerCase().includes(q.toLowerCase().trim()) && (!onlyLocal || localCodes(st, c.county, c.city)?.level === 'city' || localRule(st, c.county, c.city).by === 'city'));
+  const shown = list.slice(0, 150);
+  return (
+    <>
+      <div className="row wrap">
+        <select value={st} onChange={(e) => setSt(e.target.value as StateCode)} aria-label="State for cities">{(['NC', 'SC', 'GA', 'TN'] as StateCode[]).map((s) => <option key={s} value={s}>{CODE_SETS[s].name}</option>)}</select>
+        <input className="lib-search" style={{ flex: 1, minWidth: 160, marginBottom: 0 }} value={q} onChange={(e) => setQ(e.target.value)} placeholder="🔎 Find a city or town" aria-label="Find a city" />
+        <label className="check"><input type="checkbox" checked={onlyLocal} onChange={(e) => setOnlyLocal(e.target.checked)} /> Only cities with their own codes</label>
+        <span className="small muted">{list.length} places{list.length > shown.length ? ` (first ${shown.length} shown; type to narrow)` : ''}</span>
+      </div>
+      <div className="county-list">{shown.map((c) => {
+        const k = c.city + c.county, h = codesFor(st, c.county, c.city), own = h.localSet?.level === 'city' || h.local.by === 'city';
+        const mine = (p.meta.city ?? '').toLowerCase() === c.city.toLowerCase() && p.meta.state === st;
+        return (
+          <div key={k} className={'county-row' + (mine ? ' mine' : '')}>
+            <button className="ghost county-head" aria-expanded={open === k} onClick={() => setOpen(open === k ? null : k)}>
+              <b>{c.city}, {st}</b><span className="small muted">{c.county}</span>{h.localSet?.level === 'city' && <span className="pill">local code list ✓</span>}{own && !h.localSet && <span className="pill warn">own codes (ask the city)</span>}{mine && <span className="pill">this project</span>}</button>
+            {open === k && <div className="county-body">
+              <CodeTable h={h} />
+              {!mine && <button onClick={() => update((d) => { d.meta.state = st; d.meta.county = c.county; d.meta.city = c.city; })}>Use {c.city} for this project</button>}
+              <a className="small" style={{ marginLeft: 12 }} href={`https://www.google.com/search?q=${encodeURIComponent(`${c.city} ${st} building codes adopted inspections`)}`} target="_blank" rel="noreferrer">Find the city's codes page ↗</a>
+            </div>}
+          </div>);
+      })}</div>
+      <p className="small muted">{LOCAL_CODES.length} cities and counties have their own code list built in, read from their official pages on {LOCAL_CHECKED}. Other places follow the state codes, but many cities enforce them through their own inspections office: check with the city.</p>
     </>
   );
 }

@@ -22,7 +22,7 @@ export function Updater() {
       } catch { /* try again later */ }
     };
     const t = setTimeout(() => run(), 4000);
-    const iv = setInterval(() => run(), 6 * 3600e3);
+    const iv = setInterval(() => run(), 3600e3);
     const on = () => run();
     window.addEventListener('online', on);
     return () => { alive = false; clearTimeout(t); clearInterval(iv); window.removeEventListener('online', on); };

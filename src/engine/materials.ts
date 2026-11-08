@@ -1,4 +1,5 @@
 // Materials list (bill of materials) generator. Quantities are derived from the design; the user can override any line.
+import { autoDesign } from './autodesign';
 import type { Project } from '../types';
 import { ANTENNAS, FEEDERS, RADIOS, PV_MODULES, byId } from '../data/catalog';
 import { mToFt } from './rf';
@@ -6,7 +7,7 @@ import { sizeSolar } from './solar';
 import { alarmBatteryAh } from './alarm';
 import { halfWaveDipoleFt } from './lfhf';
 
-export interface BomLine { key: string; category: string; item: string; brandModel: string; qty: number; unit: string; basis: string }
+export interface BomLine { key: string; category: string; item: string; brandModel: string; qty: number; unit: string; basis: string; extraId?: string }
 
 export function buildBom(p: Project): BomLine[] {
   const L: BomLine[] = [];
@@ -88,6 +89,11 @@ export function buildBom(p: Project): BomLine[] {
   } else {
     add('HF / LF', 'lf-radials', `Ground radials #10 Cu (${p.lfhf.radials} × λ/4)`, 'Bare copper', Math.ceil(p.lfhf.radials * mToFt(75 / p.lfhf.fMHz)), 'ft', '47 CFR 73.189 practice: 120 × λ/4');
   }
+  if (p.autoDesign?.applied) {
+    const r = autoDesign(p, p.autoDesign);
+    for (const m of [...r.equipment, ...r.materials]) add(`Auto-design: ${m.system}`, `ad-${m.key}`, m.item, m.spec, m.qty, m.unit, m.basis);
+  }
+  for (const x of p.bomExtra ?? []) L.push({ key: `x-${x.id}`, category: x.category || 'Added items', item: x.item, brandModel: x.brandModel, qty: x.qty, unit: x.unit, basis: x.notes || 'Added by you', extraId: x.id });
   return L;
 }
 

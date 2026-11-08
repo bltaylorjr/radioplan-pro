@@ -1,3 +1,13 @@
+# RadioPlan Pro 1.4.0
+
+- New Auto-Design page: describe the building and the app recommends head-end equipment, lays out devices for every system on the project, and estimates materials from the layout. It uses the site terrain for placement advice. Shown as a 2D floor plan or a 3D model, by floor, and can be added to the Materials list.
+- Materials list: add your own items, or pick them from the specifications library; edit or remove them.
+- Page navigation on every page: back and next buttons and a "Go to page" list.
+- Codes by city: every town in NC, SC, GA and TN. Cities and counties that adopt their own codes (Nashville, Memphis/Shelby County, Knoxville, Knox County, Clarksville/Montgomery County, Murfreesboro, Franklin, Collierville, Maryville, Williamson County, Chattanooga, Atlanta, Greenville County SC) show their own list, read from their official pages.
+- New Contacts & Web Resources page: pick state, then county, then city. It shows inspection offices, fire marshals and licensing boards (numbers copied from official pages), plus web links. Add, edit and remove your own, and see them under "My contacts".
+- Checklists replace the "Mark task complete" boxes: site survey, permits and submittals, installation and testing (with steps for each system on the project), and closeout.
+- Self-repair: damaged or old project data is fixed when it opens; a page that fails repairs the data, then goes back to the last saved version; after an update the app reloads itself to pick up new files. It now checks for updates every hour.
+
 # RadioPlan Pro 1.3.0
 
 - Project type dropdown with check boxes for sub-projects, on the first-start screen, Company & Project and the new Project Systems page.

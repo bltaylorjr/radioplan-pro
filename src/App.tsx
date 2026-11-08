@@ -27,9 +27,14 @@ import { ProjectsPage } from './pages/Projects';
 import { SpecLibraryPage } from './pages/SpecLibrary';
 import { InstallPage } from './pages/Install';
 import { FieldNotesPage } from './pages/FieldNotes';
+import { ContactsPage } from './pages/Contacts';
+import { SelfRepair } from './components/SelfRepair';
+import { Checklist } from './components/Checklist';
+import { CHECKLISTS, checklistFor, progressOf } from './data/checklists';
 import { TroubleshootPage } from './pages/Troubleshoot';
 import { SystemsPage } from './pages/Systems';
 import { ServicePage } from './pages/Service';
+import { AutoDesignPage } from './pages/AutoDesign';
 import { readBackup } from './engine/projectdb';
 import { AddressInput } from './components/AddressInput';
 import { Updater } from './components/Updater';
@@ -47,6 +52,7 @@ export const WORKFLOW: { id: string; label: string; group: string; el: React.Rea
   { id: 'terrain', label: 'Map & Terrain', group: '2 · Planning: site survey', el: <TerrainPage /> },
   { id: 'wifi', label: 'Wi-Fi & Network Survey', group: '2 · Planning: site survey', el: <WifiSurveyPage /> },
   { id: 'survey', label: 'Drive Test & Calibration', group: '2 · Planning: site survey', el: <SurveyPage /> },
+  { id: 'autodesign', label: 'Auto-Design & 3D Model', group: '3 · Planning: low-voltage design', el: <AutoDesignPage /> },
   { id: 'alarm', label: 'Fire Alarm & Batteries', group: '3 · Planning: low-voltage design', el: <AlarmPage /> },
   { id: 'erces', label: 'Emergency Radio (ERCES / BDA)', group: '3 · Planning: low-voltage design', el: <ErcesPage /> },
   { id: 'indoor', label: 'Indoor Coverage & DAS', group: '3 · Planning: low-voltage design', el: <IndoorPage /> },
@@ -68,6 +74,7 @@ export const WORKFLOW: { id: string; label: string; group: string; el: React.Rea
   { id: 'reports', label: 'Reports & Closeout Package', group: '7 · Testing & closeout', el: <ReportsPage /> },
   { id: 'troubleshoot', label: 'Troubleshooting Wizard', group: '8 · Troubleshooting & repair', el: <TroubleshootPage /> },
   { id: 'service', label: 'Service & Maintenance', group: '8 · Troubleshooting & repair', el: <ServicePage /> },
+  { id: 'contacts', label: 'Contacts & Web Resources', group: '9 · Tools', el: <ContactsPage /> },
   { id: 'calculators', label: 'Calculators', group: '9 · Tools', el: <CalculatorsPage /> },
   { id: 'projects', label: 'Projects & Storage', group: '9 · Tools', el: <ProjectsPage /> },
   { id: 'sync', label: 'Sync Devices', group: '9 · Tools', el: <SyncPage /> },
@@ -133,7 +140,7 @@ export default function App() {
             <div className="nav-group-title">{g}</div>
             {WORKFLOW.filter((w) => w.group === g).map((w) => (
               <a key={w.id} href={`#${w.id}`} className={w.id === current?.id ? 'active' : ''} onClick={(e) => { e.preventDefault(); go(w.id); }}>
-                <span className={'step-dot' + (project.taskDone[w.id] ? ' done' : '')}>{project.taskDone[w.id] ? '✓' : WORKFLOW.indexOf(w) + 1}</span>
+                {(() => { const cl = checklistFor(w.id), pr = cl && progressOf(cl, project), full = !!pr && pr.total > 0 && pr.done === pr.total; return <span className={'step-dot' + (full ? ' done' : '')} title={pr ? `${pr.done} of ${pr.total} checklist items done` : undefined}>{full ? '✓' : WORKFLOW.indexOf(w) + 1}</span>; })()}
                 {w.label}
                 {w.id === 'compliance' && nViol > 0 && <span className="pill bad">{nViol}</span>}
               </a>
@@ -143,22 +150,27 @@ export default function App() {
         <div className="nav-group"><a href="#help" className={isHelp ? 'active' : ''}><span className="step-dot">?</span>Help manual</a></div>
         <div className="nav-group mobile-only"><div className="nav-group-title">Project file</div>
           <div className="row wrap" style={{ padding: '0 8px' }}><button onClick={() => go('projects')}>Projects</button><button onClick={open}>Open file</button><button onClick={save}>Export</button></div></div>
-        <div className="progress">{Object.values(project.taskDone).filter(Boolean).length} / {WORKFLOW.length} tasks complete</div>
+        <div className="progress">{(() => { const t = CHECKLISTS.map((c) => progressOf(c, project)).reduce((a, b) => ({ done: a.done + b.done, total: a.total + b.total }), { done: 0, total: 0 }); return `Checklists: ${t.done} of ${t.total} items done`; })()}</div>
       </nav>
       <main className="content">
         {isHelp ? <HelpManual initial={page.split('/')[1]} /> : current && (
           <>
             <div className="page-head">
               <div><div className="crumb">Step {idx + 1} of {WORKFLOW.length} · {current.group}</div><h1>{current.label}</h1></div>
-              <div className="row">
+              <div className="row wrap page-nav">
+                <button disabled={idx <= 0} onClick={() => go(WORKFLOW[idx - 1].id)} aria-label="Previous page" title={WORKFLOW[idx - 1]?.label}>←</button>
+                <select value={current.id} onChange={(e) => go(e.target.value)} aria-label="Go to page">
+                  {groups.map((g) => <optgroup key={g} label={g}>{WORKFLOW.filter((w) => w.group === g).map((w) => <option key={w.id} value={w.id}>{WORKFLOW.indexOf(w) + 1}. {w.label}</option>)}</optgroup>)}
+                </select>
+                <button disabled={idx >= WORKFLOW.length - 1} onClick={() => go(WORKFLOW[idx + 1].id)} aria-label="Next page" title={WORKFLOW[idx + 1]?.label}>→</button>
                 {topic.tour && <button onClick={() => setTour(true)} data-tour-btn>▶ Guide me</button>}
                 <button onClick={() => setHelpOpen(true)}>? Page help</button>
               </div>
             </div>
-            <Suspense fallback={<div className="card">Loading…</div>}>{current.el}</Suspense>
+            <SelfRepair page={current.id}><Suspense fallback={<div className="card">Loading…</div>}>{current.el}</Suspense>{checklistFor(current.id) && <div data-tour="checklist" style={{ marginTop: 16 }}><Checklist def={checklistFor(current.id)!} /></div>}</SelfRepair>
             <footer className="page-foot">
               <button disabled={idx <= 0} onClick={() => go(WORKFLOW[idx - 1].id)}>← {WORKFLOW[idx - 1]?.label ?? 'Back'}</button>
-              <label className="check" data-tour="task-done"><input type="checkbox" checked={!!project.taskDone[current.id]} onChange={(e) => update((d) => { d.taskDone[current.id] = e.target.checked; })} /> Mark task complete</label>
+              <span />
               <button className="primary" disabled={idx >= WORKFLOW.length - 1} onClick={() => go(WORKFLOW[idx + 1].id)}>{WORKFLOW[idx + 1]?.label ?? 'Next'} →</button>
             </footer>
             <p className="disclaimer">Planning aid only. Calculations and code citations must be verified by a licensed professional and the Authority Having Jurisdiction.</p>

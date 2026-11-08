@@ -6,6 +6,8 @@
 import type { StateCode } from '../types';
 import { CHECKED_ON } from './jurisdictions';
 
+import { localCodes, LocalCodeSet } from './citycodes';
+
 export type CodeCat = 'Administration' | 'Building' | 'Residential' | 'Fire' | 'Life safety' | 'Fire alarm' | 'Fire sprinkler' | 'Emergency responder radio'
   | 'Electrical' | 'Plumbing' | 'Mechanical' | 'Fuel gas' | 'Energy' | 'Existing building' | 'Accessibility' | 'Property maintenance' | 'Pools & spas' | 'Other';
 export type CodeStatus = 'verified' | 'secondary' | 'confirm';
@@ -169,9 +171,9 @@ export function localRule(state: StateCode, county?: string, city?: string): Loc
   return { exempt: false, text: `${county || 'This county'} is not on the SFMO exempt list${city ? ` and neither is ${city}` : ''}, so SFMO-adopted codes apply to commercial work. Check whether the city enforces codes for homes.` };
 }
 
-export interface CodesHere { set: StateCodeSet; county?: string; city?: string; local: LocalRule; checked: string }
+export interface CodesHere { set: StateCodeSet; county?: string; city?: string; local: LocalRule; checked: string; localSet?: LocalCodeSet }
 export function codesFor(state: StateCode, county?: string, city?: string): CodesHere {
-  return { set: CODE_SETS[state], county, city, local: localRule(state, county, city), checked: CHECKED_ON };
+  return { set: CODE_SETS[state], county, city, local: localRule(state, county, city), checked: CHECKED_ON, localSet: localCodes(state, county, city) };
 }
 /** Short line for lists: building / fire / electrical editions. */
 export function keyCodes(state: StateCode): string {

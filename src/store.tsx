@@ -2,6 +2,7 @@ import { autoLoadEquipment } from './data/projectEquipment';
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import type { Project } from './types';
 import { defaultProject } from './defaults';
+import { repairProject } from './engine/repair';
 import type { DemGrid, ProfileAnalysis } from './engine/terrain';
 import type { CoverageResult } from './engine/coverage';
 import { stampSync } from './engine/sync';
@@ -40,11 +41,11 @@ const C = createContext<Ctx | null>(null);
 function load(): Project {
   try {
     const s = localStorage.getItem(KEY);
-    if (s) return { ...defaultProject(), ...JSON.parse(s) };
+    if (s) return repairProject(JSON.parse(s)).project;
   } catch { /* storage unavailable */ }
   return defaultProject();
 }
-const fresh = (p: Project): Project => ({ ...defaultProject(), ...p });
+const fresh = (p: Project): Project => repairProject(p).project;
 function currentId(): string { try { const v = localStorage.getItem(CUR); if (v) return v; const id = newId(); localStorage.setItem(CUR, id); return id; } catch { return newId(); } }
 function setCurrentIdLS(id: string) { try { localStorage.setItem(CUR, id); } catch { /* ignore */ } }
 

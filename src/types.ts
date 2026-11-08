@@ -95,9 +95,18 @@ export interface Project {
   fieldNotes?: FieldNote[];
   /** Service calls and repairs. */
   serviceLog?: ServiceCall[];
+  /** Materials you added by hand. */
+  bomExtra?: BomExtra[];
+  /** Auto-design inputs; when applied, its equipment and materials join the Materials list. */
+  autoDesign?: import('./engine/autodesign').AutoInputs & { applied?: boolean };
+  /** Checklist ticks, key = list:item. */
+  checklists?: Record<string, boolean>;
+  /** Checklist items you added. */
+  checklistExtra?: { id: string; list: string; text: string }[];
   /** PM tasks done: key = system id + task, value = last date done (YYYY-MM-DD). */
   pmDone?: Record<string, string>;
 }
+export interface BomExtra { id: string; category: string; item: string; brandModel: string; qty: number; unit: string; notes: string }
 export interface ServiceCall { id: string; date: string; system: string; equipment: string; problem: string; cause: string; fix: string; parts: string; hours: number; tech: string; status: 'open' | 'done' }
 export interface FieldNote { id: string; at: string; title: string; text: string; category: string; siteId?: string; lat?: number; lon?: number; accM?: number; photos: { id: string; dataUrl: string; caption: string }[]; tags: string[]; author: string; followUp: boolean; done: boolean }
 export interface SyncMeta {

@@ -215,3 +215,22 @@ label.button { display: inline-flex; align-items: center; gap: 4px; border: 1px 
 .sys-list li { margin: 4px 0; }
 .pm-tbl input[type=date] { min-width: 130px; }
 .welcome .addr-list { position: static; box-shadow: none; max-height: 40vh; }
+.page-nav select { max-width: 260px; } @media (max-width: 600px) { .page-nav { width: 100%; } .page-nav select { flex: 1; min-width: 0; max-width: none; } }
+.add-mat { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; background: var(--ok-bg); }
+.bldg3d { width: 100%; min-height: 360px; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; } .legend-chip { display: inline-flex; align-items: center; gap: 4px; font-size: .8rem; cursor: pointer; padding: 2px 8px; border: 1px solid var(--line); border-radius: 12px; } .legend-chip.off { opacity: .4; text-decoration: line-through; } .legend-chip i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; border: 1px solid #0003; }
+.seg { display: inline-flex; gap: 0; }
+.seg button { border-radius: 0; }
+.seg button:first-child { border-radius: 8px 0 0 8px; }
+.seg button:last-child { border-radius: 0 8px 8px 0; }
+.plan2d { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+.plan2d figure { margin: 0; }
+.contact-list h4 { margin: 12px 0 6px; }
+.contact { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; display: grid; gap: 6px; }
+.contact a.button { text-decoration: none; }
+.local-codes { margin-bottom: 8px; }
+.checklist { list-style: none; padding: 0; margin: 4px 0 10px; display: grid; gap: 4px; }
+.checklist li { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.checklist li.done label { color: var(--muted); text-decoration: line-through; }
+.checklist-card h4 { margin: 10px 0 4px; }
+.meter { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; margin-bottom: 8px; }
+.meter i { display: block; height: 100%; background: var(--ok, #2e7d32); }

@@ -36,7 +36,7 @@ export async function checkForUpdate(signal?: AbortSignal): Promise<UpdateInfo |
 const PREF = 'radioplan.autoUpdate', LAST = 'radioplan.updateChecked';
 export const autoUpdateOn = () => { try { return localStorage.getItem(PREF) !== 'off'; } catch { return true; } };
 export const setAutoUpdate = (on: boolean) => { try { localStorage.setItem(PREF, on ? 'on' : 'off'); } catch { /* ignore */ } };
-export const dueForCheck = (now = Date.now()) => { try { return now - Number(localStorage.getItem(LAST) || 0) > 6 * 3600e3; } catch { return true; } };
+export const dueForCheck = (now = Date.now()) => { try { return now - Number(localStorage.getItem(LAST) || 0) > 3600e3; } catch { return true; } };
 export const markChecked = (now = Date.now()) => { try { localStorage.setItem(LAST, String(now)); } catch { /* ignore */ } };
 export async function desktopInfo(): Promise<{ portable: boolean } | null> { try { return (await tauri()?.invoke('app_info')) as { portable: boolean }; } catch { return null; } }
 export async function installWindowsUpdate(url: string) { await tauri()!.invoke('install_update', { url }); }

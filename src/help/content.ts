@@ -5,7 +5,7 @@ export interface HelpTopic { id: string; title: string; page?: string; keywords:
 
 export const HELP: HelpTopic[] = [
   { id: 'getting-started', title: 'Getting started', keywords: 'start overview workflow usb android install save open project', summary: 'The left sidebar is your workflow: work top to bottom from Company & Project to Testing.',
-    body: `RadioPlan Pro walks a project from first site visit to commissioning. Each page in the left sidebar is one **task**, in the order engineers normally perform them. Tick **Mark task complete** at the bottom of a page to track progress.
+    body: `RadioPlan Pro walks a project from first site visit to commissioning. Each page in the left sidebar is one **task**, in the order engineers normally perform them. Pages where work gets checked off (site survey, permits, installation, testing, closeout) have a **checklist** at the bottom; the sidebar shows ✓ when a checklist is finished.
 
 - Your work saves automatically in this computer's browser storage.
 - Use **Save project** (top bar) to write a .radioplan.json file you can keep on the USB drive, email, or open on the Android app.
@@ -50,7 +50,7 @@ The cache lives in the app's storage on that device (browser profile for the USB
       { target: 'company-form', title: 'Company details', text: 'Your company name, title and address appear on every report.' },
       { target: 'company-geocode', title: 'Address to GPS', text: 'Geocode the address to latitude/longitude and send it to the map, terrain and site pages.' },
       { target: 'project-form', title: 'Project & jurisdiction', text: 'Pick the state here. It drives which code editions are cited in the compliance warnings.' },
-      { target: 'task-done', title: 'Track progress', text: 'Mark each task complete when you are done; the sidebar shows a check mark.' },
+      
     ] },
 
   { id: 'sites', title: 'Site data & GPS', page: 'sites', keywords: 'site database csv import export multi-site spreadsheet gps nmea gnss rtk coordinates latitude longitude elevation antenna height structure tower airport geocode address', summary: 'Record each candidate site: position (GPS), ground elevation, structure and antenna height.',
@@ -347,6 +347,16 @@ The **Service and repair log** records each call: problem, cause, repair, parts,
     body: `Pick the equipment (equipment in this project is listed first, then your library and the built-in library) and the problem. Each step shows **what to check**, **how to check it**, the **tool**, and the **expected value**, worked out from that item's specifications where possible.
 
 Type what you measured and press **✓ OK** or **✗ Not OK**. A failed step tells you what to do next. When done, save the results to **Final Testing** or as a **field note**.` },
+  { id: 'autodesign', title: 'Auto-design, 2D plan and 3D model', page: 'autodesign', keywords: 'auto design recommend equipment layout 3d model 2d floor plan devices estimate materials topography terrain building', summary: 'Recommended equipment, device layout, a 2D plan or 3D model, and a material estimate from the building you describe.',
+    body: `Pick the project type and sub-projects, then describe the building: type, floors, size, doors, rooms, parking and call boxes. The app places devices for every system on a starting grid, puts telecom rooms so cable runs stay under 90 m, recommends head-end equipment (panel, batteries, switches, recorder storage, amplifiers, BDA) and measures cable from the layout.
+
+**2D plan** shows each floor flat (point at a dot to see what it is). **3D model** shows the whole building: drag to turn, pinch to zoom. Tap legend items to hide them. **Site and placement** uses the downloaded terrain to warn about low ground, exposure and donor-antenna height.
+
+**Add to Materials list** puts the equipment and materials in the Materials list and fills the Fire Alarm and ERCES pages. Every quantity is a starting point: a designer must check it against the adopted codes, the manufacturer and the AHJ.` },
+  { id: 'contacts', title: 'Contacts and web resources', page: 'contacts', keywords: 'contacts phone address inspections fire marshal building department licensing board web links resources city county state', summary: 'Inspection offices, fire marshals and licensing boards by state, county and city, plus web links. Add, edit and remove your own.',
+    body: `Pick the **state**, then the **county**, then the **city**. The page shows the state, county and city offices for that place, and the **Web resources** tab shows code pages and other links. Tap a phone number to call or an address to open the map.
+
+Built-in numbers were copied from each office's official page on the date shown. Where none is built in, **Look it up** searches the web; then **+ Add contact** keeps it. **Edit** makes your own copy, and **Remove** hides an entry. Pick **★ My contacts** in the state list to see only the ones you added.` },
   { id: 'fieldnotes', title: 'Field notes', page: 'fieldnotes', keywords: 'field notes photos camera gps site visit punch list follow-up dictate', summary: 'Notes, photos and GPS positions taken on site, saved in the project.',
     body: `Press **+ New note**, type (or dictate with the microphone on your phone keyboard), add photos from the camera and press **Save my GPS position**. Link a note to a site and tick **Needs follow-up** for punch-list items; filter with **Open follow-ups**.
 
