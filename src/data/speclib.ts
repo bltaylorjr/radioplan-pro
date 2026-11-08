@@ -6,6 +6,7 @@ import { ANTENNAS, FEEDERS, RADIOS, PV_MODULES, Antenna, Feeder, Radio, PvModule
 import { AWG_SIZES, AMPACITY_75C_CU, AMPACITY_90C_CU, RESISTANCE_OHM_PER_KFT } from '../engine/electrical';
 
 const P = 'Product (typical)' as const, S = 'Standard' as const;
+import { bodySpecs } from './bodies';
 export type SpecValue = string | number;
 export interface SpecItem {
   id: string; category: string; sub: string; brand: string; model: string;
@@ -20,7 +21,7 @@ export interface SpecItem {
 export const CATEGORIES = [
   'Antennas', 'Coax & feeders', 'Connectors', 'Radios & repeaters', 'ERCES / BDA & DAS', 'Public safety bands',
   'Fire alarm', 'Batteries', 'Solar & DC power', 'Wi-Fi', 'Network & PoE', 'Structured cabling', 'Fiber optics',
-  'Conductors', 'Surge & grounding', 'Security & access control', 'Intrusion', 'CCTV', 'Intercom', 'Nurse call', 'Paging & sound', 'Emergency call boxes', 'Other',
+  'Conductors', 'Surge & grounding', 'Security & access control', 'Intrusion', 'CCTV', 'Intercom', 'Nurse call', 'Paging & sound', 'Emergency call boxes', 'Codes, training & licensing', 'Other',
 ] as const;
 
 /** Spec fields offered when adding an item of a category (any extra field can be added too). */
@@ -126,4 +127,4 @@ const STANDARDS: SpecItem[] = [
   ...AWG_SIZES.map((a) => std(`awg-${a}`, 'Conductors', 'Copper', `${a} AWG copper`, { 'Size': `${a} AWG`, 'Ampacity 75 °C (A)': AMPACITY_75C_CU[a], 'Ampacity 90 °C (A)': AMPACITY_90C_CU[a], 'DC resistance (Ω/1000 ft)': RESISTANCE_OHM_PER_KFT[a] }, 'NEC Table 310.16 and Chapter 9 Table 8 (uncoated copper, 75 °C)', 'Apply 240.4(D) small-conductor limits and ambient / fill adjustments.')),
 ];
 
-export function builtInSpecs(): SpecItem[] { return [...builtFromCatalog(), ...STANDARDS, ...LV_TYPICAL]; }
+export function builtInSpecs(): SpecItem[] { return [...builtFromCatalog(), ...STANDARDS, ...LV_TYPICAL, ...bodySpecs()]; }

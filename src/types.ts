@@ -101,6 +101,8 @@ export interface Project {
   serviceLog?: ServiceCall[];
   /** Materials you added by hand. */
   bomExtra?: BomExtra[];
+  /** Cable and conduit runs between sites, measured on the map and over the terrain. */
+  siteRuns?: import('./engine/siteruns').SiteRun[];
   /** Auto-design inputs; when applied, its equipment and materials join the Materials list. */
   autoDesign?: import('./engine/autodesign').AutoInputs & { applied?: boolean };
   /** Drawing set settings (sheet size, scale, revisions). */

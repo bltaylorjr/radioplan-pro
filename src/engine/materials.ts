@@ -7,6 +7,7 @@ import { mToFt } from './rf';
 import { sizeSolar } from './solar';
 import { alarmBatteryAh } from './alarm';
 import { halfWaveDipoleFt } from './lfhf';
+import { projectRuns } from './siteruns';
 
 export interface BomLine { key: string; category: string; item: string; brandModel: string; qty: number; unit: string; basis: string; extraId?: string }
 
@@ -99,6 +100,8 @@ export function buildBom(p: Project): BomLine[] {
     const r = autoDesign(p, { ...defaultInputs(), ...(p.autoDesign ?? {}) });
     for (const m of [...r.equipment, ...r.materials]) add(`Auto-design: ${m.system}`, `ad-${m.key}`, m.item, m.spec, m.qty, m.unit, m.basis);
   }
+  // Runs between sites, measured on the map and over the ground (Sites page).
+  for (const { run, t } of projectRuns(p)) for (const i of t.items) add(`Site runs: ${run.name}`, `run-${run.id}-${i.key}`, i.item, i.spec, i.qty, i.unit, i.basis);
   for (const x of p.bomExtra ?? []) L.push({ key: `x-${x.id}`, category: x.category || 'Added items', item: x.item, brandModel: x.brandModel, qty: x.qty, unit: x.unit, basis: x.notes || 'Added by you', extraId: x.id });
   return L;
 }

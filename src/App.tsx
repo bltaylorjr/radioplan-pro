@@ -28,6 +28,7 @@ import { NetworkPage } from './pages/Network';
 import { SurveyPage } from './pages/Survey';
 import { WifiSurveyPage } from './pages/WifiSurvey';
 import { CalculatorsPage } from './pages/Calculators';
+import { TheoryPage } from './pages/Theory';
 import { SyncPage } from './pages/Sync';
 import { ProjectsPage } from './pages/Projects';
 import { SpecLibraryPage } from './pages/SpecLibrary';
@@ -81,6 +82,7 @@ export const WORKFLOW: { id: string; label: string; group: string; el: React.Rea
   { id: 'directions', label: 'Map & Directions', group: 'Tools', el: <DirectionsPage /> },
   { id: 'service', label: 'Service & Maintenance Resources', group: 'Tools', el: <ServicePage /> },
   { id: 'install', label: 'Installation Guides', group: 'Tools', el: <InstallPage /> },
+  { id: 'theory', label: 'Low-Voltage Principles', group: 'Tools', el: <TheoryPage /> },
   { id: 'library', label: 'Specifications Library', group: 'Tools', el: <SpecLibraryPage /> },
   { id: 'contacts', label: 'Contacts & Web Resources', group: 'Tools', el: <ContactsPage /> },
   { id: 'calculators', label: 'Calculators', group: 'Tools', el: <CalculatorsPage /> },

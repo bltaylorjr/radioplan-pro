@@ -59,8 +59,12 @@ The cache lives in the app's storage on that device (browser profile for the USB
       
     ] },
 
-  { id: 'sites', title: 'Site data & GPS', page: 'sites', keywords: 'site database csv import export multi-site spreadsheet gps nmea gnss rtk coordinates latitude longitude elevation antenna height structure tower airport geocode address', summary: 'Record each candidate site: position (GPS), ground elevation, structure and antenna height.',
+  { id: 'sites', title: 'Site data & GPS', page: 'sites', keywords: 'site database csv import export multi-site spreadsheet gps nmea gnss rtk coordinates latitude longitude elevation antenna height structure tower airport geocode address runs between sites fiber conduit trench handhole underground aerial pole distance terrain slope grade labor crew hours existing towers co-locate', summary: 'Record each candidate site (position, ground elevation, structure, antenna height), see existing towers nearby, and plan cable and conduit runs between sites measured over the terrain.',
     body: `Each **site** is a candidate tower, rooftop or building location.
+
+**Runs between sites**: plan fiber, Cat 6, coax, power or empty conduit between two sites. Press **+ Add run**, pick the two sites and how it is installed (underground in conduit, direct-buried, aerial on poles, or inside buildings), then click the map along the route to add bend points (follow the road, go around a building or creek). **Measure over the ground** uses the terrain for the area (downloaded or saved for offline use; otherwise the online elevation service; otherwise the two site elevations) to work out the map length, the length over the ground, the climb and drop, and the steepest grade, with a profile of the ground along the route. From that the app works out trench, conduit, sweeps, handholes (every 500 ft and at each bend), warning tape, cable with slack loops, enclosures, poles and strand for aerial runs, and crew-hours. Steep ground takes longer to trench and gets an erosion-control warning; Cat 6 over 328 ft and multimode over about 1,300 ft are flagged. Measured runs go into the **Materials** list and are added to the labor estimate on the **Reports** page. The production rates are starting points: type your own hours on the Reports page if your crew differs. Walk the route, and call 811 before any digging.
+
+**Existing towers nearby**: lists the mapped towers and comm sites nearest the selected site (OpenStreetMap), with distance, bearing and height, so you can look at co-locating before planning a new structure. Check heights and owners in the FCC ASR database.
 
 **Site database**: import many sites from a CSV spreadsheet. Columns are matched by name (name, latitude, longitude in decimal or DMS, ground elevation, antenna height / rad center, structure height, and optional transmitter columns: frequency, power, antenna, azimuth, tilt, line loss, channel, transmit). Missing ground elevations are looked up from USGS 3DEP. Export the sites back to CSV at any time.
 
@@ -303,7 +307,7 @@ This checker is a planning aid only. A licensed professional must verify complia
 
 Enter measured values and mark pass/fail; the results print in the Commissioning report.` },
 
-  { id: 'calculators', title: 'Calculators', page: 'calculators', keywords: 'calculator dbm watts microvolt field strength eirp erp wavelength dipole isolation tilt fspl fresnel horizon diffraction hata link budget vswr return loss coax noise floor intermod mpe erlang ohm voltage drop conductor battery solar ground rod guy wire distance bearing conversion awg', summary: 'Stand-alone engineering calculators for RF, antennas, propagation, transmission lines, interference, trunking traffic, electrical power, grounding and units.',
+  { id: 'calculators', title: 'Calculators', page: 'calculators', keywords: 'calculator dbm watts microvolt field strength eirp erp wavelength dipole isolation tilt fspl fresnel horizon diffraction hata link budget vswr return loss coax noise floor intermod mpe erlang ohm voltage drop conductor battery solar ground rod guy wire distance bearing conversion awg', summary: 'Calculators for cabling, power, fire alarm, sound and audio (with a sound level meter and test tones), RF, antennas, grounding and units.',
     body: `Type in the search box to filter (for example "vswr", "voltage drop", "erlang").
 
 - **RF levels**: dBm ↔ W ↔ dBW, dBm ↔ µV / dBµV (50 Ω), field strength ↔ received power, EIRP / ERP.
@@ -329,8 +333,10 @@ Distances and lengths follow **Measurements** on Company & Project: Imperial (ft
 
 No LvPlan server or account is involved; data moves only between your devices or through your own cloud drive.` },
 
-  { id: 'library', title: 'Specifications library', page: 'library', keywords: 'specifications specs datasheet manual service manual technician programming repair parts library equipment catalog low voltage antenna coax cable connector bda das fire alarm battery solar wifi poe cat6 fiber conductor compare import csv', summary: 'Search, compare and add specifications for low-voltage and radio equipment.',
-    body: `**Manuals:** pick an item, then under *Service, technician and installation manuals* choose the type and use **Attach file** (PDF, picture, video), **Add link** or **Find … online**. The **Service & technician resources** card holds manuals that aren't tied to one item. All of them open offline and are in backups.
+  { id: 'library', title: 'Specifications library', page: 'library', keywords: 'nfpa bicsi tia ul nicet esa icc ahj licensing board training certification rcdd specifications specs datasheet manual service manual technician programming repair parts library equipment catalog low voltage antenna coax cable connector bda das fire alarm battery solar wifi poe cat6 fiber conductor compare import csv', summary: 'Search, compare and add equipment specifications, plus codes, training and licensing references for NFPA, BICSI, TIA, UL, NICET, ESA and the state boards.',
+    body: `**Codes, training & licensing** (a category in the library): one entry for each body that matters in low-voltage work: NFPA (NEC and NFPA 72), BICSI (TDMM, RCDD and installer credentials), TIA (568, 569, 606, 607), UL (listings and Product iQ), NICET (fire alarm levels), ESA (National Training School), ICC, the AHJ, the licensing boards for NC, SC, GA and TN, and others such as the FOA, ETA, AVIXA, ASIS, SIA, IEEE and ANSI. Each entry lists what the body does, its key documents, training and credentials, the systems it covers, and its official web pages. The text reads offline; the links need internet.
+
+**Manuals:** pick an item, then under *Service, technician and installation manuals* choose the type and use **Attach file** (PDF, picture, video), **Add link** or **Find … online**. The **Service & technician resources** card holds manuals that aren't tied to one item. All of them open offline and are in backups.
 
 **Manufacturer recommendations:** each item shows the installation, wiring, environment and maintenance points manufacturers in that category commonly state, and your own items can carry the model's exact recommendations (Edit → one per line, from the installation manual).
 
@@ -381,6 +387,18 @@ Type what you measured and press **✓ OK** or **✗ Not OK**. A failed step tel
 **2D plan** shows each floor flat (point at a dot to see what it is). **3D model** shows the whole building: drag to turn, pinch to zoom. Tap legend items to hide them. **Site and placement** uses the downloaded terrain to warn about low ground, exposure and donor-antenna height.
 
 **Add to Materials list** puts the equipment and materials in the Materials list and fills the Fire Alarm and ERCES pages. Every quantity is a starting point: a designer must check it against the adopted codes, the manufacturer and the AHJ.` },
+  { id: 'theory', title: 'Low-voltage principles', page: 'theory', keywords: 'theory training basics advanced principles ohm law voltage drop cabling fiber plenum riser grounding bonding systems installation troubleshooting learn study index', summary: 'A built-in reading guide to low-voltage work, from basic electrical theory to advanced design and troubleshooting, with an index.',
+    body: `**Low-Voltage Principles** (in Tools) is a reading guide built into the app, so it works offline. It runs in a logical order:
+
+1. **Electrical fundamentals**: Ohm's law, AC and DC, power-limited circuits, series and parallel, supervision and EOL resistors, wire size and voltage drop, power supplies and batteries, signals and decibels, grounding and bonding, safety.
+2. **Cabling, pathways and media**: twisted pair, coax, fiber, cable fire ratings, pathways and firestopping, networks and PoE, radio basics.
+3. **The systems**: fire alarm, intrusion, access control, CCTV, intercom, nurse call, paging, pro sound, mass notification, call boxes, DAS/ERCES, two-way radio, design services, and service contracts.
+4. **Installation practice**: from the site walk through rough-in, trim-out, programming, testing and closeout.
+5. **Advanced design and troubleshooting**: NAC design, audibility and intelligibility, survivability, a troubleshooting method, RF interference, and estimating.
+
+Click any line in the **Index** to jump to it. Filter by **Basic**, **Intermediate** or **Advanced**, or search the text. Under many sections, **🧮 Calculators** opens the matching calculators right there, and **Open … →** goes to the page that puts it to work.
+
+This is general training text: the adopted code edition, the manufacturer's instructions and the AHJ decide what applies on a job.` },
   { id: 'contacts', title: 'Contacts and web resources', page: 'contacts', keywords: 'contacts zip code phone address inspections fire marshal building department licensing board web links resources city county state', summary: 'Inspection offices, fire marshals and licensing boards by state, county and city, plus web links. Add, edit and remove your own.',
     body: `Pick the **state**, then the **county**, then the **city**, or type a **ZIP code** to set all three at once. The page shows the state, county and city offices for that place, and the **Web resources** tab shows code pages and other links. Tap a phone number to call or an address to open the map.
 

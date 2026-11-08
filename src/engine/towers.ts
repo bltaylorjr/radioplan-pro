@@ -1,6 +1,7 @@
 // Existing towers, masts, antennas and other communications sites from OpenStreetMap (Overpass API),
 // kept per 0.25° cell in the app's storage so the layer still works offline once an area was viewed.
 import { kvGet, kvSet } from './projectdb';
+import { haversineKm, bearingDeg } from './geo';
 
 export interface CommSite {
   id: string; lat: number; lon: number;
@@ -51,6 +52,11 @@ export function parseOverpass(j: { elements?: { type: string; id: number; lat?: 
     });
   }
   return out;
+}
+
+/** Comm sites nearest to a point, with distance (km) and bearing (°T). */
+export function nearestSites(s: { lat: number; lon: number }, all: CommSite[], n = 8): (CommSite & { km: number; brg: number })[] {
+  return all.map((c) => ({ ...c, km: haversineKm(s, c), brg: bearingDeg(s, c) })).sort((a, b) => a.km - b.km).slice(0, n);
 }
 
 /** The label shown next to a site on the map. */

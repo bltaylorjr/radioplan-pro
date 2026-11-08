@@ -30,6 +30,7 @@ import { downloadBytes, safeName } from '../store';
 import { fmtBytes } from '../engine/projectdb';
 import { useUnits, DistNum } from '../units';
 import { missingRequired } from '../engine/required';
+import { siteRunHours } from '../engine/siteruns';
 
 const REPORTS = [
   ['cover', 'Cover letter & summary'], ['scope', 'Scope of work'], ['autoequip', 'Recommended equipment'], ['bom', 'Materials list'], ['price', 'Price'],
@@ -107,7 +108,8 @@ export function ReportsPage() {
   const ad = autoDesign(p, { ...defaultInputs(), ...(p.autoDesign ?? {}) });
   const systems = projectSystems(m0(p));
   const devCount = ad.devices.length;
-  const pr = priceOf(q, laborEstimate(devCount, systems.length));
+  const runH = siteRunHours(p), autoH = laborEstimate(devCount, systems.length) + runH;
+  const pr = priceOf(q, autoH);
   const bom = buildBom(p);
   const place = projectPlace(p);
   const [msg, setMsg] = useState('');
@@ -140,7 +142,7 @@ export function ReportsPage() {
     scope: () => !systems.length ? <p>Pick the project type on Company & Project to fill in the scope.</p> : <>{systems.map((x) => <div key={x.id}><h4>{x.icon} {x.label}</h4><p>{x.summary}</p><ul>{x.install.slice(0, 4).map((t) => <li key={t}>{t}</li>)}</ul><p className="small">Standards: {x.standards.join('; ')}</p></div>)}</>,
     autoequip: () => !ad.equipment.length ? <p>Pick the project type to fill this in; adjust the building on Auto-Design & 3D Model.</p> : <table className="rpt-tbl"><thead><tr><th>System</th><th>Equipment</th><th>Recommended spec</th><th>Qty</th></tr></thead><tbody>{ad.equipment.map((e) => <tr key={e.system + e.key}><td>{e.system}</td><td>{e.item}</td><td>{e.spec}</td><td>{e.qty} {e.unit}</td></tr>)}</tbody></table>,
     price: () => <table className="rpt-tbl"><tbody>
-      <tr><th>Labor</th><td>{pr.hours.toLocaleString()} h × {money(q.laborRate)}/h{!q.laborHours && <span className="small"> (estimated from {devCount} devices)</span>}</td><td style={{ textAlign: 'right' }}>{money(pr.labor)}</td></tr>
+      <tr><th>Labor</th><td>{pr.hours.toLocaleString()} h × {money(q.laborRate)}/h{!q.laborHours && <span className="small"> (estimated from {devCount} devices{runH ? ` and ${runH} h of site-to-site runs` : ''})</span>}</td><td style={{ textAlign: 'right' }}>{money(pr.labor)}</td></tr>
       <tr><th>Materials and equipment</th><td>{q.materialsCost ? 'per the materials list' : 'enter the materials cost in the price options'}</td><td style={{ textAlign: 'right' }}>{money(pr.mat)}</td></tr>
       {q.markupPct > 0 && <tr><th>Overhead and profit</th><td>{q.markupPct}% of materials</td><td style={{ textAlign: 'right' }}>{money(pr.markup)}</td></tr>}
       {q.taxPct > 0 && <tr><th>Sales tax</th><td>{q.taxPct}%</td><td style={{ textAlign: 'right' }}>{money(pr.tax)}</td></tr>}
@@ -235,7 +237,7 @@ export function ReportsPage() {
       {(on('price') || on('schedule') || on('terms') || on('cover')) && <Card title="Proposal options" className="no-print" tip="Used by the Price, Schedule and Terms sections. Saved with the project.">
         <div className="form">
           <label className="field"><span>Labor rate ($/h)</span><input type="number" min={0} value={q.laborRate} onChange={(e) => setQ('laborRate', +e.target.value || 0)} /></label>
-          <label className="field"><span>Labor hours</span><input type="number" min={0} value={q.laborHours || ''} placeholder={`auto: ${laborEstimate(devCount, systems.length)}`} onChange={(e) => setQ('laborHours', +e.target.value || 0)} /></label>
+          <label className="field"><span>Labor hours</span><input type="number" min={0} value={q.laborHours || ''} placeholder={`auto: ${autoH}`} onChange={(e) => setQ('laborHours', +e.target.value || 0)} /></label>
           <label className="field"><span>Materials cost ($)</span><input type="number" min={0} value={q.materialsCost || ''} onChange={(e) => setQ('materialsCost', +e.target.value || 0)} /></label>
           <label className="field"><span>Markup on materials (%)</span><input type="number" min={0} value={q.markupPct} onChange={(e) => setQ('markupPct', +e.target.value || 0)} /></label>
           <label className="field"><span>Sales tax (%)</span><input type="number" min={0} step={0.25} value={q.taxPct} onChange={(e) => setQ('taxPct', +e.target.value || 0)} /></label>

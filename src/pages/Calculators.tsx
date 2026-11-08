@@ -10,6 +10,7 @@ import { AWG_SIZES, Awg, AMPACITY_75C_CU, sizeConductor } from '../engine/electr
 import { FEEDERS } from '../data/catalog';
 import { LV_CALCS } from '../data/lvcalcs';
 import { LvCalcCard } from '../components/SystemsUI';
+import { SoundTools } from '../components/SoundTools';
 
 /** One calculator card. `k` = extra search keywords. */
 function Calc({ title, k, q, children, note, group }: { title: string; k: string; q: string; children: React.ReactNode; note?: string; group?: string }) {
@@ -98,7 +99,8 @@ export function CalculatorsPage() {
       {[...new Set(LV_CALCS.map((c) => c.group))].map((g) => {
         const words = q.toLowerCase().split(/\s+/).filter(Boolean);
         const list = LV_CALCS.filter((c) => c.group === g && words.every((w) => `${c.title} ${c.keywords} ${g}`.toLowerCase().includes(w)));
-        return list.length ? <React.Fragment key={g}><h2 className="calc-group">{g}</h2><div className="calc-grid">{list.map((c) => <LvCalcCard key={c.id} c={c} />)}</div></React.Fragment> : null;
+        const tools = g.startsWith('Paging') ? <SoundTools q={q} /> : null;
+        return list.length || tools ? <React.Fragment key={g}><h2 className="calc-group">{g}</h2>{tools}{list.length > 0 && <div className="calc-grid">{list.map((c) => <LvCalcCard key={c.id} c={c} />)}</div>}</React.Fragment> : null;
       })}
       <Group title="RF levels" q={q}>
         <Calc q={q} title="dBm ↔ watts ↔ dBW" k="power convert milliwatt dbw">

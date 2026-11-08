@@ -20,10 +20,19 @@ import { newId } from '../engine/projectdb';
 import { loadMyItems, saveMyItems, SPECLIB_EVENT, autoLoadEquipment } from '../data/projectEquipment';
 import { parseCsv, toCsv } from '../engine/csv';
 import type { Antenna, Feeder, Radio } from '../data/catalog';
+import { bodyById, BODIES_CHECKED } from '../data/bodies';
 
 export { loadMyItems };
 
 const num = (v: SpecValue | undefined) => { const n = typeof v === 'number' ? v : parseFloat(String(v ?? '').replace(/[^0-9.\-]/g, '')); return Number.isFinite(n) ? n : null; };
+function BodyLinks({ id }: { id: string }) {
+  const b = bodyById(id)!;
+  return (<>
+    <h4>Official pages</h4>
+    <ul className="links">{b.links.map(([n, u]) => <li key={u}><a href={u} target="_blank" rel="noreferrer">{n}</a> <span className="small muted">{u.replace(/^https?:\/\//, '')}</span></li>)}</ul>
+    <p className="small muted">Links checked on the official sites on {BODIES_CHECKED}. Everything above stays readable offline; the links need internet. Summaries are general guidance: the adopted code edition, the licensing board and the AHJ decide what applies.</p>
+  </>);
+}
 const BASE_COLS = ['category', 'subcategory', 'brand', 'model', 'datasheet', 'notes'];
 
 /** CSV with fixed columns plus one column per spec name. */
@@ -195,11 +204,13 @@ export function SpecLibraryPage() {
         {item.kind === 'My item' && <button className="danger" onClick={async () => { if (confirm(`Remove ${item.model} from your library?`)) { await persist(mine.filter((m) => m.id !== item.id)); setSel(null); } }}>Delete</button>}
       </div>}>
         <p className="muted small">{item.category}{item.sub ? ` · ${item.sub}` : ''} · {item.origin ? 'Loaded from project' : item.kind}{item.reference ? ` · ${item.reference}` : ''}{item.projects?.length ? ` · Used in: ${item.projects.join(', ')}` : ''}</p>
-        <table className="tbl"><tbody>{Object.entries(item.specs).map(([k, v]) => <tr key={k}><th style={{ width: '45%' }}>{k}</th><td>{String(v)}</td></tr>)}</tbody></table>
+        <table className="tbl"><tbody>{Object.entries(item.specs).map(([k, v]) => <tr key={k}><th style={{ width: '45%' }}>{k}</th><td style={{ whiteSpace: 'pre-line' }}>{String(v)}</td></tr>)}</tbody></table>
         {item.notes && <p className="note">{item.notes}</p>}
-        <MfrRecs item={item} />
-        <Datasheet item={item} searchUrl={searchUrl(item)} />
-        <ItemManuals item={item} />
+        {bodyById(item.id) ? <BodyLinks id={item.id} /> : <>
+          <MfrRecs item={item} />
+          <Datasheet item={item} searchUrl={searchUrl(item)} />
+          <ItemManuals item={item} />
+        </>}
         {item.kind !== 'Standard' && <p className="small muted">{item.kind === 'Product (typical)' ? 'Typical values for planning. Confirm the current manufacturer datasheet before ordering.' : 'Entered by you.'}</p>}
       </Card>}
 

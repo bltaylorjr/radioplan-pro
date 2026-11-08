@@ -23,6 +23,7 @@ export const WORKFLOW_LABELS: Record<string, string> = {
   view3d: '3D Model',
   lfhf: 'LF / HF Systems',
   compliance: 'Code Compliance',
+  theory: 'Low-Voltage Principles',
   library: 'Specifications Library',
   materials: 'Materials List',
   blueprints: 'Blueprints & Drawing Sets',

@@ -12,6 +12,8 @@ import { uid } from '../defaults';
 import { SiteDatabase } from '../components/SiteDatabase';
 import { useUnits, DistNum } from '../units';
 import { AddressInput } from '../components/AddressInput';
+import { SiteRunsCard } from '../components/SiteRuns';
+import { NearbyTowers } from '../components/NearbyTowers';
 
 export function SitesPage() {
   const { project: p, update, rt } = useStore();
@@ -109,7 +111,9 @@ export function SitesPage() {
           <Field label="Nearest public-use airport" tip="Distance to nearest runway for 14 CFR 77.9(b)."><DistNum km={s.nearestAirportKm} nullable onChange={(v) => set('nearestAirportKm', v)} /></Field>
           <Field label="Longest runway"><Num value={s.nearestRunwayFt} nullable onChange={(v) => set('nearestRunwayFt', v)} unit="ft" /></Field>
         </div>
+        <NearbyTowers site={s} />
       </Card>
+      <SiteRunsCard />
       <SiteDatabase />
     </div>
   );

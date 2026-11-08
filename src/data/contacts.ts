@@ -4,6 +4,7 @@
 import type { StateCode } from '../types';
 import { LOCAL_CODES } from '../compliance/citycodes';
 import { CODE_SETS } from '../compliance/codesets';
+import { BODIES } from './bodies';
 
 export type Level = 'state' | 'county' | 'city';
 export interface Contact {
@@ -18,7 +19,7 @@ export interface Resource {
 }
 
 export const CONTACT_KINDS = ['Building inspections', 'Fire marshal', 'Electrical inspections', 'Code council', 'Contractor licensing', 'Permits', 'Utility', 'Other'];
-export const RESOURCE_KINDS = ['Adopted codes', 'Code text', 'Permits', 'Licensing', 'Fire marshal', 'Forms', 'Maps & GIS', 'Federal', 'Other'];
+export const RESOURCE_KINDS = ['Adopted codes', 'Code text', 'Permits', 'Licensing', 'Fire marshal', 'Forms', 'Maps & GIS', 'Federal', 'Standards & training', 'Other'];
 const D = '2026-11-08';
 
 export const CONTACTS: Contact[] = [
@@ -47,6 +48,7 @@ export const CONTACTS: Contact[] = [
 const host = (u: string) => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch { return u; } };
 
 export const RESOURCES: Resource[] = ([
+  ...BODIES.flatMap((b) => b.links.map(([t, u], i): Resource => ({ id: `body-${b.id}-${i}`, level: b.state ? 'state' : 'national', state: b.state, title: `${b.short}: ${t}`, kind: b.sub === 'Licensing' ? 'Licensing' : 'Standards & training', url: u }))),
   { id: 'icc-codes', level: 'national', title: 'ICC Digital Codes (free read-only code text)', kind: 'Code text', url: 'https://codes.iccsafe.org/' },
   { id: 'fcc-uls', level: 'national', title: 'FCC Universal Licensing System (license search)', kind: 'Federal', url: 'https://wireless2.fcc.gov/UlsApp/UlsSearch/searchLicense.jsp' },
   { id: 'faa-oeaaa', level: 'national', title: 'FAA Obstruction Evaluation (OE/AAA), Notice Criteria Tool', kind: 'Federal', url: 'https://oeaaa.faa.gov/' },

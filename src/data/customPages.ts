@@ -14,11 +14,11 @@ export const PAGE_GROUPS: [string, string[]][] = [
   ['5 · Planning: codes & materials', ['compliance', 'materials', 'blueprints']],
   ['6 · Testing & closeout', ['testing', 'reports']],
   ['7 · Troubleshooting & repair', ['troubleshoot']],
-  ['Tools', ['directions', 'service', 'install', 'library', 'contacts', 'calculators', 'projects', 'sync']],
+  ['Tools', ['directions', 'service', 'install', 'theory', 'library', 'contacts', 'calculators', 'projects', 'sync']],
 ];
 
 /** Pages most low-voltage jobs use, whatever the systems. */
-const COMMON = ['locate', 'sites', 'fieldnotes', 'compliance', 'materials', 'blueprints', 'testing', 'reports', 'troubleshoot', 'directions', 'service', 'install', 'library', 'contacts', 'calculators'];
+const COMMON = ['locate', 'sites', 'fieldnotes', 'compliance', 'materials', 'blueprints', 'testing', 'reports', 'troubleshoot', 'directions', 'service', 'install', 'theory', 'library', 'contacts', 'calculators'];
 /** Extra pages for systems that need radio or design pages. */
 const EXTRA: Record<string, string[]> = {
   firealarm: ['alarm', 'autodesign'], massnotif: ['alarm', 'autodesign'], security: ['autodesign'], access: ['autodesign'], cctv: ['autodesign'],

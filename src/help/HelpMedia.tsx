@@ -20,7 +20,7 @@ const VIDEO: Record<string, string> = {
   locate: 'radio site survey how to choose a tower site', company: 'low voltage contractor project setup', sites: 'GPS coordinates radio site survey', terrain: 'terrain profile radio path planning',
   path: 'radio path profile Fresnel zone line of sight', coverage: 'two-way radio coverage prediction', network: 'radio frequency interference intermodulation troubleshooting', scenarios: 'radio system design comparison',
   optimize: 'antenna tilt azimuth alignment', lfhf: 'HF antenna installation and propagation', sync: 'how to sync files between devices', systems: 'low voltage systems overview installation',
-  contacts: 'fire alarm inspection permit process AHJ', fieldnotes: 'low voltage job site documentation photos', directions: 'job site survey walkthrough low voltage', projects: 'low voltage project management tips',
+  contacts: 'fire alarm inspection permit process AHJ', theory: 'low voltage theory basics training', fieldnotes: 'low voltage job site documentation photos', directions: 'job site survey walkthrough low voltage', projects: 'low voltage project management tips',
 };
 /** Pages whose videos should be about the project's own systems (e.g. "Fire Alarm troubleshooting"). */
 const PER_SYSTEM: Record<string, string> = { troubleshoot: 'troubleshooting', install: 'installation', service: 'inspection and maintenance', systems: 'installation', testing: 'testing and commissioning', autodesign: 'system design', library: 'equipment datasheet', materials: 'material takeoff' };

@@ -35,7 +35,7 @@ export function projectFromTemplate(src: Project, fresh: Project, o: TemplateOpt
   if (k.checklists) p.checklistExtra = s.checklistExtra;
   if (k.client) for (const f of ['client', 'clientContact', 'clientAddress', 'clientCity', 'clientState', 'clientZip', 'clientPhone', 'clientEmail'] as const) (p.meta as unknown as Record<string, unknown>)[f] = s.meta[f];
   if (k.sites) {
-    p.sites = s.sites; p.meta.state = s.meta.state; p.meta.county = s.meta.county; p.meta.city = s.meta.city;
+    p.sites = s.sites; p.siteRuns = (s.siteRuns ?? []).map((r) => ({ ...r, via: r.via.map((v) => ({ ...v })) })); p.meta.state = s.meta.state; p.meta.county = s.meta.county; p.meta.city = s.meta.city;
     p.meta.siteAddress = s.meta.siteAddress; p.meta.jurisdictionNotes = s.meta.jurisdictionNotes;
   }
   if (k.documents) p.documents = s.documents;
