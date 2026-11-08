@@ -1,3 +1,8 @@
+# RadioPlan Pro 1.5.14
+
+- **Troubleshooting wizard** now picks in short steps instead of one long list: System, then Equipment (General, an equipment type, or a specific library model by category then model), then Problem.
+- **Equipment-specific troubleshooting** for 18 device types (smoke detectors, horn/strobes, pull stations, fire alarm panels, batteries, maglocks, electric strikes, card readers, IP cameras, NVRs, motion detectors, door contacts, PoE switches, access points, BDAs, repeaters, 70 V speakers, nurse call stations). Their problems are listed first, then the general system problems. Library models are matched to their type automatically.
+
 # RadioPlan Pro 1.5.13
 
 - **Service & Maintenance Resources** moved to Tools and is now a reference page instead of record keeping: pick a system to see its maintenance schedule (what and how often), common faults and fixes, test steps, installation reminders, standards, shortcuts to the matching tools, online manual / guide / video searches, and a shelf for that system's manuals kept offline.

@@ -68,3 +68,14 @@ describe('old Charlotte default sites', () => {
     expect(repairProject(p).project.sites[0].lat).toBe(35.2271);
   });
 });
+
+import { EQUIP_TYPES, equipTypeOf } from '../src/data/equiptrouble';
+import { SYSTEMS } from '../src/data/systems';
+describe('equipment troubleshooting', () => {
+  it('every type belongs to a known system and has steps', () => {
+    for (const t of EQUIP_TYPES) { expect(SYSTEMS.some((s) => s.id === t.system)).toBe(true); expect(t.symptoms.every((s) => s.steps.length > 0)).toBe(true); }
+  });
+  it('matches library items to a type', () => {
+    expect(equipTypeOf({ id: 'x', category: 'Fire alarm', sub: 'Detectors', brand: 'B', model: 'Photoelectric smoke detector', specs: {}, kind: 'Standard' } as any)?.id).toBe('smoke');
+  });
+});

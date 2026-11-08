@@ -5,7 +5,8 @@ import { builtInSpecs, SpecItem } from '../data/speclib';
 import { loadMyItems, SPECLIB_EVENT, autoLoadEquipment } from '../data/projectEquipment';
 import { guideFor, Ctx } from '../data/troubleshoot';
 import { uid } from '../defaults';
-import { SYSTEMS, projectSystems } from '../data/systems';
+import { SYSTEMS, projectSystems, LvSystem } from '../data/systems';
+import { EQUIP_TYPES, EquipType, equipTypeOf } from '../data/equiptrouble';
 
 type Result = { r: 'pass' | 'fail' | 'skip'; measured: string };
 
@@ -22,21 +23,35 @@ export function TroubleshootPage() {
   const inProject = mine.filter((m) => (m.projects ?? []).includes(pname));
   const otherMine = mine.filter((m) => !(m.projects ?? []).includes(pname));
   const mySys = projectSystems(p.meta);
-  const sysItems: SpecItem[] = [...mySys, ...SYSTEMS.filter((x) => !mySys.includes(x))].filter((x) => x.libCats.length).map((x) => ({ id: `sys-${x.id}`, category: x.libCats[0], sub: 'System', brand: '', model: `${x.icon} ${x.label} (general)`, specs: {}, kind: 'Standard' as const }));
-  const all = [...sysItems, ...inProject, ...otherMine, ...builtIn.filter((b) => b.kind !== 'Standard' || ['Batteries', 'Network & PoE', 'Structured cabling', 'Fiber optics', 'Conductors', 'Wi-Fi'].includes(b.category))];
+  const sysList = [...mySys, ...SYSTEMS.filter((x) => !mySys.includes(x))].filter((x) => x.libCats.length);
+  const libAll = [...inProject, ...otherMine, ...builtIn.filter((b) => b.kind !== 'Standard' || ['Batteries', 'Network & PoE', 'Structured cabling', 'Fiber optics', 'Conductors', 'Wi-Fi'].includes(b.category))];
+  const [sysId, setSysId] = useState('');
   const [sel, setSel] = useState('');
+  const [cat, setCat] = useState('');
+  const [model, setModel] = useState('');
   const [sym, setSym] = useState('');
   const [res, setRes] = useState<Record<number, Result>>({});
   const [msg, setMsg] = useState('');
-  const item = all.find((i) => i.id === sel) ?? null;
-  const guide = item ? guideFor(item) : null;
+  const sys = sysList.find((x) => x.id === sysId) ?? null;
+  const anySys = sysId === 'all';
+  const types = anySys ? EQUIP_TYPES : EQUIP_TYPES.filter((t) => t.system === sysId);
+  const libHere = anySys ? libAll : sys ? libAll.filter((i) => sys.libCats.includes(i.category)) : [];
+  const cats = [...new Set(libHere.map((i) => i.category))].sort();
+  const libCat = libHere.filter((i) => i.category === cat);
+  const sysItem = (x: LvSystem): SpecItem => ({ id: `sys-${x.id}`, category: x.libCats[0], sub: 'System', brand: '', model: `${x.icon} ${x.label} (general)`, specs: {}, kind: 'Standard' as const });
+  const typeItem = (t: EquipType): SpecItem => { const sd = SYSTEMS.find((x) => x.id === t.system); return { id: `type-${t.id}`, category: sys?.libCats[0] ?? sd?.libCats[0] ?? 'Other', sub: t.label, brand: '', model: t.label, specs: { 'Device type': t.label }, kind: 'Standard' as const }; };
+  const selType = sel.startsWith('type-') ? EQUIP_TYPES.find((t) => `type-${t.id}` === sel) : undefined;
+  const item: SpecItem | null = !sysId ? null : selType ? typeItem(selType) : sel === 'lib' ? libAll.find((i) => i.id === model) ?? null : sys ? sysItem(sys) : null;
+  const eqType = selType ?? (item && !item.id.startsWith('sys-') ? equipTypeOf(item) : undefined);
+  const baseGuide = item ? guideFor(item) : null;
+  const guide = baseGuide ? { ...baseGuide, symptoms: [...(eqType?.symptoms ?? []), ...baseGuide.symptoms] } : null;
   const symptom = guide?.symptoms.find((s) => s.id === sym) ?? guide?.symptoms[0] ?? null;
   const ctx: Ctx | null = item ? { it: item, s: item.specs, p } : null;
   const reset = () => { setRes({}); setMsg(''); };
   const steps = symptom?.steps ?? [];
   const done = steps.filter((_, i) => res[i]).length;
   const firstFail = steps.findIndex((_, i) => res[i]?.r === 'fail');
-  const name = item ? item.id.startsWith('sys-') ? item.model.replace(/^\S+\s/, '').replace(' (general)', '') : `${item.brand === 'Materials list' || item.brand.startsWith('Project') ? '' : item.brand + ' '}${item.model}` : '';
+  const name = item ? item.id.startsWith('sys-') ? item.model.replace(/^\S+\s/, '').replace(' (general)', '') : item.id.startsWith('type-') ? item.model : `${item.brand === 'Materials list' || item.brand.startsWith('Project') ? '' : item.brand + ' '}${item.model}` : '';
   const setR = (i: number, r: Partial<Result>) => setRes((x) => ({ ...x, [i]: { r: x[i]?.r ?? 'skip', measured: x[i]?.measured ?? '', ...r } }));
 
   const saveTests = () => {
@@ -55,24 +70,42 @@ export function TroubleshootPage() {
 
   return (
     <div className="stack">
-      <Card title="Troubleshooting wizard" tip="Pick the equipment and the problem. Each step says what to check, how to check it, and the value to expect, using that equipment's specifications from the library.">
+      <Card title="Troubleshooting wizard" tip="Pick the system, the equipment (general or a specific type or model) and the problem. Each step says what to check, how to check it, and the value to expect, using that equipment's specifications from the library.">
         <div className="form">
-          <label className="field wide"><span>1. Equipment</span>
-            <select value={sel} onChange={(e) => { setSel(e.target.value); setSym(''); reset(); }} aria-label="Equipment">
-              <option value="">— pick equipment —</option>
-              <optgroup label="By system (no specific model)">{sysItems.map((i) => <option key={i.id} value={i.id}>{i.model}</option>)}</optgroup>
-              {inProject.length > 0 && <optgroup label="In this project">{inProject.map((i) => <option key={i.id} value={i.id}>{i.category}: {i.brand} {i.model}</option>)}</optgroup>}
-              {otherMine.length > 0 && <optgroup label="My library">{otherMine.map((i) => <option key={i.id} value={i.id}>{i.category}: {i.brand} {i.model}</option>)}</optgroup>}
-              <optgroup label="Built-in library">{all.filter((i) => i.kind !== 'My item' && !i.id.startsWith('sys-')).map((i) => <option key={i.id} value={i.id}>{i.category}: {i.brand} {i.model}</option>)}</optgroup>
+          <label className="field wide"><span>1. System</span>
+            <select value={sysId} onChange={(e) => { setSysId(e.target.value); setSel(''); setCat(''); setModel(''); setSym(''); reset(); }} aria-label="System">
+              <option value="" disabled>— Choose one —</option>
+              {mySys.length > 0 && <optgroup label="This project's systems">{sysList.filter((x) => mySys.includes(x)).map((x) => <option key={x.id} value={x.id}>{x.icon} {x.label}</option>)}</optgroup>}
+              <optgroup label={mySys.length ? 'Other systems' : 'Systems'}>{sysList.filter((x) => !mySys.includes(x)).map((x) => <option key={x.id} value={x.id}>{x.icon} {x.label}</option>)}</optgroup>
+              <option value="all">🔎 Any system (all equipment)</option>
             </select></label>
-          {guide && <label className="field wide"><span>2. Problem</span>
-            <select value={symptom?.id ?? ''} onChange={(e) => { setSym(e.target.value); reset(); }} aria-label="Problem">{guide.symptoms.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}</select></label>}
+          {sysId && <label className="field"><span>2. Equipment</span>
+            <select data-no-choose value={sel} onChange={(e) => { setSel(e.target.value); setCat(''); setModel(''); setSym(''); reset(); }} aria-label="Equipment">
+              {!anySys ? <option value="">General (whole system)</option> : <option value="" disabled>— Choose one —</option>}
+              {types.length > 0 && <optgroup label="Equipment type">{types.map((t) => <option key={t.id} value={`type-${t.id}`}>{t.label}</option>)}</optgroup>}
+              {libHere.length > 0 && <option value="lib">📚 A specific model from the library…</option>}
+            </select></label>}
+          {sel === 'lib' && <label className="field"><span>Library category</span>
+            <select value={cat} onChange={(e) => { setCat(e.target.value); setModel(''); setSym(''); reset(); }} aria-label="Library category">
+              {cats.map((c) => <option key={c} value={c}>{c} ({libHere.filter((i) => i.category === c).length})</option>)}
+            </select></label>}
+          {sel === 'lib' && cat && <label className="field"><span>Model</span>
+            <select value={model} onChange={(e) => { setModel(e.target.value); setSym(''); reset(); }} aria-label="Model">
+              {libCat.some((i) => inProject.includes(i)) && <optgroup label="In this project">{libCat.filter((i) => inProject.includes(i)).map((i) => <option key={i.id} value={i.id}>{i.brand} {i.model}</option>)}</optgroup>}
+              {libCat.some((i) => otherMine.includes(i)) && <optgroup label="My library">{libCat.filter((i) => otherMine.includes(i)).map((i) => <option key={i.id} value={i.id}>{i.brand} {i.model}</option>)}</optgroup>}
+              {libCat.some((i) => !mine.includes(i)) && <optgroup label="Built-in library">{libCat.filter((i) => !mine.includes(i)).map((i) => <option key={i.id} value={i.id}>{i.brand} {i.model}</option>)}</optgroup>}
+            </select></label>}
+          {guide && <label className="field wide"><span>3. Problem</span>
+            <select data-no-choose value={symptom?.id ?? ''} onChange={(e) => { setSym(e.target.value); reset(); }} aria-label="Problem">
+              {eqType && <optgroup label={`${eqType.label} problems`}>{eqType.symptoms.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}</optgroup>}
+              <optgroup label={eqType ? 'General system problems' : 'Problems'}>{baseGuide!.symptoms.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}</optgroup>
+            </select></label>}
         </div>
-        {!item && <p className="muted">Pick a piece of equipment. Equipment you add to the project shows first; anything you add to the <a href="#library" onClick={(e) => { e.preventDefault(); go('library'); }}>Specifications Library</a> shows here too.</p>}
+        {!item && <p className="muted">Pick the system, then the equipment: choose General for whole-system checks, an equipment type (smoke detector, maglock, camera…) for device checks, or a specific model. Equipment you add to the project shows first; anything you add to the <a href="#library" onClick={(e) => { e.preventDefault(); go('library'); }}>Specifications Library</a> shows here too.</p>}
         {guide && <div className="warnbox"><b>⚠ Safety:</b> {guide.safety}</div>}
       </Card>
 
-      {ctx && symptom && <Card title={`3. ${guide!.title}: ${symptom.label}`} actions={<span className="small muted">{done} of {steps.length} checked</span>}>
+      {ctx && symptom && <Card title={`4. ${eqType && eqType.symptoms.includes(symptom) ? eqType.label : guide!.title}: ${symptom.label}`} actions={<span className="small muted">{done} of {steps.length} checked</span>}>
         <ol className="ts-steps">{steps.map((s, i) => { const r = res[i]; return (
           <li key={i} className={'ts-step ' + (r?.r ?? '')}>
             <div className="ts-check"><b>{s.check}</b>{s.tool && <span className="ts-tool small">🧰 {s.tool}</span>}</div>
