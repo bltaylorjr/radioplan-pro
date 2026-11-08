@@ -1,3 +1,7 @@
+# RadioPlan Pro 1.5.13
+
+- **Service & Maintenance Resources** moved to Tools and is now a reference page instead of record keeping: pick a system to see its maintenance schedule (what and how often), common faults and fixes, test steps, installation reminders, standards, shortcuts to the matching tools, online manual / guide / video searches, and a shelf for that system's manuals kept offline.
+
 # RadioPlan Pro 1.5.12
 
 - Sites left at the old Charlotte default are moved to the project's town when the project opens (sites you placed yourself are not touched).

@@ -357,10 +357,16 @@ These are general guidance. Follow the manufacturer's instructions, the approved
     body: `Pick the **Project type** from the dropdown, then tick any **sub-projects** on the same job (for example fire alarm with access control and CCTV). The same choice is on Company & Project and on the first-start screen.
 
 Each system gets tabs: **Plan**, **Install**, **Test & troubleshoot**, **Repair & maintain** and **Tools & reference** (standards and its calculators). Buttons jump to the related pages.` },
-  { id: 'service', title: 'Service and maintenance', page: 'service', keywords: 'pm preventive maintenance schedule inspection due service call repair log contract', summary: 'Maintenance schedule for the project\'s systems and a log of service calls and repairs.',
-    body: `The **Preventive maintenance schedule** lists the inspection and test tasks for the systems on this project. Enter the date each was last done and the app shows when it is due next (overdue in red).
+  { id: 'service', title: 'Service & maintenance resources', page: 'service', keywords: 'service maintenance pm preventive inspection repair fault fix manual standards schedule', summary: 'Maintenance intervals, common faults and fixes, test steps, standards and manuals for every system.',
+    body: `A reference shelf for service work (Tools). Pick a **system**; this project's systems are listed first.
 
-The **Service and repair log** records each call: problem, cause, repair, parts, hours and status. Export it to CSV for billing.` },
+- **Preventive maintenance:** what to inspect or test and how often, with the code reference.
+- **Common faults and fixes**, then the **troubleshooting wizard** for step-by-step help.
+- **Test and inspection steps**, **installation reminders** and **standards**.
+- **Tools in the app** and **Find online** (service manuals, troubleshooting guides, how-to videos).
+- **Service manuals and documents:** keep PDFs and links for that system on this device; they open offline.
+
+Nothing here is saved to the project.` },
   { id: 'troubleshoot', title: 'Troubleshooting wizard', page: 'troubleshoot', keywords: 'troubleshoot fault repair vswr sweep battery nac ground fault poe fiber loss bda test values', summary: 'Step-by-step checks with how to test and the value to expect, for the equipment you pick.',
     body: `Pick the equipment (equipment in this project is listed first, then your library and the built-in library) and the problem. Each step shows **what to check**, **how to check it**, the **tool**, and the **expected value**, worked out from that item's specifications where possible.
 

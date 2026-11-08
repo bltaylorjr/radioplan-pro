@@ -36,8 +36,8 @@ It needs two repository secrets: `ANDROID_KEYSTORE_B64` and `ANDROID_STOREPASS` 
 4. **Planning: radio & RF:** Equipment & Link Budget · Path Profile / LOS / Fresnel · Coverage Prediction · Tilt, Azimuth & Power · Multi-site & Interference · Scenarios & Compare · 3D Model · LF / HF Systems
 5. **Planning: codes & materials:** Code Compliance · Materials List · Blueprints & Drawing Sets
 6. **Testing & closeout:** Final Testing · Reports, Proposals & Closeout
-7. **Troubleshooting & repair:** Troubleshooting Wizard · Service & Maintenance
-**Tools** (not numbered steps): Map & Directions · Installation Guides (color wiring diagrams) · Specifications Library · Contacts & Web Resources · Calculators · Projects & Storage · Sync Devices
+7. **Troubleshooting & repair:** Troubleshooting Wizard
+**Tools** (not numbered steps): Map & Directions · Service & Maintenance Resources · Installation Guides (color wiring diagrams) · Specifications Library · Contacts & Web Resources · Calculators · Projects & Storage · Sync Devices
 
 Plus a searchable Help manual, page help (F1), "Guide me" walkthroughs and `?` tooltips. The first start asks what is being designed
 (fire alarm, ERCES, Wi-Fi, solar or radio) and where, then opens the right page.
