@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useStore } from '../store';
 import { Card } from '../components/ui';
 import { CODE_SETS } from '../compliance/codesets';
-import { projectPlace, nearestTown } from '../compliance/place';
+import { projectPlace, nearestTown, placeFromText } from '../compliance/place';
 import { allCounties, countyAt } from '../engine/refdata';
 import { citiesIn } from '../components/CodesHere';
 import { kvGet, kvSet } from '../engine/projectdb';
@@ -30,6 +30,16 @@ export function ContactsPage() {
   const [st, setSt] = useState<StateCode | 'mine'>(here.state);
   const [county, setCounty] = useState(here.county ?? '');
   const [city, setCity] = useState(here.city ?? '');
+  const [zip, setZip] = useState('');
+  const [zipMsg, setZipMsg] = useState('');
+  const onZip = (v: string) => {
+    const z = v.replace(/[^0-9]/g, '').slice(0, 5); setZip(z); setZipMsg('');
+    if (z.length < 5) return;
+    const f = placeFromText(z);
+    if (!f) { setZipMsg('ZIP code not found in NC, SC, GA or TN.'); return; }
+    setSt(f.state); setCounty(f.county ?? ''); setCity(f.city ?? '');
+    setZipMsg(`${z} is ${[f.city, f.county, CODE_SETS[f.state].name].filter(Boolean).join(', ')}.`);
+  };
   // Follow the project: when its state, county or city changes (or the project finishes loading), show that place.
   const hereKey = `${here.state}|${here.county ?? ''}|${here.city ?? ''}`;
   useEffect(() => { setSt(here.state); setCounty(here.county ?? ''); setCity(here.city ?? ''); }, [hereKey]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -70,18 +80,21 @@ export function ContactsPage() {
 
   return (
     <div className="stack">
-      <Card title="Pick a place" tip="Choose the state, then the county, then the city. Contacts and web resources for that place show below. Pick “My contacts” to see only the ones you added.">
+      <Card title="Pick a place" tip="Choose the state, then the county, then the city, or just type a ZIP code. Contacts and web resources for that place show below. Pick “My contacts” to see only the ones you added.">
         <div className="form">
           <label className="field"><span>State</span>
-            <select value={st} onChange={(e) => { setSt(e.target.value as StateCode | 'mine'); setCounty(''); setCity(''); }} aria-label="State">
+            <select value={st} onChange={(e) => { setSt(e.target.value as StateCode | 'mine'); setCounty(''); setCity(''); setZip(''); setZipMsg(''); }} aria-label="State">
               {STATES.map((s) => <option key={s} value={s}>{CODE_SETS[s].name}</option>)}
               <option value="mine">★ My contacts and resources (added by me)</option>
             </select></label>
           {st !== 'mine' && <label className="field"><span>County</span>
-            <select value={county} onChange={(e) => { setCounty(e.target.value); setCity(''); }} aria-label="County"><option value="">— all of {CODE_SETS[state].name} —</option>{counties.map((c) => <option key={c.fips} value={c.county}>{c.county}</option>)}</select></label>}
+            <select value={county} onChange={(e) => { setCounty(e.target.value); setCity(''); setZip(''); setZipMsg(''); }} aria-label="County"><option value="">— all of {CODE_SETS[state].name} —</option>{counties.map((c) => <option key={c.fips} value={c.county}>{c.county}</option>)}</select></label>}
           {st !== 'mine' && <label className="field"><span>City or town</span>
             <select value={city} onChange={(e) => { const c = cities.find((x) => x.city === e.target.value); setCity(e.target.value); if (c?.county) setCounty(c.county); }} aria-label="City"><option value="">— none (county or state) —</option>{cities.map((c) => <option key={c.city + c.county} value={c.city}>{c.city}{county && c.county === county ? '' : ` (${c.county})`}</option>)}</select></label>}
+          <label className="field"><span>or ZIP code</span>
+            <input value={zip} inputMode="numeric" maxLength={10} placeholder="e.g. 28801" onChange={(e) => onZip(e.target.value)} aria-label="ZIP code" /></label>
         </div>
+        {zipMsg && <p className="small muted" role="status">{zipMsg}</p>}
         {mismatch && <p className="note">The project is set to <b>{[p.meta.city, p.meta.county, CODE_SETS[p.meta.state].name].filter(Boolean).join(', ')}</b>, but {s0!.name || 'the first site'} is in <b>{[posCity, mismatch.county, CODE_SETS[mismatch.state as StateCode].name].filter(Boolean).join(', ')}</b>. <button className="primary" onClick={fixPlace}>Use the site’s location</button> <button className="ghost" onClick={() => go('company')}>Change on Company & Project</button></p>}
         <div className="row wrap"><h3 style={{ margin: 0 }}>📍 {st === 'mine' ? where : <span className="place-links">
           <a href="#" onClick={(e) => { e.preventDefault(); setCounty(''); setCity(''); }} title="Show state offices only">{CODE_SETS[state].name}</a>

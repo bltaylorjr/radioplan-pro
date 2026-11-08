@@ -1,3 +1,7 @@
+# RadioPlan Pro 1.5.15
+
+- **Contacts and web resources**: new **or ZIP code** box beside the state, county and city pickers. Type a 5-digit ZIP and all three are set for you.
+
 # RadioPlan Pro 1.5.14
 
 - **Troubleshooting wizard** now picks in short steps instead of one long list: System, then Equipment (General, an equipment type, or a specific library model by category then model), then Problem.
