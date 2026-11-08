@@ -69,7 +69,7 @@ export function CalculatorsPage() {
   const [grRho, setGrRho] = useN(100); const [grL, setGrL] = useN(8); const [grDia, setGrDia] = useN(0.625);
   const [gyH, setGyH] = useN(30); const [gyR, setGyR] = useN(24);
   // location / units
-  const [c1, setC1] = useState('35.2271, -80.8431'); const [c2, setC2] = useState('35.2896, -80.7340');
+  const [c1, setC1] = useState('35.5951, -82.5515'); const [c2, setC2] = useState('35.6400, -82.4800');
   const [cv, setCv] = useN(100); const [cvT, setCvT] = useN(25); const [awg, setAwg] = useState('10');
 
   const r = (n: number | null) => n ?? NaN;

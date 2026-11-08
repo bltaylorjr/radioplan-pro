@@ -24,7 +24,7 @@ export function SiteDatabase() {
     }
     if (missing.length) setMsg(`Added ${res.sites.length} sites. Ground elevation found for ${ok} of ${missing.length} (USGS 3DEP); the rest can be filled when online or from loaded terrain.`);
   };
-  const template = () => downloadText('site_database_template.csv', SITE_COLUMNS.join(',') + '\r\nTower 1,35.2271,-80.8431,,45,47,monopole,,460.0125,47,sinclair-sc229,0,0,3.2,CH1,yes\r\n', 'text/csv');
+  const template = () => downloadText('site_database_template.csv', SITE_COLUMNS.join(',') + '\r\nTower 1,35.5951,-82.5515,,45,47,monopole,,460.0125,47,sinclair-sc229,0,0,3.2,CH1,yes\r\n', 'text/csv');
   return (
     <Card title="Site database (CSV import / export)" tour="site-import" tip="Load many sites at once from a spreadsheet. Columns are matched by name: name, latitude, longitude (decimal or DMS), ground elevation, antenna height (AGL / rad center), structure height, frequency, power, antenna, azimuth, tilt, line loss, channel, transmit.">
       <div className="row wrap">

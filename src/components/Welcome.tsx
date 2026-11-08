@@ -50,7 +50,7 @@ export function Welcome({ onClose, onHelp }: { onClose: () => void; onHelp: () =
         </details>
         <label className="big-label">Where is the job site? Type an address, town or ZIP code
           <form onSubmit={(e) => { e.preventDefault(); if (q.trim()) start(q.trim()); }}>
-            <AddressInput value={q} onChange={setQ} onPick={(g) => start(g.label, g)} placeholder="e.g. 600 E 4th St, Charlotte NC" ariaLabel="Site address" />
+            <AddressInput value={q} onChange={setQ} onPick={(g) => start(g.label, g)} placeholder="e.g. 60 Court Plaza, Asheville NC" ariaLabel="Site address" />
           </form>
         </label>
         <div className="row wrap">

@@ -26,7 +26,7 @@ export async function geocodeAddress(q: string): Promise<GeoResult[]> {
     if (hit) return hit;
     const ref = refSearch(q);
     if (ref.length) return ref;
-    throw new Error(navigator.onLine === false ? 'You are offline. Enter coordinates (e.g. 35.2271, -80.8431) or click the map.' : (e as Error).message);
+    throw new Error(navigator.onLine === false ? 'You are offline. Enter coordinates (e.g. 35.5951, -82.5515) or click the map.' : (e as Error).message);
   }
 }
 /** Fill a missing state / county from the built-in county boundaries. */

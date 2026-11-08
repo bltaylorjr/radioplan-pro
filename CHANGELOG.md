@@ -1,3 +1,7 @@
+# RadioPlan Pro 1.5.1
+
+- New projects start in Asheville, NC (Buncombe County) instead of Charlotte.
+
 # RadioPlan Pro 1.5.0
 
 - Report builder: pick Project proposal, Build plan, Closeout package, Site survey report or Engineering reports, then tick the sections you want (cover letter, scope of work, recommended equipment, materials, price, schedule, terms, floor plans, device schedule, codes, inspection contacts, checklists, test report, maintenance schedule, documents, photos, color wiring diagrams, warranty and sign-off, and the radio and power reports). Proposal options set labor, materials, markup, tax, dates, exclusions and payment terms.

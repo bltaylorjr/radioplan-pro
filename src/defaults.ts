@@ -30,10 +30,10 @@ export function defaultProject(): Project {
   return {
     version: 1,
     company: { name: '', title: '', address: '', city: '', state: 'NC', zip: '', phone: '', email: '', license: '' },
-    meta: { name: 'New radio site project', number: '', client: '', engineer: '', peLicense: '', state: 'NC', county: '', jurisdictionNotes: '', created: new Date().toISOString().slice(0, 10), revision: 'A' },
+    meta: { name: 'New radio site project', number: '', client: '', engineer: '', peLicense: '', state: 'NC', county: 'Buncombe County', city: 'Asheville', jurisdictionNotes: '', created: new Date().toISOString().slice(0, 10), revision: 'A' },
     sites: [
-      { id: 'A', name: 'Site A (TX)', address: '', lat: 35.2271, lon: -80.8431, groundElevM: null, positionSource: 'Manual', positionAccuracyM: null, structure: 'monopole', structureHeightM: 45, antennaAglM: 43, onBuilding: false, nearestAirportKm: null, nearestRunwayFt: null },
-      { id: 'B', name: 'Site B (RX)', address: '', lat: 35.2896, lon: -80.7340, groundElevM: null, positionSource: 'Manual', positionAccuracyM: null, structure: 'monopole', structureHeightM: 30, antennaAglM: 28, onBuilding: false, nearestAirportKm: null, nearestRunwayFt: null },
+      { id: 'A', name: 'Site A (TX)', address: '', lat: 35.5951, lon: -82.5515, groundElevM: null, positionSource: 'Manual', positionAccuracyM: null, structure: 'monopole', structureHeightM: 45, antennaAglM: 43, onBuilding: false, nearestAirportKm: null, nearestRunwayFt: null },
+      { id: 'B', name: 'Site B (RX)', address: '', lat: 35.6400, lon: -82.4800, groundElevM: null, positionSource: 'Manual', positionAccuracyM: null, structure: 'monopole', structureHeightM: 30, antennaAglM: 28, onBuilding: false, nearestAirportKm: null, nearestRunwayFt: null },
     ],
     radio: {
       bandPreset: 'UHF LMR', fMHz: 460, txPowerDbm: 47, txSiteId: 'A', rxSiteId: 'B', txAntennaId: 'sinclair-sc229', rxAntennaId: 'sinclair-sc229', feederId: 'ldf5', feederLenM: 60, jumperLossDb: 0.5, connectorLossDb: 0.3,
@@ -42,7 +42,7 @@ export function defaultProject(): Project {
     },
     grounding: { bondingConductorAwg: '6', bondingConductorLengthM: 5, groundRingAwg: '2', groundRods: 4, rodLengthFt: 8, rodSpacingFt: 16, surgeProtector: true, intersystemBond: true, towerGroundKits: 3, measuredResistanceOhm: null, leadInClearanceToPowerM: 1, lightningProtection: false, ice: true, structureClass: 'II' },
     solar: { enabled: false, loads: [{ name: 'Repeater standby', watts: 40, hoursPerDay: 21.6, qty: 1 }, { name: 'Repeater transmit', watts: 340, hoursPerDay: 2.4, qty: 1 }, { name: 'Site controller / modem', watts: 12, hoursPerDay: 24, qty: 1 }],
-      systemVdc: 24, autonomyDays: 5, depthOfDischarge: 0.5, pshLocation: 'Charlotte, NC', peakSunHours: 3.7, systemDerate: 0.77, batteryTempFactor: 0.9, inverterEff: 1, moduleId: 'rec-400', recordLowC: -15,
+      systemVdc: 24, autonomyDays: 5, depthOfDischarge: 0.5, pshLocation: 'Asheville, NC', peakSunHours: 3.6, systemDerate: 0.77, batteryTempFactor: 0.9, inverterEff: 1, moduleId: 'rec-400', recordLowC: -15,
       controllerMaxVoc: 150, controllerMaxA: 60, arrayToControllerFt: 60, batteryToLoadFt: 10, dwelling: false, rapidShutdown: false, batteryDisconnect: true, batteryChemistry: 'AGM', installedPvAwg: '10', installedBatteryAwg: '4' },
     alarm: { enabled: false, devices: [{ name: 'FACP (addressable)', qty: 1, standbyMa: 180, alarmMa: 320 }, { name: 'Smoke detector', qty: 40, standbyMa: 0.3, alarmMa: 0.3 }, { name: 'Pull station module', qty: 6, standbyMa: 0.4, alarmMa: 0.4 }, { name: 'Horn/strobe 75 cd', qty: 24, standbyMa: 0, alarmMa: 120 }, { name: 'Communicator (cellular)', qty: 1, standbyMa: 60, alarmMa: 150 }],
       standbyHours: 24, alarmMinutes: 5, safetyFactor: 1.2, installedBatteryAh: 18, dedicatedBranchCircuit: true, circuitLockedAndMarked: true, nacLoadA: 1.4, nacOneWayFt: 300, nacAwg: '14', minDeviceV: 16, signalingType: 'addressable', communicatorType: 'cellular' },
