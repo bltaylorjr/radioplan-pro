@@ -15,9 +15,9 @@ export const HELP: HelpTopic[] = [
 **Important:** code citations and calculations are planning aids. A licensed professional engineer and the Authority Having Jurisdiction must verify the design.` },
 
   { id: 'locate', title: 'Find location & auto-plan', page: 'locate', keywords: 'address suggestions autocomplete search address location coordinates lat lon dms view satellite 3d auto plan build plan candidate tower site selection viewshed', summary: 'Type an address or coordinates, view the spot on topo/satellite/3D, and build a complete starting plan in one click.',
-    body: `**Suggestions** appear as you type an address (in the top bar, here, and in the company, client and site address fields): recent places, saved results and project sites work offline; online suggestions come from Photon (OpenStreetMap data). Use ↑ ↓ and Enter, or tap one.
+    body: `**Suggestions** appear as you type an address (on this page and in the company, client and site address fields): recent places, saved results and project sites work offline; online suggestions come from Photon (OpenStreetMap data). Use ↑ ↓ and Enter, or tap one.
 
-**Search** with the box in the top bar or on this page. Accepted: street addresses and place names (needs internet; earlier results are remembered offline), decimal coordinates (35.2271, -80.8431), degrees-minutes-seconds (35°13'37"N 80°50'35"W) or degrees-decimal-minutes (N35 13.627 W80 50.587). You can also click the map.
+**Search** with the box on this page. Accepted: street addresses and place names (needs internet; earlier results are remembered offline), decimal coordinates (35.2271, -80.8431), degrees-minutes-seconds (35°13'37"N 80°50'35"W) or degrees-decimal-minutes (N35 13.627 W80 50.587). You can also click the map.
 
 **View**: topographic, satellite and hybrid maps, ground elevation from the USGS 3DEP point service, and a 3D terrain model around the spot.
 
@@ -391,10 +391,11 @@ Export: Reports page (PDF, Word, Excel, HTML, CSV, KML), Blueprints (PDF, DXF, S
 
 Photos are reduced to 1280 pixels so projects stay small enough to sync. Notes sync between devices like the rest of the project, export to CSV, and print in **Reports → Field Notes & Photos**.` },
 
-  { id: 'projects', title: 'Projects & built-in storage', page: 'projects', keywords: 'save open project library storage autosave history version restore backup data folder usb flash drive offline delete duplicate copy', summary: 'Every project is saved automatically inside the app, with history, terrain and backups. No internet or account needed.',
+  { id: 'projects', title: 'Projects & built-in storage', page: 'projects', keywords: 'save open project library storage autosave history version restore backup data folder usb flash drive offline delete duplicate copy reuse template similar previous project based on', summary: 'Every project is saved automatically inside the app, with history, terrain and backups. No internet or account needed.',
     body: `RadioPlan keeps a **project library inside the app**. Each change saves automatically within a second; the chip in the top bar shows **✓ Saved**.
 
 - **Projects**: open, copy, export or delete any project. **New** starts a fresh project and keeps the current one.
+- **Start a new project from a previous one**: for a similar design and build, press **Reuse** on a project (or pick it in the card), type the new name and tick what to carry over: project type, design, equipment and materials, pricing, drawing settings, your checklist items, and optionally the client, sites and attached files. Field notes, photos, tests, service calls and checklist ticks start empty. The old project is not changed.
 - **Terrain is kept with the project**, so a downloaded or imported elevation model is there next time, even offline.
 - **History**: a version is kept every 10 minutes while you work and whenever you press **Save a version now**. **Restore** goes back to one (the current state is kept first).
 - **Backup**: **Back up all projects** saves one file with every project and its terrain. **Restore from backup** adds them on another PC or phone.

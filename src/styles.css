@@ -246,3 +246,6 @@ label.button { display: inline-flex; align-items: center; gap: 4px; border: 1px 
 .report, .stack > * { min-width: 0; }
 @media screen { .rpt-page { overflow-x: auto; max-width: 100%; } }
 @media (max-width: 600px) { .rpt-head { flex-direction: column; } .rpt-page { padding: 14px; } }
+.keep-list { display: grid; gap: 6px; margin: 4px 0 10px; } .keep-list .check { display: block; } .keep-list .muted { font-size: .8rem; }
+.step-dot.tool { background: transparent; color: var(--muted, #888); }
+.copyright { text-align: center; color: var(--muted, #888); font-size: .8rem; margin: 8px 0 4px; }

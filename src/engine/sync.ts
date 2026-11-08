@@ -27,7 +27,7 @@ export function stampSync(p: Project, device: { id: string; name: string }, now 
   let changed = !p.sync;
   for (const k of Object.keys(p)) {
     if (SKIP.has(k)) continue;
-    const h = fnv(JSON.stringify((p as unknown as Record<string, unknown>)[k]));
+    const h = fnv(JSON.stringify((p as unknown as Record<string, unknown>)[k]) ?? '');
     if (next.sections[k]?.hash !== h) { next.sections[k] = { hash: h, at: now }; changed = true; }
   }
   for (const [path, idOf] of Object.entries(COLLECTIONS)) {

@@ -1,3 +1,10 @@
+# RadioPlan Pro 1.5.3
+
+- Start a new project from a previous one: press **Reuse** on Projects & Storage (or pick the project in the new card), name the new job and tick what to carry over: project type, design, equipment and materials, pricing, drawing settings and your checklist items, and optionally the client, sites and attached files. Field notes, photos, tests, service calls and checklist ticks start empty, and the old project is not changed.
+- The menu's Tools section no longer shows step numbers, and Installation Guides and the Specifications Library are now under Tools.
+- Footer shows "© Bobby Taylor. All rights reserved."
+- The address search box was removed from the top bar; search on Find Location & Auto-Plan.
+
 # RadioPlan Pro 1.5.2
 
 - Code Compliance: one "Codes by state, county and city" picker with three dropdowns replaces the long county and city lists. ★ marks places with their own code list or inspections.

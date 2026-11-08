@@ -16,6 +16,7 @@ import { ReportsPage } from './pages/Reports';
 import { TestingPage } from './pages/Testing';
 import { IndoorPage } from './pages/Indoor';
 import { LocatePage } from './pages/Locate';
+import { APP_VERSION } from './engine/update';
 import { AutoTerrain } from './components/AutoTerrain';
 import { ScenariosPage } from './pages/Scenarios';
 import { NetworkPage } from './pages/Network';
@@ -37,7 +38,6 @@ import { SystemsPage } from './pages/Systems';
 import { ServicePage } from './pages/Service';
 import { AutoDesignPage } from './pages/AutoDesign';
 import { readBackup } from './engine/projectdb';
-import { AddressInput } from './components/AddressInput';
 import { Updater } from './components/Updater';
 import { Welcome } from './components/Welcome';
 const TerrainPage = lazy(() => import('./pages/Terrain'));
@@ -68,23 +68,26 @@ export const WORKFLOW: { id: string; label: string; group: string; el: React.Rea
   { id: 'view3d', label: '3D Model', group: '4 · Planning: radio & RF', el: <View3DPage /> },
   { id: 'lfhf', label: 'LF / HF Systems', group: '4 · Planning: radio & RF', el: <LfHfPage /> },
   { id: 'compliance', label: 'Code Compliance', group: '5 · Planning: codes & materials', el: <CompliancePage /> },
-  { id: 'library', label: 'Specifications Library', group: '5 · Planning: codes & materials', el: <SpecLibraryPage /> },
   { id: 'materials', label: 'Materials List', group: '5 · Planning: codes & materials', el: <MaterialsPage /> },
   { id: 'blueprints', label: 'Blueprints & Drawing Sets', group: '5 · Planning: codes & materials', el: <BlueprintsPage /> },
-  { id: 'install', label: 'Installation Guides', group: '6 · Installation', el: <InstallPage /> },
-  { id: 'testing', label: 'Final Testing', group: '7 · Testing & closeout', el: <TestingPage /> },
-  { id: 'reports', label: 'Reports, Proposals & Closeout', group: '7 · Testing & closeout', el: <ReportsPage /> },
-  { id: 'troubleshoot', label: 'Troubleshooting Wizard', group: '8 · Troubleshooting & repair', el: <TroubleshootPage /> },
-  { id: 'service', label: 'Service & Maintenance', group: '8 · Troubleshooting & repair', el: <ServicePage /> },
-  { id: 'contacts', label: 'Contacts & Web Resources', group: '9 · Tools', el: <ContactsPage /> },
-  { id: 'calculators', label: 'Calculators', group: '9 · Tools', el: <CalculatorsPage /> },
-  { id: 'projects', label: 'Projects & Storage', group: '9 · Tools', el: <ProjectsPage /> },
-  { id: 'sync', label: 'Sync Devices', group: '9 · Tools', el: <SyncPage /> },
+  { id: 'testing', label: 'Final Testing', group: '6 · Testing & closeout', el: <TestingPage /> },
+  { id: 'reports', label: 'Reports, Proposals & Closeout', group: '6 · Testing & closeout', el: <ReportsPage /> },
+  { id: 'troubleshoot', label: 'Troubleshooting Wizard', group: '7 · Troubleshooting & repair', el: <TroubleshootPage /> },
+  { id: 'service', label: 'Service & Maintenance', group: '7 · Troubleshooting & repair', el: <ServicePage /> },
+  { id: 'install', label: 'Installation Guides', group: 'Tools', el: <InstallPage /> },
+  { id: 'library', label: 'Specifications Library', group: 'Tools', el: <SpecLibraryPage /> },
+  { id: 'contacts', label: 'Contacts & Web Resources', group: 'Tools', el: <ContactsPage /> },
+  { id: 'calculators', label: 'Calculators', group: 'Tools', el: <CalculatorsPage /> },
+  { id: 'projects', label: 'Projects & Storage', group: 'Tools', el: <ProjectsPage /> },
+  { id: 'sync', label: 'Sync Devices', group: 'Tools', el: <SyncPage /> },
 ];
+
+/** Step number in the workflow; the Tools pages are not steps and have none. */
+const STEPS = WORKFLOW.filter((w) => w.group !== 'Tools');
+const stepNo = (w: { id: string }) => { const i = STEPS.findIndex((x) => x.id === w.id); return i < 0 ? null : i + 1; };
 
 export default function App() {
   const { page, go, project, update, rt, setRt, lib } = useStore();
-  const [q, setQ] = useState('');
   const [online, setOnline] = useState(typeof navigator === 'undefined' ? true : navigator.onLine);
   useEffect(() => { const on = () => setOnline(true), off = () => setOnline(false); window.addEventListener('online', on); window.addEventListener('offline', off); return () => { window.removeEventListener('online', on); window.removeEventListener('offline', off); }; }, []);
   const [helpOpen, setHelpOpen] = useState(false);
@@ -120,9 +123,6 @@ export default function App() {
       <header className="topbar">
         <button className="ghost menu" onClick={() => setNavOpen(!navOpen)} aria-label="Menu">☰</button>
         <div className="brand" title="Low-voltage and radio system planning"><span className="logo">◉</span> RadioPlan <b>Pro</b></div>
-        <form className="topsearch" onSubmit={(e) => { e.preventDefault(); if (!q.trim()) return; setRt((r) => ({ ...r, query: q, locate: null })); if (page === 'locate') { go('company'); setTimeout(() => go('locate'), 0); } else go('locate'); }}>
-          <AddressInput value={q} onChange={setQ} onPick={(g) => { setRt((r) => ({ ...r, query: g.label, locate: g })); go('locate'); }} placeholder="🔎 Address, place or lat, lon" ariaLabel="Search location" />
-        </form>
         <span className={'chip ' + (online ? 'on' : 'off')} title={online ? 'Online: maps and terrain download automatically and are cached' : 'Offline: using cached maps and terrain'}>{online ? '● Online' : '○ Offline'}</span>
         {rt.terrainStatus && <span className="chip terr" title="Automatic terrain">{rt.terrainStatus}</span>}
         {rt.mapStatus && <span className="chip terr" title="Automatic offline maps">{rt.mapStatus}</span>}
@@ -142,7 +142,7 @@ export default function App() {
             <div className="nav-group-title">{g}</div>
             {WORKFLOW.filter((w) => w.group === g).map((w) => (
               <a key={w.id} href={`#${w.id}`} className={w.id === current?.id ? 'active' : ''} onClick={(e) => { e.preventDefault(); go(w.id); }}>
-                {(() => { const cl = checklistFor(w.id), pr = cl && progressOf(cl, project), full = !!pr && pr.total > 0 && pr.done === pr.total; return <span className={'step-dot' + (full ? ' done' : '')} title={pr ? `${pr.done} of ${pr.total} checklist items done` : undefined}>{full ? '✓' : WORKFLOW.indexOf(w) + 1}</span>; })()}
+                {(() => { const cl = checklistFor(w.id), pr = cl && progressOf(cl, project), full = !!pr && pr.total > 0 && pr.done === pr.total; return <span className={'step-dot' + (full ? ' done' : '') + (stepNo(w) ? '' : ' tool')} title={pr ? `${pr.done} of ${pr.total} checklist items done` : undefined}>{full ? '✓' : stepNo(w) ?? '•'}</span>; })()}
                 {w.label}
                 {w.id === 'compliance' && nViol > 0 && <span className="pill bad">{nViol}</span>}
               </a>
@@ -158,11 +158,11 @@ export default function App() {
         {isHelp ? <HelpManual initial={page.split('/')[1]} /> : current && (
           <>
             <div className="page-head">
-              <div><div className="crumb">Step {idx + 1} of {WORKFLOW.length} · {current.group}</div><h1>{current.label}</h1></div>
+              <div><div className="crumb">{stepNo(current) ? `Step ${stepNo(current)} of ${STEPS.length} · ${current.group}` : current.group}</div><h1>{current.label}</h1></div>
               <div className="row wrap page-nav">
                 <button disabled={idx <= 0} onClick={() => go(WORKFLOW[idx - 1].id)} aria-label="Previous page" title={WORKFLOW[idx - 1]?.label}>←</button>
                 <select value={current.id} onChange={(e) => go(e.target.value)} aria-label="Go to page">
-                  {groups.map((g) => <optgroup key={g} label={g}>{WORKFLOW.filter((w) => w.group === g).map((w) => <option key={w.id} value={w.id}>{WORKFLOW.indexOf(w) + 1}. {w.label}</option>)}</optgroup>)}
+                  {groups.map((g) => <optgroup key={g} label={g}>{WORKFLOW.filter((w) => w.group === g).map((w) => <option key={w.id} value={w.id}>{stepNo(w) ? `${stepNo(w)}. ` : ''}{w.label}</option>)}</optgroup>)}
                 </select>
                 <button disabled={idx >= WORKFLOW.length - 1} onClick={() => go(WORKFLOW[idx + 1].id)} aria-label="Next page" title={WORKFLOW[idx + 1]?.label}>→</button>
                 {topic.tour && <button onClick={() => setTour(true)} data-tour-btn>▶ Guide me</button>}
@@ -178,6 +178,7 @@ export default function App() {
             <p className="disclaimer">Planning aid only. Calculations and code citations must be verified by a licensed professional and the Authority Having Jurisdiction.</p>
           </>
         )}
+        <p className="copyright no-print">© {new Date().getFullYear()} Bobby Taylor. All rights reserved. · RadioPlan Pro {APP_VERSION}</p>
       </main>
       {helpOpen && !isHelp && <HelpPanel topic={topic} onClose={() => setHelpOpen(false)} onTour={topic.tour ? () => { setHelpOpen(false); setTour(true); } : undefined} />}
       {tour && topic.tour && <Tour steps={topic.tour} onClose={() => setTour(false)} />}

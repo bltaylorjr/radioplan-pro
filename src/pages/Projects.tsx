@@ -1,4 +1,6 @@
 import { ImportFiles } from '../components/ImportFiles';
+import { KEEP_GROUPS, defaultKeep, projectFromTemplate } from '../engine/template';
+import { defaultProject } from '../defaults';
 import React, { useEffect, useState } from 'react';
 import { useStore, downloadText, safeName } from '../store';
 import { Card, Stat } from '../components/ui';
@@ -33,6 +35,18 @@ export function ProjectsPage() {
   const place = storagePlace();
   const ref = refCounts();
   const [autoUp, setAutoUp] = useState(autoUpdateOn());
+  const [tplFrom, setTplFrom] = useState('');
+  const [tplName, setTplName] = useState('');
+  const [tplNo, setTplNo] = useState('');
+  const [keep, setKeep] = useState(defaultKeep);
+  const startFrom = (id: string) => { setTplFrom(id); const n = list.find((x) => x.id === id)?.name ?? ''; setTplName(n ? `${n} (new)` : ''); document.getElementById('from-previous')?.scrollIntoView({ behavior: 'smooth' }); };
+  const createFromTemplate = () => act('New project from previous', async () => {
+    const src = tplFrom === lib.projectId ? project : (await getRecord(tplFrom))?.project; if (!src) throw new Error('Pick a previous project first');
+    const np = projectFromTemplate(src, defaultProject(), { name: tplName, number: tplNo, keep });
+    await lib.newProject(np, np.meta.name, keep.sites ? tplFrom : undefined);
+    setTplFrom(''); setTplName(''); setTplNo('');
+    return `"${np.meta.name}" is open and ready to edit. The previous project is unchanged.${keep.sites ? '' : ' Enter the new site address on Company & Project.'}`;
+  });
 
   useEffect(() => {
     if (lib.saveState === 'unavailable') return;
@@ -106,6 +120,7 @@ export function ProjectsPage() {
               <td>{when(p.updated)}</td><td>{fmtBytes(p.bytes)}</td>
               <td className="row" style={{ flexWrap: 'nowrap' }}>
                 {p.id !== lib.projectId && <button disabled={busy} onClick={() => act('Open', () => lib.openProject(p.id))}>Open</button>}
+                <button disabled={busy} title="Start a new project based on this one" onClick={() => startFrom(p.id)}>Reuse</button>
                 <button disabled={busy} title="Make a copy" onClick={() => act('Duplicate', async () => { const r = await getRecord(p.id); await lib.newProject(p.id === lib.projectId ? project : r!.project, `${p.name} (copy)`, p.id); })}>Copy</button>
                 <button disabled={busy} title="Save as a file" onClick={() => exportOne(p.id)}>Export</button>
                 {p.id !== lib.projectId && <button disabled={busy} className="danger" onClick={() => { if (confirm(`Delete "${p.name}" and its history from this device? This cannot be undone.`)) act('Delete', () => lib.removeProject(p.id)); }}>Delete</button>}
@@ -116,6 +131,24 @@ export function ProjectsPage() {
         {msg && <p className="muted" role="status">{msg}</p>}
       </Card>
 
+
+      <Card title="Start a new project from a previous one" className="wide" tip="For a similar design and build: keeps the design, equipment and pricing, and starts a clean record for the new job (no field notes, photos, test results, service calls or checklist ticks).">
+        <div id="from-previous" className="row wrap">
+          <label className="field">Previous project
+            <select value={tplFrom} onChange={(e) => startFrom(e.target.value)}>
+              <option value="">Choose a project…</option>
+              {list.map((p) => <option key={p.id} value={p.id}>{p.id === lib.projectId ? project.meta.name || p.name : p.name}{p.number ? ` (${p.number})` : ''}{p.client ? ` · ${p.client}` : ''}</option>)}
+            </select></label>
+          <label className="field">New project name<input value={tplName} onChange={(e) => setTplName(e.target.value)} placeholder="e.g. Mission Hospital, building B" /></label>
+          <label className="field">Project number<input value={tplNo} onChange={(e) => setTplNo(e.target.value)} placeholder="optional" /></label>
+        </div>
+        <p className="muted">Carry over:</p>
+        <div className="keep-list">{KEEP_GROUPS.map((g) => (
+          <label key={g.id} className="check"><input type="checkbox" checked={!!keep[g.id]} onChange={(e) => setKeep({ ...keep, [g.id]: e.target.checked })} /> <b>{g.label}</b> <span className="muted">{g.detail}</span></label>))}
+        </div>
+        <p className="muted">Always starts empty: field notes and photos, test results, service calls, maintenance dates, checklist ticks and drawing revisions. Everything in the new project can be edited.</p>
+        <button className="primary" disabled={busy || !tplFrom} onClick={createFromTemplate}>Create the new project</button>
+      </Card>
       <Card title="History of this project" tip="A version is kept every 10 minutes while you work, before each restore, and when you press Save a version now. The newest 25 are kept.">
         {versions.length === 0 ? <p className="muted">No earlier versions yet.</p> : (
           <div className="tbl-wrap"><table className="tbl"><thead><tr><th>Saved</th><th>Why</th><th>Name</th><th></th></tr></thead>
