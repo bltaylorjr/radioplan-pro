@@ -1,3 +1,7 @@
+# LvPlan Pro 1.5.26
+
+- **Delete a project** from Projects & Storage, including the one that is open. A clear in-app box asks you to confirm first (Yes, delete it / No, keep it); after deleting the open project, the most recent other project opens.
+
 # LvPlan Pro 1.5.25
 
 - Introduction video: new background music in an '80s hard-rock style (original track: power-chord guitars, driving drums and bass, synth brass and tapped-guitar fills), kept under the narration.

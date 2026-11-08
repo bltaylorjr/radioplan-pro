@@ -419,7 +419,9 @@ Photos are reduced to 1280 pixels so projects stay small enough to sync. Notes s
 - **Copy address / Copy GPS** to paste into a text or another app.
 - Offline, the map uses saved tiles; directions need internet.` },
   { id: 'projects', title: 'Projects & built-in storage', page: 'projects', keywords: 'save open project library storage autosave history version restore backup data folder usb flash drive offline delete duplicate copy reuse template similar previous project based on', summary: 'Every project is saved automatically inside the app, with history, terrain and backups. No internet or account needed.',
-    body: `LvPlan keeps a **project library inside the app**. Each change saves automatically within a second; the chip in the top bar shows **✓ Saved**.
+    body: `**Delete** removes a project and its history from this device. You are always asked to confirm first (Yes, delete it / No, keep it); you can delete the open project too, and the most recent other project opens instead. Press **Export** first if you want a backup file.
+
+LvPlan keeps a **project library inside the app**. Each change saves automatically within a second; the chip in the top bar shows **✓ Saved**.
 
 - **Projects**: open, copy, export or delete any project. **New** starts a fresh project and keeps the current one.
 - **Start a new project from a previous one**: for a similar design and build, press **Reuse** on a project (or pick it in the card), type the new name and tick what to carry over: project type, design, equipment and materials, pricing, drawing settings, your checklist items, and optionally the client, sites and attached files. Field notes, photos, tests, service calls and checklist ticks start empty. The old project is not changed.

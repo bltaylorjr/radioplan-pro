@@ -8,7 +8,7 @@ import type { DemGrid, ProfileAnalysis } from './engine/terrain';
 import type { CoverageResult } from './engine/coverage';
 import { stampSync } from './engine/sync';
 import { registerCustom } from './data/catalog';
-import { addVersion, BackupEntry, deleteProject, folderAllowed, folderCopySupported, getRecord, getVersion, importEntries, loadTerrain, newId, putProject, requestPersist, saveTerrain, savedDataFolder, storageAvailable, VERSION_EVERY_MS, writeToFolder } from './engine/projectdb';
+import { addVersion, BackupEntry, deleteProject, listProjects, folderAllowed, folderCopySupported, getRecord, getVersion, importEntries, loadTerrain, newId, putProject, requestPersist, saveTerrain, savedDataFolder, storageAvailable, VERSION_EVERY_MS, writeToFolder } from './engine/projectdb';
 
 const KEY = 'radioplan.project.v1';
 const CUR = 'radioplan.currentId';
@@ -134,7 +134,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       setRtState({ dem, demAuto: dem ? dem.auto !== false : false, profile: null, coverage: null, terrainStatus: dem ? 'Terrain ✓ (saved with project)' : undefined });
       setLibVersion((v) => v + 1);
     };
-    return {
+    const api: Library = {
       projectId, saveState, saveError, libVersion,
       bump: () => setLibVersion((v) => v + 1),
       saveNow: async (reason = 'Saved by user') => { const c = live.current; await putProject(c.projectId, c.project); await addVersion(c.projectId, c.project, reason); lastVersion.current = Date.now(); setSaveState('saved'); setLibVersion((v) => v + 1); },
@@ -154,8 +154,16 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         const c = live.current; await addVersion(c.projectId, c.project, 'Before restoring an earlier version');
         setProject(fresh(v.project)); setLibVersion((x) => x + 1);
       },
-      removeProject: async (id) => { if (id === live.current.projectId) throw new Error('Open another project before deleting this one'); await deleteProject(id); setLibVersion((v) => v + 1); },
+      removeProject: async (id) => {
+        if (id === live.current.projectId) {
+          // Deleting the open project: switch to the most recently saved other project, or a new blank one.
+          const others = (await listProjects()).filter((x) => x.id !== id);
+          if (others.length) await api.openProject(others[0].id); else await api.newProject(undefined, 'New project');
+        }
+        await deleteProject(id); setLibVersion((v) => v + 1);
+      },
     };
+    return api;
   }, [projectId, saveState, saveError, libVersion]);
 
   const v = useMemo<Ctx>(() => ({

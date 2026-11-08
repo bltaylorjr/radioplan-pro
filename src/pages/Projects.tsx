@@ -1,6 +1,7 @@
 import { ImportFiles } from '../components/ImportFiles';
 import { KEEP_GROUPS, defaultKeep, projectFromTemplate } from '../engine/template';
 import { defaultProject } from '../defaults';
+import { askConfirm } from '../components/askConfirm';
 import React, { useEffect, useState } from 'react';
 import { useStore, downloadText, safeName } from '../store';
 import { Card, Stat } from '../components/ui';
@@ -123,7 +124,12 @@ export function ProjectsPage() {
                 <button disabled={busy} title="Start a new project based on this one" onClick={() => startFrom(p.id)}>Reuse</button>
                 <button disabled={busy} title="Make a copy" onClick={() => act('Duplicate', async () => { const r = await getRecord(p.id); await lib.newProject(p.id === lib.projectId ? project : r!.project, `${p.name} (copy)`, p.id); })}>Copy</button>
                 <button disabled={busy} title="Save as a file" onClick={() => exportOne(p.id)}>Export</button>
-                {p.id !== lib.projectId && <button disabled={busy} className="danger" onClick={() => { if (confirm(`Delete "${p.name}" and its history from this device? This cannot be undone.`)) act('Delete', () => lib.removeProject(p.id)); }}>Delete</button>}
+                <button disabled={busy} className="danger" title="Delete this project from this device" onClick={async () => {
+                  const open_ = p.id === lib.projectId, nm = (open_ ? project.meta.name : p.name) || 'this project';
+                  const yes = await askConfirm({ title: 'Delete project?', danger: true, ok: 'Yes, delete it', cancel: 'No, keep it',
+                    message: <>Delete <b>“{nm}”</b> and its saved history from this device? This cannot be undone.{open_ && <><br /><br />It is the project that is open now, so the most recent other project opens instead (or a new blank one).</>}<br /><br /><span className="small muted">Tip: press Export first if you want a backup file.</span></> });
+                  if (yes) act('Delete', () => lib.removeProject(p.id));
+                }}>Delete</button>
               </td>
             </tr>))}
           </tbody>
