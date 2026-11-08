@@ -324,7 +324,9 @@ Distances and lengths follow **Measurements** on Company & Project: Imperial (ft
 No RadioPlan server or account is involved; data moves only between your devices or through your own cloud drive.` },
 
   { id: 'library', title: 'Specifications library', page: 'library', keywords: 'specifications specs datasheet library equipment catalog low voltage antenna coax cable connector bda das fire alarm battery solar wifi poe cat6 fiber conductor compare import csv', summary: 'Search, compare and add specifications for low-voltage and radio equipment.',
-    body: `The library holds three kinds of entries:
+    body: `**Manufacturer recommendations:** each item shows the installation, wiring, environment and maintenance points manufacturers in that category commonly state, and your own items can carry the model's exact recommendations (Edit → one per line, from the installation manual).
+
+The library holds three kinds of entries:
 
 - **Typical**: products from the built-in equipment catalog with typical datasheet values.
 - **Standard**: values set by a published standard (PoE classes, cable categories, fiber types, Wi-Fi generations, RF connectors, public-safety band plans, conductor ampacity).
@@ -337,7 +339,9 @@ Always confirm values against the current manufacturer datasheet before ordering
 **Datasheets offline:** open an item and use **Save datasheet for offline** (when it has a datasheet link) or **Find datasheet online**, save the PDF, then **Attach saved PDF**. The PDF is kept inside the app and opens with **Open saved datasheet** without internet. It is included in backups.` },
 
   { id: 'install', title: 'Installation guides', page: 'install', keywords: 'install installation instructions wiring diagram color antenna coax grounding repeater battery erces bda das fire alarm nac solar poe cat6 t568b access point', summary: 'Step-by-step installation instructions with color wiring diagrams.',
-    body: `Each guide has a color wiring diagram, tools, safety notes, numbered steps, tests for closeout and the code articles that apply. Diagrams use the antenna and coax chosen in this project where possible. Press **Print** for a copy for the crew.
+    body: `Pick a guide from the **Choose a guide** dropdown; guides for this project's systems are listed first. Sections fold open and closed to save scrolling; **Print** prints the whole guide.
+
+Each guide has a color wiring diagram, tools, safety notes, numbered steps, tests for closeout and the code articles that apply. Diagrams use the antenna and coax chosen in this project where possible. Press **Print** for a copy for the crew.
 
 Guides: antenna feedline and grounding; repeater RF and DC power; ERCES / BDA and DAS with fire alarm monitoring; fire alarm NAC circuit; off-grid solar; network cable, PoE and Wi-Fi access point (with T568B colors).
 

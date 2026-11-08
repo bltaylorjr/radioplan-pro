@@ -41,3 +41,17 @@ describe('imperial / metric', () => {
     expect(distUnits('mi').len(10)).toBe('32.8 ft'); expect(distUnits('km').lenFt(100)).toBe('30.5 m');
   });
 });
+import { placeFromText, countyOfTown } from '../src/compliance/place';
+import { repairProject } from '../src/engine/repair';
+describe('place from city, ZIP or address', () => {
+  it('finds Buncombe County for Asheville', () => {
+    expect(countyOfTown('Asheville', 'NC')).toBe('Buncombe County');
+    expect(placeFromText('28801')).toMatchObject({ state: 'NC', county: 'Buncombe County', city: 'Asheville' });
+    expect(placeFromText('161 S. Charlotte Street, Asheville, NC 28801')?.county).toBe('Buncombe County');
+    expect(placeFromText('Asheville, NC')?.county).toBe('Buncombe County');
+  });
+  it('repairs a project whose county does not match its city', () => {
+    const p = defaultProject(); p.meta.county = 'Mecklenburg County'; p.meta.city = 'Asheville';
+    expect(repairProject(p).project.meta.county).toBe('Buncombe County');
+  });
+});

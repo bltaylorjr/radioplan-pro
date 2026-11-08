@@ -44,7 +44,8 @@ export function ContactsPage() {
   const [edit, setEdit] = useState<{ type: 'contact'; v: Mine<Contact> } | { type: 'resource'; v: Mine<Resource> } | null>(null);
   const state = st === 'mine' ? here.state : st;
   const counties = useMemo(() => allCounties().filter((c) => c.state === state), [state]);
-  const cities = useMemo(() => citiesIn(state).filter((c) => !county || c.county === county), [state, county]);
+  // The county's towns first, then every other town in the state; picking one sets its county.
+  const cities = useMemo(() => { const all = citiesIn(state); return county ? [...all.filter((c) => c.county === county), ...all.filter((c) => c.county !== county)] : all; }, [state, county]);
   const contacts = mergeMine(CONTACTS, cs.mine, cs.hidden), resources = mergeMine(RESOURCES, rs.mine, rs.hidden);
   const shownC = st === 'mine' ? contacts.filter((c) => c.mine) : atPlace(contacts, state, county || undefined, city || undefined);
   const shownR = st === 'mine' ? resources.filter((r) => r.mine) : atPlace(resources, state, county || undefined, city || undefined);
@@ -79,7 +80,7 @@ export function ContactsPage() {
           {st !== 'mine' && <label className="field"><span>County</span>
             <select value={county} onChange={(e) => { setCounty(e.target.value); setCity(''); }} aria-label="County"><option value="">— all of {CODE_SETS[state].name} —</option>{counties.map((c) => <option key={c.fips} value={c.county}>{c.county}</option>)}</select></label>}
           {st !== 'mine' && <label className="field"><span>City or town</span>
-            <select value={city} onChange={(e) => { const c = cities.find((x) => x.city === e.target.value); setCity(e.target.value); if (c && !county) setCounty(c.county); }} aria-label="City"><option value="">— none (county or state) —</option>{cities.map((c) => <option key={c.city + c.county} value={c.city}>{c.city}{county ? '' : ` (${c.county})`}</option>)}</select></label>}
+            <select value={city} onChange={(e) => { const c = cities.find((x) => x.city === e.target.value); setCity(e.target.value); if (c?.county) setCounty(c.county); }} aria-label="City"><option value="">— none (county or state) —</option>{cities.map((c) => <option key={c.city + c.county} value={c.city}>{c.city}{county && c.county === county ? '' : ` (${c.county})`}</option>)}</select></label>}
         </div>
         {mismatch && <p className="note">The project is set to <b>{[p.meta.city, p.meta.county, CODE_SETS[p.meta.state].name].filter(Boolean).join(', ')}</b>, but {s0!.name || 'the first site'} is in <b>{[posCity, mismatch.county, CODE_SETS[mismatch.state as StateCode].name].filter(Boolean).join(', ')}</b>. <button className="primary" onClick={fixPlace}>Use the site’s location</button> <button className="ghost" onClick={() => go('company')}>Change on Company & Project</button></p>}
         <div className="row wrap"><h3 style={{ margin: 0 }}>📍 {st === 'mine' ? where : <span className="place-links">

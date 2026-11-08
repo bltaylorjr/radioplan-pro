@@ -14,7 +14,7 @@ export interface ProjectMeta {
   /** Client / customer company (meta.client holds its name). */
   clientContact?: string; clientAddress?: string; clientCity?: string; clientState?: string; clientZip?: string; clientPhone?: string; clientEmail?: string;
   /** Project site address (where the work is). */
-  siteAddress?: string; poNumber?: string;
+  siteAddress?: string; siteZip?: string; poNumber?: string;
   /** City or town of the project site (from the address); used to pick local codes. */
   city?: string;
   /** Main system type (see data/systems.ts) and other systems on the same job. */

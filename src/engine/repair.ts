@@ -2,6 +2,7 @@
 // so an old, partly-synced or hand-edited project file always opens.
 import type { Project } from '../types';
 import { defaultProject } from '../defaults';
+import { countyOfTown } from '../compliance/place';
 
 const isObj = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
 const LISTS = ['tests', 'runLog', 'scenarios', 'fieldNotes', 'serviceLog', 'bomExtra', 'documents', 'proposal'] as const;
@@ -52,5 +53,8 @@ export function repairProject(input: unknown): { project: Project; fixes: string
     const arr = out[k]; if (!Array.isArray(arr)) continue; const ids = new Set<string>();
     out[k] = arr.filter(isObj).map((x) => { let id = String(x.id ?? ''); if (!id || ids.has(id)) { id = Math.random().toString(36).slice(2, 10); fixes.push(`A ${k} entry had a duplicate id; fixed`); } ids.add(id); return { ...x, id }; });
   }
+  // The county must be the one the project's city is in (an older default paired Asheville with Mecklenburg County).
+  const meta = out.meta as { state?: string; county?: string; city?: string } | undefined;
+  if (meta?.city && meta.state) { const c = countyOfTown(meta.city, meta.state); if (c && c !== meta.county) { fixes.push(`County corrected to ${c} for ${meta.city}`); out.meta = { ...meta, county: c }; } }
   return { project: out as unknown as Project, fixes: [...new Set(fixes)] };
 }

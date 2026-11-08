@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useStore } from '../store';
 import { Card } from '../components/ui';
+import { projectSystems } from '../data/systems';
 import { ANTENNAS, FEEDERS, byId } from '../data/catalog';
 
 // Wire colors used in every diagram (and the legend).
@@ -218,24 +219,28 @@ export const GUIDES_FOR: Record<string, string[]> = { firealarm: ['nac'], massno
 
 export function InstallPage() {
   const { project: p } = useStore();
-  const [open, setOpen] = useState(GUIDES[0].id);
+  const mine = [...new Set(projectSystems(p.meta).flatMap((sy) => GUIDES_FOR[sy.id] ?? []))].filter((id) => GUIDES.some((x) => x.id === id));
+  const [open, setOpen] = useState(mine[0] ?? GUIDES[0].id);
   const ant = byId(ANTENNAS, p.radio.txAntennaId), fd = byId(FEEDERS, p.radio.feederId);
   const ctx: Ctx = { ant: ant ? ant.model.slice(0, 28) : 'per plan', feeder: fd ? fd.model : 'Feedline per plan', battAh: p.alarm ? 'size per battery calc' : 'per plan' };
-  const g = GUIDES.find((x) => x.id === open)!;
+  const g = GUIDES.find((x) => x.id === open) ?? GUIDES[0];
+  const others = GUIDES.filter((x) => !mine.includes(x.id));
   return (
     <div className="grid">
-      <Card title="Installation guides" className="wide" tip="Step-by-step installation with color wiring diagrams. Labels use the equipment chosen in this project where available. Print any guide for the field crew.">
-        <div className="chips" role="tablist">{GUIDES.map((x) => <button key={x.id} role="tab" aria-selected={open === x.id} className={'chip-btn' + (open === x.id ? ' on' : '')} onClick={() => setOpen(x.id)}>{x.title}</button>)}</div>
-      </Card>
-      <Card title={g.title} className="wide install" actions={<button onClick={() => window.print()}>Print</button>}>
+      <Card title="Installation guide" className="wide install" tip="Step-by-step installation with color wiring diagrams. Labels use the equipment chosen in this project where available. Print any guide for the field crew." actions={<button onClick={() => { document.querySelectorAll('.install details').forEach((d) => d.setAttribute('open', '')); setTimeout(() => window.print(), 50); }}>Print</button>}>
+        <label className="field no-print" style={{ maxWidth: 520 }}><span>Choose a guide ({GUIDES.length})</span>
+          <select value={g.id} onChange={(e) => setOpen(e.target.value)} aria-label="Installation guide">
+            {mine.length > 0 && <optgroup label="For this project">{mine.map((id) => <option key={id} value={id}>{GUIDES.find((x) => x.id === id)!.title}</option>)}</optgroup>}
+            <optgroup label={mine.length ? 'Other guides' : 'All guides'}>{others.map((x) => <option key={x.id} value={x.id}>{x.title}</option>)}</optgroup>
+          </select></label>
+        <h3 style={{ margin: '12px 0 4px' }}>{g.title}</h3>
         <p className="muted">{g.applies}</p>
-        {g.diagram(ctx)}
-        <div className="install-cols">
-          <div><h4>Before you start</h4><ul>{g.tools.map((t) => <li key={t}>{t}</li>)}</ul>
-            <h4 className="warn-h">⚠ Safety</h4><ul>{g.safety.map((t) => <li key={t}>{t}</li>)}</ul></div>
-          <div><h4>Steps</h4><ol className="steps">{g.steps.map((t) => <li key={t}>{t}</li>)}</ol></div>
-        </div>
-        <h4>Test and close out</h4><ul>{g.test.map((t) => <li key={t}>{t}</li>)}</ul>
+        <details open><summary>Wiring diagram</summary>{g.diagram(ctx)}</details>
+        <details><summary>Before you start: tools and safety ({g.tools.length + g.safety.length})</summary>
+          <h4>Tools and materials</h4><ul>{g.tools.map((t) => <li key={t}>{t}</li>)}</ul>
+          <h4 className="warn-h">⚠ Safety</h4><ul>{g.safety.map((t) => <li key={t}>{t}</li>)}</ul></details>
+        <details open><summary>Steps ({g.steps.length})</summary><ol className="steps">{g.steps.map((t) => <li key={t}>{t}</li>)}</ol></details>
+        <details><summary>Test and close out ({g.test.length})</summary><ul>{g.test.map((t) => <li key={t}>{t}</li>)}</ul></details>
         <p className="small"><b>Code references:</b> {g.codes.join(' · ')}</p>
         <p className="small muted">General guidance for planning and training. Follow the manufacturer’s instructions, the approved drawings and the adopted codes; a licensed professional and the Authority Having Jurisdiction must verify the installation.</p>
       </Card>

@@ -1,4 +1,16 @@
 import { Datasheet } from '../components/Datasheet';
+import { recsFor } from '../data/mfrrecs';
+
+/** Manufacturer recommendations: the model's own list, then the category's general points. */
+function MfrRecs({ item }: { item: SpecItem }) {
+  const { own, general } = recsFor(item);
+  if (!own.length && !general.length) return null;
+  return <div className="mfr-recs"><h4>Manufacturer recommendations</h4>
+    {own.length > 0 && <><p className="small muted">For this model{item.kind === 'My item' ? ' (you entered these)' : ''}:</p><ul>{own.map((r) => <li key={r}>{r}</li>)}</ul></>}
+    {general.map((g) => <details key={g.title} open={!own.length}><summary>{g.title} <span className="small muted">({g.items.length})</span></summary><ul>{g.items.map((r) => <li key={r}>{r}</li>)}</ul></details>)}
+    {general.length > 0 && <p className="small muted">General points that {item.category.toLowerCase()} manufacturers commonly state. The installation manual and datasheet for this exact model govern{item.kind === 'My item' ? '' : '; use Copy to my library to add the model’s own points'}.</p>}
+  </div>;
+}
 import React, { useEffect, useMemo, useState } from 'react';
 import { useStore, downloadText } from '../store';
 import { Card } from '../components/ui';
@@ -73,6 +85,7 @@ function Editor({ item, onSave, onCancel }: { item: SpecItem; onSave: (i: SpecIt
         <label className="field"><span>Model</span><input value={d.model} onChange={(e) => setD({ ...d, model: e.target.value })} /></label>
         <label className="field wide"><span>Datasheet link</span><input value={d.datasheet ?? ''} placeholder="https://…" onChange={(e) => setD({ ...d, datasheet: e.target.value })} /></label>
         <label className="field wide"><span>Notes</span><input value={d.notes ?? ''} onChange={(e) => setD({ ...d, notes: e.target.value })} /></label>
+        <label className="field wide"><span>Manufacturer recommendations (one per line, from the installation manual or datasheet)</span><textarea rows={4} value={(d.recommendations ?? []).join('\n')} onChange={(e) => setD({ ...d, recommendations: e.target.value.split('\n') })} onBlur={() => setD({ ...d, recommendations: (d.recommendations ?? []).map((x) => x.trim()).filter(Boolean) })} /></label>
       </div>
       <h4>Specifications</h4>
       <div className="tbl-wrap"><table className="tbl"><tbody>
@@ -183,6 +196,7 @@ export function SpecLibraryPage() {
         <p className="muted small">{item.category}{item.sub ? ` · ${item.sub}` : ''} · {item.origin ? 'Loaded from project' : item.kind}{item.reference ? ` · ${item.reference}` : ''}{item.projects?.length ? ` · Used in: ${item.projects.join(', ')}` : ''}</p>
         <table className="tbl"><tbody>{Object.entries(item.specs).map(([k, v]) => <tr key={k}><th style={{ width: '45%' }}>{k}</th><td>{String(v)}</td></tr>)}</tbody></table>
         {item.notes && <p className="note">{item.notes}</p>}
+        <MfrRecs item={item} />
         <Datasheet item={item} searchUrl={searchUrl(item)} />
         {item.kind !== 'Standard' && <p className="small muted">{item.kind === 'Product (typical)' ? 'Typical values for planning. Confirm the current manufacturer datasheet before ordering.' : 'Entered by you.'}</p>}
       </Card>}

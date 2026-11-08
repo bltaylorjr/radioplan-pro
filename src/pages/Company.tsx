@@ -8,7 +8,7 @@ import { JurisdictionInfo } from '../components/JurisdictionInfo';
 import type { StateCode } from '../types';
 import { uid } from '../defaults';
 import { AddressInput } from '../components/AddressInput';
-import { applyAddress } from '../compliance/place';
+import { applyAddress, placeFromText } from '../compliance/place';
 import { CodesHere } from '../components/CodesHere';
 import { ProjectTypePicker } from '../components/SystemsUI';
 
@@ -19,6 +19,8 @@ export function CompanyPage() {
   const [results, setResults] = useState<GeoResult[]>([]);
   const [err, setErr] = useState('');
   const setC = (k: keyof typeof c) => (v: string) => update((d) => { (d.company as unknown as Record<string, string>)[k] = v; });
+  /** Fill state, county and city from a ZIP, a town name or an address (built-in data, offline). */
+  const fillPlace = (text: string, keepCity = false) => { const pl = placeFromText(text, m.state); if (!pl) return; update((d) => { d.meta.state = pl.state; if (pl.county) d.meta.county = pl.county; if (pl.city && !keepCity) d.meta.city = pl.city; }); };
   const setM = (k: keyof typeof m) => (v: string) => update((d) => { (d.meta as unknown as Record<string, string>)[k] = v; });
   const fullAddr = [c.address, c.city, c.state, c.zip].filter(Boolean).join(', ');
   const find = async () => {
@@ -52,14 +54,15 @@ export function CompanyPage() {
         <div className="form">
           <Field label="Project number"><Txt value={m.number} onChange={setM('number')} /></Field>
           <Field label="Client PO / contract #"><Txt value={m.poNumber ?? ''} onChange={setM('poNumber')} /></Field>
-          <Field label="Project site address" wide tip="Where the work is. Use the Find Location page to turn it into GPS coordinates."><AddressInput value={m.siteAddress ?? ''} onChange={setM('siteAddress')} onPick={(g) => update((d) => applyAddress(d, g))} /></Field>
+          <Field label="Project site address" wide tip="Where the work is. Use the Find Location page to turn it into GPS coordinates."><span onBlur={() => fillPlace(m.siteAddress ?? '')}><AddressInput value={m.siteAddress ?? ''} onChange={setM('siteAddress')} onPick={(g) => update((d) => applyAddress(d, g))} /></span></Field>
+          <Field label="Site ZIP code" tip="Fills the state, county and city."><input type="text" inputMode="numeric" maxLength={10} value={m.siteZip ?? ''} onChange={(e) => { const z = e.target.value; setM('siteZip')(z); if (/^\d{5}$/.test(z)) fillPlace(z); }} /></Field>
           <Field label="Revision"><Txt value={m.revision} onChange={setM('revision')} /></Field>
           <Field label="Engineer of record"><Txt value={m.engineer} onChange={setM('engineer')} /></Field>
           <Field label="PE license #"><Txt value={m.peLicense} onChange={setM('peLicense')} /></Field>
           <Field label="Project state (code set)" topic="compliance"><Sel<StateCode> value={m.state} onChange={(v) => update((d) => { d.meta.state = v; })} options={[['NC', 'North Carolina'], ['SC', 'South Carolina'], ['GA', 'Georgia'], ['TN', 'Tennessee']]} /></Field>
           <Field label="Measurements" tip="Imperial shows feet, inches, square feet and miles; metric shows metres, millimetres, square metres and kilometres. Every page and report follows this choice; switching never changes your data."><Sel<'mi' | 'km'> value={p.settings.units ?? 'mi'} onChange={(v) => update((d) => { d.settings = { ...d.settings, units: v }; })} options={[['mi', 'Imperial (ft, in, mi)'], ['km', 'Metric (m, mm, km)']]} /></Field>
-          <Field label="County" tip="Filled from the project address. Picks the local code rules."><Txt value={m.county} onChange={setM('county')} /></Field>
-          <Field label="City / town" tip="Filled from the project address. In Tennessee it decides whether an exempt city enforces its own codes."><Txt value={m.city ?? ''} onChange={setM('city')} /></Field>
+          <Field label="City / town" tip="Type the city or town; the county and state fill in by themselves. In Tennessee it decides whether an exempt city enforces its own codes."><span onBlur={() => fillPlace(`${m.city ?? ''}, ${m.state}`, true)}><Txt value={m.city ?? ''} onChange={setM('city')} /></span></Field>
+          <Field label="County" tip="Filled from the city, ZIP code or address. Picks the local code rules."><Txt value={m.county} onChange={setM('county')} /></Field>
           <Field label="Date"><input type="date" value={m.created} onChange={(e) => setM('created')(e.target.value)} /></Field>
           <Field label="AHJ notes" wide tip="Local amendments, permit numbers, inspector contacts."><textarea value={m.jurisdictionNotes} onChange={(e) => setM('jurisdictionNotes')(e.target.value)} rows={3} /></Field>
         </div>

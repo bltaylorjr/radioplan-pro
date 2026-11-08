@@ -12,6 +12,8 @@ export interface SpecItem {
   specs: Record<string, SpecValue>;
   kind: 'Product (typical)' | 'Standard' | 'My item';
   reference?: string; datasheet?: string; notes?: string; added?: number;
+  /** Manufacturer recommendations for this model (from its installation manual or datasheet). */
+  recommendations?: string[];
   /** Set when the item was loaded automatically from equipment added to a project. */
   origin?: string; projects?: string[];
 }

@@ -1,3 +1,10 @@
+# RadioPlan Pro 1.5.7
+
+- County and state fill in by themselves from the city, the new **Site ZIP code** box or the site address on Company & Project (built-in data, works offline). Projects whose county doesn't match their city (for example Asheville with Mecklenburg County) are corrected when opened.
+- Contacts & Web Resources: picking a city sets its county; every town in the state is listed, with the county's towns first.
+- Installation Guides: one dropdown (this project's guides first) and fold-away sections instead of a long page.
+- Specifications Library: **Manufacturer recommendations** for every item (installation, wiring, environment, upkeep), plus your own per-model list.
+
 # RadioPlan Pro 1.5.6
 
 - Contacts & Web Resources follows the project's state, county and city, and updates when they change. If the project's county or city doesn't match where the first site is, it offers **Use the site's location** to correct it.
