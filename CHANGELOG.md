@@ -1,3 +1,7 @@
+# LvPlan Pro 1.5.22
+
+- Introduction video: upbeat background music (an original track) that dips under the narrator's voice.
+
 # LvPlan Pro 1.5.21
 
 - **Materials list → Export PDF**: saves the bill of materials as a PDF file (project, site, your company, grouped by category, page numbers), ready to email or print. Works on the Windows app, Android and the browser.
