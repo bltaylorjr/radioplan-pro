@@ -1,3 +1,8 @@
+# RadioPlan Pro 1.5.10
+
+- Required fields are highlighted only after you press **Save project information** (new button on Company & Project) or try to print or export a report with information missing. The * marks stay so you can see which fields are required.
+- New projects are named "New project" (older projects still named "New radio site project" are renamed).
+
 # RadioPlan Pro 1.5.9
 
 - Specifications Library: every item has a **Service, technician and installation manuals** shelf. Attach PDFs, pictures or videos, or add a link (saved offline when the site allows), sorted by type: installation, service / repair, technician / programming, operation, wiring diagram, parts list, firmware notes, training. **Find … online** searches for the exact model.

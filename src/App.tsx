@@ -149,7 +149,7 @@ export default function App() {
                 {(() => { const cl = checklistFor(w.id), pr = cl && progressOf(cl, project), full = !!pr && pr.total > 0 && pr.done === pr.total; return <span className={'step-dot' + (full ? ' done' : '') + (stepNo(w) ? '' : ' tool')} title={pr ? `${pr.done} of ${pr.total} checklist items done` : undefined}>{full ? '✓' : stepNo(w) ?? '•'}</span>; })()}
                 {w.label}
                 {w.id === 'compliance' && nViol > 0 && <span className="pill bad">{nViol}</span>}
-                {w.id === 'company' && nReq > 0 && <span className="pill bad" title={`${nReq} required field(s) empty`}>{nReq}</span>}
+                {w.id === 'company' && rt.showRequired && nReq > 0 && <span className="pill bad" title={`${nReq} required field(s) empty`}>{nReq}</span>}
               </a>
             ))}
           </div>

@@ -94,7 +94,9 @@ async function withImages(root: Element | null): Promise<string> {
 export function ReportsPage() {
   const { project: p, rt } = useStore();
   const u = useUnits();
-  const { update } = useStore();
+  const { update, setRt } = useStore();
+  /** Before printing or exporting: if required project information is empty, highlight it and ask. */
+  const ready = () => { const miss = missingRequired(p); if (!miss.length) return true; setRt((r) => ({ ...r, showRequired: true })); return confirm(`Required project information is missing: ${miss.map((x) => x.label).join(', ')}.\n\nPress Cancel to fill it in on Company & Project, or OK to continue anyway.`); };
   const [pkg, setPkg] = useState(() => { try { return localStorage.getItem('radioplan.reportPkg') || 'proposal'; } catch { return 'proposal'; } });
   const P = PACKAGES.find((x) => x.id === pkg) ?? PACKAGES[0];
   const [sel, setSel] = useState<Partial<Record<RK, boolean>>>({});
@@ -210,7 +212,7 @@ export function ReportsPage() {
   return (
     <div className="stack">
       <Card title="Report builder" className="no-print" tip="Pick a report, tick the sections to include, then print, save as PDF, or export to Word, Excel and other formats.">
-        {missingRequired(p).length > 0 && <p className="note req-note" role="alert">⚠ Required project information is missing: <b>{missingRequired(p).map((x) => x.label).join(', ')}</b>. <a href="#company">Fill it in on Company & Project</a> so the report is complete.</p>}
+        {rt.showRequired && missingRequired(p).length > 0 && <p className="note req-note" role="alert">⚠ Required project information is missing: <b>{missingRequired(p).map((x) => x.label).join(', ')}</b>. <a href="#company">Fill it in on Company & Project</a> so the report is complete.</p>}
         <div className="form">
           <label className="field wide"><span>Report</span><select value={P.id} onChange={(e) => choosePkg(e.target.value)} aria-label="Report">{PACKAGES.map((x) => <option key={x.id} value={x.id}>{x.label}</option>)}</select></label>
         </div>
@@ -220,11 +222,11 @@ export function ReportsPage() {
         <div className="row wrap"><button className="ghost" onClick={() => setSel(Object.fromEntries(REPORTS.map(([k]) => [k, true])))}>Select all</button><button className="ghost" onClick={() => setSel(Object.fromEntries(REPORTS.map(([k]) => [k, false])))}>Select none</button><button className="ghost" onClick={() => setSel({})}>Reset to {P.label.toLowerCase()}</button></div>
         <h4>Print and export</h4>
         <div className="row wrap">
-          <button className="primary" onClick={() => window.print()}>🖨 Print / Save as PDF</button>
-          <button onClick={exportWord}>⬇ Word (.docx)</button>
-          <button onClick={exportExcel}>⬇ Excel (.xlsx)</button>
+          <button className="primary" onClick={() => ready() && window.print()}>🖨 Print / Save as PDF</button>
+          <button onClick={() => ready() && exportWord()}>⬇ Word (.docx)</button>
+          <button onClick={() => ready() && exportExcel()}>⬇ Excel (.xlsx)</button>
           <button onClick={() => downloadText(`${safeName(m.name)}-materials.csv`, bomToCsv(bom), 'text/csv')}>⬇ Materials CSV</button>
-          <button onClick={exportHtml}>⬇ Web page (.html)</button>
+          <button onClick={() => ready() && exportHtml()}>⬇ Web page (.html)</button>
           <button onClick={() => downloadText(`${m.name || 'project'}.kml`, kml(p), 'application/vnd.google-earth.kml+xml')}>⬇ KML (Google Earth)</button>
         </div>
         <p className="small muted">To make a PDF, press Print and choose “Save as PDF” as the printer. Drawings for CAD are on the Blueprints page.</p>

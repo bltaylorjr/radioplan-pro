@@ -18,6 +18,8 @@ export interface LocateTarget { lat: number; lon: number; label: string; state?:
 export interface Runtime {
   dem: DemGrid | null; demAuto?: boolean; profile: ProfileAnalysis | null; coverage: CoverageResult | null;
   terrainStatus?: string; mapStatus?: string; locate?: LocateTarget | null; query?: string;
+  /** Set after Save or an export with required fields empty: only then are they highlighted. */
+  showRequired?: boolean;
 }
 export type SaveState = 'loading' | 'saving' | 'saved' | 'error' | 'unavailable';
 

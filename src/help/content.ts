@@ -43,7 +43,7 @@ The cache lives in the app's storage on that device (browser profile for the USB
 
 **Measurements:** choose Imperial (feet, inches, square feet, miles) or Metric (metres, millimetres, square metres, kilometres). Number boxes, results and distances switch at once; your data is not changed.
 
-**Required fields (*):** project name, project type, client, site address, city, county, state and your company name. Empty ones are outlined in red, listed at the top of the page and counted on the menu until they are filled in.
+**Required fields (*):** project name, project type, client, site address, city, county, state and your company name. Press **Save project information** when you're done; any empty required field is then outlined in red and listed at the top of the page. Printing or exporting a report with missing information does the same and asks before going on.
 
 **Save as my default:** after entering your company, logo, engineer and PE license, press **Save as my default**. New projects fill them in automatically; **Fill from my default** copies them into an older project.
 

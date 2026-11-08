@@ -30,7 +30,7 @@ export function defaultProject(): Project {
   return {
     version: 1,
     company: { name: '', title: '', address: '', city: '', state: 'NC', zip: '', phone: '', email: '', license: '' },
-    meta: { name: 'New radio site project', number: '', client: '', engineer: '', peLicense: '', state: 'NC', county: 'Buncombe County', city: 'Asheville', jurisdictionNotes: '', created: new Date().toISOString().slice(0, 10), revision: 'A' },
+    meta: { name: 'New project', number: '', client: '', engineer: '', peLicense: '', state: 'NC', county: 'Buncombe County', city: 'Asheville', jurisdictionNotes: '', created: new Date().toISOString().slice(0, 10), revision: 'A' },
     sites: [
       { id: 'A', name: 'Site A (TX)', address: '', lat: 35.5951, lon: -82.5515, groundElevM: null, positionSource: 'Manual', positionAccuracyM: null, structure: 'monopole', structureHeightM: 45, antennaAglM: 43, onBuilding: false, nearestAirportKm: null, nearestRunwayFt: null },
       { id: 'B', name: 'Site B (RX)', address: '', lat: 35.6400, lon: -82.4800, groundElevM: null, positionSource: 'Manual', positionAccuracyM: null, structure: 'monopole', structureHeightM: 30, antennaAglM: 28, onBuilding: false, nearestAirportKm: null, nearestRunwayFt: null },

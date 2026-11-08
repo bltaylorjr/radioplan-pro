@@ -53,6 +53,8 @@ export function repairProject(input: unknown): { project: Project; fixes: string
     const arr = out[k]; if (!Array.isArray(arr)) continue; const ids = new Set<string>();
     out[k] = arr.filter(isObj).map((x) => { let id = String(x.id ?? ''); if (!id || ids.has(id)) { id = Math.random().toString(36).slice(2, 10); fixes.push(`A ${k} entry had a duplicate id; fixed`); } ids.add(id); return { ...x, id }; });
   }
+  // Older default name.
+  if ((out.meta as { name?: string })?.name === 'New radio site project') out.meta = { ...(out.meta as object), name: 'New project' };
   // The county must be the one the project's city is in (an older default paired Asheville with Mecklenburg County).
   const meta = out.meta as { state?: string; county?: string; city?: string } | undefined;
   if (meta?.city && meta.state) { const c = countyOfTown(meta.city, meta.state); if (c && c !== meta.county) { fixes.push(`County corrected to ${c} for ${meta.city}`); out.meta = { ...meta, county: c }; } }
