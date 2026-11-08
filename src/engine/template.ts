@@ -23,7 +23,7 @@ export function projectFromTemplate(src: Project, fresh: Project, o: TemplateOpt
   const s = structuredClone(src), p = structuredClone(fresh), k = o.keep;
   p.company = s.company; p.settings = s.settings; p.propagation = s.propagation; p.acceptance = s.acceptance;
   p.meta.engineer = s.meta.engineer; p.meta.peLicense = s.meta.peLicense;
-  if (k.systems) { p.meta.projectType = s.meta.projectType; p.meta.subSystems = s.meta.subSystems; }
+  if (k.systems) { p.meta.projectType = s.meta.projectType; p.meta.subSystems = s.meta.subSystems; if (s.meta.customPages) p.meta.customPages = s.meta.customPages; }
   if (k.design) {
     p.radio = s.radio; p.grounding = s.grounding; p.solar = s.solar; p.alarm = s.alarm; p.erces = s.erces; p.lfhf = s.lfhf;
     p.indoor = s.indoor; p.network = s.network; p.scenarios = s.scenarios;

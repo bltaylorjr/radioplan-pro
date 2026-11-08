@@ -79,3 +79,19 @@ describe('equipment troubleshooting', () => {
     expect(equipTypeOf({ id: 'x', category: 'Fire alarm', sub: 'Detectors', brand: 'B', model: 'Photoelectric smoke detector', specs: {}, kind: 'Standard' } as any)?.id).toBe('smoke');
   });
 });
+
+import { PAGE_GROUPS, suggestPages, ALWAYS_PAGES } from '../src/data/customPages';
+import { WORKFLOW_LABELS } from '../src/data/pageLabels';
+import { projectSystems } from '../src/data/systems';
+describe('custom project pages', () => {
+  it('page groups list every menu page once', () => {
+    const ids = PAGE_GROUPS.flatMap(([, x]) => x);
+    expect([...ids].sort()).toEqual(Object.keys(WORKFLOW_LABELS).sort());
+  });
+  it('suggests the systems pages plus the always pages', () => {
+    const pg = suggestPages(projectSystems({ subSystems: ['firealarm'] }));
+    for (const id of [...ALWAYS_PAGES, 'alarm', 'troubleshoot', 'install']) expect(pg).toContain(id);
+    expect(pg).not.toContain('path');
+    expect(suggestPages(projectSystems({ subSystems: ['radio'] }))).toContain('path');
+  });
+});

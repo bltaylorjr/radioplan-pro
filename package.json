@@ -1,6 +1,6 @@
 {
   "name": "radioplan",
-  "version": "1.5.16",
+  "version": "1.5.17",
   "private": true,
   "type": "module",
   "description": "RadioPlan Pro - radio site and equipment planning workstation (single-user)",

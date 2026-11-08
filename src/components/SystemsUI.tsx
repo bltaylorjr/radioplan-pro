@@ -1,12 +1,19 @@
 import React, { useState } from 'react';
 import { useStore } from '../store';
-import { SYSTEMS, ENABLES, SystemId } from '../data/systems';
+import { SYSTEMS, ENABLES, SystemId, projectSystems } from '../data/systems';
+import { PAGE_GROUPS, ALWAYS_PAGES, suggestPages } from '../data/customPages';
+import { WORKFLOW_LABELS } from '../data/pageLabels';
 import { LvCalc, runCalc } from '../data/lvcalcs';
 import type { Project } from '../types';
 import { Num, MeasureCtx, shownIn } from './ui';
 
 /** Set the main type and sub-projects; turns on the matching design pages. */
 export function applySystems(d: Project, type: string | undefined, subs: string[]) {
+  if (type === 'custom' && d.meta.projectType !== 'custom') {
+    // Start the custom pick from what was already chosen.
+    subs = [d.meta.projectType, ...subs].filter((x): x is string => !!x && x !== 'custom');
+    d.meta.customPages = suggestPages(projectSystems({ subSystems: subs }));
+  }
   d.meta.projectType = type || undefined;
   d.meta.subSystems = subs.filter((s) => s !== type);
   for (const id of [type, ...subs]) { const f = ENABLES[id as SystemId]; if (f) d[f].enabled = true; }
@@ -24,12 +31,45 @@ export function ProjectTypePicker({ compact }: { compact?: boolean }) {
         <select value={type} onChange={(e) => update((d) => applySystems(d, e.target.value, subs))} aria-label="Project type">
           <option value="">— pick the main system —</option>
           {SYSTEMS.map((s) => <option key={s.id} value={s.id}>{s.icon} {s.label}</option>)}
+          <option value="custom">⚙ Custom: pick only the systems and tools I need</option>
         </select></label>
-      {compact && !open ? <button className="ghost" onClick={() => setOpen(true)}>+ Add sub-projects ({subs.length})</button> : (
+      {type === 'custom' ? <CustomPicker compact={compact} /> : compact && !open ? <button className="ghost" onClick={() => setOpen(true)}>+ Add sub-projects ({subs.length})</button> : (
         <fieldset className="subsys"><legend>Sub-projects on the same job</legend>
           {SYSTEMS.filter((s) => s.id !== type).map((s) => (
             <label key={s.id} className="check"><input type="checkbox" checked={subs.includes(s.id)} onChange={(e) => update((d) => applySystems(d, type, e.target.checked ? [...subs, s.id] : subs.filter((x) => x !== s.id)))} /> {s.icon} {s.label}</label>))}
         </fieldset>)}
+    </div>
+  );
+}
+
+/** Custom project: tick the systems on this job, then the pages and tools to show in the menu. */
+function CustomPicker({ compact }: { compact?: boolean }) {
+  const { project: p, update, go } = useStore();
+  const subs = p.meta.subSystems ?? [];
+  const pages = p.meta.customPages ?? [];
+  const setSubs = (next: string[]) => update((d) => applySystems(d, 'custom', next));
+  const setPages = (next: string[]) => update((d) => { d.meta.customPages = next; });
+  const togglePage = (id: string, on: boolean) => setPages(on ? [...pages, id] : pages.filter((x) => x !== id));
+  return (
+    <div className="custom-pick">
+      <fieldset className="subsys"><legend>1. Systems on this job</legend>
+        {SYSTEMS.map((s) => (
+          <label key={s.id} className="check"><input type="checkbox" checked={subs.includes(s.id)} onChange={(e) => setSubs(e.target.checked ? [...subs, s.id] : subs.filter((x) => x !== s.id))} /> {s.icon} {s.label}</label>))}
+      </fieldset>
+      {!compact && <fieldset className="subsys custom-pages"><legend>2. Pages and tools to show</legend>
+        <div className="row wrap" style={{ marginBottom: 6 }}>
+          <button onClick={() => setPages(suggestPages(projectSystems({ subSystems: subs })))}>Suggest for my systems</button>
+          <button className="ghost" onClick={() => setPages(PAGE_GROUPS.flatMap(([, ids]) => ids))}>All</button>
+          <button className="ghost" onClick={() => setPages([...ALWAYS_PAGES])}>None</button>
+          <span className="small muted">{pages.filter((x) => !ALWAYS_PAGES.includes(x)).length} picked. The menu, step numbers and Next / Previous follow this list.</span>
+        </div>
+        {PAGE_GROUPS.map(([g, ids]) => (
+          <div key={g} className="custom-group"><b className="small">{g.replace(/^\d+ · /, '')}</b>
+            {ids.map((id) => { const always = ALWAYS_PAGES.includes(id); return (
+              <label key={id} className="check"><input type="checkbox" disabled={always} checked={always || pages.includes(id)} onChange={(e) => togglePage(id, e.target.checked)} /> {WORKFLOW_LABELS[id] ?? id}{always && <span className="small muted"> (always shown)</span>}</label>); })}
+          </div>))}
+      </fieldset>}
+      {compact && <p className="small"><button className="ghost" onClick={() => go('systems')}>Pick pages and tools on Project Systems →</button></p>}
     </div>
   );
 }

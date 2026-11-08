@@ -39,10 +39,10 @@ export function SystemsPage() {
   const systems = projectSystems(p.meta);
   return (
     <div className="grid">
-      <Card title="Project type and sub-projects" className="wide" tip="Pick the main system for this job, then tick any other systems on the same job. Each one gets its own planning, installation, testing, troubleshooting, repair and maintenance toolkit below.">
+      <Card title="Project type and sub-projects" className="wide" tip="Pick the main system for this job, then tick any other systems on the same job. Or pick Custom to choose only the systems and the pages and tools you need; the menu then shows just those. Each one gets its own planning, installation, testing, troubleshooting, repair and maintenance toolkit below.">
         <ProjectTypePicker />
       </Card>
-      {!systems.length && <Card title="Nothing picked yet" className="wide"><p className="muted">Pick a project type above to see its toolkit.</p></Card>}
+      {!systems.length && <Card title="Nothing picked yet" className="wide"><p className="muted">{p.meta.projectType === 'custom' ? 'Tick the systems on this job above to see their toolkits.' : 'Pick a project type above to see its toolkit.'}</p></Card>}
       {systems.map((s) => <SystemCard key={s.id} s={s} />)}
     </div>
   );

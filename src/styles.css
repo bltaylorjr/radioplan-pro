@@ -289,3 +289,7 @@ body { font-size: clamp(15px, 0.6vw + 12.5px, 17px); }
 .intro-video { position: fixed; inset: 0; z-index: 3100; background: rgba(10,20,35,.75); display: flex; align-items: center; justify-content: center; padding: 16px; }
 .intro-video-box { background: var(--panel, #fff); color: inherit; border-radius: 10px; padding: 12px 14px; width: min(1000px, 100%); max-height: 100%; overflow: auto; box-shadow: 0 10px 40px rgba(0,0,0,.4); }
 .intro-video-box video { width: 100%; max-height: 75vh; background: #000; border-radius: 6px; margin-top: 8px; }
+.custom-pages .custom-group { margin: 6px 0 10px; display: flex; flex-direction: column; gap: 2px; }
+.custom-pages { display: block; }
+.nav-custom { padding: 6px 12px; color: var(--muted); }
+.sidebar .nav-custom a { display: inline; padding: 0; margin: 0; background: none; color: var(--accent); text-decoration: underline; }

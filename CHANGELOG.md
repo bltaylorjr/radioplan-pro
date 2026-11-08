@@ -1,3 +1,7 @@
+# RadioPlan Pro 1.5.17
+
+- **⚙ Custom project type** (Project Systems & Toolkits, and Company & Project): tick only the systems on the job, then the pages and tools you want (**Suggest for my systems** fills it in). The left menu, step numbers, Next / Previous and checklist totals follow your pick; troubleshooting, installation, service and library pages show your systems first. **Show all** at the bottom of the menu brings every page back.
+
 # RadioPlan Pro 1.5.16
 
 - **▶ Video** button at the top of every page plays the introduction video (a captioned tour of every page and tool). The video is built into the app, so it plays offline; it is re-recorded with every update.

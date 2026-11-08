@@ -354,7 +354,9 @@ Guides: antenna feedline and grounding; repeater RF and DC power; ERCES / BDA an
 These are general guidance. Follow the manufacturer's instructions, the approved drawings and the adopted codes.` },
 
   { id: 'systems', title: 'Project systems and toolkits', page: 'systems', keywords: 'project type sub-project structured cabling fiber fire alarm security intercom nurse call paging sound design service maintenance access control cctv mass notification call box das', summary: 'Pick the main system and any sub-projects; each gets a plan, install, test, repair and maintenance toolkit.',
-    body: `Pick the **Project type** from the dropdown, then tick any **sub-projects** on the same job (for example fire alarm with access control and CCTV). The same choice is on Company & Project and on the first-start screen.
+    body: `Pick **⚙ Custom** as the project type to choose only what you need: **1.** tick the systems on this job, **2.** tick the pages and tools to show (**Suggest for my systems** fills it in for you). The left menu, the step numbers and Next / Previous then follow your pick, and the troubleshooting, installation, service and library pages show your systems first. Company & Project, Project Systems and Projects always show; **Show all** at the bottom of the menu shows every page again.
+
+Pick the **Project type** from the dropdown, then tick any **sub-projects** on the same job (for example fire alarm with access control and CCTV). The same choice is on Company & Project and on the first-start screen.
 
 Each system gets tabs: **Plan**, **Install**, **Test & troubleshoot**, **Repair & maintain** and **Tools & reference** (standards and its calculators). Buttons jump to the related pages.` },
   { id: 'service', title: 'Service & maintenance resources', page: 'service', keywords: 'service maintenance pm preventive inspection repair fault fix manual standards schedule', summary: 'Maintenance intervals, common faults and fixes, test steps, standards and manuals for every system.',

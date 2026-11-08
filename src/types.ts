@@ -19,6 +19,8 @@ export interface ProjectMeta {
   city?: string;
   /** Main system type (see data/systems.ts) and other systems on the same job. */
   projectType?: string; subSystems?: string[];
+  /** With project type 'custom': the pages and tools to show in the menu. */
+  customPages?: string[];
 }
 export interface Site {
   id: string; name: string; address: string; lat: number; lon: number; groundElevM: number | null;

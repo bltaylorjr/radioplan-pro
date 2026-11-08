@@ -3,6 +3,7 @@ import { useStore, downloadText } from './store';
 import { HELP } from './help/content';
 import { HelpManual, HelpPanel, Tour } from './help/HelpUI';
 import { IntroVideo } from './components/IntroVideo';
+import { ALWAYS_PAGES } from './data/customPages';
 import { evaluateCompliance } from './compliance/rules';
 import { CompanyPage } from './pages/Company';
 import { DirectionsPage } from './pages/Directions';
@@ -87,9 +88,6 @@ export const WORKFLOW: { id: string; label: string; group: string; el: React.Rea
   { id: 'sync', label: 'Sync Devices', group: 'Tools', el: <SyncPage /> },
 ];
 
-/** Step number in the workflow; the Tools pages are not steps and have none. */
-const STEPS = WORKFLOW.filter((w) => w.group !== 'Tools');
-const stepNo = (w: { id: string }) => { const i = STEPS.findIndex((x) => x.id === w.id); return i < 0 ? null : i + 1; };
 
 export default function App() {
   const { page, go, project, update, rt, setRt, lib } = useStore();
@@ -104,7 +102,14 @@ export default function App() {
   const topic = HELP.find((h) => h.page === current?.id) ?? HELP[0];
   const [lastTopic, setLastTopic] = useState('');
   useEffect(() => { if (!isHelp && current) setLastTopic(topic.id); }, [isHelp, current, topic.id]);
-  const idx = current ? WORKFLOW.indexOf(current) : -1;
+  const [showAll, setShowAll] = useState(false);
+  const custom = project.meta.projectType === 'custom' && (project.meta.customPages?.length ?? 0) > 0;
+  /** The pages in the menu: all of them, or only the custom pick. */
+  const VIS = custom && !showAll ? WORKFLOW.filter((w) => ALWAYS_PAGES.includes(w.id) || project.meta.customPages!.includes(w.id)) : WORKFLOW;
+  /** Step number in the workflow; the Tools pages are not steps and have none. */
+  const STEPS = VIS.filter((w) => w.group !== 'Tools');
+  const stepNo = (w: { id: string }) => { const i = STEPS.findIndex((x) => x.id === w.id); return i < 0 ? null : i + 1; };
+  const idx = current ? VIS.indexOf(current) : -1;
   const findings = evaluateCompliance({ project, profile: rt.profile });
   const nViol = findings.filter((f) => f.severity === 'violation').length;
   const nReq = missingRequired(project).length;
@@ -123,7 +128,7 @@ export default function App() {
     i.onchange = async () => { const f = i.files?.[0]; if (!f) return; try { const ids = await lib.importProjects(readBackup(await f.text())); if (ids[0]) await lib.openProject(ids[0]); } catch (e) { alert('Not a valid project file: ' + e); } };
     i.click();
   };
-  const groups = [...new Set(WORKFLOW.map((w) => w.group))];
+  const groups = [...new Set(VIS.map((w) => w.group))];
   return (
     <MeasureCtx.Provider value={project.settings.units === 'km' ? 'metric' : 'imperial'}>
     <div className={'app' + (navOpen ? ' nav-open' : '')}>
@@ -150,8 +155,8 @@ export default function App() {
       <nav className="sidebar">
         {groups.map((g) => (
           <div key={g} className="nav-group">
-            <div className="nav-group-title">{g}</div>
-            {WORKFLOW.filter((w) => w.group === g).map((w) => (
+            <div className="nav-group-title">{custom && !showAll ? g.replace(/^\d+ · /, '') : g}</div>
+            {VIS.filter((w) => w.group === g).map((w) => (
               <a key={w.id} href={`#${w.id}`} className={w.id === current?.id ? 'active' : ''} onClick={(e) => { e.preventDefault(); go(w.id); }}>
                 {(() => { const cl = checklistFor(w.id), pr = cl && progressOf(cl, project), full = !!pr && pr.total > 0 && pr.done === pr.total; return <span className={'step-dot' + (full ? ' done' : '') + (stepNo(w) ? '' : ' tool')} title={pr ? `${pr.done} of ${pr.total} checklist items done` : undefined}>{full ? '✓' : stepNo(w) ?? '•'}</span>; })()}
                 {w.label}
@@ -161,10 +166,11 @@ export default function App() {
             ))}
           </div>
         ))}
+        {project.meta.projectType === 'custom' && custom && <div className="nav-custom small">{showAll ? 'Showing every page.' : `Custom project: ${VIS.length} of ${WORKFLOW.length} pages.`} <a href="#" onClick={(e) => { e.preventDefault(); setShowAll(!showAll); }}>{showAll ? 'Show my pick' : 'Show all'}</a> · <a href="#systems" onClick={(e) => { e.preventDefault(); go('systems'); }}>Change</a></div>}
         <div className="nav-group"><a href={lastTopic ? `#help/${lastTopic}` : '#help'} className={isHelp ? 'active' : ''}><span className="step-dot">?</span>Help manual</a></div>
         <div className="nav-group mobile-only"><div className="nav-group-title">Project file</div>
           <div className="row wrap" style={{ padding: '0 8px' }}><button onClick={() => go('projects')}>Projects</button><button onClick={open}>Open file</button><button onClick={save}>Export</button></div></div>
-        <div className="progress">{(() => { const t = CHECKLISTS.map((c) => progressOf(c, project)).reduce((a, b) => ({ done: a.done + b.done, total: a.total + b.total }), { done: 0, total: 0 }); return `Checklists: ${t.done} of ${t.total} items done`; })()}</div>
+        <div className="progress">{(() => { const t = CHECKLISTS.filter((c) => VIS.some((w) => w.id === c.page)).map((c) => progressOf(c, project)).reduce((a, b) => ({ done: a.done + b.done, total: a.total + b.total }), { done: 0, total: 0 }); return `Checklists: ${t.done} of ${t.total} items done`; })()}</div>
       </nav>
       <main className="content">
         {isHelp ? <HelpManual initial={page.split('/')[1]} /> : current && (
@@ -172,20 +178,21 @@ export default function App() {
             <div className="page-head">
               <div><div className="crumb">{stepNo(current) ? `Step ${stepNo(current)} of ${STEPS.length} · ${current.group}` : current.group}</div><h1>{current.label}</h1></div>
               <div className="row wrap page-nav">
-                <button disabled={idx <= 0} onClick={() => go(WORKFLOW[idx - 1].id)} aria-label="Previous page" title={WORKFLOW[idx - 1]?.label}>←</button>
+                <button disabled={idx <= 0} onClick={() => go(VIS[idx - 1].id)} aria-label="Previous page" title={VIS[idx - 1]?.label}>←</button>
                 <select value={current.id} onChange={(e) => go(e.target.value)} aria-label="Go to page" data-no-choose>
-                  {groups.map((g) => <optgroup key={g} label={g}>{WORKFLOW.filter((w) => w.group === g).map((w) => <option key={w.id} value={w.id}>{stepNo(w) ? `${stepNo(w)}. ` : ''}{w.label}</option>)}</optgroup>)}
+                  {!VIS.includes(current) && <option value={current.id}>{current.label}</option>}
+                  {groups.map((g) => <optgroup key={g} label={g}>{VIS.filter((w) => w.group === g).map((w) => <option key={w.id} value={w.id}>{stepNo(w) ? `${stepNo(w)}. ` : ''}{w.label}</option>)}</optgroup>)}
                 </select>
-                <button disabled={idx >= WORKFLOW.length - 1} onClick={() => go(WORKFLOW[idx + 1].id)} aria-label="Next page" title={WORKFLOW[idx + 1]?.label}>→</button>
+                <button disabled={idx >= VIS.length - 1} onClick={() => go(VIS[idx + 1].id)} aria-label="Next page" title={VIS[idx + 1]?.label}>→</button>
                 {topic.tour && <button onClick={() => setTour(true)} data-tour-btn>▶ Guide me</button>}
                 <button onClick={() => setHelpOpen(true)}>? Page help</button>
               </div>
             </div>
             <SelfRepair page={current.id}><Suspense fallback={<div className="card">Loading…</div>}>{current.el}</Suspense>{checklistFor(current.id) && <div data-tour="checklist" className="no-print" style={{ marginTop: 16 }}><Checklist def={checklistFor(current.id)!} /></div>}</SelfRepair>
             <footer className="page-foot">
-              <button disabled={idx <= 0} onClick={() => go(WORKFLOW[idx - 1].id)}>← {WORKFLOW[idx - 1]?.label ?? 'Back'}</button>
+              <button disabled={idx <= 0} onClick={() => go(VIS[idx - 1].id)}>← {VIS[idx - 1]?.label ?? 'Back'}</button>
               <span />
-              <button className="primary" disabled={idx >= WORKFLOW.length - 1} onClick={() => go(WORKFLOW[idx + 1].id)}>{WORKFLOW[idx + 1]?.label ?? 'Next'} →</button>
+              <button className="primary" disabled={idx >= VIS.length - 1} onClick={() => go(VIS[idx + 1].id)}>{VIS[idx + 1]?.label ?? 'Next'} →</button>
             </footer>
             <p className="disclaimer">Planning aid only. Calculations and code citations must be verified by a licensed professional and the Authority Having Jurisdiction.</p>
           </>
