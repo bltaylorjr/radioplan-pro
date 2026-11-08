@@ -5,6 +5,7 @@ import { WALL_MATERIALS, multiWallLossDb, p1238LossDb, wallLossDb } from '../eng
 import { rssiColor, RSSI_SCALE } from '../engine/coverage';
 import { uid } from '../defaults';
 import type { IndoorDesign } from '../types';
+import { Indoor3D, WALL_HEIGHT_M as WALL_H } from '../components/Indoor3D';
 
 type Tool = 'wall' | 'antenna' | 'erase';
 
@@ -13,6 +14,7 @@ export function IndoorPage() {
   const d = p.indoor;
   const cv = useRef<HTMLCanvasElement>(null);
   const [tool, setTool] = useState<Tool>('wall');
+  const [view, setView] = useState<'2d' | '3d'>('2d');
   const [drag, setDrag] = useState<{ x: number; y: number; x2: number; y2: number } | null>(null);
   const [img, setImg] = useState<HTMLImageElement | null>(null);
   const [eirp, setEirp] = useState(15);
@@ -52,7 +54,7 @@ export function IndoorPage() {
     const walls = drag ? [...d.walls, { x1: drag.x, y1: drag.y, x2: drag.x2, y2: drag.y2, material: d.currentMaterial }] : d.walls;
     for (const w of walls) { g.strokeStyle = WALL_MATERIALS[w.material]?.color ?? '#333'; g.lineWidth = 4; g.beginPath(); g.moveTo(w.x1 * scale, w.y1 * scale); g.lineTo(w.x2 * scale, w.y2 * scale); g.stroke(); }
     for (const a of d.antennas) { g.fillStyle = '#c62828'; g.beginPath(); g.arc(a.x * scale, a.y * scale, 7, 0, Math.PI * 2); g.fill(); g.fillStyle = '#000'; g.font = '12px sans-serif'; g.fillText(a.label, a.x * scale + 9, a.y * scale - 6); }
-  }, [grid, img, d.walls, d.antennas, drag, PX, PY, scale, d.widthM, d.heightM, d.currentMaterial]);
+  }, [grid, img, d.walls, d.antennas, drag, PX, PY, scale, d.widthM, d.heightM, d.currentMaterial, view]);
 
   const toM = (e: React.PointerEvent) => { const r = cv.current!.getBoundingClientRect(); return { x: ((e.clientX - r.left) / r.width) * d.widthM, y: ((e.clientY - r.top) / r.height) * d.heightM }; };
   const snap = (v: number) => Math.round(v * 4) / 4;
@@ -92,7 +94,12 @@ export function IndoorPage() {
         <p className="small muted">Drag to draw walls (hold Shift for straight lines); click to place antennas; erase removes the nearest item. Grid = 5 m.</p>
       </Card>
       <Card title="Floor plan & coverage" tour="in-canvas">
-        <div className="canvas-wrap"><canvas ref={cv} className="plan" onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerLeave={up} style={{ aspectRatio: `${d.widthM} / ${d.heightM}` }} /></div>
+        <div className="row wrap toolbar" role="tablist" aria-label="View">
+          <button className={view === '2d' ? 'primary' : ''} onClick={() => setView('2d')}>🗺 2D plan</button>
+          <button className={view === '3d' ? 'primary' : ''} onClick={() => setView('3d')}>🧊 3D walls</button>
+          {view === '3d' && <span className="small muted">Walls stand about 10 ft ({WALL_H} m) tall in their material colour; the heat map is on the floor. Drag to turn, scroll to zoom. Switch to 2D to draw.</span>}
+        </div>
+        {view === '2d' ? <div className="canvas-wrap"><canvas ref={cv} className="plan" onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerLeave={up} style={{ aspectRatio: `${d.widthM} / ${d.heightM}` }} /></div> : <Indoor3D d={d} grid={grid} />}
         <div className="legend">{RSSI_SCALE.map((s) => <span key={s.min}><span className="lg" style={{ background: `rgb(${s.color.join(',')})` }} />{s.label}</span>)}</div>
         <div className="stats">
           <Stat label={`Floor area ≥ ${d.targetDbm} dBm`} value={fmt(grid.pct, 1)} unit=" %" tone={grid.pct >= 99 ? 'ok' : grid.pct >= 90 ? 'warn' : 'bad'} tip="ERCES: 90% general, 99% critical areas" />

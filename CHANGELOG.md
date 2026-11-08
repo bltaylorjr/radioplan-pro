@@ -1,3 +1,9 @@
+# LvPlan Pro 1.5.31
+
+- **3D walls** on Indoor Coverage & DAS: press **🧊 3D walls** to see the walls you drew stand up in their material colour, with the coverage heat map on the floor and the antennas on the ceiling. Drag to turn, scroll to zoom; **🗺 2D plan** goes back to drawing.
+- **Existing towers on the 3D terrain model**: towers, masts and comm sites already mapped in OpenStreetMap stand up as purple masts, labeled with their name and height, so you can plan around them or look for a place to co-locate. Turn it on or off with **Existing towers (labeled)**. Areas you have viewed stay saved for offline use. Check the FCC Antenna Structure Registration database and the owner before relying on one.
+- Introduction video: the room scene now draws walls, places antennas, shows the heat map and then the 3D walls; the 3D Model scene shows the labeled existing towers.
+
 # LvPlan Pro 1.5.30
 
 - Fix: the **📡 Existing towers & comm sites** map layer stays on when you move between pages (leaving a page with a map used to switch it off).

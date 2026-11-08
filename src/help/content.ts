@@ -212,8 +212,10 @@ Browsers and Android web apps cannot scan Wi-Fi themselves, so readings always c
 
 Adjust power to balance uplink and downlink and to avoid interference into neighbouring cells. Re-run coverage after changes.` },
 
-  { id: 'view3d', title: '3D terrain model', page: 'view3d', keywords: '3d model view terrain mesh tower fresnel ellipsoid', summary: 'Interactive 3D terrain with towers, the radio path and the first Fresnel zone.',
+  { id: 'view3d', title: '3D terrain model', page: 'view3d', keywords: '3d model view terrain mesh tower fresnel ellipsoid existing towers comm sites labels openstreetmap co-locate', summary: 'Interactive 3D terrain with your towers, labeled existing towers, the radio path and the first Fresnel zone.',
     body: `Drag to orbit, right-drag to pan, scroll to zoom. Vertical exaggeration makes terrain easier to read. The red/green line is the path (green = 60% F1 clear). The translucent ellipsoid is the first Fresnel zone.
+
+**Existing towers (labeled)** stands up the towers, masts and comm sites already mapped in OpenStreetMap as purple masts with their name and height, so you can plan around them or look for a co-location spot. Areas you have viewed stay saved for offline use. Heights and owners may be missing or out of date: check the FCC Antenna Structure Registration (ASR) database and the owner before relying on one.
 
 The 3D model uses the loaded DEM; if none is loaded click **Fetch online terrain**.` },
 
@@ -264,11 +266,12 @@ Peak sun hours are approximate December values; verify with NREL PVWatts.` },
 
 The downlink budget estimates BDA output, power per antenna after splits, and the signal at the worst point using your path-loss estimate (use the Indoor Planner for a detailed estimate).` },
 
-  { id: 'indoor', title: 'Indoor planning', page: 'indoor', keywords: 'indoor floor plan wall das wifi antenna placement heatmap itu p.1238 multi-wall cost 231 in-building', summary: 'Draw walls on a floor plan, place antennas, and see a multi-wall coverage heatmap.',
+  { id: 'indoor', title: 'Indoor planning', page: 'indoor', keywords: 'indoor floor plan wall 3d walls das wifi antenna placement heatmap itu p.1238 multi-wall cost 231 in-building', summary: 'Draw walls on a floor plan, place antennas, and see a multi-wall coverage heatmap.',
     body: `1. Load a floor-plan image (PNG/JPG) and enter the building width and height in metres.
 2. Choose a wall material and **drag** on the plan to draw walls.
 3. Switch to **Place antenna** and click to place DAS antennas / APs with their EIRP.
-4. The heatmap uses the **COST-231 multi-wall model** (free-space loss + loss of every wall crossed). The ITU-R P.1238 site-general estimate is shown for comparison.
+4. Click **🧊 3D walls** to see the walls stand up about 10 ft (3 m) tall in their material colour, with the heat map on the floor and the antennas on the ceiling. Drag to turn, scroll to zoom; switch back to **2D plan** to draw.
+5. The heatmap uses the **COST-231 multi-wall model** (free-space loss + loss of every wall crossed). The ITU-R P.1238 site-general estimate is shown for comparison.
 
 Wall losses are typical values; measure on site for critical designs. Coverage % is compared with the target (−95 dBm for ERCES).`,
     tour: [

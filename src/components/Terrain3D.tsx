@@ -5,6 +5,7 @@ import { sampleDem, demBounds, buildProfile, analyzeProfile, DemGrid, ProfileAna
 import { fresnelRadiusM } from '../engine/rf';
 import { haversineKm, LatLon } from '../engine/geo';
 import type { Site } from '../types';
+import { siteLabel, type CommSite } from '../engine/towers';
 
 function colorFor(t: number) { // green lowlands -> brown -> pale peaks
   const c = new THREE.Color();
@@ -15,12 +16,14 @@ function colorFor(t: number) { // green lowlands -> brown -> pale peaks
 export interface Terrain3DProps {
   dem: DemGrid; sites: Site[]; txId?: string; rxId?: string; fMHz: number; kFactor: number; clutterM: number;
   exag: number; showFresnel: boolean; profile?: ProfileAnalysis | null; marker?: LatLon | null; height?: number;
+  /** Existing towers / comm sites (OpenStreetMap) to stand up on the terrain with a label. */
+  comm?: CommSite[];
 }
 
 /** Interactive three.js terrain model with towers, the radio path and the first Fresnel zone. */
 export function Terrain3D(props: Terrain3DProps) {
   const mount = useRef<HTMLDivElement>(null);
-  const { dem, sites, fMHz, exag, marker } = props;
+  const { dem, sites, fMHz, exag, marker, comm } = props;
   const showF = props.showFresnel;
   const tx = sites.find((s) => s.id === props.txId) ?? sites[0];
   const rx = sites.find((s) => s.id === props.rxId && s.id !== tx?.id);
@@ -82,6 +85,27 @@ export function Terrain3D(props: Terrain3DProps) {
         scene.add(e);
       }
     }
+    if (comm?.length) {
+      // existing towers: purple masts; the 15 nearest the middle (named ones first) get labels so the view stays readable
+      const inside = comm.filter((c) => c.lat <= b.north && c.lat >= b.south && c.lon >= b.west && c.lon <= b.east);
+      const byMid = [...inside].sort((a, c) => (mx(a.lon) ** 2 + mz(a.lat) ** 2) - (mx(c.lon) ** 2 + mz(c.lat) ** 2));
+      const mastMat = new THREE.MeshLambertMaterial({ color: 0x6a1b9a }), headMat = new THREE.MeshLambertMaterial({ color: 0xab47bc });
+      const labeled = new Set([...byMid.filter((c) => c.name || c.operator), ...byMid].slice(0, 15).map((c) => c.id));
+      byMid.forEach((c) => {
+        const g = sampleDem(dem, c); if (g == null) return;
+        const hM = Math.max(widthM / 60, (c.heightFt ? c.heightFt * 0.3048 : 30) * exag);
+        const base = (g - zmin) * exag;
+        const mast = new THREE.Mesh(new THREE.CylinderGeometry(widthM / 1400, widthM / 600, hM, 6), mastMat); mast.position.set(mx(c.lon), base + hM / 2, mz(c.lat)); scene.add(mast);
+        const head = new THREE.Mesh(new THREE.OctahedronGeometry(widthM / 220), headMat); head.position.set(mx(c.lon), base + hM, mz(c.lat)); scene.add(head);
+        if (!labeled.has(c.id)) return;
+        const txt = siteLabel(c).slice(0, 24);
+        const cv = document.createElement('canvas'); cv.width = 384; cv.height = 56; const cx = cv.getContext('2d')!;
+        cx.font = 'bold 26px sans-serif'; const tw = Math.min(380, cx.measureText(txt).width + 16);
+        cx.fillStyle = 'rgba(243,229,245,.92)'; cx.fillRect(0, 0, tw, 56); cx.fillStyle = '#4a148c'; cx.fillText(txt, 8, 37);
+        const spr = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(cv), depthTest: false }));
+        spr.center.set(0, 0); spr.scale.set(widthM / 5, widthM / 5 * 56 / 384, 1); spr.position.set(mx(c.lon), base + hM + widthM / 120, mz(c.lat)); scene.add(spr);
+      });
+    }
     if (marker) {
       const g = sampleDem(dem, marker);
       if (g != null) {
@@ -97,6 +121,6 @@ export function Terrain3D(props: Terrain3DProps) {
     window.addEventListener('resize', onR);
     return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', onR); ctl.dispose(); renderer.dispose(); geo.dispose(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dem, props.profile, exag, showF, sites, fMHz, props.txId, props.rxId, marker?.lat, marker?.lon]);
+  }, [dem, props.profile, exag, showF, sites, fMHz, props.txId, props.rxId, marker?.lat, marker?.lon, comm]);
   return <div ref={mount} className="three" style={props.height ? { height: props.height } : undefined} />;
 }
