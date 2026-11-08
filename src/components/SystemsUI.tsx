@@ -3,6 +3,7 @@ import { useStore } from '../store';
 import { SYSTEMS, ENABLES, SystemId } from '../data/systems';
 import { LvCalc, runCalc } from '../data/lvcalcs';
 import type { Project } from '../types';
+import { Num, MeasureCtx, shownIn } from './ui';
 
 /** Set the main type and sub-projects; turns on the matching design pages. */
 export function applySystems(d: Project, type: string | undefined, subs: string[]) {
@@ -36,15 +37,15 @@ export function ProjectTypePicker({ compact }: { compact?: boolean }) {
 /** One data-driven calculator. */
 export function LvCalcCard({ c }: { c: LvCalc }) {
   const [v, setV] = useState<Record<string, number>>({});
-  const out = runCalc(c, v);
+  const out = runCalc(c, v); const sys = React.useContext(MeasureCtx);
   return (
     <section className="card calc"><header><h3>{c.title}</h3></header>
       <div className="form">{c.inputs.map((i) => (
         <label key={i.k} className="field"><span className="field-label">{i.label}</span>
           {i.options ? <select value={v[i.k] ?? i.v} onChange={(e) => setV({ ...v, [i.k]: parseFloat(e.target.value) })}>{i.options.map(([n, l]) => <option key={n} value={n}>{l}</option>)}</select>
-            : <span className="num"><input type="number" step={i.step ?? 'any'} value={v[i.k] ?? i.v} onChange={(e) => setV({ ...v, [i.k]: e.target.value === '' ? 0 : parseFloat(e.target.value) })} />{i.unit && <span className="unit">{i.unit}</span>}</span>}
+            : <Num step={i.step ?? 'any'} value={v[i.k] ?? i.v} onChange={(x) => setV({ ...v, [i.k]: x ?? 0 })} unit={i.unit} />}
         </label>))}</div>
-      {out.map((o) => <div key={o.label} className={'calc-out' + (o.tone ? ' ' + o.tone : '')}><span>{o.label}</span><b>{o.value}{o.unit && <small> {o.unit}</small>}</b></div>)}
+      {out.map((o) => { const [val, un] = shownIn(o.value, o.unit, sys); return <div key={o.label} className={'calc-out' + (o.tone ? ' ' + o.tone : '')}><span>{o.label}</span><b>{val}{un && <small> {un}</small>}</b></div>; })}
       {c.note && <p className="small muted">{c.note}</p>}
     </section>
   );

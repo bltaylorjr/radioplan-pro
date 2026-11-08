@@ -57,7 +57,7 @@ export function CompanyPage() {
           <Field label="Engineer of record"><Txt value={m.engineer} onChange={setM('engineer')} /></Field>
           <Field label="PE license #"><Txt value={m.peLicense} onChange={setM('peLicense')} /></Field>
           <Field label="Project state (code set)" topic="compliance"><Sel<StateCode> value={m.state} onChange={(v) => update((d) => { d.meta.state = v; })} options={[['NC', 'North Carolina'], ['SC', 'South Carolina'], ['GA', 'Georgia'], ['TN', 'Tennessee']]} /></Field>
-          <Field label="Distance units" tip="All distances and radii are shown in this unit. Heights stay in metres."><Sel<'mi' | 'km'> value={p.settings.units ?? 'mi'} onChange={(v) => update((d) => { d.settings = { ...d.settings, units: v }; })} options={[['mi', 'Miles'], ['km', 'Kilometres']]} /></Field>
+          <Field label="Measurements" tip="Imperial shows feet, inches, square feet and miles; metric shows metres, millimetres, square metres and kilometres. Every page and report follows this choice; switching never changes your data."><Sel<'mi' | 'km'> value={p.settings.units ?? 'mi'} onChange={(v) => update((d) => { d.settings = { ...d.settings, units: v }; })} options={[['mi', 'Imperial (ft, in, mi)'], ['km', 'Metric (m, mm, km)']]} /></Field>
           <Field label="County" tip="Filled from the project address. Picks the local code rules."><Txt value={m.county} onChange={setM('county')} /></Field>
           <Field label="City / town" tip="Filled from the project address. In Tennessee it decides whether an exempt city enforces its own codes."><Txt value={m.city ?? ''} onChange={setM('city')} /></Field>
           <Field label="Date"><input type="date" value={m.created} onChange={(e) => setM('created')(e.target.value)} /></Field>

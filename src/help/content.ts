@@ -38,8 +38,10 @@ Not considered: zoning, land ownership, FAA airspace, existing towers and leasin
 
 The cache lives in the app's storage on that device (browser profile for the USB file, app data on PC and Android). **Clear cache** frees the space.` },
 
-  { id: 'company', title: 'Company & project', page: 'company', keywords: 'company title address logo license engineer client project number state county jurisdiction', summary: 'Enter your company details (used on every report header) and the project jurisdiction.',
+  { id: 'company', title: 'Company & project', page: 'company', keywords: 'company imperial metric units feet meters measurement title address logo license engineer client project number state county jurisdiction', summary: 'Enter your company details (used on every report header) and the project jurisdiction.',
     body: `**Project information**: project name, project number, client PO / contract number, project site address, revision and date.
+
+**Measurements:** choose Imperial (feet, inches, square feet, miles) or Metric (metres, millimetres, square metres, kilometres). Number boxes, results and distances switch at once; your data is not changed.
 
 **Your company information** (name, title, address, phone, license number and logo) and the **client / customer company** (name, contact, address, phone, email) are both printed in the header of every report.
 
@@ -308,7 +310,7 @@ Enter measured values and mark pass/fail; the results print in the Commissioning
 - **Grounding & structure**: ground rod resistance (Dwight), guy wire length.
 - **Location & units**: distance and bearing, DMS, unit and AWG conversions.
 
-Distances follow the unit chosen on Company & Project (miles by default).` },
+Distances and lengths follow **Measurements** on Company & Project: Imperial (ft, in, mi, the default) or Metric (m, mm, km).` },
 
   { id: 'sync', title: 'Sync between devices', page: 'sync', keywords: 'sync synchronize share bluetooth wifi wi-fi cellular nearby quick share qr code cloud onedrive google drive dropbox merge phone pc tablet', summary: 'Keep the PC, USB, tablet and phone copies of a project in step over Wi-Fi, Bluetooth / Nearby Share, or a cloud-drive folder.',
     body: `Every device keeps a full copy and works offline. Syncing **merges** copies: each part of the project (company, radio design, grounding, etc.) keeps the most recent change from either device, and sites, scenarios, run history, tests, survey points and Wi-Fi readings from both devices are combined. Deleting an item on one device deletes it on the other at the next sync.

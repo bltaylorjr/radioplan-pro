@@ -31,3 +31,13 @@ describe('template output', () => {
     for (const v of Object.values(p)) expect(v).not.toBeUndefined();
   });
 });
+import { measureFor } from '../src/components/ui';
+import { distUnits } from '../src/units';
+describe('imperial / metric', () => {
+  it('converts lengths both ways and leaves other units alone', () => {
+    expect(measureFor('m', 'imperial').unit).toBe('ft'); expect(measureFor('m', 'imperial').k).toBeCloseTo(3.28084, 4);
+    expect(measureFor(' ft', 'metric')).toEqual({ unit: ' m', k: 0.3048 });
+    expect(measureFor('ft', 'imperial').k).toBe(1); expect(measureFor('dBm', 'metric').k).toBe(1);
+    expect(distUnits('mi').len(10)).toBe('32.8 ft'); expect(distUnits('km').lenFt(100)).toBe('30.5 m');
+  });
+});

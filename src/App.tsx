@@ -17,6 +17,7 @@ import { TestingPage } from './pages/Testing';
 import { IndoorPage } from './pages/Indoor';
 import { LocatePage } from './pages/Locate';
 import { APP_VERSION } from './engine/update';
+import { MeasureCtx } from './components/ui';
 import { AutoTerrain } from './components/AutoTerrain';
 import { ScenariosPage } from './pages/Scenarios';
 import { NetworkPage } from './pages/Network';
@@ -116,6 +117,7 @@ export default function App() {
   };
   const groups = [...new Set(WORKFLOW.map((w) => w.group))];
   return (
+    <MeasureCtx.Provider value={project.settings.units === 'km' ? 'metric' : 'imperial'}>
     <div className={'app' + (navOpen ? ' nav-open' : '')}>
       <AutoTerrain />
       <Updater />
@@ -183,5 +185,6 @@ export default function App() {
       {helpOpen && !isHelp && <HelpPanel topic={topic} onClose={() => setHelpOpen(false)} onTour={topic.tour ? () => { setHelpOpen(false); setTour(true); } : undefined} />}
       {tour && topic.tour && <Tour steps={topic.tour} onClose={() => setTour(false)} />}
     </div>
+    </MeasureCtx.Provider>
   );
 }

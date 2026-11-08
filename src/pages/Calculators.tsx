@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useStore } from '../store';
-import { Num, Sel, fmt } from '../components/ui';
+import { Num, Sel, fmt, useMeasure } from '../components/ui';
 import { useUnits, DistNum } from '../units';
 import * as K from '../engine/calcs';
 import { fsplDb, fresnelRadiusM, radioHorizonKm, losDistanceKm, earthBulgeM, diffractionV, knifeEdgeLossDb, dbmToWatts, wattsToDbm, mpeComplianceDistanceM, mpeLimitMwCm2, cableLossPer100ft, empiricalPathLoss, mToFt, ftToM, Environment, CitySize } from '../engine/rf';
@@ -18,7 +18,7 @@ function Calc({ title, k, q, children, note, group }: { title: string; k: string
   return <section className="card calc"><header><h3>{title}</h3></header>{children}{note && <p className="small muted">{note}</p>}</section>;
 }
 const In = ({ label, children }: { label: string; children: React.ReactNode }) => <label className="field"><span className="field-label">{label}</span>{children}</label>;
-const Out = ({ label, v, u = '' }: { label: string; v: string | number; u?: string }) => <div className="calc-out"><span>{label}</span><b>{typeof v === 'number' ? (Number.isFinite(v) ? fmt(v, 2) : '—') : v}{u && <small> {u}</small>}</b></div>;
+const Out = ({ label, v, u = '' }: { label: string; v: string | number; u?: string }) => { const m = useMeasure(u); if (typeof v === 'number' && m.k !== 1) { v = v * m.k; u = m.unit ?? u; } return <div className="calc-out"><span>{label}</span><b>{typeof v === 'number' ? (Number.isFinite(v) ? fmt(v, 2) : '—') : v}{u && <small> {u}</small>}</b></div>; };
 const useN = (v: number) => useState<number | null>(v);
 
 function Group({ title, q, children }: { title: string; q: string; children: React.ReactNode }) {
@@ -152,8 +152,8 @@ export function CalculatorsPage() {
         <Calc q={q} title="Fresnel zone" k="clearance 60% first fresnel radius">
           <div className="form"><In label="Distance from TX"><DistNum km={frD1} onChange={setFrD1} /></In><In label="Distance to RX"><DistNum km={frD2} onChange={setFrD2} /></In><In label="Frequency"><Num value={frF} onChange={setFrF} unit="MHz" /></In></div>
           <Out label="1st Fresnel radius" v={`${fmt(fresnelRadiusM(r(frD1), r(frD2), r(frF)), 2)} m (${fmt(mToFt(fresnelRadiusM(r(frD1), r(frD2), r(frF))), 1)} ft)`} />
-          <Out label="60 % clearance" v={`${fmt(0.6 * fresnelRadiusM(r(frD1), r(frD2), r(frF)), 2)} m`} />
-          <Out label="Earth bulge (k)" v={`${fmt(earthBulgeM(r(frD1), r(frD2), p.radio.kFactor), 2)} m`} />
+          <Out label="60 % clearance" v={0.6 * fresnelRadiusM(r(frD1), r(frD2), r(frF))} u="m" />
+          <Out label="Earth bulge (k)" v={earthBulgeM(r(frD1), r(frD2), p.radio.kFactor)} u="m" />
         </Calc>
         <Calc q={q} title="Radio horizon & line of sight" k="k-factor 4/3 earth curvature distance">
           <div className="form"><In label="Antenna 1 height"><Num value={hzH1} onChange={setHzH1} unit="m" /></In><In label="Antenna 2 height"><Num value={hzH2} onChange={setHzH2} unit="m" /></In><In label="k-factor"><Num value={hzK} step={0.01} onChange={setHzK} /></In></div>

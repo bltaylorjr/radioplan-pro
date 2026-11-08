@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useStore } from '../store';
-import { Card } from '../components/ui';
+import { Card, Num } from '../components/ui';
 import { autoDesign, defaultInputs, AutoInputs, BLDG, BldgType, KIND_LABEL, Kind, TerrainInfo } from '../engine/autodesign';
 import { ProjectTypePicker } from '../components/SystemsUI';
 import { Building3D, KIND_COLOR } from '../components/Building3D';
@@ -32,7 +32,7 @@ export function AutoDesignPage() {
   const kinds = [...new Set([...r.trs, ...r.devices].map((d) => d.kind))];
   const systems = projectSystems(p.meta);
   const num = (k: keyof AutoInputs, label: string, unit?: string, tip?: string) => (
-    <label className="field" title={tip}><span>{label}</span><span className="num"><input type="number" min={0} value={x[k] as number} onChange={(e) => set(k, (parseFloat(e.target.value) || 0) as never)} />{unit && <span className="unit">{unit}</span>}</span></label>);
+    <label className="field" title={tip}><span>{label}</span><Num min={0} value={x[k] as number} onChange={(v) => set(k, (v || 0) as never)} unit={unit} /></label>);
   const applyDesigns = () => {
     const c = (k: Kind) => r.devices.filter((d) => d.kind === k).length;
     update((d) => {

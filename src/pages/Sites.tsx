@@ -73,7 +73,7 @@ export function SitesPage() {
         <div className="scroll-x"><table className="tbl"><thead><tr><th>Name</th><th>Lat</th><th>Lon</th><th>Ground (m)</th><th>Antenna AGL</th><th>Role</th></tr></thead>
           <tbody>{p.sites.map((x) => (
             <tr key={x.id} className={x.id === s.id ? 'sel' : ''} onClick={() => setSel(x.id)}>
-              <td>{x.name}</td><td>{x.lat.toFixed(5)}</td><td>{x.lon.toFixed(5)}</td><td>{x.groundElevM ?? '—'}</td><td>{x.antennaAglM} m</td>
+              <td>{x.name}</td><td>{x.lat.toFixed(5)}</td><td>{x.lon.toFixed(5)}</td><td>{u.len(x.groundElevM, 0)}</td><td>{u.len(x.antennaAglM)}</td>
               <td>{p.radio.txSiteId === x.id ? 'TX' : p.radio.rxSiteId === x.id ? 'RX' : ''}</td></tr>))}</tbody></table></div>
         <div className="row">
           <button onClick={() => update((d) => { d.radio.txSiteId = s.id; })}>Set as TX</button>

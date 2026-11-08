@@ -1,3 +1,7 @@
+# RadioPlan Pro 1.5.4
+
+- Imperial or metric: **Measurements** on Company & Project switches number boxes, results and distances between feet, inches, square feet and miles, and metres, millimetres, square metres and kilometres. Switching does not change your data.
+
 # RadioPlan Pro 1.5.3
 
 - Start a new project from a previous one: press **Reuse** on Projects & Storage (or pick the project in the new card), name the new job and tick what to carry over: project type, design, equipment and materials, pricing, drawing settings and your checklist items, and optionally the client, sites and attached files. Field notes, photos, tests, service calls and checklist ticks start empty, and the old project is not changed.
