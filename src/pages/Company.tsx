@@ -12,6 +12,7 @@ import { applyAddress, placeFromText } from '../compliance/place';
 import { CodesHere } from '../components/CodesHere';
 import { ProjectTypePicker } from '../components/SystemsUI';
 import { missingRequired, isMissing } from '../engine/required';
+import { findProjectSpot, moveSiteA } from '../engine/locateSite';
 import { loadCompanyDefault, saveCompanyDefault, clearCompanyDefault, applyCompanyDefault, CompanyDefault } from '../engine/companyDefault';
 
 export function CompanyPage() {
@@ -64,6 +65,7 @@ export function CompanyPage() {
           <Field label="Project number"><Txt value={m.number} onChange={setM('number')} /></Field>
           <Field label="Client PO / contract #"><Txt value={m.poNumber ?? ''} onChange={setM('poNumber')} /></Field>
           <Field label="Project site address" wide required missing={showReq && isMissing(p, 'address')} tip="Where the work is. Use the Find Location page to turn it into GPS coordinates."><span onBlur={() => fillPlace(m.siteAddress ?? '')}><AddressInput value={m.siteAddress ?? ''} onChange={setM('siteAddress')} onPick={(g) => update((d) => applyAddress(d, g))} /></span></Field>
+          {(m.siteAddress || m.city) && <div className="field wide"><button disabled={busy} onClick={async () => { setBusy(true); const spot = await findProjectSpot(p); setBusy(false); if (spot) { update((d) => moveSiteA(d, spot)); setSaveMsg(`Site A placed at ${spot.label} ✓`); } else setSaveMsg('Saved. Could not find that address on the map.'); }}>📍 Put Site A at this address</button></div>}
           <Field label="Site ZIP code" tip="Fills the state, county and city."><input type="text" inputMode="numeric" maxLength={10} value={m.siteZip ?? ''} onChange={(e) => { const z = e.target.value; setM('siteZip')(z); if (/^\d{5}$/.test(z)) fillPlace(z); }} /></Field>
           <Field label="Revision"><Txt value={m.revision} onChange={setM('revision')} /></Field>
           <Field label="Engineer of record"><Txt value={m.engineer} onChange={setM('engineer')} /></Field>

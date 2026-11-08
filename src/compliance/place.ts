@@ -4,10 +4,10 @@ import type { Project, StateCode } from '../types';
 import { countyAt, towns } from '../engine/refdata';
 
 /** State, county and city from a ZIP code, "City, ST", a full address or a town name, using the built-in data (works offline). */
-export function placeFromText(text: string, preferState?: string): { state: StateCode; county?: string; city?: string } | null {
+export function placeFromText(text: string, preferState?: string): { state: StateCode; county?: string; city?: string; lat: number; lon: number } | null {
   const t = (text ?? '').trim(); if (!t) return null;
   const zipM = t.match(/\b(\d{5})(?:-\d{4})?\b/);
-  if (zipM) for (const tw of towns()) if (tw.zips.includes(zipM[1])) return { state: tw.state as StateCode, county: countyAt(tw.lat, tw.lon)?.county, city: tw.city };
+  if (zipM) for (const tw of towns()) if (tw.zips.includes(zipM[1])) return { state: tw.state as StateCode, county: countyAt(tw.lat, tw.lon)?.county, city: tw.city, lat: tw.lat, lon: tw.lon };
   const low = t.toLowerCase();
   const stM = low.match(/\b(nc|sc|ga|tn|north carolina|south carolina|georgia|tennessee)\b/);
   const st = stM ? ({ 'north carolina': 'NC', 'south carolina': 'SC', georgia: 'GA', tennessee: 'TN' } as Record<string, string>)[stM[1]] ?? stM[1].toUpperCase() : undefined;
@@ -18,7 +18,7 @@ export function placeFromText(text: string, preferState?: string): { state: Stat
     if (!c) continue;
     const hits = towns().filter((tw) => tw.city.toLowerCase() === c && (!st || tw.state === st));
     const tw = hits.find((h) => h.state === preferState) ?? hits[0];
-    if (tw) return { state: tw.state as StateCode, county: countyAt(tw.lat, tw.lon)?.county, city: tw.city };
+    if (tw) return { state: tw.state as StateCode, county: countyAt(tw.lat, tw.lon)?.county, city: tw.city, lat: tw.lat, lon: tw.lon };
   }
   return null;
 }

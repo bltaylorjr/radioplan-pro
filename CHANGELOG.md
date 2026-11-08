@@ -1,3 +1,8 @@
+# RadioPlan Pro 1.5.12
+
+- Sites left at the old Charlotte default are moved to the project's town when the project opens (sites you placed yourself are not touched).
+- **Move Site A to the project address** on Map & Directions (shown when Site A is outside the project's county) and **Put Site A at this address** on Company & Project. Online it finds the street address; offline it uses the town or ZIP center.
+
 # RadioPlan Pro 1.5.11
 
 - New **Map & Directions** page (Tools): the project site address on a map with the client contact, one-tap driving directions in Google Maps, Apple Maps or Waze from where you are or from your office, your position and straight-line distance, and copy address / GPS.

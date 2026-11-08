@@ -5,6 +5,7 @@ import { useStore } from '../store';
 import { Card } from '../components/ui';
 import { MapView } from '../components/MapView';
 import { useUnits } from '../units';
+import { findProjectSpot, moveSiteA, siteOutsideProject } from '../engine/locateSite';
 
 const R = 6371;
 const hav = (a: { lat: number; lon: number }, b: { lat: number; lon: number }) => {
@@ -18,7 +19,8 @@ const bearing = (a: { lat: number; lon: number }, b: { lat: number; lon: number 
 const compass = (d: number) => ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'][Math.round(d / 45) % 8];
 
 export function DirectionsPage() {
-  const { project: p, go } = useStore();
+  const { project: p, go, update } = useStore();
+  const [busy, setBusy] = useState(false);
   const u = useUnits();
   const m = p.meta, c = p.company, s = p.sites[0];
   const hasPos = !!s && Number.isFinite(s.lat) && (s.lat !== 0 || s.lon !== 0);
@@ -37,6 +39,8 @@ export function DirectionsPage() {
   const gmaps = (from?: string) => `https://www.google.com/maps/dir/?api=1${from ? `&origin=${enc(from)}` : ''}&destination=${enc(address || destLL)}&travelmode=driving`;
   const apple = (from?: string) => `https://maps.apple.com/?${from ? `saddr=${enc(from)}&` : ''}daddr=${enc(address || destLL)}&dirflg=d`;
   const waze = `https://waze.com/ul?${address ? `q=${enc(address)}` : `ll=${enc(destLL)}`}&navigate=yes`;
+  const outside = siteOutsideProject(p);
+  const moveHere = async () => { setBusy(true); setMsg('Finding the address…'); const spot = await findProjectSpot(p); setBusy(false); if (!spot) { setMsg('Could not find that address. Check it on Company & Project.'); return; } update((d) => moveSiteA(d, spot)); setMsg(`Site A moved to ${spot.label} ✓${spot.acc > 100 ? ' (approximate: town center, no internet)' : ''}`); };
   const copy = (t: string) => { navigator.clipboard?.writeText(t).then(() => setMsg('Copied ✓'), () => setMsg(t)); };
 
   if (!dest) return <Card title="Map & directions"><p>Enter the project site address on <a href="#company" onClick={(e) => { e.preventDefault(); go('company'); }}>Company & Project</a> (or place Site A on the map) to see the map and get directions.</p></Card>;
@@ -48,7 +52,7 @@ export function DirectionsPage() {
           <div>
             <h3 style={{ margin: '0 0 4px' }}>📍 {m.name}</h3>
             <div>{address || 'No street address yet'}</div>
-            <div className="small muted">{[m.county, m.state].filter(Boolean).join(', ')}{destLL && <> · GPS {destLL}</>}{hasPos && s.groundElevM != null && <> · elevation {u.len(s.groundElevM, 0)}</>}</div>
+            <div className="small muted">{[m.city, m.county, m.state].filter(Boolean).join(', ')}{destLL && <> · GPS {destLL}</>}{hasPos && s.groundElevM != null && <> · elevation {u.len(s.groundElevM, 0)}</>}</div>
             {m.client && <div className="small">Client: {m.client}{m.clientContact ? ` · ${m.clientContact}` : ''}{m.clientPhone && <> · <a href={`tel:${m.clientPhone.replace(/[^0-9+]/g, '')}`}>{m.clientPhone}</a></>}</div>}
           </div>
           <div className="row wrap">
@@ -56,7 +60,7 @@ export function DirectionsPage() {
             {destLL && <button onClick={() => copy(destLL)}>📋 Copy GPS</button>}
           </div>
         </div>
-        {hasPos && m.siteAddress && !/geocod|address/i.test(s.positionSource ?? '') && <p className="note small">The map shows Site A's saved position, which may not be this address yet. <a href="#company" onClick={(e) => { e.preventDefault(); go('company'); }}>Press Find address → GPS</a> on Company & Project to move it. Directions already go to the address.</p>}
+        {hasPos && (outside || (m.siteAddress && !/geocod|town/i.test(s.positionSource ?? ''))) && <p className={'note' + (outside ? ' req-note' : ' small')}>{outside ? <>Site A is not in {m.county}; it is still at an older position. </> : <>The map shows Site A's saved position, which may not be this exact address. </>}<button className="primary" disabled={busy} onClick={moveHere}>📍 Move Site A to the project address</button> Directions already go to the address.</p>}
         {hasPos ? <MapView sites={p.sites} height={420} selectedId={s.id} center={{ lat: s.lat, lon: s.lon, zoom: 15 }} marker={here ? { lat: here.lat, lon: here.lon, label: 'You are here' } : null} />
           : <p className="note">The map needs a position for Site A. Press <b>Find address → GPS</b> on Company & Project; directions below already work from the address.</p>}
       </Card>

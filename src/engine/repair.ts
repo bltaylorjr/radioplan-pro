@@ -2,7 +2,7 @@
 // so an old, partly-synced or hand-edited project file always opens.
 import type { Project } from '../types';
 import { defaultProject } from '../defaults';
-import { countyOfTown } from '../compliance/place';
+import { countyOfTown, placeFromText } from '../compliance/place';
 
 const isObj = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
 const LISTS = ['tests', 'runLog', 'scenarios', 'fieldNotes', 'serviceLog', 'bomExtra', 'documents', 'proposal'] as const;
@@ -52,6 +52,18 @@ export function repairProject(input: unknown): { project: Project; fixes: string
   for (const k of ['tests', 'fieldNotes', 'serviceLog', 'bomExtra', 'documents'] as const) {
     const arr = out[k]; if (!Array.isArray(arr)) continue; const ids = new Set<string>();
     out[k] = arr.filter(isObj).map((x) => { let id = String(x.id ?? ''); if (!id || ids.has(id)) { id = Math.random().toString(36).slice(2, 10); fixes.push(`A ${k} entry had a duplicate id; fixed`); } ids.add(id); return { ...x, id }; });
+  }
+  // Older default sites sat in Charlotte; move untouched ones to the project's town (or the Asheville default).
+  const OLD: Record<string, [number, number]> = { A: [35.2271, -80.8431], B: [35.2896, -80.734] };
+  const mm = out.meta as { city?: string; state?: string; siteAddress?: string };
+  if (!/charlotte/i.test(mm?.city ?? '')) {
+    const town = placeFromText(mm?.siteAddress || `${mm?.city ?? ''}, ${mm?.state ?? ''}`, mm?.state);
+    const base = town ? { lat: town.lat, lon: town.lon } : { lat: 35.5951, lon: -82.5515 };
+    out.sites = (out.sites as Record<string, unknown>[]).map((s) => {
+      const o = OLD[String(s.id)]; if (!o || s.lat !== o[0] || s.lon !== o[1] || s.positionSource !== 'Manual') return s;
+      fixes.push(`${s.name} moved from the old Charlotte default to ${town?.city ?? 'Asheville'}`);
+      return { ...s, lat: +(base.lat + (s.id === 'B' ? 0.045 : 0)).toFixed(6), lon: +(base.lon + (s.id === 'B' ? 0.07 : 0)).toFixed(6), groundElevM: null };
+    });
   }
   // Older default name.
   if ((out.meta as { name?: string })?.name === 'New radio site project') out.meta = { ...(out.meta as object), name: 'New project' };

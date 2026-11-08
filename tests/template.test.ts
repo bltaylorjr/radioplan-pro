@@ -55,3 +55,16 @@ describe('place from city, ZIP or address', () => {
     expect(repairProject(p).project.meta.county).toBe('Buncombe County');
   });
 });
+describe('old Charlotte default sites', () => {
+  it('move to the project town when untouched', () => {
+    const p = defaultProject(); p.meta.city = 'Asheville'; p.meta.county = 'Buncombe County';
+    Object.assign(p.sites[0], { lat: 35.2271, lon: -80.8431, positionSource: 'Manual' });
+    const r = repairProject(p).project.sites[0];
+    expect(Math.abs(r.lat - 35.59)).toBeLessThan(0.1); expect(Math.abs(r.lon + 82.55)).toBeLessThan(0.1);
+  });
+  it('leave a site the user placed alone', () => {
+    const p = defaultProject(); p.meta.city = 'Asheville';
+    Object.assign(p.sites[0], { lat: 35.2271, lon: -80.8431, positionSource: 'GPS' });
+    expect(repairProject(p).project.sites[0].lat).toBe(35.2271);
+  });
+});
