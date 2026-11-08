@@ -1,3 +1,8 @@
+# LvPlan Pro 1.5.30
+
+- Fix: the **📡 Existing towers & comm sites** map layer stays on when you move between pages (leaving a page with a map used to switch it off).
+- Introduction video: tower labels now show on the Map & Terrain scene.
+
 # LvPlan Pro 1.5.29
 
 - Introduction video: the map zooms in to show the tower labels, the drawing set shows the floor plan sheets, and the demo project is a fire alarm job with paging, access control and CCTV, so the 3D model, plans and materials are filled in.

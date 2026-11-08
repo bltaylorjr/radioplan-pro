@@ -35,7 +35,8 @@ function towersOverlay(m: L.Map): L.LayerGroup {
   };
   m.on('moveend zoomend', () => { window.clearTimeout(timer); timer = window.setTimeout(refresh, 500); });
   g.on('add', () => { try { localStorage.setItem('radioplan.towers', '1'); } catch { /* ignore */ } refresh(); });
-  g.on('remove', () => { try { localStorage.setItem('radioplan.towers', '0'); } catch { /* ignore */ } ctrl?.abort(); g.clearLayers(); say(''); });
+  g.on('remove', () => { // only a user switching it off counts, not the map closing when you leave the page
+    if (!(m as unknown as { _lvClosing?: boolean })._lvClosing) try { localStorage.setItem('radioplan.towers', '0'); } catch { /* ignore */ } ctrl?.abort(); g.clearLayers(); say(''); });
   return g;
 }
 
@@ -125,7 +126,7 @@ export function MapView({ sites, txId, rxId, coverage, floor = -110, dem, onClic
     map.current = m;
     if (!center && sites.length > 1) m.fitBounds(L.latLngBounds(sites.map((s) => [s.lat, s.lon])), { padding: [40, 40] });
     onMap?.(m);
-    return () => { m.remove(); map.current = undefined; };
+    return () => { (m as unknown as { _lvClosing?: boolean })._lvClosing = true; m.remove(); map.current = undefined; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   useEffect(() => { if (center && map.current) map.current.setView([center.lat, center.lon], center.zoom ?? map.current.getZoom()); }, [center?.lat, center?.lon, center?.zoom]); // eslint-disable-line react-hooks/exhaustive-deps
