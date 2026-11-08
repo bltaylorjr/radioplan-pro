@@ -3,6 +3,7 @@ import React, { createContext, useContext, useEffect, useMemo, useRef, useState 
 import type { Project } from './types';
 import { defaultProject } from './defaults';
 import { repairProject } from './engine/repair';
+import { loadCompanyDefault, applyCompanyDefault } from './engine/companyDefault';
 import type { DemGrid, ProfileAnalysis } from './engine/terrain';
 import type { CoverageResult } from './engine/coverage';
 import { stampSync } from './engine/sync';
@@ -139,6 +140,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       newProject: async (p, name, terrainFrom) => {
         await flush();
         const np = fresh(p ? structuredClone(p) : defaultProject()); delete np.sync;
+        applyCompanyDefault(np, await loadCompanyDefault().catch(() => undefined));
         if (name) np.meta.name = name;
         const id = newId(); await putProject(id, np);
         if (terrainFrom) { const d = await loadTerrain(terrainFrom); if (d) await saveTerrain(id, d); }

@@ -113,6 +113,8 @@ export async function listVersions(pid: string): Promise<VersionRecord[]> {
 export const getVersion = (vid: number) => run<VersionRecord | undefined>('versions', 'readonly', (s) => s.get(vid));
 export const kvGet = <T,>(k: string) => run<T | undefined>('kv', 'readonly', (s) => s.get(k)).catch(() => undefined);
 export const kvSet = (k: string, v: unknown) => run('kv', 'readwrite', (s) => v === undefined ? s.delete(k) : s.put(v, k));
+/** Keys in the app database that start with a prefix. */
+export const kvKeys = async (prefix: string) => ((await run<IDBValidKey[]>('kv', 'readonly', (s) => s.getAllKeys()).catch(() => [] as IDBValidKey[])).map(String).filter((k) => k.startsWith(prefix)));
 
 /** Full backup of every project (with terrain) as one JSON text. */
 export async function backupAll(): Promise<string> {
@@ -132,8 +134,8 @@ export async function kvDump(): Promise<Record<string, unknown>> {
   const out: Record<string, unknown> = {};
   for (const k of keys) {
     const v = await kvGet<unknown>(String(k)); if (v === undefined) continue;
-    const blob = (v as { blob?: Blob })?.blob;
-    out[String(k)] = blob instanceof Blob ? { ...(v as object), blob: { __b64: b64(new Uint8Array(await blob.arrayBuffer())), type: blob.type } } : v;
+    const enc1 = async (x: unknown) => { const blob = (x as { blob?: Blob })?.blob; return blob instanceof Blob ? { ...(x as object), blob: { __b64: b64(new Uint8Array(await blob.arrayBuffer())), type: blob.type } } : x; };
+    out[String(k)] = Array.isArray(v) ? await Promise.all(v.map(enc1)) : await enc1(v);
   }
   return out;
 }
@@ -141,9 +143,8 @@ export async function kvDump(): Promise<Record<string, unknown>> {
 export async function kvRestore(kv: Record<string, unknown> | undefined): Promise<number> {
   let n = 0;
   for (const [k, raw] of Object.entries(kv ?? {})) {
-    let v = raw as Record<string, unknown> | unknown[];
-    const enc = (v as { blob?: { __b64?: string; type?: string } })?.blob;
-    if (enc?.__b64) v = { ...(v as object), blob: new Blob([unb64(enc.__b64)], { type: enc.type }) };
+    const dec1 = (x: unknown) => { const enc = (x as { blob?: { __b64?: string; type?: string } })?.blob; return enc?.__b64 ? { ...(x as object), blob: new Blob([unb64(enc.__b64)], { type: enc.type }) } : x; };
+    let v = (Array.isArray(raw) ? raw.map(dec1) : dec1(raw)) as Record<string, unknown> | unknown[];
     const cur = await kvGet<unknown>(k);
     const ids = (a: unknown[]) => new Set(a.map((x) => (x as { id?: string })?.id));
     if (Array.isArray(v) && Array.isArray(cur)) { const have = ids(cur); v = [...cur, ...v.filter((x) => !have.has((x as { id?: string })?.id))]; }

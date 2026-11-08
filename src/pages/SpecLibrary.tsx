@@ -1,4 +1,5 @@
 import { Datasheet } from '../components/Datasheet';
+import { ItemManuals, ManualShelf } from '../components/Manuals';
 import { recsFor } from '../data/mfrrecs';
 
 /** Manufacturer recommendations: the model's own list, then the category's general points. */
@@ -198,6 +199,7 @@ export function SpecLibraryPage() {
         {item.notes && <p className="note">{item.notes}</p>}
         <MfrRecs item={item} />
         <Datasheet item={item} searchUrl={searchUrl(item)} />
+        <ItemManuals item={item} />
         {item.kind !== 'Standard' && <p className="small muted">{item.kind === 'Product (typical)' ? 'Typical values for planning. Confirm the current manufacturer datasheet before ordering.' : 'Entered by you.'}</p>}
       </Card>}
 
@@ -205,6 +207,18 @@ export function SpecLibraryPage() {
         <div className="tbl-wrap"><table className="tbl"><thead><tr><th>Specification</th>{compared.map((c) => <th key={c.id}>{c.brand}<br />{c.model}</th>)}</tr></thead>
           <tbody>{cmpKeys.map((k) => <tr key={k}><th>{k}</th>{compared.map((c) => <td key={c.id}>{c.specs[k] != null ? String(c.specs[k]) : '—'}</td>)}</tr>)}</tbody></table></div>
       </Card>}
+      <Card title="Service & technician resources" className="wide" tip="Manuals and documents that aren't tied to one item: panel programming guides, service bulletins, company procedures, training. They are kept on this device, open with no internet and are included in Back up all projects.">
+        <ManualShelf owner="general" title="My manuals and documents" />
+        <h4>In the app</h4>
+        <div className="row wrap">
+          <a className="button" href="#troubleshoot">🛠 Troubleshooting wizard</a>
+          <a className="button" href="#service">🧾 Service & maintenance log and PM schedule</a>
+          <a className="button" href="#install">📐 Installation guides and wiring diagrams</a>
+          <a className="button" href="#calculators">🧮 Calculators</a>
+          <a className="button" href="#help">❓ Help manual</a>
+        </div>
+        <p className="small muted">Each item above also has its own manuals: pick it in the list and use <b>Attach file</b>, <b>Add link</b> or <b>Find … online</b>. Manufacturer service manuals are often behind a dealer login; download them there and attach the PDF here.</p>
+      </Card>
     </div>
   );
 }

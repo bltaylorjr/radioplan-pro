@@ -7,5 +7,6 @@ import { StoreProvider } from './store';
 import { installChunkRecovery } from './components/SelfRepair';
 
 installChunkRecovery();
+import('./components/chooseOne').then((m) => m.installChooseOne());
 
 createRoot(document.getElementById('root')!).render(<React.StrictMode><StoreProvider><App /></StoreProvider></React.StrictMode>);

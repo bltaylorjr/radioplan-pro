@@ -166,7 +166,7 @@ export default function App() {
               <div><div className="crumb">{stepNo(current) ? `Step ${stepNo(current)} of ${STEPS.length} · ${current.group}` : current.group}</div><h1>{current.label}</h1></div>
               <div className="row wrap page-nav">
                 <button disabled={idx <= 0} onClick={() => go(WORKFLOW[idx - 1].id)} aria-label="Previous page" title={WORKFLOW[idx - 1]?.label}>←</button>
-                <select value={current.id} onChange={(e) => go(e.target.value)} aria-label="Go to page">
+                <select value={current.id} onChange={(e) => go(e.target.value)} aria-label="Go to page" data-no-choose>
                   {groups.map((g) => <optgroup key={g} label={g}>{WORKFLOW.filter((w) => w.group === g).map((w) => <option key={w.id} value={w.id}>{stepNo(w) ? `${stepNo(w)}. ` : ''}{w.label}</option>)}</optgroup>)}
                 </select>
                 <button disabled={idx >= WORKFLOW.length - 1} onClick={() => go(WORKFLOW[idx + 1].id)} aria-label="Next page" title={WORKFLOW[idx + 1]?.label}>→</button>

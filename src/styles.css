@@ -285,3 +285,4 @@ body { font-size: clamp(15px, 0.6vw + 12.5px, 17px); }
 .field.missing input, .field.missing select, .field.missing textarea, .field.missing .addr > input { border-color: #d32f2f; box-shadow: 0 0 0 1px #d32f2f33; }
 .req-box.missing { border-left: 3px solid #d32f2f; padding-left: 8px; }
 .req-note { border-left-color: #d32f2f; }
+.manuals { margin: 12px 0; border-top: 1px solid var(--line); padding-top: 8px; } .manual-list { list-style: none; padding: 0; margin: 2px 0 8px; } .manual-list li { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }

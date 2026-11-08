@@ -1,3 +1,11 @@
+# RadioPlan Pro 1.5.9
+
+- Specifications Library: every item has a **Service, technician and installation manuals** shelf. Attach PDFs, pictures or videos, or add a link (saved offline when the site allows), sorted by type: installation, service / repair, technician / programming, operation, wiring diagram, parts list, firmware notes, training. **Find … online** searches for the exact model.
+- New **Service & technician resources** card for manuals not tied to one item (panel programming guides, service bulletins, company procedures), with shortcuts to troubleshooting, the service log, installation guides and calculators.
+- Manuals open with no internet and are included in **Back up all projects**.
+- **Save as my default** on Company & Project keeps your company information, logo, engineer and PE license on this device; every new project fills them in, and empty fields in any project fill in when you open Company & Project.
+- Every dropdown starts with **— Choose one —**.
+
 # RadioPlan Pro 1.5.8
 
 - Required project information: project name, project type, client, site address, city, county, state and your company name are marked *. Empty ones are outlined in red with a list at the top of Company & Project, a count on the menu, and a reminder on Reports.

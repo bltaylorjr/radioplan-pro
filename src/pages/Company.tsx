@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useStore } from '../store';
 import { Card, Field, Txt, Sel, Badge } from '../components/ui';
 import { geocodeAddress, GeoResult } from '../engine/geocode';
@@ -12,6 +12,7 @@ import { applyAddress, placeFromText } from '../compliance/place';
 import { CodesHere } from '../components/CodesHere';
 import { ProjectTypePicker } from '../components/SystemsUI';
 import { missingRequired, isMissing } from '../engine/required';
+import { loadCompanyDefault, saveCompanyDefault, clearCompanyDefault, applyCompanyDefault, CompanyDefault } from '../engine/companyDefault';
 
 export function CompanyPage() {
   const { project: p, update, go } = useStore();
@@ -44,6 +45,9 @@ export function CompanyPage() {
     go('terrain');
   };
   const onLogo = (f?: File) => { if (!f) return; const rd = new FileReader(); rd.onload = () => update((d) => { d.company.logoDataUrl = rd.result as string; }); rd.readAsDataURL(f); };
+  const [def, setDef] = useState<CompanyDefault | undefined>();
+  const [defMsg, setDefMsg] = useState('');
+  useEffect(() => { loadCompanyDefault().then((d) => { setDef(d); if (d) update((x) => { applyCompanyDefault(x, d); }); }).catch(() => undefined); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const j = JURISDICTIONS[m.state];
   return (
     <div className="grid2">
@@ -87,6 +91,13 @@ export function CompanyPage() {
             {c.logoDataUrl && <img src={c.logoDataUrl} alt="logo" className="logo-prev" />}
           </Field>
         </div>
+        <div className="row wrap company-default">
+          <button className="primary" disabled={!c.name.trim()} onClick={async () => { await saveCompanyDefault(p); setDef(await loadCompanyDefault()); setDefMsg('Saved as your default ✓ New projects fill these in by themselves.'); }}>💾 Save as my default</button>
+          {def && <button onClick={() => { update((x) => { x.company = structuredClone(def.company); if (def.engineer) x.meta.engineer = def.engineer; if (def.peLicense) x.meta.peLicense = def.peLicense; }); setDefMsg('Filled from your default ✓'); }}>↺ Fill from my default</button>}
+          {def && <button className="ghost" onClick={async () => { if (confirm('Stop filling new projects with your saved company information?')) { await clearCompanyDefault(); setDef(undefined); setDefMsg('Default removed. This project keeps its information.'); } }}>Remove default</button>}
+          <span className="small muted">{def ? `Default saved ${new Date(def.savedAt).toLocaleDateString()}: ${def.company.name}${def.company.logoDataUrl ? ', with logo' : ''}${def.engineer ? `, engineer ${def.engineer}` : ''}. Empty fields fill in automatically.` : 'Save your company, logo, engineer and PE license once; every new project fills them in.'}</span>
+        </div>
+        {defMsg && <p className="small note" role="status">{defMsg}</p>}
         <div className="row" data-tour="company-geocode">
           <button className="primary" disabled={busy || !fullAddr} onClick={find}>{busy ? 'Searching…' : '📍 Find address → GPS'}</button>
           <span className="muted small">Links this address to GPS coordinates, the topographic map and terrain elevation.</span>

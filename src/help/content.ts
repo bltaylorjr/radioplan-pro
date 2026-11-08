@@ -45,6 +45,8 @@ The cache lives in the app's storage on that device (browser profile for the USB
 
 **Required fields (*):** project name, project type, client, site address, city, county, state and your company name. Empty ones are outlined in red, listed at the top of the page and counted on the menu until they are filled in.
 
+**Save as my default:** after entering your company, logo, engineer and PE license, press **Save as my default**. New projects fill them in automatically; **Fill from my default** copies them into an older project.
+
 **Your company information** (name, title, address, phone, license number and logo) and the **client / customer company** (name, contact, address, phone, email) are both printed in the header of every report.
 
 **Project state** selects the code set used by the compliance checker: North Carolina, South Carolina, Georgia or Tennessee. The county is printed on reports; check whether the county or city enforces a different code edition.
@@ -325,8 +327,10 @@ Distances and lengths follow **Measurements** on Company & Project: Imperial (ft
 
 No RadioPlan server or account is involved; data moves only between your devices or through your own cloud drive.` },
 
-  { id: 'library', title: 'Specifications library', page: 'library', keywords: 'specifications specs datasheet library equipment catalog low voltage antenna coax cable connector bda das fire alarm battery solar wifi poe cat6 fiber conductor compare import csv', summary: 'Search, compare and add specifications for low-voltage and radio equipment.',
-    body: `**Manufacturer recommendations:** each item shows the installation, wiring, environment and maintenance points manufacturers in that category commonly state, and your own items can carry the model's exact recommendations (Edit → one per line, from the installation manual).
+  { id: 'library', title: 'Specifications library', page: 'library', keywords: 'specifications specs datasheet manual service manual technician programming repair parts library equipment catalog low voltage antenna coax cable connector bda das fire alarm battery solar wifi poe cat6 fiber conductor compare import csv', summary: 'Search, compare and add specifications for low-voltage and radio equipment.',
+    body: `**Manuals:** pick an item, then under *Service, technician and installation manuals* choose the type and use **Attach file** (PDF, picture, video), **Add link** or **Find … online**. The **Service & technician resources** card holds manuals that aren't tied to one item. All of them open offline and are in backups.
+
+**Manufacturer recommendations:** each item shows the installation, wiring, environment and maintenance points manufacturers in that category commonly state, and your own items can carry the model's exact recommendations (Edit → one per line, from the installation manual).
 
 The library holds three kinds of entries:
 
