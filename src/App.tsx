@@ -110,6 +110,12 @@ export default function App() {
   const STEPS = VIS.filter((w) => w.group !== 'Tools');
   const stepNo = (w: { id: string }) => { const i = STEPS.findIndex((x) => x.id === w.id); return i < 0 ? null : i + 1; };
   const idx = current ? VIS.indexOf(current) : -1;
+  const skipped = new Set(project.meta.skipped ?? []);
+  const canSkip = (id: string) => id !== 'company' && WORKFLOW.find((w) => w.id === id)?.group !== 'Tools';
+  /** Previous / next page, passing over skipped steps. */
+  const near = (dir: 1 | -1) => { for (let i = idx + dir; i >= 0 && i < VIS.length; i += dir) if (!skipped.has(VIS[i].id)) return VIS[i]; return undefined; };
+  const prevW = near(-1), nextW = near(1);
+  const setSkip = (id: string, on: boolean) => update((d) => { const s = new Set(d.meta.skipped ?? []); if (on) s.add(id); else s.delete(id); d.meta.skipped = [...s]; });
   const findings = evaluateCompliance({ project, profile: rt.profile });
   const nViol = findings.filter((f) => f.severity === 'violation').length;
   const nReq = missingRequired(project).length;
@@ -157,8 +163,8 @@ export default function App() {
           <div key={g} className="nav-group">
             <div className="nav-group-title">{custom && !showAll ? g.replace(/^\d+ · /, '') : g}</div>
             {VIS.filter((w) => w.group === g).map((w) => (
-              <a key={w.id} href={`#${w.id}`} className={w.id === current?.id ? 'active' : ''} onClick={(e) => { e.preventDefault(); go(w.id); }}>
-                {(() => { const cl = checklistFor(w.id), pr = cl && progressOf(cl, project), full = !!pr && pr.total > 0 && pr.done === pr.total; return <span className={'step-dot' + (full ? ' done' : '') + (stepNo(w) ? '' : ' tool')} title={pr ? `${pr.done} of ${pr.total} checklist items done` : undefined}>{full ? '✓' : stepNo(w) ?? '•'}</span>; })()}
+              <a key={w.id} href={`#${w.id}`} className={(w.id === current?.id ? 'active' : '') + (skipped.has(w.id) ? ' skipped' : '')} title={skipped.has(w.id) ? 'Skipped on this project' : undefined} onClick={(e) => { e.preventDefault(); go(w.id); }}>
+                {(() => { const cl = checklistFor(w.id), pr = cl && progressOf(cl, project), full = !!pr && pr.total > 0 && pr.done === pr.total; return <span className={'step-dot' + (full ? ' done' : '') + (stepNo(w) ? '' : ' tool')} title={pr ? `${pr.done} of ${pr.total} checklist items done` : undefined}>{skipped.has(w.id) ? '–' : full ? '✓' : stepNo(w) ?? '•'}</span>; })()}
                 {w.label}
                 {w.id === 'compliance' && nViol > 0 && <span className="pill bad">{nViol}</span>}
                 {w.id === 'company' && rt.showRequired && nReq > 0 && <span className="pill bad" title={`${nReq} required field(s) empty`}>{nReq}</span>}
@@ -170,7 +176,7 @@ export default function App() {
         <div className="nav-group"><a href={lastTopic ? `#help/${lastTopic}` : '#help'} className={isHelp ? 'active' : ''}><span className="step-dot">?</span>Help manual</a></div>
         <div className="nav-group mobile-only"><div className="nav-group-title">Project file</div>
           <div className="row wrap" style={{ padding: '0 8px' }}><button onClick={() => go('projects')}>Projects</button><button onClick={open}>Open file</button><button onClick={save}>Export</button></div></div>
-        <div className="progress">{(() => { const t = CHECKLISTS.filter((c) => VIS.some((w) => w.id === c.page)).map((c) => progressOf(c, project)).reduce((a, b) => ({ done: a.done + b.done, total: a.total + b.total }), { done: 0, total: 0 }); return `Checklists: ${t.done} of ${t.total} items done`; })()}</div>
+        <div className="progress">{(() => { const t = CHECKLISTS.filter((c) => VIS.some((w) => w.id === c.page) && !skipped.has(c.page)).map((c) => progressOf(c, project)).reduce((a, b) => ({ done: a.done + b.done, total: a.total + b.total }), { done: 0, total: 0 }); return `Checklists: ${t.done} of ${t.total} items done`; })()}</div>
       </nav>
       <main className="content">
         {isHelp ? <HelpManual initial={page.split('/')[1]} /> : current && (
@@ -178,21 +184,22 @@ export default function App() {
             <div className="page-head">
               <div><div className="crumb">{stepNo(current) ? `Step ${stepNo(current)} of ${STEPS.length} · ${current.group}` : current.group}</div><h1>{current.label}</h1></div>
               <div className="row wrap page-nav">
-                <button disabled={idx <= 0} onClick={() => go(VIS[idx - 1].id)} aria-label="Previous page" title={VIS[idx - 1]?.label}>←</button>
+                <button disabled={!prevW} onClick={() => prevW && go(prevW.id)} aria-label="Previous page" title={prevW?.label}>←</button>
                 <select value={current.id} onChange={(e) => go(e.target.value)} aria-label="Go to page" data-no-choose>
                   {!VIS.includes(current) && <option value={current.id}>{current.label}</option>}
                   {groups.map((g) => <optgroup key={g} label={g}>{VIS.filter((w) => w.group === g).map((w) => <option key={w.id} value={w.id}>{stepNo(w) ? `${stepNo(w)}. ` : ''}{w.label}</option>)}</optgroup>)}
                 </select>
-                <button disabled={idx >= VIS.length - 1} onClick={() => go(VIS[idx + 1].id)} aria-label="Next page" title={VIS[idx + 1]?.label}>→</button>
+                <button disabled={!nextW} onClick={() => nextW && go(nextW.id)} aria-label="Next page" title={nextW?.label}>→</button>
                 {topic.tour && <button onClick={() => setTour(true)} data-tour-btn>▶ Guide me</button>}
                 <button onClick={() => setHelpOpen(true)}>? Page help</button>
               </div>
             </div>
+            {skipped.has(current.id) && <p className="note no-print">This step is skipped on this project. <button onClick={() => setSkip(current.id, false)}>Don't skip it</button></p>}
             <SelfRepair page={current.id}><Suspense fallback={<div className="card">Loading…</div>}>{current.el}</Suspense>{checklistFor(current.id) && <div data-tour="checklist" className="no-print" style={{ marginTop: 16 }}><Checklist def={checklistFor(current.id)!} /></div>}</SelfRepair>
             <footer className="page-foot">
-              <button disabled={idx <= 0} onClick={() => go(VIS[idx - 1].id)}>← {VIS[idx - 1]?.label ?? 'Back'}</button>
-              <span />
-              <button className="primary" disabled={idx >= VIS.length - 1} onClick={() => go(VIS[idx + 1].id)}>{VIS[idx + 1]?.label ?? 'Next'} →</button>
+              <button disabled={!prevW} onClick={() => prevW && go(prevW.id)}>← {prevW?.label ?? 'Back'}</button>
+              {canSkip(current.id) && !skipped.has(current.id) ? <button className="ghost" onClick={() => { setSkip(current.id, true); if (nextW) go(nextW.id); }} title="Mark this step as not needed on this project and go to the next one. You can still open it from the menu.">Skip this step ⤼</button> : <span />}
+              <button className="primary" disabled={!nextW} onClick={() => nextW && go(nextW.id)}>{nextW?.label ?? 'Next'} →</button>
             </footer>
             <p className="disclaimer">Planning aid only. Calculations and code citations must be verified by a licensed professional and the Authority Having Jurisdiction.</p>
           </>

@@ -1,3 +1,7 @@
+# LvPlan Pro 1.5.20
+
+- **Skip this step** button at the bottom of every step page. A skipped step is greyed out in the menu, Next / Previous pass over it and its checklist leaves the totals. Open it from the menu and press **Don't skip it** to bring it back. Skips are saved with the project (and carried over when you reuse a project).
+
 # LvPlan Pro 1.5.19
 
 - **New name: LvPlan Pro** (was RadioPlan Pro) on every screen, the window title, the installer, shortcuts, the Android app and the help. Your projects, settings and flash-drive data are kept; the Windows update replaces the old desktop and Start-menu shortcuts.

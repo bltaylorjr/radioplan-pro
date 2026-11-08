@@ -293,3 +293,4 @@ body { font-size: clamp(15px, 0.6vw + 12.5px, 17px); }
 .custom-pages { display: block; }
 .nav-custom { padding: 6px 12px; color: var(--muted); }
 .sidebar .nav-custom a { display: inline; padding: 0; margin: 0; background: none; color: var(--accent); text-decoration: underline; }
+.sidebar a.skipped { opacity: .5; text-decoration: line-through; }

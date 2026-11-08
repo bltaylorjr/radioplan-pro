@@ -21,6 +21,8 @@ export interface ProjectMeta {
   projectType?: string; subSystems?: string[];
   /** With project type 'custom': the pages and tools to show in the menu. */
   customPages?: string[];
+  /** Steps the user chose to skip on this project (still open from the menu). */
+  skipped?: string[];
 }
 export interface Site {
   id: string; name: string; address: string; lat: number; lon: number; groundElevM: number | null;
