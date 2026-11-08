@@ -7,7 +7,7 @@ on:
       lines: { description: 'base64 JSON list of {id, text}', required: true }
       voice: { description: 'Piper voice', required: false, default: 'en_US-lessac-high' }
 permissions:
-  contents: read
+  contents: write
 jobs:
   speak:
     runs-on: ubuntu-24.04
@@ -31,5 +31,9 @@ jobs:
               subprocess.run(['piper', '--model', 'voice.onnx', '--output_file', f"out/{l['id']}.wav", '--sentence_silence', '0.35'], input=l['text'].encode(), check=True)
           PY
           ls -la out
-      - uses: actions/upload-artifact@v4
-        with: { name: narration, path: out }
+      - name: Publish as a pre-release asset (never "latest", so app updates ignore it)
+        env: { GH_TOKEN: '${{ github.token }}' }
+        run: |
+          cd out && zip -q ../narration.zip *.wav && cd ..
+          gh release view narration -R "$GITHUB_REPOSITORY" >/dev/null 2>&1 || gh release create narration -R "$GITHUB_REPOSITORY" --prerelease --latest=false --title "Intro video narration (not an app release)" --notes "Voice files for the introduction video. Not an app update."
+          gh release upload narration narration.zip --clobber -R "$GITHUB_REPOSITORY"
