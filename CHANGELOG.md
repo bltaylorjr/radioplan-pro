@@ -1,3 +1,7 @@
+# LvPlan Pro 1.5.32
+
+- The introduction video opens and plays by itself the first time the app is opened on a device (once only; the ▶ Video button plays it again any time). If the device will not start it with sound, a big **🔊 Tap to turn on the sound** button shows. **Skip the video** goes straight to the welcome screen.
+
 # LvPlan Pro 1.5.31
 
 - **3D walls** on Indoor Coverage & DAS: press **🧊 3D walls** to see the walls you drew stand up in their material colour, with the coverage heat map on the floor and the antennas on the ceiling. Drag to turn, scroll to zoom; **🗺 2D plan** goes back to drawing.

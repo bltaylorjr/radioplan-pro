@@ -2,7 +2,7 @@ import React, { Suspense, lazy, useEffect, useState } from 'react';
 import { useStore, downloadText } from './store';
 import { HELP } from './help/content';
 import { HelpManual, HelpPanel, Tour } from './help/HelpUI';
-import { IntroVideo } from './components/IntroVideo';
+import { IntroVideo, firstVisitVideo } from './components/IntroVideo';
 import { ALWAYS_PAGES } from './data/customPages';
 import { evaluateCompliance } from './compliance/rules';
 import { CompanyPage } from './pages/Company';
@@ -97,7 +97,7 @@ export default function App() {
   useEffect(() => { const on = () => setOnline(true), off = () => setOnline(false); window.addEventListener('online', on); window.addEventListener('offline', off); return () => { window.removeEventListener('online', on); window.removeEventListener('offline', off); }; }, []);
   const [helpOpen, setHelpOpen] = useState(false);
   const [tour, setTour] = useState(false);
-  const [video, setVideo] = useState(false);
+  const [video, setVideo] = useState<false | 'first' | true>(false);
   const [navOpen, setNavOpen] = useState(false);
   const isHelp = page.startsWith('help');
   const current = WORKFLOW.find((w) => w.id === page) ?? (isHelp ? null : WORKFLOW[0]);
@@ -128,6 +128,7 @@ export default function App() {
   }, []);
   useEffect(() => { setHelpOpen(false); setTour(false); setNavOpen(false); }, [page]);
   const [welcome, setWelcome] = useState(false);
+  useEffect(() => { if (firstVisitVideo()) setVideo('first'); }, []);
   useEffect(() => { try { if (!localStorage.getItem('radioplan.seenIntro')) { localStorage.setItem('radioplan.seenIntro', '1'); setWelcome(true); } } catch { /* ignore */ } }, []);
 
   const save = () => downloadText(`${(project.meta.name || 'project').replace(/[^\w-]+/g, '_')}.radioplan.json`, JSON.stringify(project, null, 2), 'application/json');
@@ -142,7 +143,7 @@ export default function App() {
     <div className={'app' + (navOpen ? ' nav-open' : '')}>
       <AutoTerrain />
       <Updater />
-      {welcome && <Welcome onClose={() => setWelcome(false)} onHelp={() => setHelpOpen(true)} />}
+      {welcome && !video && <Welcome onClose={() => setWelcome(false)} onHelp={() => setHelpOpen(true)} />}
       <header className="topbar">
         <button className="ghost menu" onClick={() => setNavOpen(!navOpen)} aria-label="Menu">☰</button>
         <div className="brand" title="Low-voltage system planning"><span className="logo">◉</span> LvPlan <b>Pro</b></div>
@@ -208,7 +209,7 @@ export default function App() {
         )}
         <p className="copyright no-print">© {new Date().getFullYear()} Bobby Taylor. All rights reserved. · LvPlan Pro {APP_VERSION}</p>
       </main>
-      {video && <IntroVideo onClose={() => setVideo(false)} />}
+      {video && <IntroVideo first={video === 'first'} onClose={() => setVideo(false)} />}
       {helpOpen && !isHelp && <HelpPanel topic={topic} onClose={() => setHelpOpen(false)} onTour={topic.tour ? () => { setHelpOpen(false); setTour(true); } : undefined} />}
       {tour && topic.tour && <Tour steps={topic.tour} onClose={() => setTour(false)} />}
     </div>
