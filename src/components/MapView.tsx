@@ -6,6 +6,38 @@ import { rssiColor } from '../engine/coverage';
 import { DemGrid, demBounds } from '../engine/terrain';
 import { CachedTileLayer } from './cachedTiles';
 import type { LatLon } from '../engine/geo';
+import { loadCommSites, siteLabel, CommSite } from '../engine/towers';
+
+const towerIcon = L.divIcon({ className: 'tower-pin', html: '<div>📡</div>', iconSize: [22, 22], iconAnchor: [11, 20] });
+const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
+
+/** Overlay with existing towers and communications sites (OpenStreetMap), labelled, cached for offline. */
+function towersOverlay(m: L.Map): L.LayerGroup {
+  const g = L.layerGroup(); let timer: number | undefined; let ctrl: AbortController | undefined;
+  const status = L.DomUtil.create('div', 'tower-status leaflet-bar'); status.style.display = 'none';
+  const C = L.Control.extend({ onAdd: () => status }); new C({ position: 'bottomleft' }).addTo(m);
+  const say = (t: string) => { status.textContent = t; status.style.display = t ? '' : 'none'; };
+  const draw = (sites: CommSite[]) => {
+    g.clearLayers(); const labels = m.getZoom() >= 12;
+    for (const c of sites) {
+      const pop = `<b>${esc(c.name || c.kind)}</b><br>${esc(c.kind)}${c.operator ? `<br>Operator: ${esc(c.operator)}` : ''}${c.heightFt ? `<br>Height: ${c.heightFt} ft` : ''}${c.services.length ? `<br>Use: ${esc(c.services.join(', '))}` : ''}${c.asr ? `<br>FCC ASR: ${esc(c.asr)}` : ''}<br>${c.lat.toFixed(5)}, ${c.lon.toFixed(5)}<br><span style="color:#777">Source: OpenStreetMap. Verify in the FCC ASR database.</span>`;
+      L.marker([c.lat, c.lon], { icon: towerIcon, keyboard: false }).bindPopup(pop)
+        .bindTooltip(esc(siteLabel(c)), { permanent: labels, direction: 'right', offset: [10, -8], className: 'tower-label' }).addTo(g);
+    }
+  };
+  const refresh = () => {
+    if (!m.hasLayer(g)) return;
+    if (m.getZoom() < 9) { g.clearLayers(); say('📡 Zoom in to see towers'); return; }
+    ctrl?.abort(); ctrl = new AbortController(); const b = m.getBounds(); say('📡 Loading towers…');
+    loadCommSites(b.getSouth(), b.getWest(), b.getNorth(), b.getEast(), { online: navigator.onLine, signal: ctrl.signal })
+      .then((r) => { draw(r.sites); say(r.missing ? `📡 ${r.sites.length} towers · ${r.missing} area(s) not saved yet${navigator.onLine ? ' (try again later)' : ' (go online once)'}` : `📡 ${r.sites.length} tower${r.sites.length === 1 ? "" : "s"} and comm sites`); })
+      .catch((e) => { if ((e as Error).name !== 'AbortError') say('📡 Towers unavailable'); });
+  };
+  m.on('moveend zoomend', () => { window.clearTimeout(timer); timer = window.setTimeout(refresh, 500); });
+  g.on('add', () => { try { localStorage.setItem('radioplan.towers', '1'); } catch { /* ignore */ } refresh(); });
+  g.on('remove', () => { try { localStorage.setItem('radioplan.towers', '0'); } catch { /* ignore */ } ctrl?.abort(); g.clearLayers(); say(''); });
+  return g;
+}
 
 /** Base maps. `bulk: true` = public-domain (USGS) sources that may be pre-downloaded for offline use.
  *  OSM-community and Esri tiles are cached only as you view them, per their usage policies. */
@@ -83,7 +115,9 @@ export function MapView({ sites, txId, rxId, coverage, floor = -110, dem, onClic
     try { chosen = base ?? localStorage.getItem('radioplan.basemap') ?? DEFAULT_BASE; } catch { /* ignore */ }
     (bases.current[chosen] ?? bases.current[DEFAULT_BASE]).addTo(m);
     m.on('baselayerchange', (e: L.LayersControlEvent) => { try { localStorage.setItem('radioplan.basemap', e.name); } catch { /* ignore */ } });
-    L.control.layers(bases.current, {}, { position: 'topright' }).addTo(m);
+    const towers = towersOverlay(m);
+    L.control.layers(bases.current, { '📡 Existing towers & comm sites': towers }, { position: 'topright' }).addTo(m);
+    try { if (localStorage.getItem('radioplan.towers') === '1') towers.addTo(m); } catch { /* ignore */ }
     L.control.scale({ imperial: true, metric: true }).addTo(m);
     addLocateControl(m);
     m.on('click', (e: L.LeafletMouseEvent) => clickRef.current?.(e.latlng.lat, e.latlng.lng));

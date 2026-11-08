@@ -1,3 +1,8 @@
+# LvPlan Pro 1.5.27
+
+- **Existing towers & comm sites map layer**: on any map, open the layers button and tick **📡 Existing towers & comm sites** to show towers, masts, antennas, telecom sites and other communications equipment with labels (name / operator and height). Tap one for its type, operator, height, use and FCC ASR number when known. Data from OpenStreetMap, saved per area so it works offline afterwards; verify against the FCC ASR database.
+- Introduction video updated to show the new layer, with a livelier narrator and a broadcast-style finish on the voice so it sits with the music.
+
 # LvPlan Pro 1.5.26
 
 - **Delete a project** from Projects & Storage, including the one that is open. A clear in-app box asks you to confirm first (Yes, delete it / No, keep it); after deleting the open project, the most recent other project opens.

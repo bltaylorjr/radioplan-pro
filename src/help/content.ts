@@ -79,8 +79,10 @@ The cache lives in the app's storage on that device (browser profile for the USB
       { target: 'site-structure', title: 'Structure', text: 'Structure type, height and antenna centerline. Heights drive the radio horizon and FAA checks.' },
     ] },
 
-  { id: 'terrain', title: 'Map & terrain data', page: 'terrain', keywords: 'map topo topography dem lidar las srtm hgt geotiff asc usgs 3dep terrain elevation layers satellite offline', summary: 'View sites on topographic or satellite maps and load terrain (DEM / LiDAR) used by all calculations.',
-    body: `**Base maps**: OpenTopoMap (contours), Esri World Imagery (satellite), USGS Topo, and OpenStreetMap. Map tiles need internet; terrain files work offline once loaded.
+  { id: 'terrain', title: 'Map & terrain data', page: 'terrain', keywords: 'map topo topography dem lidar las srtm hgt geotiff asc usgs 3dep terrain elevation layers satellite offline towers existing towers transponders antennas comm sites asr', summary: 'View sites on topographic or satellite maps with existing towers and comm sites, and load terrain (DEM / LiDAR) used by all calculations.',
+    body: `**Existing towers & comm sites**: on any map, open the layers button (top right) and tick **📡 Existing towers & comm sites**. Towers, masts, antennas, telecom sites and other communications equipment show with labels (name or operator and height; labels appear when zoomed in). Tap one for details: type, operator, height, use (cellular, radio, TV, microwave…) and the FCC ASR number when known. The data comes from OpenStreetMap and is saved for each area you view, so it still shows offline; always verify against the FCC Antenna Structure Registration database before relying on it.
+
+**Base maps**: OpenTopoMap (contours), Esri World Imagery (satellite), USGS Topo, and OpenStreetMap. Map tiles need internet; terrain files work offline once loaded.
 
 **Terrain sources** (used for path profiles, coverage and 3D):
 - **Online DEM** around the selected site (Copernicus GLO-90, ~90 m).
