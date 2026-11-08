@@ -335,6 +335,10 @@ Guides: antenna feedline and grounding; repeater RF and DC power; ERCES / BDA an
 
 These are general guidance. Follow the manufacturer's instructions, the approved drawings and the adopted codes.` },
 
+  { id: 'troubleshoot', title: 'Troubleshooting wizard', page: 'troubleshoot', keywords: 'troubleshoot fault repair vswr sweep battery nac ground fault poe fiber loss bda test values', summary: 'Step-by-step checks with how to test and the value to expect, for the equipment you pick.',
+    body: `Pick the equipment (equipment in this project is listed first, then your library and the built-in library) and the problem. Each step shows **what to check**, **how to check it**, the **tool**, and the **expected value**, worked out from that item's specifications where possible.
+
+Type what you measured and press **✓ OK** or **✗ Not OK**. A failed step tells you what to do next. When done, save the results to **Final Testing** or as a **field note**.` },
   { id: 'fieldnotes', title: 'Field notes', page: 'fieldnotes', keywords: 'field notes photos camera gps site visit punch list follow-up dictate', summary: 'Notes, photos and GPS positions taken on site, saved in the project.',
     body: `Press **+ New note**, type (or dictate with the microphone on your phone keyboard), add photos from the camera and press **Save my GPS position**. Link a note to a site and tick **Needs follow-up** for punch-list items; filter with **Open follow-ups**.
 

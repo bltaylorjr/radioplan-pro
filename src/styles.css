@@ -198,3 +198,11 @@ label.button { display: inline-flex; align-items: center; gap: 4px; border: 1px 
 .county-key { flex-basis: 100%; }
 .county-body { padding: 4px 12px 12px; }
 .codes-here { overflow-x: auto; }
+/* Troubleshooting wizard */
+.ts-steps { padding-left: 1.4em; display: grid; gap: 10px; }
+.ts-step { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; display: grid; gap: 6px; }
+.ts-step.pass { border-color: var(--ok); background: var(--ok-bg); } .ts-step.fail { border-color: var(--bad); background: var(--bad-bg); } .ts-step.skip { opacity: .7; }
+.ts-check { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.ts-expect { background: var(--warn-bg); border-radius: 6px; padding: 4px 8px; }
+.ts-fix { font-weight: 500; }
+.ts-tool { border: 1px solid var(--line); border-radius: 10px; padding: 1px 8px; color: var(--muted); }

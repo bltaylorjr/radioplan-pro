@@ -19,7 +19,8 @@ export function projectPlace(p: Project): Place {
   const hasPos = s && Number.isFinite(s.lat) && Number.isFinite(s.lon) && (s.lat !== 0 || s.lon !== 0);
   const here = hasPos ? countyAt(s.lat, s.lon) : null;
   const county = m.county || here?.county;
-  const city = m.city || (hasPos ? nearestTown(s.lat, s.lon) : undefined);
+  const sameArea = here && (!m.county || (here.county === m.county && here.state === m.state));
+  const city = m.city || (hasPos && sameArea ? nearestTown(s.lat, s.lon) : undefined);
   const from = m.county ? (m.siteAddress ? 'project address' : 'project county') : here ? 'site position' : 'project state';
   return { state: m.state, county, city, from };
 }

@@ -37,7 +37,8 @@ It needs two repository secrets: `ANDROID_KEYSTORE_B64` and `ANDROID_STOREPASS` 
 5. **Compliance & materials:** Code Compliance · Specifications Library · Materials List
 6. **Installation:** Installation Guides (color wiring diagrams)
 7. **Testing & closeout:** Final Testing · Reports & Closeout Package
-8. **Tools:** Calculators · Projects & Storage · Sync Devices
+8. **Troubleshooting & repair:** Troubleshooting Wizard
+9. **Tools:** Calculators · Projects & Storage · Sync Devices
 
 Plus a searchable Help manual, page help (F1), "Guide me" walkthroughs and `?` tooltips. The first start asks what is being designed
 (fire alarm, ERCES, Wi-Fi, solar or radio) and where, then opens the right page.

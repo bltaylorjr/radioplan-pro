@@ -27,6 +27,7 @@ import { ProjectsPage } from './pages/Projects';
 import { SpecLibraryPage } from './pages/SpecLibrary';
 import { InstallPage } from './pages/Install';
 import { FieldNotesPage } from './pages/FieldNotes';
+import { TroubleshootPage } from './pages/Troubleshoot';
 import { readBackup } from './engine/projectdb';
 import { AddressInput } from './components/AddressInput';
 import { Updater } from './components/Updater';
@@ -61,10 +62,11 @@ export const WORKFLOW: { id: string; label: string; group: string; el: React.Rea
   { id: 'materials', label: 'Materials List', group: '5 · Compliance & materials', el: <MaterialsPage /> },
   { id: 'install', label: 'Installation Guides', group: '6 · Installation', el: <InstallPage /> },
   { id: 'testing', label: 'Final Testing', group: '7 · Testing & closeout', el: <TestingPage /> },
+  { id: 'troubleshoot', label: 'Troubleshooting Wizard', group: '8 · Troubleshooting & repair', el: <TroubleshootPage /> },
   { id: 'reports', label: 'Reports & Closeout Package', group: '7 · Testing & closeout', el: <ReportsPage /> },
-  { id: 'calculators', label: 'Calculators', group: '8 · Tools', el: <CalculatorsPage /> },
-  { id: 'projects', label: 'Projects & Storage', group: '8 · Tools', el: <ProjectsPage /> },
-  { id: 'sync', label: 'Sync Devices', group: '8 · Tools', el: <SyncPage /> },
+  { id: 'calculators', label: 'Calculators', group: '9 · Tools', el: <CalculatorsPage /> },
+  { id: 'projects', label: 'Projects & Storage', group: '9 · Tools', el: <ProjectsPage /> },
+  { id: 'sync', label: 'Sync Devices', group: '9 · Tools', el: <SyncPage /> },
 ];
 
 export default function App() {
