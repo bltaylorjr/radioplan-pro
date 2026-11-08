@@ -1,3 +1,7 @@
+# LvPlan Pro 1.5.29
+
+- Introduction video: the map zooms in to show the tower labels, the drawing set shows the floor plan sheets, and the demo project is a fire alarm job with paging, access control and CCTV, so the 3D model, plans and materials are filled in.
+
 # LvPlan Pro 1.5.28
 
 - **Runs between sites, measured over the ground** (Site Data & GPS): plan fiber, Cat 6, coax, power or conduit between two sites, click bend points along the route on the map, and press **Measure over the ground**. The app uses the terrain to work out the map length, the length over the ground, climb, drop and the steepest grade, with a ground profile. From that it works out trench, conduit, sweeps, handholes, warning tape, cable with slack, strand and poles for aerial runs, and crew-hours. Measured runs go into the **Materials** list and the labor estimate on **Reports**. Warnings for steep ground, Cat 6 over 328 ft, multimode distance limits and copper between buildings.
