@@ -1,3 +1,9 @@
+# RadioPlan Pro 1.5.6
+
+- Contacts & Web Resources follows the project's state, county and city, and updates when they change. If the project's county or city doesn't match where the first site is, it offers **Use the site's location** to correct it.
+- The place line links the levels: State › County › City. Tap the state or county to step out a level; contacts show the city's offices with its county and state offices.
+- Built in, from the City of Asheville's official pages: Development Services Permit Application Center and the Fire Marshals Division.
+
 # RadioPlan Pro 1.5.5
 
 - Screens adapt to the device: text scales with the screen, forms drop to one column on phones, buttons wrap instead of running off the edge, wide tables scroll inside their card, and very large monitors keep a readable width. Checked on every page at phone (360 px), tablet (768 and 1024 px) and desktop (1920 px) sizes.

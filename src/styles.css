@@ -277,3 +277,4 @@ body { font-size: clamp(15px, 0.6vw + 12.5px, 17px); }
 }
 @media (max-width: 380px) { .stats { grid-template-columns: 1fr; } }
 @media (max-width: 600px) { .page-nav select { order: -1; flex: 1 1 100%; } .page-nav button { flex: 1 1 auto; justify-content: center; } }
+.place-links a { text-decoration: none; border-bottom: 1px dashed currentColor; }

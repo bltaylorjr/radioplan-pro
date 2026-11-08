@@ -2,8 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useStore } from '../store';
 import { Card } from '../components/ui';
 import { CODE_SETS } from '../compliance/codesets';
-import { projectPlace } from '../compliance/place';
-import { allCounties } from '../engine/refdata';
+import { projectPlace, nearestTown } from '../compliance/place';
+import { allCounties, countyAt } from '../engine/refdata';
 import { citiesIn } from '../components/CodesHere';
 import { kvGet, kvSet } from '../engine/projectdb';
 import { uid } from '../defaults';
@@ -25,11 +25,19 @@ const levelOf = (county: string, city: string): Level => (city ? 'city' : county
 const tel = (p: string) => 'tel:' + p.replace(/[^0-9+]/g, '');
 
 export function ContactsPage() {
-  const { project: p } = useStore();
+  const { project: p, update, go } = useStore();
   const here = projectPlace(p);
   const [st, setSt] = useState<StateCode | 'mine'>(here.state);
   const [county, setCounty] = useState(here.county ?? '');
   const [city, setCity] = useState(here.city ?? '');
+  // Follow the project: when its state, county or city changes (or the project finishes loading), show that place.
+  const hereKey = `${here.state}|${here.county ?? ''}|${here.city ?? ''}`;
+  useEffect(() => { setSt(here.state); setCounty(here.county ?? ''); setCity(here.city ?? ''); }, [hereKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Where the first site actually is, to catch a project whose county/city were never updated.
+  const s0 = p.sites[0], pos = s0 && Number.isFinite(s0.lat) && (s0.lat !== 0 || s0.lon !== 0) ? countyAt(s0.lat, s0.lon) : null;
+  const posCity = pos && s0 ? nearestTown(s0.lat, s0.lon, 8) : undefined;
+  const mismatch = pos && STATES.includes(pos.state as StateCode) && (pos.state !== p.meta.state || (p.meta.county && pos.county !== p.meta.county)) ? pos : null;
+  const fixPlace = () => update((d) => { d.meta.state = mismatch!.state as StateCode; d.meta.county = mismatch!.county; d.meta.city = posCity ?? ''; });
   const [tab, setTab] = useState<'contacts' | 'resources'>('contacts');
   const [cs, saveC] = useSaved<Contact>(KEYS.contacts);
   const [rs, saveR] = useSaved<Resource>(KEYS.resources);
@@ -73,7 +81,12 @@ export function ContactsPage() {
           {st !== 'mine' && <label className="field"><span>City or town</span>
             <select value={city} onChange={(e) => { const c = cities.find((x) => x.city === e.target.value); setCity(e.target.value); if (c && !county) setCounty(c.county); }} aria-label="City"><option value="">— none (county or state) —</option>{cities.map((c) => <option key={c.city + c.county} value={c.city}>{c.city}{county ? '' : ` (${c.county})`}</option>)}</select></label>}
         </div>
-        <div className="row wrap"><h3 style={{ margin: 0 }}>📍 {where}</h3>
+        {mismatch && <p className="note">The project is set to <b>{[p.meta.city, p.meta.county, CODE_SETS[p.meta.state].name].filter(Boolean).join(', ')}</b>, but {s0!.name || 'the first site'} is in <b>{[posCity, mismatch.county, CODE_SETS[mismatch.state as StateCode].name].filter(Boolean).join(', ')}</b>. <button className="primary" onClick={fixPlace}>Use the site’s location</button> <button className="ghost" onClick={() => go('company')}>Change on Company & Project</button></p>}
+        <div className="row wrap"><h3 style={{ margin: 0 }}>📍 {st === 'mine' ? where : <span className="place-links">
+          <a href="#" onClick={(e) => { e.preventDefault(); setCounty(''); setCity(''); }} title="Show state offices only">{CODE_SETS[state].name}</a>
+          {county && <> › <a href="#" onClick={(e) => { e.preventDefault(); setCity(''); }} title="Show this county and the state">{county}</a></>}
+          {city && <> › <b>{city}</b></>}</span>}</h3>
+          {st !== 'mine' && <span className="small muted">{city ? `Showing ${city} offices with ${county || 'its county'} and ${CODE_SETS[state].name} offices.` : county ? `Showing ${county} offices with ${CODE_SETS[state].name} offices.` : 'Showing state offices.'}</span>}
           {st !== 'mine' && (here.state !== state || here.county !== (county || undefined) || (here.city ?? '') !== city) && <button className="ghost" onClick={() => { setSt(here.state); setCounty(here.county ?? ''); setCity(here.city ?? ''); }}>Use the project location</button>}
         </div>
         <div className="row" style={{ marginTop: 8 }} role="tablist">
