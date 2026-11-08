@@ -17,6 +17,8 @@ export interface ProjectMeta {
   siteAddress?: string; poNumber?: string;
   /** City or town of the project site (from the address); used to pick local codes. */
   city?: string;
+  /** Main system type (see data/systems.ts) and other systems on the same job. */
+  projectType?: string; subSystems?: string[];
 }
 export interface Site {
   id: string; name: string; address: string; lat: number; lon: number; groundElevM: number | null;
@@ -91,7 +93,12 @@ export interface Project {
   customCatalog?: import('./data/catalog').CustomCatalog;
   /** Field notes with optional photos and GPS. */
   fieldNotes?: FieldNote[];
+  /** Service calls and repairs. */
+  serviceLog?: ServiceCall[];
+  /** PM tasks done: key = system id + task, value = last date done (YYYY-MM-DD). */
+  pmDone?: Record<string, string>;
 }
+export interface ServiceCall { id: string; date: string; system: string; equipment: string; problem: string; cause: string; fix: string; parts: string; hours: number; tech: string; status: 'open' | 'done' }
 export interface FieldNote { id: string; at: string; title: string; text: string; category: string; siteId?: string; lat?: number; lon?: number; accM?: number; photos: { id: string; dataUrl: string; caption: string }[]; tags: string[]; author: string; followUp: boolean; done: boolean }
 export interface SyncMeta {
   projectId: string; deviceId: string; deviceName: string;

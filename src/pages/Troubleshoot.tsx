@@ -5,6 +5,7 @@ import { builtInSpecs, SpecItem } from '../data/speclib';
 import { loadMyItems, SPECLIB_EVENT, autoLoadEquipment } from '../data/projectEquipment';
 import { guideFor, Ctx } from '../data/troubleshoot';
 import { uid } from '../defaults';
+import { SYSTEMS, projectSystems } from '../data/systems';
 
 type Result = { r: 'pass' | 'fail' | 'skip'; measured: string };
 
@@ -20,7 +21,9 @@ export function TroubleshootPage() {
   const pname = p.meta.name || 'Project';
   const inProject = mine.filter((m) => (m.projects ?? []).includes(pname));
   const otherMine = mine.filter((m) => !(m.projects ?? []).includes(pname));
-  const all = [...inProject, ...otherMine, ...builtIn.filter((b) => b.kind !== 'Standard' || ['Batteries', 'Network & PoE', 'Structured cabling', 'Fiber optics', 'Conductors', 'Wi-Fi'].includes(b.category))];
+  const mySys = projectSystems(p.meta);
+  const sysItems: SpecItem[] = [...mySys, ...SYSTEMS.filter((x) => !mySys.includes(x))].filter((x) => x.libCats.length).map((x) => ({ id: `sys-${x.id}`, category: x.libCats[0], sub: 'System', brand: '', model: `${x.icon} ${x.label} (general)`, specs: {}, kind: 'Standard' as const }));
+  const all = [...sysItems, ...inProject, ...otherMine, ...builtIn.filter((b) => b.kind !== 'Standard' || ['Batteries', 'Network & PoE', 'Structured cabling', 'Fiber optics', 'Conductors', 'Wi-Fi'].includes(b.category))];
   const [sel, setSel] = useState('');
   const [sym, setSym] = useState('');
   const [res, setRes] = useState<Record<number, Result>>({});
@@ -33,7 +36,7 @@ export function TroubleshootPage() {
   const steps = symptom?.steps ?? [];
   const done = steps.filter((_, i) => res[i]).length;
   const firstFail = steps.findIndex((_, i) => res[i]?.r === 'fail');
-  const name = item ? `${item.brand === 'Materials list' || item.brand.startsWith('Project') ? '' : item.brand + ' '}${item.model}` : '';
+  const name = item ? item.id.startsWith('sys-') ? item.model.replace(/^\S+\s/, '').replace(' (general)', '') : `${item.brand === 'Materials list' || item.brand.startsWith('Project') ? '' : item.brand + ' '}${item.model}` : '';
   const setR = (i: number, r: Partial<Result>) => setRes((x) => ({ ...x, [i]: { r: x[i]?.r ?? 'skip', measured: x[i]?.measured ?? '', ...r } }));
 
   const saveTests = () => {
@@ -57,9 +60,10 @@ export function TroubleshootPage() {
           <label className="field wide"><span>1. Equipment</span>
             <select value={sel} onChange={(e) => { setSel(e.target.value); setSym(''); reset(); }} aria-label="Equipment">
               <option value="">— pick equipment —</option>
+              <optgroup label="By system (no specific model)">{sysItems.map((i) => <option key={i.id} value={i.id}>{i.model}</option>)}</optgroup>
               {inProject.length > 0 && <optgroup label="In this project">{inProject.map((i) => <option key={i.id} value={i.id}>{i.category}: {i.brand} {i.model}</option>)}</optgroup>}
               {otherMine.length > 0 && <optgroup label="My library">{otherMine.map((i) => <option key={i.id} value={i.id}>{i.category}: {i.brand} {i.model}</option>)}</optgroup>}
-              <optgroup label="Built-in library">{all.filter((i) => i.kind !== 'My item').map((i) => <option key={i.id} value={i.id}>{i.category}: {i.brand} {i.model}</option>)}</optgroup>
+              <optgroup label="Built-in library">{all.filter((i) => i.kind !== 'My item' && !i.id.startsWith('sys-')).map((i) => <option key={i.id} value={i.id}>{i.category}: {i.brand} {i.model}</option>)}</optgroup>
             </select></label>
           {guide && <label className="field wide"><span>2. Problem</span>
             <select value={symptom?.id ?? ''} onChange={(e) => { setSym(e.target.value); reset(); }} aria-label="Problem">{guide.symptoms.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}</select></label>}

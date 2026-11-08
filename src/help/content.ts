@@ -335,6 +335,14 @@ Guides: antenna feedline and grounding; repeater RF and DC power; ERCES / BDA an
 
 These are general guidance. Follow the manufacturer's instructions, the approved drawings and the adopted codes.` },
 
+  { id: 'systems', title: 'Project systems and toolkits', page: 'systems', keywords: 'project type sub-project structured cabling fiber fire alarm security intercom nurse call paging sound design service maintenance access control cctv mass notification call box das', summary: 'Pick the main system and any sub-projects; each gets a plan, install, test, repair and maintenance toolkit.',
+    body: `Pick the **Project type** from the dropdown, then tick any **sub-projects** on the same job (for example fire alarm with access control and CCTV). The same choice is on Company & Project and on the first-start screen.
+
+Each system gets tabs: **Plan**, **Install**, **Test & troubleshoot**, **Repair & maintain** and **Tools & reference** (standards and its calculators). Buttons jump to the related pages.` },
+  { id: 'service', title: 'Service and maintenance', page: 'service', keywords: 'pm preventive maintenance schedule inspection due service call repair log contract', summary: 'Maintenance schedule for the project\'s systems and a log of service calls and repairs.',
+    body: `The **Preventive maintenance schedule** lists the inspection and test tasks for the systems on this project. Enter the date each was last done and the app shows when it is due next (overdue in red).
+
+The **Service and repair log** records each call: problem, cause, repair, parts, hours and status. Export it to CSV for billing.` },
   { id: 'troubleshoot', title: 'Troubleshooting wizard', page: 'troubleshoot', keywords: 'troubleshoot fault repair vswr sweep battery nac ground fault poe fiber loss bda test values', summary: 'Step-by-step checks with how to test and the value to expect, for the equipment you pick.',
     body: `Pick the equipment (equipment in this project is listed first, then your library and the built-in library) and the problem. Each step shows **what to check**, **how to check it**, the **tool**, and the **expected value**, worked out from that item's specifications where possible.
 

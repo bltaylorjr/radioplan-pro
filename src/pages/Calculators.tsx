@@ -8,6 +8,8 @@ import { haversineKm, bearingDeg } from '../engine/geo';
 import { parseLatLon } from '../engine/locparse';
 import { AWG_SIZES, Awg, AMPACITY_75C_CU, sizeConductor } from '../engine/electrical';
 import { FEEDERS } from '../data/catalog';
+import { LV_CALCS } from '../data/lvcalcs';
+import { LvCalcCard } from '../components/SystemsUI';
 
 /** One calculator card. `k` = extra search keywords. */
 function Calc({ title, k, q, children, note, group }: { title: string; k: string; q: string; children: React.ReactNode; note?: string; group?: string }) {
@@ -90,9 +92,14 @@ export function CalculatorsPage() {
 
   return (
     <div className="stack calcs">
-      <div className="card"><input className="search" type="search" placeholder="Search calculators (e.g. vswr, voltage drop, fresnel, erlang)…" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Search calculators" />
+      <div className="card"><input className="search" type="search" placeholder="Search calculators (e.g. battery, poe, cctv storage, 70v, fiber loss, vswr)…" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Search calculators" />
         <p className="small muted">Frequencies default to the project design frequency ({f0} MHz). Distances use {u.label} (change on Company & Project). Results are planning aids; verify critical values against manufacturer data and the adopted codes.</p></div>
 
+      {[...new Set(LV_CALCS.map((c) => c.group))].map((g) => {
+        const words = q.toLowerCase().split(/\s+/).filter(Boolean);
+        const list = LV_CALCS.filter((c) => c.group === g && words.every((w) => `${c.title} ${c.keywords} ${g}`.toLowerCase().includes(w)));
+        return list.length ? <React.Fragment key={g}><h2 className="calc-group">{g}</h2><div className="calc-grid">{list.map((c) => <LvCalcCard key={c.id} c={c} />)}</div></React.Fragment> : null;
+      })}
       <Group title="RF levels" q={q}>
         <Calc q={q} title="dBm ↔ watts ↔ dBW" k="power convert milliwatt dbw">
           <div className="form"><In label="dBm"><Num value={dbm} onChange={(x) => { setDbm(x); if (x != null) setWatts(dbmToWatts(x)); }} /></In><In label="Watts"><Num value={watts} onChange={(x) => { setWatts(x); if (x && x > 0) setDbm(wattsToDbm(x)); }} /></In></div>

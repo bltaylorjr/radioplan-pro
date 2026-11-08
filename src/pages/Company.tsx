@@ -10,6 +10,7 @@ import { uid } from '../defaults';
 import { AddressInput } from '../components/AddressInput';
 import { applyAddress } from '../compliance/place';
 import { CodesHere } from '../components/CodesHere';
+import { ProjectTypePicker } from '../components/SystemsUI';
 
 export function CompanyPage() {
   const { project: p, update, go } = useStore();
@@ -46,6 +47,9 @@ export function CompanyPage() {
       <Card title="Project information" tour="project-form" tip="Project name and number print on every report header.">
         <div className="form">
           <Field label="Project name" wide><Txt value={m.name} onChange={setM('name')} /></Field>
+        </div>
+        <ProjectTypePicker compact />
+        <div className="form">
           <Field label="Project number"><Txt value={m.number} onChange={setM('number')} /></Field>
           <Field label="Client PO / contract #"><Txt value={m.poNumber ?? ''} onChange={setM('poNumber')} /></Field>
           <Field label="Project site address" wide tip="Where the work is. Use the Find Location page to turn it into GPS coordinates."><AddressInput value={m.siteAddress ?? ''} onChange={setM('siteAddress')} onPick={(g) => update((d) => applyAddress(d, g))} /></Field>

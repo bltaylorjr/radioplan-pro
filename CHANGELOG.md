@@ -1,3 +1,14 @@
+# RadioPlan Pro 1.3.0
+
+- Project type dropdown with check boxes for sub-projects, on the first-start screen, Company & Project and the new Project Systems page.
+- Toolkits for 20 system types, including all 16 service lines: structured cabling, fiber, fire alarm, security, intercom, nurse call, paging, professional sound, design services, service contracts, PM contracts, access control, CCTV, mass notification, wireless emergency call boxes and DAS. Each has Plan, Install, Test & troubleshoot, Repair & maintain, and Tools & reference tabs.
+- 19 new low-voltage calculators: cable boxes, conduit fill, J-hooks, fiber loss budget, optic power budget, standby batteries, wire voltage drop, power supply, PoE budget, NVR storage, camera pixel density, speaker sound level, 70 V lines, ceiling speaker spacing, door lock power, nurse call stations, call box solar, PM contract labor and design hours.
+- New library categories (Intrusion, CCTV, Intercom, Nurse call, Paging & sound, Emergency call boxes) with typical and standard values.
+- Troubleshooting guides for intrusion, access control, CCTV, paging/sound/intercom, nurse call and call boxes; the wizard can also start from a system type.
+- New Service & Maintenance page: preventive maintenance schedule with next-due dates and a service and repair log with CSV export.
+- Menu now runs planning → installation → testing → troubleshooting & repair.
+- The first-start screen scrolls on small screens, and address suggestions no longer cover the Start button.
+
 # RadioPlan Pro 1.2.0
 
 - Codes follow the project address: the app finds the state, county and city and shows the adopted fire, building, electrical, plumbing, mechanical, fuel gas, energy, accessibility, fire alarm and ERCES codes there, with effective dates, upcoming code changes and sources.

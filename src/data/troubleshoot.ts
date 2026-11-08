@@ -99,7 +99,7 @@ const GUIDES: Guide[] = [
         DC('BDA'),
       ] },
     ] },
-  { id: 'firealarm', title: 'Fire alarm devices and circuits', categories: ['Fire alarm', 'Security & access control'],
+  { id: 'firealarm', title: 'Fire alarm devices and circuits', categories: ['Fire alarm'],
     safety: 'Put the system in test with the monitoring company and fire department before testing. Restore and verify the system is normal when done.',
     symptoms: [
       { id: 'nac', label: 'Notification appliances not working or weak', steps: [
@@ -175,6 +175,88 @@ const GUIDES: Guide[] = [
       ] },
     ] },
 ];
+const LOOP: Step = { check: 'Zone / loop resistance', how: 'Disconnect the zone at the panel and measure across it with the device closed (normal).', tool: 'Multimeter',
+  expect: (c) => `The EOL value (${String(c.s['EOL resistor (Ω)'] ?? 'per the panel manual')}). Open = broken wire; near 0 Ω = short; a value much above the EOL = bad splice.`, ifFail: 'Split the zone to find the fault; re-make splices with listed connectors.' };
+GUIDES.push(
+  { id: 'intrusion', title: 'Intrusion (burglar alarm)', categories: ['Intrusion'], safety: 'Tell the central station before testing so they do not dispatch police.',
+    symptoms: [
+      { id: 'false', label: 'False alarms', steps: [
+        { check: 'Which zone and when', how: 'Read the panel event history and the central station report.', expect: () => 'A pattern (same zone, time of day, weather) points to the cause.', ifFail: 'Walk-test that zone with the panel in test.' },
+        { check: 'Motion detector aim and environment', how: 'Look for heaters, vents, sunlight, pets, balloons and moving signs in the pattern.', expect: (c) => `Mounted at the datasheet height${c.s['Range / coverage'] ? `, coverage ${c.s['Range / coverage']}` : ''}, aimed away from windows and heat.`, ifFail: 'Re-aim, re-mount, or change to dual technology.' },
+        LOOP,
+        { check: 'Door contacts', how: 'Check the magnet gap with the door shut and rattled.', expect: () => 'Gap within the contact rating (often ½–1 in) with no chatter.', ifFail: 'Realign or replace with a wide-gap contact; adjust the door.' },
+      ] },
+      { id: 'comm', label: 'Communication failure to central station', steps: [
+        { check: 'Cellular signal at the communicator', how: 'Read signal strength on the communicator or keypad.', expect: () => 'The maker\'s minimum (often 2 bars / better than −95 dBm).', ifFail: 'Move the communicator or add a remote antenna.' },
+        { check: 'IP path', how: 'Check the network cable, DHCP / static address and the router.', expect: () => 'Link up and the panel reaches the receiver.', ifFail: 'Fix the network; ask IT about firewall changes.' },
+        { check: 'Test signal', how: 'Send a test and confirm with the central station.', expect: () => 'Received on both paths.', ifFail: 'Check the account number and receiver settings.' },
+      ] },
+      { id: 'power', label: 'Low battery / AC loss', steps: [DC('Panel'), { check: 'Battery', how: 'Measure on float, then load test.', tool: 'Multimeter / load tester', expect: () => 'About 13.5–13.8 V on float; holds above 12 V under load.', ifFail: 'Replace the battery (typically every 3–5 years).' }] },
+    ] },
+  { id: 'access', title: 'Access control', categories: ['Security & access control'], safety: 'Never leave an egress door unable to open. Keep fire alarm release working while you test.',
+    symptoms: [
+      { id: 'lock', label: 'Door will not lock or unlock', steps: [
+        { check: 'Voltage at the lock', how: 'Measure at the lock terminals while the lock should be energized.', tool: 'Multimeter',
+          expect: (c) => `${String(c.s['Power'] ?? '12 or 24 V DC')} within about 10%${c.s['Current (mA)'] ? `; draws ${c.s['Current (mA)']}` : ''}.`, ifFail: 'Check the power supply, fuse, relay output and wire size (use the wire drop calculator).' },
+        { check: 'Relay output from the controller', how: 'Present a valid card and watch the relay LED and the lock voltage.', expect: () => 'Relay changes state for the programmed unlock time.', ifFail: 'Check the door schedule, the reader and the controller output.' },
+        { check: 'Door alignment', how: 'Check the strike keeper or maglock armature lines up and the door closes fully.', expect: () => 'Latch enters the strike with no binding; maglock plate flat on the magnet.', ifFail: 'Adjust the closer, hinges or strike.' },
+        { check: 'Fire alarm release', how: 'With the system in test, put the fire alarm in alarm.', expect: () => 'Fail-safe locks release on the egress side and stay released until reset.', ifFail: 'Check the fire alarm relay and the lock power supply input.' },
+      ] },
+      { id: 'reader', label: 'Reader offline / card not read', steps: [
+        { check: 'Reader power and LED', how: 'Measure voltage at the reader.', tool: 'Multimeter', expect: () => 'Reader input range (usually 12 V); LED shows idle status.', ifFail: 'Check power and the cable.' },
+        { check: 'Data wiring', how: 'OSDP: check RS-485 polarity and termination; Wiegand: D0 / D1 not swapped and within about 500 ft.', expect: () => 'Controller shows the reader online.', ifFail: 'Correct the wiring; set the OSDP address and baud rate.' },
+        { check: 'Card format', how: 'Check the card format and facility code in the software.', expect: () => 'The card\'s format is enabled for that reader.', ifFail: 'Add the format or re-enroll the card.' },
+      ] },
+    ] },
+  { id: 'cctv', title: 'CCTV / video surveillance', categories: ['CCTV'], safety: 'Use a ladder or lift safely; outdoor cameras may be on poles near power.',
+    symptoms: [
+      { id: 'offline', label: 'Camera offline or no video', steps: [
+        { check: 'PoE power at the camera', how: 'Use a PoE tester at the camera end of the cable.', tool: 'PoE tester', expect: (c) => `Enough PoE class for the camera (${String(c.s['PoE class'] ?? 'see datasheet')}${c.s['Power (W)'] ? `, about ${c.s['Power (W)']} W` : ''}); IR and heaters draw more at night.`, ifFail: 'Check the switch budget and the cable; replace a bad injector.' },
+        { check: 'Network', how: 'Ping the camera and check the switch port and VLAN.', expect: () => 'Camera answers with no packet loss.', ifFail: 'Check addressing, VLAN and cable (certify it).' },
+        { check: 'Recorder settings', how: 'Check the channel in the NVR: address, user name, stream settings.', expect: () => 'Channel online and recording.', ifFail: 'Re-add the camera; update firmware on both.' },
+      ] },
+      { id: 'image', label: 'Poor image (night, blur, glare)', steps: [
+        { check: 'Pixel density on the target', how: 'Use the field-of-view calculator for the lens and distance.', expect: (c) => `Enough for the task (identify 250 px/m, recognize 125). Camera: ${String(c.s['Resolution (px)'] ?? 'see datasheet')}.`, ifFail: 'Zoom in, use a longer lens or a higher-resolution camera, or move it closer.' },
+        { check: 'IR reflection and dirt', how: 'Clean the dome; look for walls, eaves or the dome bubble reflecting IR.', expect: () => 'Clear night image without white haze.', ifFail: 'Re-seat the dome liner, move the camera, or add an external IR light.' },
+        { check: 'Settings', how: 'Check focus, WDR, shutter and bitrate.', expect: () => 'Sharp focus; WDR on for backlit scenes; bitrate high enough for motion.', ifFail: 'Adjust settings; refocus at night with IR on.' },
+      ] },
+    ] },
+  { id: 'audio', title: 'Paging, sound and intercom', categories: ['Paging & sound', 'Intercom'], safety: '70 V lines carry enough voltage to shock; turn the amplifier off before working on them.',
+    symptoms: [
+      { id: 'noaudio', label: 'No sound or weak sound in a zone', steps: [
+        { check: 'Speaker line impedance', how: 'Disconnect the line at the amplifier and measure with an impedance meter (not an ohmmeter).', tool: 'Speaker impedance meter',
+          expect: (c) => `About V² ÷ total taps (70.7 V with 60 W of taps ≈ 83 Ω).${c.s['Taps (W)'] ? ` Speaker taps: ${c.s['Taps (W)']} W.` : ''}`, ifFail: 'Much lower: a short or too many taps. Infinite: an open line. Split the line to find it.' },
+        { check: 'Amplifier load and protection', how: 'Read the amplifier status; total the taps.', expect: () => 'Taps total 80% of the rating or less; no protect light.', ifFail: 'Lower taps or add amplifier capacity.' },
+        { check: 'Sound level in the space', how: 'Play pink noise and measure.', tool: 'Sound level meter', expect: () => '10–15 dB above ambient for paging; even within about ±3 dB across the zone.', ifFail: 'Raise taps, add speakers or re-aim horns.' },
+      ] },
+      { id: 'hum', label: 'Hum, buzz or one-way audio', steps: [
+        { check: 'Grounding and shields', how: 'Check that shields are terminated at one end only and the rack has one ground point.', expect: () => 'No hum with inputs muted.', ifFail: 'Lift the shield at the far end; use isolation transformers on unbalanced feeds.' },
+        { check: 'Station wiring (intercom)', how: 'Swap the station with a known good one; check the pair.', tool: 'Multimeter / tone tracer', expect: (c) => `Within the maker\'s distance and cable (${String(c.s['Cable'] ?? 'see datasheet')}).`, ifFail: 'Replace the station or re-run the cable.' },
+        { check: 'IP / SIP (IP intercoms and paging)', how: 'Check PoE, VLAN, SIP registration and codecs.', expect: () => 'Registered, matching codecs, no packet loss.', ifFail: 'Fix network settings; open RTP ports.' },
+      ] },
+    ] },
+  { id: 'nursecall', title: 'Nurse call', categories: ['Nurse call'], safety: 'Tell the unit staff before testing and keep patient call coverage during repairs.',
+    symptoms: [
+      { id: 'station', label: 'Station or dome light not working', steps: [
+        { check: 'Station status at the console', how: 'Look for the station supervision fault on the master or software.', expect: () => 'Every station shows online.', ifFail: 'Check the station connection and address.' },
+        { check: 'Station power and bus', how: 'Measure voltage at the station and check the bus or network connection.', tool: 'Multimeter', expect: (c) => `${String(c.s['Power'] ?? '24 V DC')} within the maker\'s range.`, ifFail: 'Find the open or short on the bus; replace the station.' },
+        { check: 'Call test', how: 'Place each call type (normal, bath, code) and cancel at the station.', expect: () => 'Dome light, console and phones respond with the right priority.', ifFail: 'Check programming and the integration server.' },
+      ] },
+    ] },
+  { id: 'callbox', title: 'Emergency call boxes', categories: ['Emergency call boxes'], safety: 'Tell the answering point before test calls.',
+    symptoms: [
+      { id: 'nocall', label: 'Call does not connect', steps: [
+        { check: 'Cellular signal', how: 'Read the signal level in the box diagnostics or with a meter at the box.', tool: 'Cellular signal meter', expect: () => 'Better than about −95 dBm RSRP (LTE), or the maker\'s minimum.', ifFail: 'Add a high-gain antenna or move to another carrier.' },
+        { check: 'Battery under load', how: 'Measure battery voltage while a call is in progress.', tool: 'Multimeter', expect: (c) => `Stays above about 12 V during the call (call current ${String(c.s['Call current (mA)'] ?? 'per datasheet')} mA).`, ifFail: 'Replace the battery; check solar charging.' },
+        { check: 'Programming', how: 'Check the dial-out number and location message.', expect: () => 'Calls the right number and plays the right location.', ifFail: 'Reprogram the box.' },
+      ] },
+      { id: 'solar', label: 'Battery not charging / light out', steps: [
+        { check: 'Solar panel output', how: 'Measure panel open-circuit voltage in sun; check for shade and dirt.', tool: 'Multimeter', expect: () => 'Near the panel Voc (about 21–22 V for a 12 V panel).', ifFail: 'Clean, re-aim south, trim trees, or replace the panel.' },
+        DC('Charge controller output'),
+      ] },
+    ] },
+);
+
 const GENERIC: Guide = { id: 'generic', title: 'General equipment', categories: [], safety: 'Follow the manufacturer manual and lock out power before working inside equipment.',
   symptoms: [{ id: 'gen', label: 'Not working / intermittent', steps: [
     DC('Equipment'),

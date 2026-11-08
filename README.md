@@ -30,14 +30,14 @@ It needs two repository secrets: `ANDROID_KEYSTORE_B64` and `ANDROID_STOREPASS` 
 
 ## Workflow pages (in task order)
 
-1. **Project setup:** Company & Project · Find Location & Auto-Plan · Site Data & GPS
-2. **Site survey:** Field Notes & Photos · Map & Terrain · Wi-Fi & Network Survey · Drive Test & Calibration
-3. **Low-voltage design:** Fire Alarm & Batteries · Emergency Radio (ERCES / BDA) · Indoor Coverage & DAS · Solar & DC Power · Grounding & Structure
-4. **Radio & RF design:** Equipment & Link Budget · Path Profile / LOS / Fresnel · Coverage Prediction · Tilt, Azimuth & Power · Multi-site & Interference · Scenarios & Compare · 3D Model · LF / HF Systems
-5. **Compliance & materials:** Code Compliance · Specifications Library · Materials List
+1. **Project setup:** Company & Project · Project Systems & Toolkits · Find Location & Auto-Plan · Site Data & GPS
+2. **Planning: site survey:** Field Notes & Photos · Map & Terrain · Wi-Fi & Network Survey · Drive Test & Calibration
+3. **Planning: low-voltage design:** Fire Alarm & Batteries · Emergency Radio (ERCES / BDA) · Indoor Coverage & DAS · Solar & DC Power · Grounding & Structure
+4. **Planning: radio & RF:** Equipment & Link Budget · Path Profile / LOS / Fresnel · Coverage Prediction · Tilt, Azimuth & Power · Multi-site & Interference · Scenarios & Compare · 3D Model · LF / HF Systems
+5. **Planning: codes & materials:** Code Compliance · Specifications Library · Materials List
 6. **Installation:** Installation Guides (color wiring diagrams)
 7. **Testing & closeout:** Final Testing · Reports & Closeout Package
-8. **Troubleshooting & repair:** Troubleshooting Wizard
+8. **Troubleshooting & repair:** Troubleshooting Wizard · Service & Maintenance
 9. **Tools:** Calculators · Projects & Storage · Sync Devices
 
 Plus a searchable Help manual, page help (F1), "Guide me" walkthroughs and `?` tooltips. The first start asks what is being designed
