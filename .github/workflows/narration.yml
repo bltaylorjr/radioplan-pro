@@ -5,7 +5,8 @@ on:
   workflow_dispatch:
     inputs:
       lines: { description: 'base64 JSON list of {id, text}', required: true }
-      voice: { description: 'Piper voice', required: false, default: 'en_US-lessac-high' }
+      voice: { description: 'Piper voice', required: false, default: 'en_US-ryan-high' }
+      pace: { description: 'Length scale (higher = slower)', required: false, default: '1.08' }
 permissions:
   contents: write
 jobs:
@@ -28,7 +29,7 @@ jobs:
           python - <<'PY'
           import json, subprocess
           for l in json.load(open('lines.json')):
-              subprocess.run(['piper', '--model', 'voice.onnx', '--output_file', f"out/{l['id']}.wav", '--sentence_silence', '0.35'], input=l['text'].encode(), check=True)
+              subprocess.run(['piper', '--model', 'voice.onnx', '--output_file', f"out/{l['id']}.wav", '--sentence_silence', '0.45', '--length_scale', '${{ inputs.pace }}'], input=l['text'].encode(), check=True)
           PY
           ls -la out
       - name: Publish as a pre-release asset (never "latest", so app updates ignore it)
