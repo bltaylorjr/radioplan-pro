@@ -129,10 +129,13 @@ export async function backupAll(): Promise<string> {
 const b64 = (u: Uint8Array) => { let s = ''; for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode(...u.subarray(i, i + 0x8000)); return btoa(s); };
 const unb64 = (s: string) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
 /** Everything in the app's own database besides projects: your library, contacts, web links and saved datasheets. */
+/** Keys that are protected information: kept on this device only (not in backups, sync or exports). */
+export const isPrivateKey = (k: string) => k.startsWith('radioref.');
 export async function kvDump(): Promise<Record<string, unknown>> {
   const keys = await run<IDBValidKey[]>('kv', 'readonly', (s) => s.getAllKeys()).catch(() => [] as IDBValidKey[]);
   const out: Record<string, unknown> = {};
   for (const k of keys) {
+    if (isPrivateKey(String(k))) continue; // RadioReference data and sign-in never leave the device
     const v = await kvGet<unknown>(String(k)); if (v === undefined) continue;
     const enc1 = async (x: unknown) => { const blob = (x as { blob?: Blob })?.blob; return blob instanceof Blob ? { ...(x as object), blob: { __b64: b64(new Uint8Array(await blob.arrayBuffer())), type: blob.type } } : x; };
     out[String(k)] = Array.isArray(v) ? await Promise.all(v.map(enc1)) : await enc1(v);
@@ -143,6 +146,7 @@ export async function kvDump(): Promise<Record<string, unknown>> {
 export async function kvRestore(kv: Record<string, unknown> | undefined): Promise<number> {
   let n = 0;
   for (const [k, raw] of Object.entries(kv ?? {})) {
+    if (isPrivateKey(k)) continue;
     const dec1 = (x: unknown) => { const enc = (x as { blob?: { __b64?: string; type?: string } })?.blob; return enc?.__b64 ? { ...(x as object), blob: new Blob([unb64(enc.__b64)], { type: enc.type }) } : x; };
     let v = (Array.isArray(raw) ? raw.map(dec1) : dec1(raw)) as Record<string, unknown> | unknown[];
     const cur = await kvGet<unknown>(k);

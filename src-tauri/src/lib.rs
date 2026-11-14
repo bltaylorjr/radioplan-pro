@@ -54,9 +54,41 @@ fn install_update(url: String) -> Result<(), String> {
     Err("Automatic install is only available on Windows".into())
 }
 
+/// RadioReference.com web service (SOAP). The page can't call it directly (the browser engine blocks other sites),
+/// so the app makes the request. Only https://api.radioreference.com/ is allowed.
+#[tauri::command]
+async fn rr_http(url: String, body: String, soap_action: String, post: bool) -> Result<String, String> {
+    if !url.starts_with("https://api.radioreference.com/") || url.contains("..") || url.contains('@') {
+        return Err("Address refused".into());
+    }
+    tauri::async_runtime::spawn_blocking(move || {
+        let agent = ureq::AgentBuilder::new().timeout(std::time::Duration::from_secs(60)).build();
+        let res = if post {
+            agent.post(&url)
+                .set("Content-Type", "text/xml; charset=utf-8")
+                .set("SOAPAction", &soap_action)
+                .set("User-Agent", "LvPlanPro")
+                .send_string(&body)
+        } else {
+            agent.get(&url).set("User-Agent", "LvPlanPro").call()
+        };
+        match res {
+            Ok(r) => r.into_string().map_err(|e| e.to_string()),
+            // SOAP faults come back as HTTP 500 with the fault in the body: pass them on so the page can explain them.
+            Err(ureq::Error::Status(code, r)) => {
+                let text = r.into_string().unwrap_or_default();
+                if text.contains("Fault") { Ok(text) } else { Err(format!("RadioReference HTTP {}", code)) }
+            }
+            Err(e) => Err(format!("No connection to RadioReference ({})", e)),
+        }
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
 pub fn run() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![app_info, install_update])
+        .invoke_handler(tauri::generate_handler![app_info, install_update, rr_http])
         .setup(|app| {
             let mut w = WebviewWindowBuilder::new(app, "main", WebviewUrl::default())
                 .title("LvPlan Pro")

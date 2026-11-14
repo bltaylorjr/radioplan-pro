@@ -26,6 +26,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -173,6 +176,8 @@ public class MainActivity extends Activity {
                 try { startActivityForResult(i, REQ_SAVE); } catch (ActivityNotFoundException e) { toast("No app available to save files"); }
             }});
         }
+        @JavascriptInterface public void httpPost(String id, String url, String body, String soapAction) { rrHttp(id, url, body == null ? "" : body, soapAction); }
+        @JavascriptInterface public void httpGet(String id, String url) { rrHttp(id, url, null, null); }
         @JavascriptInterface public void shareFile(final String name, final String mime, String b64, final String text) {
             try {
                 File dir = new File(getCacheDir(), "share"); dir.mkdirs();
@@ -190,6 +195,39 @@ public class MainActivity extends Activity {
                 }});
             } catch (IOException e) { toast("Could not share: " + e.getMessage()); }
         }
+    }
+
+    /** RadioReference.com web service: the page can't call it directly (no CORS), so the app does. Only that host. */
+    void rrHttp(final String id, final String url, final String body, final String soapAction) {
+        new Thread(new Runnable() { public void run() {
+            boolean ok = false; byte[] out;
+            try {
+                if (!url.startsWith("https://api.radioreference.com/") || url.contains("..") || url.contains("@")) throw new IOException("Address refused");
+                HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
+                c.setConnectTimeout(30000); c.setReadTimeout(60000);
+                c.setRequestProperty("User-Agent", "LvPlanPro");
+                if (body != null) {
+                    c.setRequestMethod("POST"); c.setDoOutput(true);
+                    c.setRequestProperty("Content-Type", "text/xml; charset=utf-8");
+                    c.setRequestProperty("SOAPAction", soapAction == null ? "" : soapAction);
+                    try (OutputStream o = c.getOutputStream()) { o.write(body.getBytes("UTF-8")); }
+                }
+                int code = c.getResponseCode();
+                InputStream in = code >= 400 ? c.getErrorStream() : c.getInputStream();
+                ByteArrayOutputStream b = new ByteArrayOutputStream();
+                if (in != null) { byte[] buf = new byte[16384]; int n; while ((n = in.read(buf)) > 0) b.write(buf, 0, n); in.close(); }
+                out = b.toByteArray();
+                String text = new String(out, "UTF-8");
+                ok = code < 400 || text.contains("Fault");
+                if (!ok) out = ("RadioReference HTTP " + code).getBytes("UTF-8");
+                c.disconnect();
+            } catch (Exception e) {
+                String m = "No connection to RadioReference (" + e.getMessage() + ")";
+                try { out = m.getBytes("UTF-8"); } catch (Exception x) { out = new byte[0]; }
+            }
+            final String js = "window.__rrHttpDone&&window.__rrHttpDone('" + id.replaceAll("[^A-Za-z0-9]", "") + "'," + ok + ",'" + Base64.encodeToString(out, Base64.NO_WRAP) + "')";
+            runOnUiThread(new Runnable() { public void run() { web.evaluateJavascript(js, null); } });
+        }}).start();
     }
 
     @Override public void onBackPressed() { if (web.canGoBack()) web.goBack(); else super.onBackPressed(); }

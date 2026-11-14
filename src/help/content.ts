@@ -101,6 +101,16 @@ The cache lives in the app's storage on that device (browser profile for the USB
       { target: 'dem-import', title: 'Terrain import', text: 'Load DEM or LiDAR files, or fetch an online DEM around the selected site.' },
     ] },
 
+  { id: 'radioref', title: 'RadioReference frequencies', page: 'radioref', keywords: 'radioreference radio reference rr premium api frequencies talkgroups trunked p25 viper site control channel fire police sheriff ems public safety county scanner bda erces das programming', summary: 'Sign in with your RadioReference Premium account once, download a county’s frequencies, trunked sites and talkgroups while online, then use them offline. Kept encrypted on this device only.',
+    body: `**One-time setup:** enter your RadioReference username, password and app key, then tap **Save sign-in**. The app key comes from RadioReference (sign in on RadioReference.com and apply on the API key page; the steps are on the screen).
+
+**Download:** pick the state and county (the project county is chosen for you) and tap **Download frequencies for this county**. This needs internet once. Afterwards everything works offline. Tap **Download again** to update.
+
+**Protected information:** frequencies, talkgroups and your sign-in are stored **encrypted on this device only**. They are not saved in project files, backups, reports, exports or Sync Devices.
+
+**Web browser / flash drive copy:** browsers can't talk to RadioReference directly. Download the county's CSV from RadioReference.com and tap **Import a CSV**, then delete the downloaded file.
+
+The **Emergency Radio (ERCES / BDA)** page lists the county's public-safety channels from this list.` },
   { id: 'equipment', title: 'Equipment & link budget', page: 'equipment', keywords: 'equipment radio antenna feeder coax heliax lmr eirp erp link budget mapl sensitivity margin fade shadow body loss penetration', summary: 'Choose band, radio, antenna and feeder; the app computes EIRP, ERP and Maximum Allowable Path Loss.',
     body: `**EIRP** (Effective Isotropic Radiated Power) = TX power − feeder loss − jumper/connector loss + antenna gain (dBi). **ERP** = EIRP − 2.15 dB.
 
