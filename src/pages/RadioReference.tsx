@@ -6,7 +6,7 @@ import { projectPlace } from '../compliance/place';
 import { allCounties } from '../engine/refdata';
 import { haversineKm } from '../engine/geo';
 import {
-  RrLogin, RrDownload, RrError, loadLogin, saveLogin, testLogin, downloadCounty, loadDownload, listDownloads, deleteDownload,
+  RrLogin, RrDownload, RrError, loadLogin, logIn, logOut, loadAppKey, checkOffline, onLoginChange, testLogin, downloadCounty, loadDownload, listDownloads, deleteDownload,
   saveDownload, importRrCsv, countFreqs, canReachApi, wipeAll, publicSafetyFreqs,
 } from '../engine/radioref';
 import type { StateCode } from '../types';
@@ -35,8 +35,8 @@ export function RadioReferencePage() {
 
   const [login, setLogin] = useState<RrLogin>({ username: '', password: '', appKey: '' });
   const [hasLogin, setHasLogin] = useState(false);
-  const [editLogin, setEditLogin] = useState(false);
-  useEffect(() => { loadLogin().then((l) => { if (l) { setLogin(l); setHasLogin(true); } else setEditLogin(true); }); }, []);
+  const [stay, setStay] = useState(true);
+  useEffect(() => { const read = () => loadLogin().then((l) => { if (l) { setLogin(l); setStay(l.stay); setHasLogin(true); } else { setHasLogin(false); setLogin({ username: '', password: '', appKey: '' }); } }); read(); return onLoginChange(read); }, []);
   const [msg, setMsg] = useState<{ text: string; tone?: 'ok' | 'bad' } | null>(null);
   const [busy, setBusy] = useState<{ text: string; frac: number } | null>(null);
   const [stopper] = useState({ cancelled: false });
@@ -56,16 +56,10 @@ export function RadioReferencePage() {
     if (e instanceof RrError && e.kind === 'login') return `RadioReference did not accept the sign-in: ${m}. Check the username and password, and that your Premium subscription is active.`;
     return m;
   };
-  const doSaveLogin = async () => {
-    const l = { username: login.username.trim(), password: login.password, appKey: login.appKey.trim() };
-    await saveLogin(l); setLogin(l); setHasLogin(true); setEditLogin(false);
-    if (!online || !appOk) { setMsg({ text: 'Sign-in saved on this device. It will be checked the first time you download.', tone: 'ok' }); return; }
-    setMsg({ text: 'Checking with RadioReference…' });
-    try { setMsg({ text: '✓ ' + await testLogin(l), tone: 'ok' }); } catch (e) { setMsg({ text: explain(e), tone: 'bad' }); }
-  };
+  const doLogout = async () => { await logOut(); setMsg({ text: 'Logged out. Your username and password were removed from this device.', tone: 'ok' }); };
   const forget = async () => {
-    if (!confirm('Remove your RadioReference sign-in and every downloaded frequency list from this device?')) return;
-    await wipeAll(); setLogin({ username: '', password: '', appKey: '' }); setHasLogin(false); setEditLogin(true); setTick((t) => t + 1);
+    if (!confirm('Log out and delete every downloaded frequency list from this device?')) return;
+    await wipeAll(); setTick((t) => t + 1);
     setMsg({ text: 'Removed from this device.', tone: 'ok' });
   };
   const download = async () => {
@@ -90,28 +84,16 @@ export function RadioReferencePage() {
     <div className="stack">
       <p className="note">🔒 Frequencies and talkgroups from RadioReference are protected information. LvPlan Pro keeps them <b>only on this device, encrypted</b>. They are never put in project files, backups, reports, exports or Sync Devices, and never sent anywhere except to RadioReference.com when you download.</p>
 
-      <Card title="Your RadioReference sign-in" tip="Uses your RadioReference Premium subscription. The sign-in is saved encrypted on this device and is only sent to RadioReference.com.">
-        {!editLogin && hasLogin ? <div className="row wrap">
-          <span>Signed in as <b>{login.username}</b>{login.appKey ? '' : ' (no app key yet)'}.</span>
-          <button onClick={() => setEditLogin(true)}>Change</button>
-          <button className="ghost" onClick={forget}>Remove sign-in and downloads</button>
-        </div> : <>
-          <div className="form">
-            <label className="field"><span>RadioReference username</span><input autoComplete="off" value={login.username} onChange={(e) => setLogin({ ...login, username: e.target.value })} aria-label="RadioReference username" /></label>
-            <label className="field"><span>Password</span><input type="password" autoComplete="off" value={login.password} onChange={(e) => setLogin({ ...login, password: e.target.value })} aria-label="RadioReference password" /></label>
-            <label className="field wide"><span>App key (from RadioReference)</span><input autoComplete="off" spellCheck={false} value={login.appKey} onChange={(e) => setLogin({ ...login, appKey: e.target.value })} aria-label="RadioReference app key" placeholder="paste the key RadioReference emailed you" /></label>
+      {!hasLogin ? <RrLoginPage msg={msg} onDone={(l, m) => { setLogin(l); setHasLogin(true); setMsg(m); }} />
+        : <Card title="RadioReference" className="rr-status">
+          <div className="row wrap">
+            <span>🔓 Logged in as <b>{login.username}</b>{stay ? <span className="pill">stays logged in on this device</span> : <span className="pill">until the app is closed</span>}{login.appKey ? '' : <span className="pill">no app key yet</span>}</span>
+            <button className="primary" onClick={doLogout}>Log out</button>
+            <button className="ghost" onClick={forget}>Log out and delete downloads</button>
           </div>
-          <div className="row"><button className="primary" disabled={!login.username.trim() || !login.password} onClick={doSaveLogin}>Save sign-in</button>{hasLogin && <button onClick={() => setEditLogin(false)}>Cancel</button>}</div>
-          <details className="small"><summary>How to get the app key (one time)</summary><ol>
-            <li>Sign in at RadioReference.com with your Premium account.</li>
-            <li>Open <a href={APPLY_URL} target="_blank" rel="noreferrer">the API key application page ↗</a>.</li>
-            <li>Describe the app: “LvPlan Pro, an internal, single-user tool for my low-voltage company. It looks up public-safety frequencies, trunked sites and talkgroups for the county of a job, to design and test in-building emergency radio (ERCES / BDA / DAS) and program radios. Only I use it, with my own Premium login. Data stays on my device and is not shared or published.”</li>
-            <li>When RadioReference emails the key, paste it in the box above and tap Save.</li>
-          </ol></details>
-        </>}
-        {msg && <p className={msg.tone === 'bad' ? 'bad-text' : msg.tone === 'ok' ? 'ok-text' : 'muted'} role="status">{msg.text}</p>}
-      </Card>
-
+          {msg && <p className={msg.tone === 'bad' ? 'bad-text' : msg.tone === 'ok' ? 'ok-text' : 'muted'} role="status">{msg.text}</p>}
+        </Card>}
+      {hasLogin && <>
       <Card title="Download a county (needs internet once)">
         <div className="form">
           <label className="field"><span>State</span><select value={st} onChange={(e) => { setSt(e.target.value as StateCode); setCounty(''); }} aria-label="State">{STATES.map((s) => <option key={s} value={s}>{CODE_SETS[s].name}</option>)}</select></label>
@@ -135,9 +117,73 @@ export function RadioReferencePage() {
       </Card>
 
       {county && <RrBrowser d={d} county={county} state={st} />}
+      </>}
       <p className="small muted">Data © RadioReference.com, for your own use with your Premium subscription. Always confirm frequencies and get the licensee’s and AHJ’s approval before you retransmit them (FCC 90.219).</p>
     </div>
   );
+}
+
+/** The RadioReference login page: username, password, app key, "Stay logged in". */
+export function RrLoginPage({ msg: msg0, onDone }: { msg?: { text: string; tone?: 'ok' | 'bad' } | null; onDone: (l: RrLogin, m: { text: string; tone?: 'ok' | 'bad' }) => void }) {
+  const [u, setU] = useState(''), [pw, setPw] = useState(''), [key, setKey] = useState(''), [stay, setStay] = useState(true), [show, setShow] = useState(false);
+  const [hasKey, setHasKey] = useState(false), [editKey, setEditKey] = useState(false);
+  const [msg, setMsg] = useState(msg0 ?? null), [busy, setBusy] = useState(false);
+  useEffect(() => { loadAppKey().then((k) => { setKey(k); setHasKey(!!k); }); }, []);
+  useEffect(() => { if (msg0) setMsg(msg0); }, [msg0]);
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const l = { username: u.trim(), password: pw, appKey: key.trim() };
+    if (!l.username || !l.password) return;
+    setBusy(true); setMsg({ text: 'Logging in…' });
+    let note = '';
+    if (navigator.onLine && canReachApi() && l.appKey) {
+      try { note = await testLogin(l); }
+      catch (err) {
+        setBusy(false);
+        const m = (err as Error).message;
+        if (err instanceof RrError && err.kind === 'key') { setMsg({ text: `RadioReference did not accept the app key: ${m}`, tone: 'bad' }); setEditKey(true); return; }
+        if (err instanceof RrError && err.kind === 'login') { setMsg({ text: `Wrong username or password, or the Premium subscription is not active (${m}).`, tone: 'bad' }); return; }
+        note = `Could not reach RadioReference to check (${m}); you are logged in on this device.`;
+      }
+    } else {
+      const c = await checkOffline(l.username, l.password);
+      if (c === 'wrong') { setBusy(false); setMsg({ text: 'Wrong username or password.', tone: 'bad' }); return; }
+      note = c === 'ok' ? 'Logged in (offline).' : 'Logged in. RadioReference checks the password the first time you download.';
+    }
+    await logIn(l, stay); setBusy(false); setPw('');
+    onDone(l, { text: '✓ ' + note, tone: 'ok' });
+  };
+  return (
+    <div className="rr-login">
+      <Card title="Log in to RadioReference">
+        <form onSubmit={submit} className="stack-tight" autoComplete="off">
+          <p className="small muted">Use your RadioReference.com Premium account. Your login is only sent to RadioReference.com.</p>
+          <label className="field"><span>Username</span><input autoFocus autoComplete="off" autoCapitalize="none" spellCheck={false} value={u} onChange={(e) => setU(e.target.value)} aria-label="RadioReference username" /></label>
+          <label className="field"><span>Password</span><span className="row"><input type={show ? 'text' : 'password'} autoComplete="off" value={pw} onChange={(e) => setPw(e.target.value)} aria-label="RadioReference password" style={{ flex: 1 }} /><button type="button" className="ghost" onClick={() => setShow(!show)}>{show ? 'Hide' : 'Show'}</button></span></label>
+          {hasKey && !editKey ? <p className="small muted">App key saved ✓ <button type="button" className="ghost" onClick={() => setEditKey(true)}>Change</button></p>
+            : <label className="field"><span>App key (from RadioReference, one time)</span><input autoComplete="off" spellCheck={false} value={key} onChange={(e) => setKey(e.target.value)} aria-label="RadioReference app key" placeholder="paste the key RadioReference emailed you" /></label>}
+          <label className="check"><input type="checkbox" checked={stay} onChange={(e) => setStay(e.target.checked)} /> <b>Stay logged in</b> on this device</label>
+          <p className="small muted" style={{ marginTop: 0 }}>{stay ? 'Your login is kept encrypted on this device until you tap Log out.' : 'You are logged out when the app is closed. Nothing but the app key is kept.'}</p>
+          <button className="primary" type="submit" disabled={busy || !u.trim() || !pw}>{busy ? 'Logging in…' : 'Log in'}</button>
+          {msg && <p className={msg.tone === 'bad' ? 'bad-text' : msg.tone === 'ok' ? 'ok-text' : 'muted'} role="status">{msg.text}</p>}
+          {(!hasKey || editKey) && <details className="small"><summary>How to get the app key (one time)</summary><ol>
+            <li>Sign in at RadioReference.com with your Premium account.</li>
+            <li>Open <a href={APPLY_URL} target="_blank" rel="noreferrer">the API key application page ↗</a>.</li>
+            <li>Describe the app: “LvPlan Pro, an internal, single-user tool for my low-voltage company. It looks up public-safety frequencies, trunked sites and talkgroups for the county of a job, to design and test in-building emergency radio (ERCES / BDA / DAS) and program radios. Only I use it, with my own Premium login. Data stays on my device and is not shared or published.”</li>
+            <li>When RadioReference emails the key, paste it in the box above.</li>
+          </ol></details>}
+        </form>
+      </Card>
+      <p className="small muted">🔒 Frequencies and talkgroups you download are protected information: kept only on this device, encrypted, and shown only while you are logged in.</p>
+    </div>
+  );
+}
+
+/** True while someone is logged in to RadioReference (updates on log in / log out). */
+export function useRrLoggedIn() {
+  const [on, setOn] = useState(false);
+  useEffect(() => { const read = () => loadLogin().then((l) => setOn(!!l)); read(); return onLoginChange(read); }, []);
+  return on;
 }
 
 function RrBrowser({ d, county, state }: { d: RrDownload | null; county: string; state: string }) {
@@ -186,7 +232,9 @@ function RrBrowser({ d, county, state }: { d: RrDownload | null; county: string;
 export function RrFreqPicker({ onPick }: { onPick: (fMHz: number) => void }) {
   const { project: p } = useStore();
   const here = projectPlace(p);
-  const d = useRrDownload(here.state, here.county ?? '');
+  const on = useRrLoggedIn();
+  const d0 = useRrDownload(here.state, here.county ?? '');
+  const d = on ? d0 : null;
   const choices = useMemo(() => (d ? freqChoices(d) : []), [d]);
   if (!choices.length) return null;
   const groups = [...new Set(choices.map((c) => c.group))];
@@ -200,8 +248,10 @@ export function RrFreqPicker({ onPick }: { onPick: (fMHz: number) => void }) {
 export function RrErcesCard() {
   const { project: p, update, go } = useStore();
   const here = projectPlace(p);
+  const on = useRrLoggedIn();
   const d = useRrDownload(here.state, here.county ?? '');
   const [all, setAll] = useState(false);
+  if (d && !on) return <Card title="Public-safety radio here (RadioReference)"><p className="small">🔒 Log in to RadioReference to see the saved channels, bands and donor sites for {here.county}. <button className="ghost" onClick={() => go('radioref')}>Log in</button></p></Card>;
   if (!d) return <Card title="Public-safety channels here (RadioReference)"><p className="small">No RadioReference list saved for {here.county || 'the project county'} yet. <button className="ghost" onClick={() => go('radioref')}>Open RadioReference Frequencies</button></p></Card>;
   const ps = publicSafetyFreqs(d);
   const bands = bandsInUse(d);

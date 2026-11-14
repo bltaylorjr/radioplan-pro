@@ -332,3 +332,9 @@ body { font-size: clamp(15px, 0.6vw + 12.5px, 17px); }
 .fullview-on .canvas-wrap { display: flex; align-items: center; justify-content: center; }
 .fullview-on canvas.plan { width: auto !important; height: 100% !important; max-width: 100%; }
 @media print { .fullview-open { display: none; } }
+
+/* RadioReference login page */
+.rr-login { max-width: 460px; margin: 24px auto; width: 100%; }
+.rr-login .field { display: flex; flex-direction: column; gap: 4px; }
+.rr-login .field input { width: 100%; }
+.rr-login button[type="submit"] { width: 100%; padding: 10px; font-size: 1.05em; }
