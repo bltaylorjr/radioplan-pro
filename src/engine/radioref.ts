@@ -41,8 +41,10 @@ async function kvGet<T>(k: string): Promise<T | undefined> {
 const kvSet = async (k: string, v: unknown) => kvSetPlain(k, v === undefined ? undefined : await seal(v));
 /** Removes the sign-in, every download and the device key (the saved data can't be read again). */
 export async function wipeAll() {
+  sessionLogin = null;
   for (const k of await kvKeys('radioref.')) await kvSetPlain(k, undefined);
   devKey = null;
+  notify();
 }
 
 export const RR_WSDL = 'https://api.radioreference.com/soap2/?wsdl&v=latest&s=rpc';
@@ -210,8 +212,51 @@ export function mapTalkgroup(t: Val, cats: Map<number, string>): RrTalkgroup {
 }
 
 // ---------------------------------------------------------------- high level
-export const loadLogin = async (): Promise<RrLogin | null> => (await kvGet<RrLogin>(LOGIN_KEY)) ?? null;
-export const saveLogin = (l: RrLogin | null) => kvSet(LOGIN_KEY, l ?? undefined);
+/** Saved sign-in. Without "Stay logged in" the username/password live only in memory until the app closes. */
+interface SavedLogin extends RrLogin { stay?: boolean; at?: string }
+let sessionLogin: RrLogin | null = null;
+const LOGOUT_EVENT = 'radioref-login';
+const notify = () => { try { window.dispatchEvent(new Event(LOGOUT_EVENT)); } catch { /* not in a browser */ } };
+export const onLoginChange = (f: () => void) => { window.addEventListener(LOGOUT_EVENT, f); return () => window.removeEventListener(LOGOUT_EVENT, f); };
+/** The signed-in user (memory first, then the encrypted saved copy), or null when logged out. */
+export async function loadLogin(): Promise<(RrLogin & { stay: boolean }) | null> {
+  if (sessionLogin) return { ...sessionLogin, stay: false };
+  const v = await kvGet<SavedLogin>(LOGIN_KEY);
+  return v && v.username && v.password ? { username: v.username, password: v.password, appKey: v.appKey ?? '', stay: true } : null;
+}
+/** The app key stays saved after logging out, so the next login only needs username and password. */
+export const loadAppKey = async () => sessionLogin?.appKey ?? (await kvGet<SavedLogin>(LOGIN_KEY))?.appKey ?? '';
+const VERIFIER_KEY = 'radioref.verifier.v1';
+async function pbkdf2(user: string, pass: string, salt: Uint8Array) {
+  const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(user.toLowerCase() + '\n' + pass), 'PBKDF2', false, ['deriveBits']);
+  return crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt, iterations: 150000 }, base, 256);
+}
+const same = (a: ArrayBuffer, b: ArrayBuffer) => { const x = new Uint8Array(a), y = new Uint8Array(b); return x.length === y.length && x.every((v, i) => v === y[i]); };
+/** Checks a login typed while offline against the last good one (a salted hash; the password itself is not kept). */
+export async function checkOffline(user: string, pass: string): Promise<'ok' | 'wrong' | 'unknown'> {
+  const v = await kvGet<{ salt: number[]; hash: number[] }>(VERIFIER_KEY);
+  if (!v) return 'unknown';
+  return same(await pbkdf2(user, pass, Uint8Array.from(v.salt)), Uint8Array.from(v.hash).buffer) ? 'ok' : 'wrong';
+}
+async function remember(user: string, pass: string) {
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  await kvSet(VERIFIER_KEY, { salt: [...salt], hash: [...new Uint8Array(await pbkdf2(user, pass, salt))] });
+}
+export async function logIn(l: RrLogin, stay: boolean) {
+  if (stay) { sessionLogin = null; await kvSet(LOGIN_KEY, { ...l, stay: true, at: new Date().toISOString() }); }
+  else { sessionLogin = { ...l }; await kvSet(LOGIN_KEY, { username: '', password: '', appKey: l.appKey, stay: false }); }
+  await remember(l.username, l.password).catch(() => undefined);
+  notify();
+}
+/** Log out: forget username and password everywhere (memory and device). Downloads stay, encrypted. */
+export async function logOut() {
+  sessionLogin = null;
+  const key = (await kvGet<SavedLogin>(LOGIN_KEY))?.appKey ?? '';
+  await kvSet(LOGIN_KEY, key ? { username: '', password: '', appKey: key, stay: false } : undefined);
+  notify();
+}
+/** @deprecated kept for older callers: saves with "stay logged in". */
+export const saveLogin = (l: RrLogin | null) => (l ? logIn(l, true) : logOut());
 export const effectiveKey = (l: RrLogin) => l.appKey.trim();
 
 export async function testLogin(login: RrLogin): Promise<string> {

@@ -1,3 +1,9 @@
+# LvPlan Pro 1.5.36
+
+- **RadioReference login page.** Log in with your RadioReference username and password (the app key is entered once and remembered). Tick **Stay logged in** to stay logged in on this device until you tap **Log out**. Untick it to be logged out when the app closes.
+- **Log out** removes your username and password from the device. Downloaded frequencies stay on the device, encrypted, but they are hidden everywhere (RadioReference page, ERCES card and frequency pickers) until you log in again. **Log out and delete downloads** removes them as well.
+- Logging in while offline is checked against your last good login, using a salted hash; the password itself is not kept.
+
 # LvPlan Pro 1.5.35
 
 - **RadioReference Frequencies** (new page under Planning: radio & RF). Sign in once with your RadioReference Premium username, password and app key. While online, download a county's frequencies, agencies, trunked systems, tower sites and talkgroups (optionally statewide agencies and systems too). After that it all works offline. Search, or show only public-safety channels.
