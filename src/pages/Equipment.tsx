@@ -1,3 +1,4 @@
+import { RrFreqPicker } from './RadioReference';
 import React from 'react';
 import { useStore } from '../store';
 import { Card, Field, Num, Sel, Stat, fmt, Tip } from '../components/ui';
@@ -20,7 +21,7 @@ export function EquipmentPage() {
         <Card title="Band & frequency" tour="eq-band">
           <div className="form">
             <Field label="Band preset"><Sel value={r.bandPreset} onChange={(v) => update((d) => { d.radio.bandPreset = v; if (BAND_PRESETS[v].fMHz) d.radio.fMHz = BAND_PRESETS[v].fMHz; })} options={Object.entries(BAND_PRESETS).map(([k, v]) => [k, v.label] as [string, string])} /></Field>
-            <Field label="Design frequency" topic="coverage"><Num value={r.fMHz} onChange={(v) => update((d) => { d.radio.fMHz = v!; d.radio.bandPreset = 'Custom'; })} unit="MHz" /></Field>
+            <Field label="Design frequency" topic="coverage"><Num value={r.fMHz} onChange={(v) => update((d) => { d.radio.fMHz = v!; d.radio.bandPreset = 'Custom'; })} unit="MHz" /><RrFreqPicker onPick={(f) => update((d) => { d.radio.fMHz = f; d.radio.bandPreset = 'Custom'; })} /></Field>
           </div>
         </Card>
         <Card title="Transmit chain" tour="eq-chain" tip="EIRP = P_tx − feeder − jumper − connector losses + antenna gain">

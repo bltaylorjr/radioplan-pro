@@ -1,3 +1,4 @@
+import { RrFreqPicker } from './RadioReference';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { FullView } from '../components/FullView';
 import { useStore } from '../store';
@@ -79,7 +80,7 @@ export function IndoorPage() {
     <div className="stack">
       <Card title="Indoor planner" tour="in-tools">
         <div className="form">
-          <Field label="Frequency"><Num value={d.fMHz} onChange={(v) => set('fMHz', v!)} unit="MHz" /></Field>
+          <Field label="Frequency"><Num value={d.fMHz} onChange={(v) => set('fMHz', v!)} unit="MHz" /><RrFreqPicker onPick={(f) => set('fMHz', f)} /></Field>
           <Field label="Building width × depth"><span className="row"><Num value={d.widthM} onChange={(v) => set('widthM', Math.max(5, v!))} unit="m" />×<Num value={d.heightM} onChange={(v) => set('heightM', Math.max(5, v!))} unit="m" /></span></Field>
           <Field label="Floor plan image"><span className="row"><input type="file" accept="image/*" onChange={(e) => onPlan(e.target.files?.[0])} />{d.floorPlanDataUrl && <button onClick={() => set('floorPlanDataUrl', undefined)}>Remove</button>}</span></Field>
           <Field label="Target signal" tip="−95 dBm for ERCES (IFC 510); −67 dBm for Wi-Fi voice; −85 dBm cellular in-building."><Num value={d.targetDbm} onChange={(v) => set('targetDbm', v!)} unit="dBm" /></Field>

@@ -35,6 +35,7 @@ import { SpecLibraryPage } from './pages/SpecLibrary';
 import { InstallPage } from './pages/Install';
 import { FieldNotesPage } from './pages/FieldNotes';
 import { ContactsPage } from './pages/Contacts';
+import { RadioReferencePage } from './pages/RadioReference';
 import { BlueprintsPage } from './pages/Blueprints';
 import { SelfRepair } from './components/SelfRepair';
 import { Checklist } from './components/Checklist';
@@ -72,6 +73,7 @@ export const WORKFLOW: { id: string; label: string; group: string; el: React.Rea
   { id: 'network', label: 'Multi-site & Interference', group: '4 · Planning: radio & RF', el: <NetworkPage /> },
   { id: 'scenarios', label: 'Scenarios & Compare', group: '4 · Planning: radio & RF', el: <ScenariosPage /> },
   { id: 'view3d', label: '3D Model', group: '4 · Planning: radio & RF', el: <View3DPage /> },
+  { id: 'radioref', label: 'RadioReference Frequencies', group: '4 · Planning: radio & RF', el: <RadioReferencePage /> },
   { id: 'lfhf', label: 'LF / HF Systems', group: '4 · Planning: radio & RF', el: <LfHfPage /> },
   { id: 'compliance', label: 'Code Compliance', group: '5 · Planning: codes & materials', el: <CompliancePage /> },
   { id: 'materials', label: 'Materials List', group: '5 · Planning: codes & materials', el: <MaterialsPage /> },

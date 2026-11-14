@@ -11,6 +11,7 @@ import { AWG_SIZES, LV_RESISTANCE_OHM_PER_KFT } from '../engine/electrical';
 import { wavelengthM } from '../engine/rf';
 import type { Project } from '../types';
 import { useUnits, DistNum } from '../units';
+import { RrErcesCard } from './RadioReference';
 
 function useArea(area: Area) { const { project, rt } = useStore(); return evaluateCompliance({ project, profile: rt.profile }).filter((f) => f.area === area); }
 type Upd = (fn: (d: Project) => void) => void;
@@ -233,6 +234,7 @@ export function ErcesPage() {
           </div>
         </Card>
         <Card title="Code check: IFC 510 / NFPA 1225 / FCC 90.219"><FindingList findings={f} empty={e.enabled ? undefined : 'Enable “Include in project” to run ERCES checks.'} /></Card>
+        <RrErcesCard />
       </div>
     </div>
   );

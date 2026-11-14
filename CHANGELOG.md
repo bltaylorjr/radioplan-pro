@@ -1,3 +1,10 @@
+# LvPlan Pro 1.5.35
+
+- **RadioReference Frequencies** (new page under Planning: radio & RF). Sign in once with your RadioReference Premium username, password and app key. While online, download a county's frequencies, agencies, trunked systems, tower sites and talkgroups (optionally statewide agencies and systems too). After that it all works offline. Search, or show only public-safety channels.
+- **Protected information:** frequencies, talkgroups and your RadioReference sign-in are stored only on this device, encrypted (AES-256 with a device key that can't be copied out). They are never in project files, backups, reports, exports or Sync Devices. "Remove sign-in and downloads" erases them.
+- **Used in design and calculations:** the Emergency Radio (ERCES / BDA) page lists the bands the BDA must pass (with Class A / Class B advice), the highest frequency to pass (one tap sets it for Indoor Coverage & DAS or the link budget), and the nearest trunked tower sites with distance, bearing and an estimated donor signal (one tap puts it in "Donor signal at roof", or adds the tower as a site). Equipment & Link Budget and Indoor Coverage & DAS have a RadioReference frequency picker.
+- The Windows and Android apps download straight from RadioReference. The online and flash-drive versions can import a CSV file saved from RadioReference.com instead (browsers can't contact RadioReference directly).
+
 # LvPlan Pro 1.5.34
 
 - Introduction video: the narration and title card now name all five states (NC, SC, GA, TN and VA), and the map scene shows the **⛶ Full page** button and **✕ Close**.

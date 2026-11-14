@@ -21,6 +21,7 @@ export const WORKFLOW_LABELS: Record<string, string> = {
   network: 'Multi-site & Interference',
   scenarios: 'Scenarios & Compare',
   view3d: '3D Model',
+  radioref: 'RadioReference Frequencies',
   lfhf: 'LF / HF Systems',
   compliance: 'Code Compliance',
   theory: 'Low-Voltage Principles',

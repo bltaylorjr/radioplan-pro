@@ -10,7 +10,7 @@ export const PAGE_GROUPS: [string, string[]][] = [
   ['1 · Project setup', ['company', 'systems', 'locate', 'sites']],
   ['2 · Planning: site survey', ['fieldnotes', 'terrain', 'wifi', 'survey']],
   ['3 · Planning: low-voltage design', ['autodesign', 'alarm', 'erces', 'indoor', 'solar', 'grounding']],
-  ['4 · Planning: radio & RF', ['equipment', 'path', 'coverage', 'optimize', 'network', 'scenarios', 'view3d', 'lfhf']],
+  ['4 · Planning: radio & RF', ['equipment', 'path', 'coverage', 'optimize', 'network', 'scenarios', 'view3d', 'radioref', 'lfhf']],
   ['5 · Planning: codes & materials', ['compliance', 'materials', 'blueprints']],
   ['6 · Testing & closeout', ['testing', 'reports']],
   ['7 · Troubleshooting & repair', ['troubleshoot']],
