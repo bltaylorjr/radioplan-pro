@@ -1,3 +1,15 @@
+# LvPlan Pro 1.5.49
+
+- **⚙ User Settings page** (Tools menu): a check box for every tool. Untick the ones you do not use and they leave the menu, step numbers and Next / Previous. Nothing is deleted; tick a tool to bring it back. **Show every tool** and **Only what this project needs** buttons.
+- **Tools follow the project type.** When you pick a project type or add a sub-project, any tool that job needs is turned back on, the tools it does not use are hidden (you can turn this off), and a notice lists exactly what was turned on and hidden.
+- **Fields the job does not use are hidden.** On Site Data & GPS, tower, antenna, airport and radio-horizon fields only show for radio, DAS, ERCES, call box, Wi-Fi and solar jobs (a **Show them** button brings them back; nothing is deleted).
+- **Wrong entries are explained.** Every number box checks what you type. If it is out of range, the box turns red, a message says what is wrong (for example "Waste must be between 0 and 50 %. You typed 500 %.") and suggests a fix, with a **Use …** button for the likely value (a slipped decimal point, the wrong unit or a missing minus sign). The last good value is kept until it is fixed.
+- **Blank is never zero.** Calculators ask for empty boxes ("Fill in One-way length to see the result") instead of using 0, optional boxes are skipped, and blank rows in fire alarm device and solar load lists are skipped instead of breaking the totals.
+- **Cross-checks** between related values, for example a cable wider than the conduit, device minimum voltage above the supply, alarm current below standby current, ear height above the ceiling, a fill speaker farther than the main speaker, or more call time than there is in a day.
+- **Check my data** (User Settings): goes through the whole project and lists every empty, out-of-range or mismatched entry, with a **Fix on …** button to the right page. It catches, for example, a longitude missing its minus sign, an antenna above the top of its tower, a deleted transmit site, or fire alarm standby under 24 h.
+- **Verified calculations.** New automated tests check calculator results against hand-worked reference values. This found and fixed one error: the low-voltage wire drop, 70 V line and speaker-wire calculators used 20 °C copper resistance while saying NEC Chapter 9 Table 8 (75 °C), so they under-stated voltage drop by about 18%. They now use the same NEC values as the Fire Alarm page.
+- **Introduction video**: a new part shows User Settings, the tool notice and the entry checks.
+
 # LvPlan Pro 1.5.48
 
 - **🔧 Automatic care: the app looks after itself and its data.** Nothing to set up. A new **Automatic care** card on **Projects** shows what it keeps checked and when, with **Check everything now**.

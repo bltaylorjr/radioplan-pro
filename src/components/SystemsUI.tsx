@@ -5,7 +5,8 @@ import { useStore } from '../store';
 import { SYSTEMS, ENABLES, SystemId, projectSystems } from '../data/systems';
 import { PAGE_GROUPS, ALWAYS_PAGES, suggestPages } from '../data/customPages';
 import { WORKFLOW_LABELS } from '../data/pageLabels';
-import { LvCalc, runCalc } from '../data/lvcalcs';
+import { LvCalc, checkCalc } from '../data/lvcalcs';
+import { Issue, issueText } from '../engine/validate';
 import type { Project } from '../types';
 import { Num, MeasureCtx, shownIn } from './ui';
 
@@ -76,23 +77,28 @@ function CustomPicker({ compact }: { compact?: boolean }) {
   );
 }
 
-/** One data-driven calculator. */
+/** One data-driven calculator. Blank boxes are never counted as zero; wrong entries get a message and a fix. */
 export function LvCalcCard({ c }: { c: LvCalc }) {
-  const [v, setV] = useState<Record<string, number>>({});
-  const out = runCalc(c, v); const sys = React.useContext(MeasureCtx);
-  const full = () => Object.fromEntries(c.inputs.map((i) => [i.k, v[i.k] ?? i.v]));
+  const [v, setV] = useState<Record<string, number | null>>({});
+  const chk = checkCalc(c, v); const sys = React.useContext(MeasureCtx);
+  const notes = chk.issues.filter((i) => !i.msg.endsWith('is empty.') && !isRangeIssue(i));
+  const full = () => Object.fromEntries(c.inputs.map((i) => [i.k, v[i.k] ?? i.v])) as Record<string, number>;
   return (
     <section className="card calc" data-calc={c.id}><header><h3>{c.title}</h3><ResetBtn onReset={() => setV({})} /></header>
       <div className="form">{c.inputs.map((i) => (
         <label key={i.k} className="field"><span className="field-label">{i.label}</span>
           {i.options ? <select value={v[i.k] ?? i.v} onChange={(e) => setV({ ...v, [i.k]: parseFloat(e.target.value) })}>{i.options.map(([n, l]) => <option key={n} value={n}>{l}</option>)}</select>
-            : <Num step={i.step ?? 'any'} value={v[i.k] ?? i.v} onChange={(x) => setV({ ...v, [i.k]: x ?? 0 })} unit={i.unit} />}
+            : <Num nullable required={!i.optional} label={i.label} min={i.min} max={i.max} integer={i.integer} step={i.step ?? 'any'} value={i.k in v ? v[i.k] : i.v} onChange={(x) => setV({ ...v, [i.k]: x })} unit={i.unit} />}
         </label>))}</div>
-      {out.map((o) => { const [val, un] = shownIn(o.value, o.unit, sys); return <div key={o.label} className={'calc-out' + (o.tone ? ' ' + o.tone : '')}><span>{o.label}</span><b>{val}{un && <small> {un}</small>}</b></div>; })}
+      {notes.length > 0 && <ul className="calc-msgs">{notes.map((i, n) => <li key={n} className={i.level}>⚠ {issueText(i)}</li>)}</ul>}
+      {chk.out ? chk.out.map((o) => { const [val, un] = shownIn(o.value, o.unit, sys); return <div key={o.label} className={'calc-out' + (o.tone ? ' ' + o.tone : '')}><span>{o.label}</span><b>{val}{un && <small> {un}</small>}</b></div>; })
+        : <p className="small calc-wait">{chk.missing.length ? `Fill in ${chk.missing.join(', ')} to see the result.` : 'Fix the entry marked in red to see the result.'}</p>}
       {c.note && <p className="small muted">{c.note}</p>}
       <CalcActions applyWhat={`“${c.title}”`}
-        apply={c.apply ? () => c.apply!(full()).map((t) => ({ id: t.id, label: t.label, page: t.page, sets: [[t.path, t.value]], to: t.to, on: t.on, now: (p) => { const x = getPath(p, t.path); return x == null ? '' : t.show ? t.show(x) : String(x); } })) : undefined}
+        apply={c.apply && chk.out ? () => c.apply!(full()).map((t) => ({ id: t.id, label: t.label, page: t.page, sets: [[t.path, t.value]], to: t.to, on: t.on, now: (p) => { const x = getPath(p, t.path); return x == null ? '' : t.show ? t.show(x) : String(x); } })) : undefined}
         fromProject={c.fromProject ? (p) => setV({ ...v, ...c.fromProject!(p) }) : undefined} />
     </section>
   );
 }
+/** Range problems are shown next to the box itself, so the card list only shows cross-checks and general notes. */
+const isRangeIssue = (i: Issue) => / must be | is not a number/.test(i.msg);
