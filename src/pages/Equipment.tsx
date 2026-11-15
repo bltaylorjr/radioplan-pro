@@ -3,6 +3,7 @@ import React from 'react';
 import { useStore } from '../store';
 import { Card, Field, Num, Sel, Stat, fmt, Tip } from '../components/ui';
 import { ANTENNAS, FEEDERS, RADIOS, BAND_PRESETS } from '../data/catalog';
+import { legacyTag } from '../data/lvequipment';
 import { designLink } from '../engine/design';
 import type { RadioDesign } from '../types';
 import { dbmToWatts, wattsToDbm } from '../engine/rf';
@@ -29,10 +30,11 @@ export function EquipmentPage() {
         <Card title="Transmit chain" tour="eq-chain" tip="EIRP = P_tx − feeder − jumper − connector losses + antenna gain">
           <div className="form">
             <Field label="Radio (band-matched)"><select onChange={(e) => { const x = RADIOS.find((q) => q.id === e.target.value); if (x) update((d) => { d.radio.txPowerDbm = Math.round(wattsToDbm(x.maxPowerW) * 10) / 10; d.radio.rxSensitivityDbm = x.sensitivityDbm; }); }} defaultValue="">
-              <option value="">— pick to load power/sensitivity —</option>{radios.map((x) => <option key={x.id} value={x.id}>{x.brand} {x.model} ({x.maxPowerW} W)</option>)}</select></Field>
+              <option value="">— pick to load power/sensitivity —</option>{radios.some((x) => !x.legacy) && <optgroup label="Current models">{radios.filter((x) => !x.legacy).map((x) => <option key={x.id} value={x.id}>{x.brand} {x.model} ({x.maxPowerW} W)</option>)}</optgroup>}
+              {radios.some((x) => x.legacy) && <optgroup label="⚠ Legacy / discontinued (service work)">{radios.filter((x) => x.legacy).map((x) => <option key={x.id} value={x.id}>{x.brand} {x.model} ({x.maxPowerW} W){legacyTag(x)}</option>)}</optgroup>}</select></Field>
             <Field label="TX power at radio" tip="Transmitter output at the antenna port of the radio."><Num value={r.txPowerDbm} onChange={(v) => set('txPowerDbm', v!)} unit={`dBm (${dbmToWatts(r.txPowerDbm).toFixed(1)} W)`} /></Field>
-            <Field label="TX antenna"><Sel value={r.txAntennaId} onChange={(v) => set('txAntennaId', v)} options={(ants.length ? ants : ANTENNAS).map((a) => [a.id, `${a.brand} ${a.model} · ${a.gainDbi} dBi`] as [string, string])} /></Field>
-            <Field label="Main feeder"><Sel value={r.feederId} onChange={(v) => set('feederId', v)} options={FEEDERS.map((f) => [f.id, `${f.brand} ${f.model}`] as [string, string])} /></Field>
+            <Field label="TX antenna"><Sel value={r.txAntennaId} onChange={(v) => set('txAntennaId', v)} options={(ants.length ? ants : ANTENNAS).map((a) => [a.id, `${a.brand} ${a.model} · ${a.gainDbi} dBi${legacyTag(a)}`] as [string, string])} /></Field>
+            <Field label="Main feeder"><Sel value={r.feederId} onChange={(v) => set('feederId', v)} options={FEEDERS.map((f) => [f.id, `${f.brand} ${f.model}${legacyTag(f)}`] as [string, string])} /></Field>
             <Field label="Feeder length" tip="Total run: vertical on the structure + horizontal to the equipment."><Num value={r.feederLenM} onChange={(v) => set('feederLenM', v!)} unit="m" /></Field>
             <Field label="Jumper loss"><Num value={r.jumperLossDb} onChange={(v) => set('jumperLossDb', v!)} unit="dB" /></Field>
             <Field label="Connector / combiner loss"><Num value={r.connectorLossDb} onChange={(v) => set('connectorLossDb', v!)} unit="dB" /></Field>

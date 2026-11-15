@@ -60,10 +60,12 @@ fn install_update(url: String, sha256: Option<String>) -> Result<(), String> {
 }
 
 /// RadioReference.com web service (SOAP). The page can't call it directly (the browser engine blocks other sites),
-/// so the app makes the request. Only https://api.radioreference.com/ is allowed.
+/// so the app makes the request. Only https://api.radioreference.com/ and the official CPSC recalls API
+/// (https://www.saferproducts.gov/RestWebServices/Recall) are allowed.
 #[tauri::command]
 async fn rr_http(url: String, body: String, soap_action: String, post: bool) -> Result<String, String> {
-    if !url.starts_with("https://api.radioreference.com/") || url.contains("..") || url.contains('@') {
+    let ok = url.starts_with("https://api.radioreference.com/") || url.starts_with("https://www.saferproducts.gov/RestWebServices/Recall?");
+    if !ok || url.contains("..") || url.contains('@') {
         return Err("Address refused".into());
     }
     tauri::async_runtime::spawn_blocking(move || {

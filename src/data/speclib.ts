@@ -7,6 +7,7 @@ import { AWG_SIZES, AMPACITY_75C_CU, AMPACITY_90C_CU, RESISTANCE_OHM_PER_KFT } f
 
 const P = 'Product (typical)' as const, S = 'Standard' as const;
 import { bodySpecs } from './bodies';
+import { LV_CATALOG, LEGACY, LegacyInfo } from './lvequipment';
 export type SpecValue = string | number;
 export interface SpecItem {
   id: string; category: string; sub: string; brand: string; model: string;
@@ -17,11 +18,15 @@ export interface SpecItem {
   recommendations?: string[];
   /** Set when the item was loaded automatically from equipment added to a project. */
   origin?: string; projects?: string[];
+  /** Set on older or discontinued equipment: status, suggested replacements and service notes. */
+  legacy?: LegacyInfo;
+  /** Manufacturer documentation pages: [title, url]. */
+  docs?: [string, string][];
 }
 export const CATEGORIES = [
   'Antennas', 'Coax & feeders', 'Connectors', 'Radios & repeaters', 'ERCES / BDA & DAS', 'Public safety bands',
   'Fire alarm', 'Batteries', 'Solar & DC power', 'Wi-Fi', 'Network & PoE', 'Structured cabling', 'Fiber optics',
-  'Conductors', 'Surge & grounding', 'Security & access control', 'Intrusion', 'CCTV', 'Intercom', 'Nurse call', 'Paging & sound', 'Emergency call boxes', 'Codes, training & licensing', 'Other',
+  'Conductors', 'Surge & grounding', 'Security & access control', 'Intrusion', 'CCTV', 'Intercom', 'Nurse call', 'Paging & sound', 'Mass notification', 'Emergency call boxes', 'Codes, training & licensing', 'Other',
 ] as const;
 
 /** Spec fields offered when adding an item of a category (any extra field can be added too). */
@@ -40,7 +45,8 @@ export const TEMPLATES: Record<string, string[]> = {
   'Fiber optics': ['Fiber type', 'Core / cladding (µm)', 'Attenuation', 'Bandwidth', 'Reach'],
   'Conductors': ['Size', 'Ampacity 75 °C (A)', 'Ampacity 90 °C (A)', 'DC resistance (Ω/1000 ft)'],
   'Surge & grounding': ['Type', 'Frequency range', 'Connector', 'Surge rating', 'Insertion loss (dB)'],
-  'Security & access control': ['Device type', 'Resolution / format', 'Power', 'PoE class', 'Current (mA)', 'Rating'],
+  'Security & access control': ['Device type', 'Doors / readers', 'Reader interface', 'Resolution / format', 'Holding force', 'Power', 'PoE class', 'Current (mA)', 'Outputs', 'Host', 'Rating'],
+  'Mass notification': ['Device type', 'Listing', 'Speakers', 'Taps (W)', 'Line voltage', 'Candela / dB', 'Communication', 'Power'],
   'Intrusion': ['Device type', 'Zone type', 'EOL resistor (Ω)', 'Standby current (mA)', 'Alarm current (mA)', 'Range / coverage', 'Listing'],
   'CCTV': ['Device type', 'Resolution (px)', 'Lens / field of view (°)', 'IR range (ft)', 'Bitrate (Mb/s)', 'PoE class', 'Power (W)', 'Rating (IP / IK)'],
   'Intercom': ['Device type', 'Protocol (analog / SIP)', 'Power', 'Current (mA)', 'Cable', 'Max distance (ft)'],
@@ -51,11 +57,14 @@ export const TEMPLATES: Record<string, string[]> = {
   'Other': ['Type', 'Voltage', 'Current', 'Notes'],
 };
 
-export const antennaSpec = (a: Antenna): SpecItem => ({ id: `cat-ant-${a.id}`, category: 'Antennas', sub: a.type, brand: a.brand, model: a.model, kind: P,
+/** Carries a catalog item's legacy status and documentation pages into its library entry. */
+const withLegacy = (x: { legacy?: LegacyInfo; docs?: [string, string][] }, it: SpecItem): SpecItem =>
+  ({ ...it, ...(x.docs ? { docs: x.docs } : {}), ...(x.legacy ? { legacy: x.legacy, specs: { 'Status': x.legacy.status, ...(x.legacy.era ? { 'In service': x.legacy.era } : {}), ...it.specs } } : {}) });
+export const antennaSpec = (a: Antenna): SpecItem => withLegacy(a, { id: `cat-ant-${a.id}`, category: 'Antennas', sub: a.type, brand: a.brand, model: a.model, kind: P,
   specs: { 'Type': a.type, 'Band low (MHz)': a.bandMHz[0], 'Band high (MHz)': a.bandMHz[1], 'Gain (dBi)': a.gainDbi, 'H beamwidth (°)': a.hBwDeg, 'V beamwidth (°)': a.vBwDeg, 'Connector': a.connector, 'Weight (lb)': a.weightLb, 'Wind area (sq ft)': a.windAreaSqft, 'Mount': a.mount } });
-export const feederSpec = (f: Feeder): SpecItem => ({ id: `cat-fd-${f.id}`, category: 'Coax & feeders', sub: f.size, brand: f.brand, model: f.model, kind: P,
+export const feederSpec = (f: Feeder): SpecItem => withLegacy(f, { id: `cat-fd-${f.id}`, category: 'Coax & feeders', sub: f.size, brand: f.brand, model: f.model, kind: P,
   specs: { 'Size': f.size, ...Object.fromEntries(f.points.map(([m, l]) => [`Loss @${m} MHz (dB/100 ft)`, l])), 'Min bend radius (in)': f.minBendIn, 'Connector': f.connector, 'Hanger': f.hanger, 'Hanger spacing (ft)': f.hangerSpacingFt, 'Ground kit': f.groundKit } });
-export const radioSpec = (r: Radio): SpecItem => ({ id: `cat-rad-${r.id}`, category: /BDA/.test(r.type) ? 'ERCES / BDA & DAS' : 'Radios & repeaters', sub: r.type, brand: r.brand, model: r.model, kind: P,
+export const radioSpec = (r: Radio): SpecItem => withLegacy(r, { id: `cat-rad-${r.id}`, category: /BDA/.test(r.type) ? 'ERCES / BDA & DAS' : 'Radios & repeaters', sub: r.type, brand: r.brand, model: r.model, kind: P,
   specs: { 'Type': r.type, 'Band low (MHz)': r.bandMHz[0], 'Band high (MHz)': r.bandMHz[1], 'Max power (W)': r.maxPowerW, 'Sensitivity (dBm)': r.sensitivityDbm, 'DC input (V)': r.dcInputV, 'TX current (A)': r.drawTxA, 'RX current (A)': r.drawRxA } });
 export const pvSpec = (m: PvModule): SpecItem => ({ id: `cat-pv-${m.id}`, category: 'Solar & DC power', sub: 'PV module', brand: m.brand, model: m.model, kind: P,
   specs: { 'Type': 'PV module', 'Pmax (W)': m.pmaxW, 'Voc (V)': m.vocV, 'Vmp (V)': m.vmpV, 'Isc (A)': m.iscA, 'Imp (A)': m.impA, 'Temp coeff Voc (%/°C)': m.tempCoeffVocPctPerC } });
@@ -127,4 +136,4 @@ const STANDARDS: SpecItem[] = [
   ...AWG_SIZES.map((a) => std(`awg-${a}`, 'Conductors', 'Copper', `${a} AWG copper`, { 'Size': `${a} AWG`, 'Ampacity 75 °C (A)': AMPACITY_75C_CU[a], 'Ampacity 90 °C (A)': AMPACITY_90C_CU[a], 'DC resistance (Ω/1000 ft)': RESISTANCE_OHM_PER_KFT[a] }, 'NEC Table 310.16 and Chapter 9 Table 8 (uncoated copper, 75 °C)', 'Apply 240.4(D) small-conductor limits and ambient / fill adjustments.')),
 ];
 
-export function builtInSpecs(): SpecItem[] { return [...builtFromCatalog(), ...STANDARDS, ...LV_TYPICAL, ...bodySpecs()]; }
+export function builtInSpecs(): SpecItem[] { return [...builtFromCatalog(), ...LV_CATALOG, ...LEGACY, ...STANDARDS, ...LV_TYPICAL, ...bodySpecs()]; }

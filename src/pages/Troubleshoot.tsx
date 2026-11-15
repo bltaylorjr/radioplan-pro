@@ -2,6 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useStore, deviceInfo } from '../store';
 import { Card } from '../components/ui';
 import { builtInSpecs, SpecItem } from '../data/speclib';
+import { legacyTag } from '../data/lvequipment';
+import { useNotices, itemNotices, NoticeView } from '../components/Notices';
 import { loadMyItems, SPECLIB_EVENT, autoLoadEquipment } from '../data/projectEquipment';
 import { guideFor, Ctx } from '../data/troubleshoot';
 import { uid } from '../defaults';
@@ -18,6 +20,7 @@ export function TroubleshootPage() {
     autoLoadEquipment(p).then(load); window.addEventListener(SPECLIB_EVENT, load);
     return () => window.removeEventListener(SPECLIB_EVENT, load);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const notices = useNotices();
   const builtIn = useMemo(builtInSpecs, []);
   const pname = p.meta.name || 'Project';
   const inProject = mine.filter((m) => (m.projects ?? []).includes(pname));
@@ -93,7 +96,8 @@ export function TroubleshootPage() {
             <select value={model} onChange={(e) => { setModel(e.target.value); setSym(''); reset(); }} aria-label="Model">
               {libCat.some((i) => inProject.includes(i)) && <optgroup label="In this project">{libCat.filter((i) => inProject.includes(i)).map((i) => <option key={i.id} value={i.id}>{i.brand} {i.model}</option>)}</optgroup>}
               {libCat.some((i) => otherMine.includes(i)) && <optgroup label="My library">{libCat.filter((i) => otherMine.includes(i)).map((i) => <option key={i.id} value={i.id}>{i.brand} {i.model}</option>)}</optgroup>}
-              {libCat.some((i) => !mine.includes(i)) && <optgroup label="Built-in library">{libCat.filter((i) => !mine.includes(i)).map((i) => <option key={i.id} value={i.id}>{i.brand} {i.model}</option>)}</optgroup>}
+              {libCat.some((i) => !mine.includes(i) && !i.legacy) && <optgroup label="Built-in library">{libCat.filter((i) => !mine.includes(i) && !i.legacy).map((i) => <option key={i.id} value={i.id}>{i.brand} {i.model}</option>)}</optgroup>}
+              {libCat.some((i) => !mine.includes(i) && i.legacy) && <optgroup label="⚠ Legacy / discontinued">{libCat.filter((i) => !mine.includes(i) && i.legacy).map((i) => <option key={i.id} value={i.id}>{i.brand} {i.model}{legacyTag(i)}</option>)}</optgroup>}
             </select></label>}
           {guide && <label className="field wide"><span>3. Problem</span>
             <select data-no-choose value={symptom?.id ?? ''} onChange={(e) => { setSym(e.target.value); reset(); }} aria-label="Problem">
@@ -103,6 +107,9 @@ export function TroubleshootPage() {
         </div>
         {!item && <p className="muted">Pick the system, then the equipment: choose General for whole-system checks, an equipment type (smoke detector, maglock, camera…) for device checks, or a specific model. Equipment you add to the project shows first; anything you add to the <a href="#library" onClick={(e) => { e.preventDefault(); go('library'); }}>Specifications Library</a> shows here too.</p>}
         {guide && <div className="warnbox"><b>⚠ Safety:</b> {guide.safety}</div>}
+        {item && itemNotices(item, notices).map((n) => <div key={n.id} className="warnbox"><NoticeView n={n} /></div>)}
+        {item?.legacy && <div className="warnbox legacy-box"><b>⚠ Legacy equipment ({item.legacy.status}).</b> Service notes:<ul>{item.legacy.service.map((x) => <li key={x}>{x}</li>)}</ul>
+          <span className="small">Suggested replacements: {item.legacy.replacedBy.join('; ')}. Specs, manuals and manufacturer pages are in the <a href="#library" onClick={(e) => { e.preventDefault(); go('library'); }}>Specifications Library</a>.</span></div>}
       </Card>
 
       {ctx && symptom && <Card title={`4. ${eqType && eqType.symptoms.includes(symptom) ? eqType.label : guide!.title}: ${symptom.label}`} actions={<span className="small muted">{done} of {steps.length} checked</span>}>

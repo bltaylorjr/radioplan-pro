@@ -16,6 +16,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useStore, downloadText } from '../store';
 import { Card } from '../components/ui';
 import { builtInSpecs, CATEGORIES, TEMPLATES, SpecItem, SpecValue } from '../data/speclib';
+import { DOCS_CHECKED } from '../data/lvequipment';
+import { ItemNotices, useNotices, itemNotices } from '../components/Notices';
 import { newId } from '../engine/projectdb';
 import { loadMyItems, saveMyItems, SPECLIB_EVENT, autoLoadEquipment } from '../data/projectEquipment';
 import { parseCsv, toCsv } from '../engine/csv';
@@ -126,6 +128,8 @@ export function SpecLibraryPage() {
   const [edit, setEdit] = useState<SpecItem | null>(null);
   const [msg, setMsg] = useState('');
   const [inProj, setInProj] = useState(false);
+  const [onlyLegacy, setOnlyLegacy] = useState(false);
+  const notices = useNotices();
   useEffect(() => {
     const load = () => loadMyItems().then(setMine).catch(() => setMine([]));
     autoLoadEquipment(project).then(load); window.addEventListener(SPECLIB_EVENT, load);
@@ -135,7 +139,8 @@ export function SpecLibraryPage() {
   const counts = useMemo(() => { const c: Record<string, number> = {}; for (const i of all) c[i.category] = (c[i.category] ?? 0) + 1; return c; }, [all]);
   const words = q.toLowerCase().split(/\s+/).filter(Boolean);
   const pname = project.meta.name || 'Project';
-  const list = all.filter((i) => (cat === 'All' || i.category === cat) && (!inProj || (i.projects ?? []).includes(pname)) && words.every((w) => `${i.brand} ${i.model} ${i.sub} ${i.category} ${Object.entries(i.specs).join(' ')} ${i.notes ?? ''}`.toLowerCase().includes(w)));
+  const legacyCount = all.filter((i) => i.legacy).length;
+  const list = all.filter((i) => (cat === 'All' || i.category === cat) && (!onlyLegacy || !!i.legacy) && (!inProj || (i.projects ?? []).includes(pname)) && words.every((w) => `${i.brand} ${i.model} ${i.sub} ${i.category} ${Object.entries(i.specs).join(' ')} ${i.notes ?? ''}`.toLowerCase().includes(w)));
   const item = all.find((i) => i.id === sel) ?? null;
   const used = new Set([...(project.customCatalog?.antennas ?? []), ...(project.customCatalog?.feeders ?? []), ...(project.customCatalog?.radios ?? [])].map((x) => x.id));
 
@@ -176,6 +181,10 @@ export function SpecLibraryPage() {
         <div className="chips" role="tablist">
           {['All', ...CATEGORIES.filter((c) => counts[c])].map((c) => <button key={c} role="tab" aria-selected={cat === c} className={'chip-btn' + (cat === c ? ' on' : '')} onClick={() => setCat(c)}>{c} <span className="muted">{c === 'All' ? all.length : counts[c]}</span></button>)}
         </div>
+        <div className="row wrap">
+          <button className={'chip-btn' + (onlyLegacy ? ' on' : '')} aria-pressed={onlyLegacy} onClick={() => setOnlyLegacy(!onlyLegacy)}>⚠ Legacy equipment <span className="muted">{legacyCount}</span></button>
+          <span className="small muted">Older and discontinued models still found on service calls, filed under their system, with suggested replacements and service notes.</span>
+        </div>
         <label className="check small"><input type="checkbox" checked={inProj} onChange={(e) => setInProj(e.target.checked)} /> Only equipment in this project ({mine.filter((m) => (m.projects ?? []).includes(pname)).length})</label>
         <p className="small muted">Equipment you add to a project (antennas, cable, radios, PV modules, fire alarm devices, BDA and materials) is loaded here automatically as <b>From project</b>. Open one and press <b>Edit</b> to correct its specifications.</p>
         {msg && <p className="note" role="status">{msg}</p>}
@@ -184,7 +193,7 @@ export function SpecLibraryPage() {
           <tbody>{list.slice(0, 300).map((i) => (
             <tr key={i.id} className={sel === i.id ? 'sel' : ''} onClick={() => setSel(i.id)} style={{ cursor: 'pointer' }}>
               <td onClick={(e) => e.stopPropagation()}><input type="checkbox" aria-label="Compare" checked={cmp.includes(i.id)} disabled={!cmp.includes(i.id) && cmp.length >= 4} onChange={(e) => setCmp(e.target.checked ? [...cmp, i.id] : cmp.filter((x) => x !== i.id))} /></td>
-              <td>{i.category}</td><td>{i.brand}</td><td><b>{i.model}</b></td>
+              <td>{i.category}</td><td>{i.brand}</td><td><b>{i.model}</b>{i.legacy && <span className="pill warn" style={{ marginLeft: 6 }} title={i.legacy.status}>⚠ Legacy</span>}{itemNotices(i, notices).length > 0 && <span className="pill bad" style={{ marginLeft: 6 }} title="Recall or service bulletin on file">⚠ Recall / bulletin</span>}</td>
               <td className="small">{Object.entries(i.specs).slice(0, 3).map(([k, v]) => `${k.replace(/ \(.*\)/, '')}: ${v}`).join(' · ')}</td>
               <td><span className={'pill ' + (i.kind === 'My item' ? 'ok' : '')} style={{ marginLeft: 0 }}>{i.origin ? 'From project' : i.kind === 'My item' ? 'Mine' : i.kind === 'Standard' ? 'Standard' : 'Typical'}</span></td>
             </tr>))}
@@ -206,8 +215,18 @@ export function SpecLibraryPage() {
       </div>}>
         <p className="muted small">{item.category}{item.sub ? ` · ${item.sub}` : ''} · {item.origin ? 'Loaded from project' : item.kind}{item.reference ? ` · ${item.reference}` : ''}{item.projects?.length ? ` · Used in: ${item.projects.join(', ')}` : ''}</p>
         <table className="tbl"><tbody>{Object.entries(item.specs).map(([k, v]) => <tr key={k}><th style={{ width: '45%' }}>{k}</th><td style={{ whiteSpace: 'pre-line' }}>{String(v)}</td></tr>)}</tbody></table>
+        {item.legacy && <div className="warnbox legacy-box">
+          <b>⚠ Legacy equipment: {item.legacy.status}</b>{item.legacy.era ? <span className="small"> · in service {item.legacy.era}</span> : null}
+          <p className="small" style={{ margin: '6px 0 2px' }}><b>Suggested current replacements</b> (confirm with the manufacturer or distributor):</p>
+          <ul className="small">{item.legacy.replacedBy.map((r) => <li key={r}>{r}</li>)}</ul>
+          {item.legacy.service.length > 0 && <><p className="small" style={{ margin: '6px 0 2px' }}><b>Service and repair notes</b></p><ul className="small">{item.legacy.service.map((r) => <li key={r}>{r}</li>)}</ul></>}
+        </div>}
         {item.notes && <p className="note">{item.notes}</p>}
+        {item.docs && item.docs.length > 0 && <div className="mfr-docs"><h4>Manufacturer documentation</h4>
+          <ul className="small">{item.docs.map(([t, u]) => <li key={u}><a href={u} target="_blank" rel="noreferrer">{t} ↗</a></li>)}</ul>
+          <p className="small muted">Official manufacturer pages (checked {DOCS_CHECKED}). Download the datasheet or manual there, then use <b>Attach saved PDF</b> or <b>Attach file</b> below to keep it on this device for use with no internet. Some service manuals need a dealer login.</p></div>}
         {bodyById(item.id) ? <BodyLinks id={item.id} /> : <>
+          <ItemNotices item={item} />
           <MfrRecs item={item} />
           <Datasheet item={item} searchUrl={searchUrl(item)} />
           <ItemManuals item={item} />

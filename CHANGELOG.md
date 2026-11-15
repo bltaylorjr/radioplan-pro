@@ -1,3 +1,11 @@
+# LvPlan Pro 1.5.52
+
+- **Low-voltage equipment for every system** in the Specifications Library, with **access control** in depth: door controllers (Mercury, Software House iSTAR Ultra, LenelS2), interface boards, card readers (HID Signo), credentials (Seos, DESFire), maglocks, electric strikes, latch retraction, wireless locks, access power controllers (Altronix), request-to-exit and door position switches. Also fire alarm panels and devices, CCTV, intercom, nurse call, paging and sound, a new **Mass notification** category, emergency call boxes, DAS and cabling and fiber.
+- **⚠ Legacy equipment section**: 60+ older and discontinued models still found on service calls, each filed under its system (fire alarm, intrusion, CCTV, access control, intercom, nurse call, paging, mass notification, call boxes, ERCES / DAS, radios, coax, cabling, fiber, network and Wi-Fi). Each shows its status, the years it was common, suggested current replacements, service and repair notes, and links to the manufacturer's documentation pages (each opened on the maker's site). Attach the manual or datasheet to keep it on the device.
+- **Legacy models in the selection lists**, marked ⚠ Legacy: radios (Equipment and link budget), antennas, feeders (including RG-213 and air-dielectric HELIAX), the coax calculator, the materials picker and the troubleshooting wizard, which also shows the legacy service notes.
+- **Recalls and service bulletins**: official CPSC recalls for fire alarm, security and related equipment are built in (affected models, date codes, problem, remedy and a link to the official notice), and new ones download automatically about once a week when online (Automatic care). Add a manufacturer service bulletin to any model. **When equipment in a project matches a recall or bulletin, an alert shows on every page of that project** until it is marked checked for that project.
+- **Introduction video**: a new part shows the access control equipment, the Legacy equipment section and recall alerts.
+
 # LvPlan Pro 1.5.50
 
 - **↺ Reset project** and **🗑 Delete project** at the top of the main page (Company & Project).
