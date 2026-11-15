@@ -226,12 +226,20 @@ Use survey data taken with the same transmitter, frequency and antenna height as
 Browsers and Android web apps cannot scan Wi-Fi themselves, so readings always come from a scan you paste or import. Windows and nmcli report signal as a percentage, converted with dBm ≈ % ÷ 2 − 100.`,
     tour: [ { target: 'wifi-setup', title: 'Setup', text: 'Floor plan, scale, target and network filter.' }, { target: 'wifi-add', title: 'Add readings', text: 'Click your spot on the plan, paste the scan, add.' }, { target: 'wifi-map', title: 'Views', text: 'Switch between signal, noise, SNR, channel and AP maps.' } ] },
 
-  { id: 'optimize', title: 'Tilt, azimuth & power', page: 'optimize', keywords: 'tilt downtilt azimuth power footprint shaping optimize sector beamwidth', summary: 'Shape the footprint: see where the main beam and −3 dB edges land and get a recommended downtilt.',
+  { id: 'optimize', title: 'Tilt, azimuth & power', page: 'optimize', keywords: 'tilt downtilt azimuth power footprint shaping optimize sector beamwidth side view to scale true scale 3d beam', summary: 'Shape the footprint: see where the main beam and −3 dB edges land and get a recommended downtilt.',
     body: `For an antenna at height h with downtilt θ and vertical beamwidth β:
 - Main beam hits the ground at d = h / tan θ.
 - Inner −3 dB edge at h / tan(θ + β/2); outer edge at h / tan(θ − β/2) (∞ when θ ≤ β/2).
 
 **Recommended tilt** places the upper −3 dB edge at your target cell radius: θ = atan(h/R) + β/2.
+
+**Side view of the beam**: shows the real ground along the antenna's azimuth (with the earth curve) and where the main beam and its −3 dB edges come down on it, so a hill in the way shows up. The ground is colored by predicted signal.
+- **📐 2D side view** or **⛰ 3D view**: the 3D view shows the beam as a see-through green wedge over the terrain that stops where it meets the ground, with a yellow dot where the main beam lands. Tick **Signal heat map** to shade predicted signal on the ground.
+- **Height scale**: **True scale (1 : 1)** draws heights and distances to the same scale, so the tower, hills and tilt angles look as they really are. **Stretched** makes heights taller so small hills are easy to see (tilt angles then look steeper); pick automatic or ×2 to ×50.
+- **Distance shown**: automatic, or pick a distance; a short distance in true scale shows the tower and the first stretch of ground up close.
+- Scale bars show a distance across and a height up.
+
+**True scale everywhere**: the same **Height scale** choice is on the Path Profile chart, the chart under drawn lines, the ground profile of runs between sites, and the 3D views (**True scale** button, or height boost / vertical exaggeration 1×). Maps, blueprints and floor plans are always drawn to scale.
 
 Adjust power to balance uplink and downlink and to avoid interference into neighbouring cells. Re-run coverage after changes.` },
 

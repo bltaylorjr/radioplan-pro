@@ -11,22 +11,30 @@ import { downloadTerrain, boundsAround, demCovers } from '../engine/autoterrain'
 import { CABLES, METHODS, densify, measurePath, measureKey, runPath, runTakeoff, type SiteRun, type RunCable, type RunMethod, type RunMeasure } from '../engine/siteruns';
 import type { LatLon } from '../engine/geo';
 import { uid } from '../defaults';
+import { useScaleChoice, ScaleSelect, ScaleBars, frameFor } from './scale';
 
 function Profile({ m }: { m: RunMeasure }) {
+  const [ex, setEx] = useScaleChoice('runs');
   if (m.profile.length < 2) return null;
-  const W = 520, H = 110, P = 28;
+  const W = 520, P = 34, pt = 8, pb = 36;
   const xs = m.profile.map((p) => p[0]), zs = m.profile.map((p) => p[1]);
-  const x0 = 0, x1 = Math.max(1, xs[xs.length - 1]), z0 = Math.min(...zs), z1 = Math.max(z0 + 10, ...zs);
-  const X = (x: number) => P + ((x - x0) / (x1 - x0)) * (W - P - 6), Y = (z: number) => H - 16 - ((z - z0) / (z1 - z0)) * (H - 26);
+  const x1 = Math.max(1, xs[xs.length - 1]), z0 = Math.min(...zs), z1 = Math.max(z0 + 10, ...zs);
+  const fArgs = { km: (x1 * 0.3048) / 1000, plotW: W - P - 6, lo: z0 * 0.3048, hi: z1 * 0.3048, autoH: 84, minH: 70, maxH: 300 };
+  const fr = frameFor({ ...fArgs, ex }), autoE = frameFor({ ...fArgs, ex: 0 }).E, H = pt + fr.ph + pb;
+  const X = (x: number) => P + (x / x1) * (W - P - 6), Y = (zFt: number) => pt + ((fr.yHi - zFt * 0.3048) / (fr.yHi - fr.yLo)) * fr.ph;
+  const base = pt + fr.ph;
   const d = m.profile.map((p, i) => `${i ? 'L' : 'M'}${X(p[0]).toFixed(1)},${Y(p[1]).toFixed(1)}`).join(' ');
-  return (
+  return (<>
+    <div className="row" style={{ justifyContent: 'flex-end', margin: '4px 0' }}><ScaleSelect value={ex} onChange={setEx} autoEx={autoE} /></div>
     <FullView title="Ground profile along the route"><svg viewBox={`0 0 ${W} ${H}`} className="run-profile" role="img" aria-label="Ground profile along the route">
-      <path d={`${d} L${X(x1)},${H - 16} L${P},${H - 16} Z`} fill="rgba(138,90,43,.18)" />
-      <path d={d} fill="none" stroke="#8a5a2b" strokeWidth="2" />
-      <text x={2} y={Y(z1) + 4} fontSize="10">{z1} ft</text><text x={2} y={Y(z0)} fontSize="10">{z0} ft</text>
-      <text x={P} y={H - 3} fontSize="10">0</text><text x={W - 6} y={H - 3} fontSize="10" textAnchor="end">{x1.toLocaleString()} ft</text>
+      <defs><clipPath id="rp-clip"><rect x={P} y={pt} width={W - P - 6} height={fr.ph} /></clipPath></defs>
+      <g clipPath="url(#rp-clip)"><path d={`${d} L${X(x1)},${base} L${P},${base} Z`} fill="rgba(138,90,43,.18)" />
+      <path d={d} fill="none" stroke="#8a5a2b" strokeWidth="2" /></g>
+      <text x={2} y={Math.max(pt + 8, Y(z1) + 4)} fontSize="10">{z1} ft</text><text x={2} y={Math.min(base, Y(z0))} fontSize="10">{z0} ft</text>
+      <text x={P} y={base + 12} fontSize="10">0</text><text x={W - 6} y={base + 12} fontSize="10" textAnchor="end">{x1.toLocaleString()} ft</text>
+      <ScaleBars f={fr} x={P + 30} y={H - 3} xNote={W - 6} vx={P + 4} vy={base} maxW={(W - P) / 2} />
     </svg></FullView>
-  );
+  </>);
 }
 
 export function SiteRunsCard() {
