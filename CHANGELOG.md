@@ -7,6 +7,11 @@
 - **ERCES / BDA and Indoor & DAS**: new **Donor antenna aiming** card (type the tower's GPS or address, pick a site, or tap **Aim donor here** in the RadioReference donor list).
 - **Drive Test**: each reading shows its distance and azimuth from the transmitter, plus a **Readings by direction** table to spot a mis-aimed or blocked sector.
 - **Blueprints**: set the plan orientation; the north arrow turns to true north and shows magnetic north. **Calculators**: distance & azimuth with back azimuth, and a true ↔ compass converter. **Reports** print the azimuths. Help has a new **Azimuth, back azimuth & compass** topic.
+- **Introduction video**: a new part right after the 3D tilt view shows azimuth on the Path page, the map measure tool, the 3D tilt hops, ERCES donor aiming and the calculators.
+
+# LvPlan Pro 1.5.38
+
+- **Introduction video updated.** A new part right after Map & Terrain shows the 3D tilt view: satellite pictures on 3D terrain, the tilt slider, plotting point A and point B by GPS coordinates or address, line of sight with the blocked spots marked, a suggested relay point, and shading of ground point A cannot see.
 
 # LvPlan Pro 1.5.37
 
