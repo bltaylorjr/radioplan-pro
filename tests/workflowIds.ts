@@ -1,2 +1,3 @@
-// Page ids from WORKFLOW in src/App.tsx (kept here so tests need not load React pages).
-export const WORKFLOW_IDS = ["company", "systems", "locate", "sites", "fieldnotes", "terrain", "wifi", "survey", "autodesign", "alarm", "erces", "indoor", "solar", "grounding", "equipment", "path", "coverage", "optimize", "network", "scenarios", "view3d", "radioref", "lfhf", "compliance", "materials", "blueprints", "testing", "reports", "troubleshoot", "directions", "service", "install", "theory", "library", "contacts", "calculators", "projects", "sync"];
+// Page ids in menu order (from src/data/menu.ts, so tests need not load React pages).
+import { MENU_ORDER } from '../src/data/menu';
+export const WORKFLOW_IDS = MENU_ORDER.map((p) => p.id);

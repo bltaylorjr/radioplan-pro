@@ -30,6 +30,17 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
+import java.util.List;
+import android.telephony.TelephonyManager;
+import android.telephony.CellInfo;
+import android.telephony.CellInfoLte;
+import android.telephony.CellInfoGsm;
+import android.telephony.CellInfoWcdma;
+import android.telephony.CellInfoCdma;
+import android.net.wifi.WifiManager;
+import android.net.wifi.WifiInfo;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import java.util.Map;
 
 /**
@@ -166,6 +177,34 @@ public class MainActivity extends Activity {
 
     /** Called from the page: window.RadioPlanAndroid.saveFile / shareFile. */
     class Bridge {
+        /** The phone's own signal for the Live Signal Readings page: every cell heard (dBm) and the Wi-Fi link. */
+        @JavascriptInterface public String phoneSignal() {
+            JSONObject out = new JSONObject();
+            try {
+                JSONArray cells = new JSONArray();
+                if (!has(Manifest.permission.ACCESS_FINE_LOCATION) && !has(Manifest.permission.ACCESS_COARSE_LOCATION)) {
+                    runOnUiThread(new Runnable() { public void run() { requestPermissions(new String[] { Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION }, REQ_PERM_GEO); } });
+                    out.put("error", "Allow Location for LvPlan Pro so it can read the phone's signal, then try again.");
+                } else {
+                    TelephonyManager tm = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
+                    List<CellInfo> all = tm == null ? null : tm.getAllCellInfo();
+                    if (all != null) for (CellInfo ci : all) {
+                        JSONObject c = new JSONObject(); c.put("registered", ci.isRegistered());
+                        if (ci instanceof CellInfoLte) { c.put("tech", "LTE"); c.put("dbm", ((CellInfoLte) ci).getCellSignalStrength().getDbm()); c.put("id", "PCI " + ((CellInfoLte) ci).getCellIdentity().getPci()); }
+                        else if (ci instanceof CellInfoWcdma) { c.put("tech", "3G"); c.put("dbm", ((CellInfoWcdma) ci).getCellSignalStrength().getDbm()); }
+                        else if (ci instanceof CellInfoGsm) { c.put("tech", "2G"); c.put("dbm", ((CellInfoGsm) ci).getCellSignalStrength().getDbm()); }
+                        else if (ci instanceof CellInfoCdma) { c.put("tech", "CDMA"); c.put("dbm", ((CellInfoCdma) ci).getCellSignalStrength().getDbm()); }
+                        else continue;
+                        cells.put(c);
+                    }
+                    WifiManager wm = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
+                    WifiInfo wi = wm == null ? null : wm.getConnectionInfo();
+                    if (wi != null && wi.getNetworkId() != -1) { JSONObject w = new JSONObject(); w.put("ssid", String.valueOf(wi.getSSID()).replace("\"", "")); w.put("dbm", wi.getRssi()); w.put("mhz", wi.getFrequency()); out.put("wifi", w); }
+                }
+                out.put("cells", cells);
+            } catch (Exception e) { try { out.put("error", "Could not read the phone's signal: " + e.getMessage()); } catch (Exception ignored) { } }
+            return out.toString();
+        }
         @JavascriptInterface public void saveFile(final String name, final String mime, String b64) {
             pendingSave = Base64.decode(b64, Base64.DEFAULT);
             runOnUiThread(new Runnable() { public void run() {
@@ -178,6 +217,8 @@ public class MainActivity extends Activity {
         }
         @JavascriptInterface public void httpPost(String id, String url, String body, String soapAction) { rrHttp(id, url, body == null ? "" : body, soapAction); }
         @JavascriptInterface public void httpGet(String id, String url) { rrHttp(id, url, null, null); }
+        /** One read from a Wi-Fi field device on the local network (http:// page or tcp:// stream). */
+        @JavascriptInterface public void lanRead(String id, String url) { lanReadImpl(id, url); }
         @JavascriptInterface public void shareFile(final String name, final String mime, String b64, final String text) {
             try {
                 File dir = new File(getCacheDir(), "share"); dir.mkdirs();
@@ -226,6 +267,50 @@ public class MainActivity extends Activity {
                 try { out = m.getBytes("UTF-8"); } catch (Exception x) { out = new byte[0]; }
             }
             final String js = "window.__rrHttpDone&&window.__rrHttpDone('" + id.replaceAll("[^A-Za-z0-9]", "") + "'," + ok + ",'" + Base64.encodeToString(out, Base64.NO_WRAP) + "')";
+            runOnUiThread(new Runnable() { public void run() { web.evaluateJavascript(js, null); } });
+        }}).start();
+    }
+
+    static boolean lanOk(String host) {
+        if (host.endsWith(".local")) return true;
+        String[] p = host.split("\\.");
+        if (p.length != 4) return false;
+        try {
+            int a = Integer.parseInt(p[0]), b = Integer.parseInt(p[1]);
+            for (String x : p) { int v = Integer.parseInt(x); if (v < 0 || v > 255) return false; }
+            return a == 10 || (a == 172 && b >= 16 && b <= 31) || (a == 192 && b == 168) || (a == 169 && b == 254);
+        } catch (NumberFormatException e) { return false; }
+    }
+    void lanReadImpl(final String id, final String url) {
+        new Thread(new Runnable() { public void run() {
+            boolean ok = false; byte[] out;
+            try {
+                String rest = url.contains("://") ? url.substring(url.indexOf("://") + 3) : "";
+                String hostport = rest.split("/")[0], host = hostport.split(":")[0];
+                if (url.contains("@") || url.contains("..") || !lanOk(host)) throw new IOException("Use the device's local address (192.168.x.x, 10.x.x.x).");
+                ByteArrayOutputStream b = new ByteArrayOutputStream();
+                if (url.startsWith("http://") || url.startsWith("https://")) {
+                    HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
+                    c.setConnectTimeout(4000); c.setReadTimeout(5000);
+                    InputStream in = c.getInputStream(); byte[] buf = new byte[8192]; int n;
+                    while ((n = in.read(buf)) > 0 && b.size() < 65536) b.write(buf, 0, n);
+                    in.close(); c.disconnect();
+                } else if (url.startsWith("tcp://")) {
+                    int port = hostport.contains(":") ? Integer.parseInt(hostport.split(":")[1]) : 10110;
+                    java.net.Socket so = new java.net.Socket();
+                    so.connect(new java.net.InetSocketAddress(host, port), 4000); so.setSoTimeout(400);
+                    InputStream in = so.getInputStream(); byte[] buf = new byte[2048]; long start = System.currentTimeMillis();
+                    while (System.currentTimeMillis() - start < 1200 && b.size() < 16384) {
+                        try { int n = in.read(buf); if (n < 0) break; b.write(buf, 0, n); } catch (java.net.SocketTimeoutException t) { if (b.size() > 0) break; }
+                    }
+                    so.close();
+                } else throw new IOException("Use http:// or tcp://");
+                out = b.toByteArray(); ok = true;
+            } catch (Exception e) {
+                String m = "The device did not answer (" + e.getMessage() + ")";
+                try { out = m.getBytes("UTF-8"); } catch (Exception x) { out = new byte[0]; }
+            }
+            final String js = "window.__lanDone&&window.__lanDone('" + id.replaceAll("[^A-Za-z0-9]", "") + "'," + ok + ",'" + Base64.encodeToString(out, Base64.NO_WRAP) + "')";
             runOnUiThread(new Runnable() { public void run() { web.evaluateJavascript(js, null); } });
         }}).start();
     }

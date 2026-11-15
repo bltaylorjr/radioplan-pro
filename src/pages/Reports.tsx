@@ -15,11 +15,12 @@ import { CodesHere } from '../components/CodesHere';
 import { JurisdictionInfo } from '../components/JurisdictionInfo';
 import { fsplDb, mpeComplianceDistanceM } from '../engine/rf';
 import { azimuthPair, fmtAz, fmtDecl, declinationDeg, fmtDeg, trueToMag } from '../engine/azimuth';
-import { coverageStats } from '../engine/coverage';
+import { coverageStats, predictPoint } from '../engine/coverage';
+import { primaryCoverageInputs } from '../engine/network';
 import type { Project, Proposal } from '../types';
 import { autoDesign, defaultInputs, KIND_LABEL, Kind } from '../engine/autodesign';
 import { FloorPlan2D } from '../components/FloorPlan2D';
-import { projectSystems } from '../data/systems';
+import { projectSystems, SYSTEMS } from '../data/systems';
 import { CHECKLISTS, itemsOf, doneKey } from '../data/checklists';
 import { CONTACTS, atPlace } from '../data/contacts';
 import { projectPlace } from '../compliance/place';
@@ -32,6 +33,9 @@ import { useUnits, DistNum } from '../units';
 import { missingRequired } from '../engine/required';
 import { siteRunHours } from '../engine/siteruns';
 import { askConfirm } from '../components/askConfirm';
+import { PhotoSurveyReport } from './PhotoSurvey';
+import { compareReadings, compareVerdict, gridTest } from '../engine/signal';
+import { nextPm } from '../engine/assets';
 
 const REPORTS = [
   ['cover', 'Cover letter & summary'], ['scope', 'Scope of work'], ['autoequip', 'Recommended equipment'], ['bom', 'Materials list'], ['price', 'Price'],
@@ -40,16 +44,16 @@ const REPORTS = [
   ['tests', 'Commissioning / Test Report'], ['ck-closeout', 'Closeout checklist'], ['pm', 'Maintenance schedule'], ['documents', 'Documents index'], ['photos', 'Photos'], ['diagrams', 'Wiring diagrams (color)'], ['warranty', 'Warranty & owner sign-off'],
   ['site', 'Site Data Sheet'], ['link', 'Link Budget & Path Analysis'], ['coverage', 'Coverage Summary'], ['grounding', 'Grounding & Structure'],
   ['solar', 'Solar / DC Power Sizing'], ['alarm', 'Fire Alarm Battery Calculation'], ['erces', 'ERCES Design Summary'],
-  ['compliance', 'Code Compliance Report'], ['notes', 'Field Notes & Photos'],
+  ['compliance', 'Code Compliance Report'], ['notes', 'Field Notes & Photos'], ['photosurvey', 'Photo site survey'], ['readings', 'Live Signal Readings'], ['assets', 'Equipment list (asset tags)'],
 ] as const;
 type RK = (typeof REPORTS)[number][0];
 /** Report packages and the sections each starts with. Every section can be ticked on or off. */
 export const PACKAGES: { id: string; label: string; title: string; sections: RK[] }[] = [
   { id: 'proposal', label: 'Project proposal', title: 'Project Proposal', sections: ['cover', 'scope', 'autoequip', 'bom', 'price', 'schedule', 'codes', 'photos', 'terms'] },
   { id: 'build', label: 'Build plan', title: 'Build Plan', sections: ['scope', 'schedule', 'plans', 'devices', 'autoequip', 'bom', 'codes', 'contacts', 'ck-permit', 'ck-install', 'ck-testing', 'diagrams', 'photos'] },
-  { id: 'closeout', label: 'Closeout package', title: 'Closeout Package', sections: ['cover', 'plans', 'devices', 'tests', 'photos', 'diagrams', 'ck-closeout', 'pm', 'documents', 'warranty'] },
-  { id: 'survey', label: 'Site survey report', title: 'Site Survey Report', sections: ['site', 'ck-survey', 'photos', 'notes', 'codes', 'contacts'] },
-  { id: 'engineering', label: 'Engineering reports (radio, power, codes)', title: 'Engineering Report', sections: ['site', 'link', 'coverage', 'grounding', 'solar', 'alarm', 'erces', 'compliance', 'bom', 'tests', 'notes'] },
+  { id: 'closeout', label: 'Closeout package', title: 'Closeout Package', sections: ['cover', 'plans', 'devices', 'assets', 'tests', 'readings', 'photos', 'diagrams', 'ck-closeout', 'pm', 'documents', 'warranty'] },
+  { id: 'survey', label: 'Site survey report', title: 'Site Survey Report', sections: ['site', 'photosurvey', 'ck-survey', 'readings', 'photos', 'notes', 'codes', 'contacts'] },
+  { id: 'engineering', label: 'Engineering reports (radio, power, codes)', title: 'Engineering Report', sections: ['site', 'photosurvey', 'link', 'coverage', 'grounding', 'solar', 'alarm', 'erces', 'compliance', 'bom', 'tests', 'readings', 'notes'] },
 ];
 export const defaultProposal = (): Proposal => ({ laborRate: 85, laborHours: 0, materialsCost: 0, markupPct: 20, taxPct: 0, startDate: '', weeks: 4, validDays: 30, paymentTerms: '30% on signing, progress billing monthly, balance on acceptance. Net 30.', exclusions: 'Patching and painting; line voltage power to panels and power supplies; conduit unless listed; permit fees unless listed; work outside normal hours; owner-furnished equipment.', notes: '' });
 const money = (n: number) => n.toLocaleString(undefined, { style: 'currency', currency: 'USD' });
@@ -167,11 +171,21 @@ export function ReportsPage() {
     warranty: () => <><p>{c.name || 'The contractor'} warrants the materials and workmanship of this installation for one (1) year from the date of acceptance below, unless a longer manufacturer warranty applies. The warranty does not cover damage from misuse, power surges, lightning, water, or work by others.</p>
       <p>The owner received training on the operation of the systems and the documents listed in this package.</p>
       <div className="sign"><div>Owner's representative ____________________ Date ________</div><div>Contractor ____________________ Date ________</div></div></>,
+    photosurvey: () => <PhotoSurveyReport spots={p.photoSpots ?? []} fmtDist={(km) => u.f(km)} />,
     notes: () => <>{(p.fieldNotes ?? []).length === 0 ? <p>No field notes.</p> : [...(p.fieldNotes ?? [])].sort((a, b) => a.at.localeCompare(b.at)).map((n) => (
       <div key={n.id} className="rpt-note"><h4>{n.title} <small>· {new Date(n.at).toLocaleString()} · {n.category}{n.siteId ? ` · Site ${n.siteId}` : ''}{n.lat != null ? ` · ${n.lat}, ${n.lon}` : ''}{n.followUp ? (n.done ? ' · follow-up done' : ' · FOLLOW-UP OPEN') : ''}</small></h4>
         {n.text && <p style={{ whiteSpace: 'pre-wrap' }}>{n.text}</p>}
         {n.photos.length > 0 && <div className="rpt-photos">{n.photos.map((ph) => <figure key={ph.id}><img src={ph.dataUrl} alt={ph.caption || 'Field photo'} />{ph.caption && <figcaption>{ph.caption}</figcaption>}</figure>)}</div>}
       </div>))}</>,
+    readings: () => { const rs = p.signalReadings ?? []; if (!rs.length) return <p>No signal readings yet. Take them on Live Signal Readings.</p>;
+      const inp = primaryCoverageInputs(p, rt.dem, 40), c = inp ? compareReadings(rs, (pt) => predictPoint(inp, pt)) : null, g = gridTest(rs), sess = [...new Set(rs.map((r) => r.session))];
+      return <><KV rows={[['Readings', `${rs.length} (${rs.filter((r) => r.lat != null).length} with GPS) in ${sess.length} walk(s) / test(s): ${sess.join(', ')}`], ['Measured range', `${Math.min(...rs.map((r) => r.dbm))} to ${Math.max(...rs.map((r) => r.dbm))} dBm`],
+        ...(c && c.stats.n ? [['Compared with prediction', `${c.stats.n} readings: measured − predicted ${fmt(c.stats.meanDelta, 1)} dB on average, σ ${fmt(c.stats.sdDelta, 1)} dB, ${fmt(c.stats.within6Pct, 0)}% within ±6 dB`], ['Verdict', compareVerdict(c.stats).text]] as [string, string][] : []),
+        ['Grid test (≥ −95 dBm)', `General areas ${Number.isFinite(g.pct) ? g.pct + '%' : '—'} of ${g.n}, critical areas ${Number.isFinite(g.critPct) ? g.critPct + '%' : '—'} of ${g.critN}: ${g.generalOk && g.criticalOk ? 'PASS' : 'FAIL'} (90% / 99%, NFPA 1225; AHJ to confirm; DAQ checked separately)`]]} />
+        {g.floors.length > 1 && <table className="rpt-tbl"><thead><tr><th>Floor</th><th>Readings</th><th>General ≥ −95 dBm</th><th>Critical ≥ −95 dBm</th></tr></thead><tbody>{g.floors.map((f) => <tr key={f.floor}><td>{f.floor}</td><td>{f.n}</td><td>{Number.isFinite(f.pct) ? `${f.pct}%` : '—'}</td><td>{Number.isFinite(f.critPct) ? `${f.critPct}%` : '—'}</td></tr>)}</tbody></table>}</>; },
+    assets: () => { const l = p.assets ?? []; if (!l.length) return <p>No devices logged yet. Scan them on Equipment & Asset Tags.</p>;
+      return <table className="rpt-tbl"><thead><tr><th>Tag</th><th>Device</th><th>System</th><th>Location</th><th>Make / model</th><th>Serial</th><th>Installed</th><th>Warranty</th><th>Next PM</th><th>Status</th></tr></thead>
+        <tbody>{[...l].sort((a, b) => (a.system + a.location + a.tag).localeCompare(b.system + b.location + b.tag, undefined, { numeric: true })).map((a) => <tr key={a.id}><td>{a.tag}</td><td>{a.name}</td><td>{SYSTEMS.find((x) => x.id === a.system)?.label ?? a.system}</td><td>{[a.location, a.floor].filter(Boolean).join(', ')}</td><td>{a.make} {a.model}</td><td>{a.serial}</td><td>{a.installDate}</td><td>{a.warrantyEnd ?? ''}</td><td>{nextPm(a) ?? ''}</td><td>{a.status}</td></tr>)}</tbody></table>; },
     site: () => <><table className="rpt-tbl"><thead><tr><th>Site</th><th>Lat / Lon (WGS84)</th><th>Ground AMSL</th><th>Structure</th><th>Antenna AGL</th><th>From TX (azimuth)</th><th>Position source</th></tr></thead>
       <tbody>{p.sites.map((s) => <tr key={s.id}><td>{s.name}<br /><small>{s.address}</small></td><td>{s.lat.toFixed(6)}, {s.lon.toFixed(6)}</td><td>{u.len(s.groundElevM, 0)}</td><td>{s.structure}, {u.len(s.structureHeightM)}</td><td>{u.len(s.antennaAglM)}</td><td>{L.tx && s.id !== L.tx.id ? (() => { const z = azimuthPair(L.tx!, s); return `${u.f(z.km)} at ${fmtDeg(z.fwd)}°T (${fmtDeg(trueToMag(z.fwd, z.decA))}°M)`; })() : 'TX'}</td><td>{s.positionSource}{s.positionAccuracyM != null && ` ±${u.len(s.positionAccuracyM)}`}</td></tr>)}</tbody></table>
       {rt.dem && <p>Terrain source: {rt.dem.source} ({rt.dem.name}).</p>}</>,

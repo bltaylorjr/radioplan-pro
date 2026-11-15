@@ -93,9 +93,46 @@ async fn rr_http(url: String, body: String, soap_action: String, post: bool) -> 
     .map_err(|e| e.to_string())?
 }
 
+/// One read from a Wi-Fi field device (signal meter, GPS, laser meter) on the local network:
+/// http:// = GET the page, tcp:// = what the device sends in about a second. Private addresses only.
+fn lan_ok(host: &str) -> bool {
+    if host.ends_with(".local") { return true; }
+    match host.parse::<std::net::Ipv4Addr>() {
+        Ok(ip) => { let o = ip.octets(); ip.is_private() || (o[0] == 169 && o[1] == 254) }
+        Err(_) => false,
+    }
+}
+#[tauri::command]
+async fn lan_read(url: String) -> Result<String, String> {
+    let rest = url.splitn(2, "://").nth(1).unwrap_or("").to_string();
+    let hostport = rest.split('/').next().unwrap_or("").to_string();
+    let host = hostport.split(':').next().unwrap_or("").to_string();
+    if url.contains('@') || url.contains("..") || !lan_ok(&host) { return Err("Use the device's local address (192.168.x.x, 10.x.x.x).".into()); }
+    tauri::async_runtime::spawn_blocking(move || {
+        use std::io::Read;
+        use std::time::{Duration, Instant};
+        if url.starts_with("http://") || url.starts_with("https://") {
+            let agent = ureq::AgentBuilder::new().timeout(Duration::from_secs(5)).build();
+            return agent.get(&url).call().map_err(|e| format!("The device did not answer ({})", e))?.into_string().map_err(|e| e.to_string());
+        }
+        if !url.starts_with("tcp://") { return Err("Use http:// or tcp://".into()); }
+        let addr = if hostport.contains(':') { hostport.clone() } else { format!("{}:10110", hostport) };
+        let sa = std::net::ToSocketAddrs::to_socket_addrs(&addr).map_err(|e| e.to_string())?.next().ok_or("Bad address")?;
+        let mut s = std::net::TcpStream::connect_timeout(&sa, Duration::from_secs(4)).map_err(|e| format!("The device did not answer ({})", e))?;
+        s.set_read_timeout(Some(Duration::from_millis(400))).ok();
+        let (start, mut out, mut buf) = (Instant::now(), Vec::new(), [0u8; 2048]);
+        while start.elapsed() < Duration::from_millis(1200) && out.len() < 16384 {
+            match s.read(&mut buf) { Ok(0) => break, Ok(n) => out.extend_from_slice(&buf[..n]), Err(_) => if !out.is_empty() { break } }
+        }
+        Ok(String::from_utf8_lossy(&out).into_owned())
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
 pub fn run() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![app_info, install_update, rr_http])
+        .invoke_handler(tauri::generate_handler![app_info, install_update, rr_http, lan_read])
         .setup(|app| {
             let mut w = WebviewWindowBuilder::new(app, "main", WebviewUrl::default())
                 .title("LvPlan Pro")

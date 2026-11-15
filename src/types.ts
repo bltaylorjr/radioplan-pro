@@ -119,6 +119,8 @@ export interface Project {
   bomExtra?: BomExtra[];
   /** Lines drawn on the map (by hand or point to point) to check signal and obstacles along them. */
   drawnLines?: import('./engine/routes').DrawnLine[];
+  /** Photo site survey: spots where photos or panoramas were taken, with direction and terrain matching. */
+  photoSpots?: import('./engine/photosurvey').PhotoSpot[];
   /** Cable and conduit runs between sites, measured on the map and over the terrain. */
   siteRuns?: import('./engine/siteruns').SiteRun[];
   /** Auto-design inputs; when applied, its equipment and materials join the Materials list. */
@@ -135,6 +137,10 @@ export interface Project {
   checklistExtra?: { id: string; list: string; text: string }[];
   /** PM tasks done: key = system id + task, value = last date done (YYYY-MM-DD). */
   pmDone?: Record<string, string>;
+  /** Live signal readings: typed, from a Bluetooth / USB meter, the phone, or imported. */
+  signalReadings?: import('./engine/signal').SignalReading[];
+  /** Installed equipment logged by its barcode or QR tag, with PM and service history. */
+  assets?: import('./engine/assets').Asset[];
 }
 export interface Blueprint { size: string; scale: string; drawnBy: string; checkedBy: string; revisions: { rev: string; date: string; desc: string }[]; off: string[];
   /** Azimuth (degrees true) that the top of the plan faces; turns the north arrow. 0 = plan north is true north. */
