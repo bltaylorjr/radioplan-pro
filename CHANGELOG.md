@@ -1,3 +1,7 @@
+# LvPlan Pro 1.5.59
+
+- **📱 How to take a panorama correctly** on the Photo Site Survey page: six short steps (turn on location and the compass, stand still and turn on the spot, phone level at eye height with the horizon in every picture, overlap each photo about a third, do not zoom, and use 📷 Take photos here if your photos lose their location) with a **▶ Play** button for a one minute narrated video with captions. The video is inside the app, so it plays offline.
+
 # LvPlan Pro 1.5.58
 
 - **🧊 2D & 3D Models with Layers** (new page after Auto-Design): a true-scale 2D plan and a 3D model of the building with layers you turn on and off, for every system on the job.
