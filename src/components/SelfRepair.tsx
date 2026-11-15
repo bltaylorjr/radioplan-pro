@@ -2,12 +2,10 @@ import React from 'react';
 import { useStore } from '../store';
 import { repairProject } from '../engine/repair';
 import { listVersions } from '../engine/projectdb';
+import { logRepair } from '../engine/carelog';
 
-const LOG = 'radioplan.repairLog', RELOADED = 'radioplan.chunkReload';
-export function logRepair(what: string) {
-  try { const l = JSON.parse(localStorage.getItem(LOG) || '[]') as { at: string; what: string }[]; l.unshift({ at: new Date().toISOString(), what }); localStorage.setItem(LOG, JSON.stringify(l.slice(0, 50))); } catch { /* ignore */ }
-}
-export function repairLog(): { at: string; what: string }[] { try { return JSON.parse(localStorage.getItem(LOG) || '[]'); } catch { return []; } }
+const RELOADED = 'radioplan.chunkReload';
+export { logRepair, repairLog } from '../engine/carelog';
 
 /** After an update, an old page can ask for program files that no longer exist. Reload once to pick up the new ones. */
 export function installChunkRecovery() {

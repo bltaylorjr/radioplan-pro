@@ -3,12 +3,13 @@ import React, { createContext, useContext, useEffect, useMemo, useRef, useState 
 import type { Project } from './types';
 import { defaultProject } from './defaults';
 import { repairProject } from './engine/repair';
+import { notify } from './engine/carelog';
 import { loadCompanyDefault, applyCompanyDefault } from './engine/companyDefault';
 import type { DemGrid, ProfileAnalysis } from './engine/terrain';
 import type { CoverageResult } from './engine/coverage';
 import { stampSync } from './engine/sync';
 import { registerCustom } from './data/catalog';
-import { addVersion, BackupEntry, deleteProject, listProjects, folderAllowed, folderCopySupported, getRecord, getVersion, importEntries, loadTerrain, newId, putProject, requestPersist, saveTerrain, savedDataFolder, storageAvailable, VERSION_EVERY_MS, writeToFolder } from './engine/projectdb';
+import { addVersion, type VersionKeep, BackupEntry, deleteProject, listProjects, folderAllowed, folderCopySupported, getRecordVerified, getVersion, importEntries, loadTerrain, newId, putProject, requestPersist, saveTerrain, savedDataFolder, storageAvailable, VERSION_EVERY_MS, writeToFolder } from './engine/projectdb';
 
 const KEY = 'radioplan.project.v1';
 const CUR = 'radioplan.currentId';
@@ -30,7 +31,7 @@ interface Library {
   importProjects: (entries: BackupEntry[]) => Promise<string[]>;
   restoreVersion: (vid: number) => Promise<void>;
   removeProject: (id: string) => Promise<void>;
-  saveNow: (reason?: string) => Promise<void>;
+  saveNow: (reason?: string, keep?: VersionKeep) => Promise<void>;
   bump: () => void;
 }
 interface Ctx {
@@ -72,8 +73,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       try {
         requestPersist();
         const id = live.current.projectId;
-        const rec = await getRecord(id);
-        if (rec) setProject(fresh(rec.project)); else await putProject(id, live.current.project);
+        const got = await getRecordVerified(id);
+        if (got.restored) notify(`🔧 The saved copy of "${got.record?.name}" was damaged, so the app put back its last good version (${new Date(got.restored.at).toLocaleString()}). Check Projects → History if anything newer is missing.`);
+        if (got.record && !got.damaged) setProject(fresh(got.record.project));
+        else if (got.damaged) { setProject(fresh(live.current.project)); await putProject(id, fresh(live.current.project)); notify('🔧 The saved copy of this project was damaged and no good history copy was found, so the app used the quick copy kept in this browser.'); }
+        else await putProject(id, live.current.project);
         const dem = await loadTerrain(id);
         if (dem) { lastDem.current = dem; setRtState((r) => ({ ...r, dem, demAuto: dem.auto !== false, terrainStatus: `Terrain ✓ (saved with project)` })); }
         lastVersion.current = Date.now();
@@ -137,8 +141,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     const api: Library = {
       projectId, saveState, saveError, libVersion,
       bump: () => setLibVersion((v) => v + 1),
-      saveNow: async (reason = 'Saved by user') => { const c = live.current; await putProject(c.projectId, c.project); await addVersion(c.projectId, c.project, reason); lastVersion.current = Date.now(); setSaveState('saved'); setLibVersion((v) => v + 1); },
-      openProject: async (id) => { if (id === live.current.projectId) return; await flush(); const r = await getRecord(id); if (!r) throw new Error('Project not found'); await switchTo(id, r.project); },
+      saveNow: async (reason = 'Saved by user', keep) => { const c = live.current; await putProject(c.projectId, c.project); await addVersion(c.projectId, c.project, reason, Date.now(), keep); lastVersion.current = Date.now(); setSaveState('saved'); setLibVersion((v) => v + 1); },
+      openProject: async (id) => { if (id === live.current.projectId) return; await flush(); const { record: r, restored } = await getRecordVerified(id); if (!r) throw new Error('Project not found'); if (restored) notify(`🔧 The saved copy of "${r.name}" was damaged, so the app put back its last good version.`); await switchTo(id, r.project); },
       newProject: async (p, name, terrainFrom) => {
         await flush();
         const np = fresh(p ? structuredClone(p) : defaultProject()); delete np.sync;

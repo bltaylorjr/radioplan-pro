@@ -33,6 +33,8 @@ export function OfflineArea({ viewBounds }: { viewBounds?: Bounds | null }) {
       const t = await downloadTerrain(b, { maxTiles: 120 });
       setRt((r) => ({ ...r, dem: t.dem, demAuto: true, terrainStatus: `Terrain ✓ ~${t.resolutionM.toFixed(0)} m` }));
       const res = await prefetchTiles(tpls, b, zMin, zMax, (d, total, f) => setProg({ d, n: total, f }), abort.current.signal);
+      // Remember the area: the app keeps it complete and fresh by itself (Projects → Automatic care).
+      import('../engine/datasets').then((m) => m.rememberTileArea({ templates: tpls, b, zMin, zMax })).catch(() => undefined);
       setMsg(abort.current.signal.aborted ? 'Stopped. Tiles downloaded so far are kept.' : `Done: ${res.total - res.failed} map tiles and terrain saved for offline use${res.failed ? ` (${res.failed} unavailable)` : ''}.`);
     } catch (e) { setMsg(`Download failed: ${(e as Error).message}`); }
     setProg(null); refresh();

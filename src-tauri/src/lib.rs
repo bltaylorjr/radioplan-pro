@@ -27,10 +27,15 @@ fn app_info() -> AppInfo { AppInfo { portable: portable_data_dir().is_some(), os
 /// Download the new installer from the project's GitHub release and run it silently.
 /// The installer closes this app, replaces it, and starts the new version.
 #[tauri::command]
-fn install_update(url: String) -> Result<(), String> {
+fn install_update(url: String, sha256: Option<String>) -> Result<(), String> {
     let ok_chars = url.chars().all(|c| c.is_ascii_alphanumeric() || "/:._-".contains(c));
     if !url.starts_with(UPDATE_PREFIX) || !url.ends_with(".exe") || url.contains("..") || !ok_chars {
         return Err("Update address refused".into());
+    }
+    // The SHA-256 GitHub reports for the file. When given, a download that does not match is deleted and not run.
+    let sha = sha256.unwrap_or_default().to_ascii_uppercase();
+    if !sha.is_empty() && (sha.len() != 64 || !sha.chars().all(|c| c.is_ascii_hexdigit())) {
+        return Err("Update checksum refused".into());
     }
     if portable_data_dir().is_some() {
         return Err("Portable copy: replace the files on the drive with the new flash-drive download".into());
@@ -40,8 +45,8 @@ fn install_update(url: String) -> Result<(), String> {
         use std::os::windows::process::CommandExt;
         let tmp = std::env::temp_dir().join("RadioPlanPro-Update.exe");
         let script = format!(
-            "$ErrorActionPreference='Stop'; [Net.ServicePointManager]::SecurityProtocol='Tls12'; Invoke-WebRequest -UseBasicParsing -Uri '{}' -OutFile '{}'; Start-Process -FilePath '{}' -ArgumentList '/S'",
-            url, tmp.display(), tmp.display()
+            "$ErrorActionPreference='Stop'; [Net.ServicePointManager]::SecurityProtocol='Tls12'; $f='{}'; Invoke-WebRequest -UseBasicParsing -Uri '{}' -OutFile $f; $want='{}'; if ($want -ne '' -and (Get-FileHash -Algorithm SHA256 -Path $f).Hash -ne $want) {{ Remove-Item $f -Force; exit 1 }}; Start-Process -FilePath $f -ArgumentList '/S'",
+            tmp.display(), url, sha
         );
         std::process::Command::new("powershell")
             .args(["-NoProfile", "-ExecutionPolicy", "Bypass", "-WindowStyle", "Hidden", "-Command", &script])

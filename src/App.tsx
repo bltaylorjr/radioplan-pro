@@ -46,6 +46,7 @@ import { ServicePage } from './pages/Service';
 import { AutoDesignPage } from './pages/AutoDesign';
 import { readBackup } from './engine/projectdb';
 import { Updater } from './components/Updater';
+import { Maintainer } from './components/Maintainer';
 import { Welcome } from './components/Welcome';
 const TerrainPage = lazy(() => import('./pages/Terrain'));
 const CoveragePage = lazy(() => import('./pages/Coverage'));
@@ -145,6 +146,7 @@ export default function App() {
     <div className={'app' + (navOpen ? ' nav-open' : '')}>
       <AutoTerrain />
       <Updater />
+      <Maintainer />
       {welcome && !video && <Welcome onClose={() => setWelcome(false)} onHelp={() => setHelpOpen(true)} />}
       <header className="topbar">
         <button className="ghost menu" onClick={() => setNavOpen(!navOpen)} aria-label="Menu">☰</button>
