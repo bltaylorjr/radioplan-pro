@@ -379,6 +379,17 @@ Enter measured values and mark pass/fail; the results print in the Commissioning
 
 Distances and lengths follow **Measurements** on Company & Project: Imperial (ft, in, mi, the default) or Metric (m, mm, km).` },
 
+  { id: 'settings', title: 'User settings and data check', page: 'settings', keywords: 'user settings preferences turn off tools hide pages menu checkbox show all tools only what i need project type turned on notice check my data verify validate errors wrong entry invalid blank empty null zero range typo unit mistake',
+    summary: 'Turn tools on or off in the menu, and check the whole project for empty, out-of-range or mismatched entries with the fix for each.',
+    body: `**Tools shown in the menu**: untick any tool you do not use. It leaves the menu, the step numbers and Next / Previous; nothing is deleted and you can tick it again any time. **Show every tool** brings them all back; **Only what this project needs** keeps just the tools for the project's systems. The choice is for you on this device and applies to every project. Company & Project, Project Systems, Projects and User Settings always show.
+
+**Automatic turn-on**: when you pick a project type or add a sub-project, any tool that job needs is turned back on and a notice lists what was turned on. On a custom project the needed tools are also added to your page pick.
+
+**Wrong or blank entries**: every number box checks what you type. If it is outside the normal range (for example a negative length, or 2,500 % fill) the box turns red, a message says what is wrong, and a **Use …** button offers the likely value (a slipped decimal point or the wrong unit). The last good value is kept until you fix it. A blank box is never counted as zero: calculators ask you to fill it in, and optional boxes are skipped.
+
+**Cross-checks**: calculators also compare related values, for example a cable wider than the conduit, a device minimum voltage above the supply, alarm current below standby current, or an ear height above the ceiling.
+
+**Check my data** goes through the whole project (sites, radio design, fire alarm, ERCES, solar, grounding, materials, service calls, proposal) and lists each problem with a **Fix on …** button that opens the right page. ⛔ = must fix, ⚠ = double-check. Every value still needs review by a licensed professional and the AHJ.` },
   { id: 'sync', title: 'Sync between devices', page: 'sync', keywords: 'sync synchronize share bluetooth wifi wi-fi cellular nearby quick share qr code cloud onedrive google drive dropbox merge phone pc tablet', summary: 'Keep the PC, USB, tablet and phone copies of a project in step over Wi-Fi, Bluetooth / Nearby Share, or a cloud-drive folder.',
     body: `Every device keeps a full copy and works offline. Syncing **merges** copies: each part of the project (company, radio design, grounding, etc.) keeps the most recent change from either device, and sites, scenarios, run history, tests, survey points and Wi-Fi readings from both devices are combined. Deleting an item on one device deletes it on the other at the next sync.
 

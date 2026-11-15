@@ -153,3 +153,11 @@ export function projectSystems(meta: { projectType?: string; subSystems?: string
 }
 /** App feature switches each system turns on. */
 export const ENABLES: Partial<Record<SystemId, 'alarm' | 'erces' | 'solar'>> = { firealarm: 'alarm', massnotif: 'alarm', erces: 'erces', solar: 'solar', callbox: 'solar' };
+
+/** Systems that use tower, antenna, airport and radio-horizon fields. Other project types hide those fields. */
+export const RADIO_SYSTEMS: SystemId[] = ['radio', 'das', 'erces', 'callbox', 'wifi', 'solar'];
+/** True when the project has no type yet (show everything) or includes a system that uses tower and antenna fields. */
+export function usesRadioFields(meta: { projectType?: string; subSystems?: string[] }): boolean {
+  if (!meta.projectType || meta.projectType === 'custom' && !(meta.subSystems?.length)) return true;
+  return [meta.projectType, ...(meta.subSystems ?? [])].some((x) => RADIO_SYSTEMS.includes(x as SystemId));
+}

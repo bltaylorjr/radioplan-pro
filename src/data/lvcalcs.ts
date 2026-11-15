@@ -1,6 +1,11 @@
+import { checkValue, defaultRange, Issue } from '../engine/validate';
 // Low-voltage calculators, defined as data so they can be shown on the Calculators page and on each
 // system's toolkit. Results are planning values; follow the manufacturer, the adopted code and the AHJ.
-export interface CalcInput { k: string; label: string; v: number; unit?: string; step?: number; options?: [number, string][] }
+export interface CalcInput { k: string; label: string; v: number; unit?: string; step?: number; options?: [number, string][];
+  /** Allowed range; outside it the calculator says what is wrong and suggests a fix instead of a result. */
+  min?: number; max?: number; integer?: boolean;
+  /** May be left blank: the calculation skips it (never counts a blank as zero). */
+  optional?: boolean }
 export interface CalcOut { label: string; value: string; unit?: string; tone?: 'ok' | 'warn' | 'bad' }
 /** A project field a calculator result can be written into ("Apply to fields"; always asks first). */
 export interface LvApply { id: string; label: string; page: string; path: (string | number)[]; value: unknown; to: string; on?: boolean; /** How the current value reads (default: as stored). */ show?: (v: unknown) => string }
@@ -11,10 +16,14 @@ export interface LvCalc { id: string; title: string; group: string; keywords: st
   fromProject?: (p: import('../types').Project) => Record<string, number> }
 
 const r = (x: number, d = 1) => (Number.isFinite(x) ? (Math.round(x * 10 ** d) / 10 ** d).toLocaleString() : '—');
-/** Copper DC resistance, ohms per 1000 ft (NEC Ch. 9 Table 8, uncoated). */
-export const OHM_KFT: Record<number, number> = { 24: 25.7, 22: 16.2, 20: 10.1, 18: 6.39, 16: 4.02, 14: 2.52, 12: 1.59, 10: 0.999 };
+/**
+ * Copper DC resistance, ohms per 1000 ft at 75 °C. #18–#10: NEC Chapter 9 Table 8, uncoated solid (the same values the
+ * Fire Alarm page and code checks use). #24–#20 are not in Table 8: 20 °C values × 1.216 (copper at 75 °C).
+ * Corrected in 1.5.49: earlier versions used 20 °C values here (about 18% low), which under-stated voltage drop.
+ */
+export const OHM_KFT: Record<number, number> = { 24: 31.2, 22: 19.6, 20: 12.3, 18: 7.77, 16: 4.89, 14: 3.07, 12: 1.93, 10: 1.21 };
 const AWG_OPTS: [number, string][] = [24, 22, 20, 18, 16, 14, 12, 10].map((a) => [a, `#${a} AWG`]);
-const drop = (a: number, ft: number, awg: number) => (2 * ft * a * (OHM_KFT[awg] ?? 6.39)) / 1000;
+const drop = (a: number, ft: number, awg: number) => (2 * ft * a * (OHM_KFT[awg] ?? 7.77)) / 1000;
 
 export const LV_CALCS: LvCalc[] = [
   { id: 'cable-boxes', title: 'Cable quantity (1000 ft boxes)', group: 'Structured cabling', keywords: 'cat6 drops boxes reel footage takeoff estimate',
@@ -156,5 +165,81 @@ export const LV_CALCS: LvCalc[] = [
     run: (x) => { const h = (x.sqft / 10000) * x.sys * x.rate + x.fixed; return [{ label: 'Design hours', value: r(h, 0), unit: 'h' }, { label: 'Fee', value: `$${r(h * x.usd, 0)}` }]; },
     note: 'Your own rates go here. Add PE review and stamping where the AHJ requires it.' },
 ];
+
+// ---- Input checks (1.5.49) ----
+// Allowed ranges by calculator.input. Wide enough for any real job; outside them the entry is almost surely a typo
+// or a unit mix-up. Counts are whole numbers. Anything not listed falls back to the unit's usual range.
+const RANGES: Record<string, Partial<CalcInput>> = {
+  'cable-boxes.drops': { min: 1, max: 100000, integer: true }, 'cable-boxes.avg': { min: 1, max: 1000 }, 'cable-boxes.slack': { min: 0, max: 100 }, 'cable-boxes.waste': { min: 0, max: 50 },
+  'conduit-fill.id': { min: 0.1, max: 12 }, 'conduit-fill.od': { min: 0.01, max: 6 }, 'conduit-fill.pct': { min: 1, max: 100 },
+  'jhook.ft': { min: 0, max: 100000 }, 'jhook.sp': { min: 0.5, max: 20 },
+  'fiber-budget.km': { min: 0, max: 200 }, 'fiber-budget.att': { min: 0.1, max: 10 }, 'fiber-budget.pairs': { min: 0, max: 50, integer: true }, 'fiber-budget.splices': { min: 0, max: 500, integer: true }, 'fiber-budget.meas': { min: 0, max: 100, optional: true },
+  'fiber-reach.tx': { min: -40, max: 20 }, 'fiber-reach.rx': { min: -50, max: 10 }, 'fiber-reach.loss': { min: 0, max: 60 },
+  'fa-battery.sb': { min: 0, max: 50 }, 'fa-battery.al': { min: 0, max: 100 }, 'fa-battery.h': { min: 0, max: 168 }, 'fa-battery.m': { min: 0, max: 240 }, 'fa-battery.sf': { min: 0, max: 100 },
+  'lv-drop.v': { min: 1, max: 600 }, 'lv-drop.a': { min: 0, max: 100 }, 'lv-drop.ft': { min: 0, max: 20000 }, 'lv-drop.min': { min: 0, max: 600 },
+  'psu.n': { min: 0, max: 10000, integer: true }, 'psu.ma': { min: 0, max: 20000 }, 'psu.head': { min: 0, max: 100 },
+  'poe-budget.n': { min: 0, max: 1000, integer: true }, 'poe-budget.w': { min: 0, max: 100 }, 'poe-budget.sw': { min: 1, max: 20000 },
+  'cctv-storage.cams': { min: 0, max: 10000, integer: true }, 'cctv-storage.mbps': { min: 0, max: 100 }, 'cctv-storage.hours': { min: 0, max: 24 }, 'cctv-storage.days': { min: 0, max: 3650 }, 'cctv-storage.motion': { min: 0, max: 100 },
+  'cctv-ppf.hres': { min: 100, max: 20000, integer: true }, 'cctv-ppf.fov': { min: 1, max: 179 }, 'cctv-ppf.d': { min: 0.5, max: 5000 },
+  'spl.sens': { min: 60, max: 130 }, 'spl.w': { min: 0.01, max: 2000 }, 'spl.d': { min: 0.5, max: 5000 }, 'spl.amb': { min: 0, max: 130 },
+  'line70.taps': { min: 0, max: 10000 }, 'line70.amp': { min: 1, max: 10000 }, 'line70.ft': { min: 0, max: 20000 },
+  'spk-spacing.ceil': { min: 6, max: 100 }, 'spk-spacing.ear': { min: 0, max: 10 }, 'spk-spacing.disp': { min: 10, max: 180 }, 'spk-spacing.area': { min: 1, max: 10000000 },
+  'amp-size.n': { min: 0, max: 10000, integer: true }, 'amp-size.tap': { min: 0, max: 500 }, 'amp-size.head': { min: 0, max: 100 }, 'amp-size.zones': { min: 1, max: 500, integer: true },
+  'spk-wire.taps': { min: 0, max: 10000 }, 'spk-wire.loss': { min: 0.1, max: 6 },
+  'rt60.l': { min: 1, max: 2000 }, 'rt60.w': { min: 1, max: 2000 }, 'rt60.h': { min: 1, max: 300 },
+  'sti.d': { min: 1, max: 2000 }, 'sti.t': { min: 0.1, max: 15 }, 'sti.v': { min: 100, max: 100000000 }, 'sti.n': { min: 1, max: 50, integer: true },
+  'horn-range.spl': { min: 60, max: 160 }, 'horn-range.amb': { min: 0, max: 130 }, 'horn-range.over': { min: 0, max: 40 },
+  'db-sum.a': { min: 0, max: 200 }, 'db-sum.b': { min: 0, max: 200 }, 'db-sum.c': { min: 0, max: 200, optional: true }, 'db-sum.d1': { min: 0.1, max: 10000 }, 'db-sum.d2': { min: 0.1, max: 10000 },
+  'spk-delay.main': { min: 0, max: 2000 }, 'spk-delay.fill': { min: 0, max: 2000 }, 'spk-delay.haas': { min: 0, max: 50 }, 'spk-delay.temp': { min: -40, max: 140 },
+  'lo-z.n': { min: 1, max: 64, integer: true }, 'lo-z.min': { min: 0.5, max: 64 },
+  'audio-level.v': { min: 0, max: 1000 }, 'audio-level.ohm': { min: 0.1, max: 100000 },
+  'access-lock.mag': { min: 0, max: 1000, integer: true }, 'access-lock.magma': { min: 0, max: 5000 }, 'access-lock.str': { min: 0, max: 1000, integer: true }, 'access-lock.strma': { min: 0, max: 5000 }, 'access-lock.rdr': { min: 0, max: 1000, integer: true }, 'access-lock.rdrma': { min: 0, max: 5000 },
+  'nc-coverage.rooms': { min: 0, max: 5000, integer: true }, 'nc-coverage.beds': { min: 0, max: 20, integer: true }, 'nc-coverage.baths': { min: 0, max: 5000, integer: true }, 'nc-coverage.staff': { min: 0, max: 500, integer: true },
+  'callbox.sbma': { min: 0, max: 5000 }, 'callbox.calls': { min: 0, max: 1000 }, 'callbox.callma': { min: 0, max: 20000 }, 'callbox.min': { min: 0, max: 120 }, 'callbox.light': { min: 0, max: 24 }, 'callbox.lightma': { min: 0, max: 20000 }, 'callbox.days': { min: 0, max: 30 }, 'callbox.psh': { min: 0.5, max: 12 },
+  'pm-hours.dev': { min: 0, max: 100000, integer: true }, 'pm-hours.min': { min: 0, max: 240 }, 'pm-hours.panel': { min: 0, max: 1000, integer: true }, 'pm-hours.ph': { min: 0, max: 100 }, 'pm-hours.visits': { min: 0, max: 365, integer: true }, 'pm-hours.rate': { min: 0, max: 1000 }, 'pm-hours.travel': { min: 0, max: 24 },
+  'design-hours.sqft': { min: 0, max: 100000000 }, 'design-hours.sys': { min: 0, max: 50, integer: true }, 'design-hours.rate': { min: 0, max: 200 }, 'design-hours.fixed': { min: 0, max: 10000 }, 'design-hours.usd': { min: 0, max: 1000 },
+};
+for (const c of LV_CALCS) for (const i of c.inputs) {
+  const extra = RANGES[`${c.id}.${i.k}`]; if (extra) Object.assign(i, extra);
+  if (/\(optional\)|0 = none/i.test(i.label)) i.optional = true;
+}
+
+/** Cross-checks between related inputs: values that are each fine alone but do not make sense together. */
+const CROSS: Record<string, (x: Record<string, number>) => Issue[]> = {
+  'cable-boxes': (x) => x.avg + x.slack > 1000 ? [{ level: 'bad', key: 'avg', msg: 'One run plus slack is longer than a 1000 ft box.', fix: 'Check the run length, or order reels instead of boxes.' }] : [],
+  'conduit-fill': (x) => x.od >= x.id ? [{ level: 'bad', key: 'od', msg: 'The cable is as wide as or wider than the inside of the conduit.', fix: 'Check that the cable OD and conduit ID are both in inches (1" EMT is 1.049 in inside).' }] : [],
+  'fiber-reach': (x) => x.rx >= x.tx ? [{ level: 'warn', key: 'rx', msg: 'Receiver sensitivity is not lower than the transmit power.', fix: 'Sensitivity is usually a more negative number (for example −11.1 dBm). Check the sign.' }] : [],
+  'fa-battery': (x) => x.al < x.sb ? [{ level: 'warn', key: 'al', msg: 'Alarm current is lower than standby current.', fix: 'Alarm current is normally the higher one. Check that the two were not swapped.' }] : x.h < 24 ? [{ level: 'warn', key: 'h', msg: 'Standby time is under 24 hours.', fix: 'NFPA 72 fire alarm needs 24 h standby (some systems differ). Check the spec.' }] : [],
+  'lv-drop': (x) => x.min >= x.v ? [{ level: 'bad', key: 'min', msg: 'The device minimum voltage is not lower than the supply voltage.', fix: 'Check both voltages; for a 24 V supply the device minimum is often 16–20 V.' }] : [],
+  'poe-budget': (x) => x.w > 90 ? [{ level: 'warn', key: 'w', msg: 'More than 90 W per device is above the highest PoE class.', fix: 'Check the device datasheet; Class 8 is 90 W at the switch.' }] : [],
+  'line70': (x) => x.taps > x.amp ? [{ level: 'warn', key: 'taps', msg: 'The speaker taps add up to more than the amplifier rating.', fix: 'Use a bigger amplifier, lower the taps or split the zone.' }] : [],
+  'spk-spacing': (x) => x.ear >= x.ceil ? [{ level: 'bad', key: 'ear', msg: 'Ear height is at or above the ceiling.', fix: 'Ear height is about 4 ft seated or 5 ft standing; ceiling height is from the floor.' }] : [],
+  'spk-delay': (x) => x.fill > x.main ? [{ level: 'warn', key: 'fill', msg: 'The fill speaker is farther from the listener than the main speaker.', fix: 'A delay fill is normally closer to the listener. Check that the two distances were not swapped.' }] : [],
+  'callbox': (x) => x.calls * x.min > 1440 ? [{ level: 'bad', key: 'calls', msg: 'Calls × minutes per call is more than 24 hours a day.', fix: 'Check calls per day and minutes per call.' }] : [],
+};
+
+export interface CalcCheck { out: CalcOut[] | null; issues: Issue[]; missing: string[] }
+/**
+ * Run a calculator with full checks: blank required boxes are listed (never treated as zero), blank optional boxes
+ * are skipped, each entry is range-checked with a suggested fix, related entries are cross-checked, and results are
+ * only shown when no entry is wrong. Results with NaN or Infinity are replaced by a message.
+ */
+export function checkCalc(c: LvCalc, vals: Record<string, number | null | undefined> = {}): CalcCheck {
+  const issues: Issue[] = [], missing: string[] = [];
+  const x: Record<string, number> = {};
+  for (const i of c.inputs) {
+    const v = i.k in vals ? vals[i.k] : i.v;
+    if (v == null || Number.isNaN(v)) { if (i.optional) { x[i.k] = 0; continue; } missing.push(i.label); issues.push({ level: 'bad', key: i.k, msg: `${i.label} is empty.`, fix: 'Type a number. A blank box is not counted as zero.' }); continue; }
+    if (!i.options) { const d = defaultRange(i.unit); const e = checkValue(v, { min: i.min ?? d.min, max: i.max ?? d.max, integer: i.integer, label: i.label, unit: i.unit }); if (e) issues.push({ ...e, key: i.k }); }
+    x[i.k] = v;
+  }
+  if (issues.some((i) => i.level === 'bad')) return { out: null, issues, missing };
+  issues.push(...(CROSS[c.id]?.(x) ?? []));
+  if (issues.some((i) => i.level === 'bad')) return { out: null, issues, missing };
+  const out = c.run(x);
+  if (out.some((o) => /NaN|Infinity|—/.test(o.value))) issues.push({ level: 'warn', msg: 'Some results could not be worked out from these numbers (a zero where a size or distance is needed).', fix: 'Check for a 0 in a distance, size or rating box.' });
+  return { out, issues, missing };
+}
+
 export const lvCalc = (id: string) => LV_CALCS.find((c) => c.id === id);
 export function runCalc(c: LvCalc, vals?: Record<string, number>) { const x = Object.fromEntries(c.inputs.map((i) => [i.k, vals?.[i.k] ?? i.v])); return c.run(x); }
