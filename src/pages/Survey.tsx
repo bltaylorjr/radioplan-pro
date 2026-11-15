@@ -12,6 +12,7 @@ import { useUnits, DistNum } from '../units';
 import { azimuthPair, fmtAz } from '../engine/azimuth';
 import { Tip } from '../components/ui';
 import { AZ_TIP } from '../components/Azimuth';
+import { askDelete } from '../components/askConfirm';
 
 export function SurveyPage() {
   const { project: p, update, rt, go } = useStore();
@@ -57,7 +58,7 @@ export function SurveyPage() {
       <div className="grid2">
         <Card title="Field survey / drive test" tour="survey-import" tip="Import measured signal points from a drive-test tool, scanner, or spreadsheet. CSV needs latitude, longitude and signal (dBm) columns; GeoJSON points with an rssi/signal property also work.">
           <div className="row wrap"><label className="btn primary">📂 Import survey (CSV / GeoJSON)<input hidden type="file" accept=".csv,.txt,.tsv,.geojson,.json" onChange={(e) => { load(e.target.files?.[0]); e.target.value = ''; }} /></label>
-            <button disabled={!sv.points.length} onClick={() => { if (confirm('Delete all survey points?')) update((d) => { d.survey = { name: '', importedAt: '', points: [] }; }); }}>Clear</button></div>
+            <button disabled={!sv.points.length} onClick={async () => { if (await askDelete('Delete all survey points?')) update((d) => { d.survey = { name: '', importedAt: '', points: [] }; }); }}>Clear</button></div>
           <h4>Record a reading here (device GPS)</h4>
           <div className="row wrap"><Num value={rssiIn} nullable onChange={setRssiIn} unit="dBm measured" /><button onClick={record}>📍 Record point</button></div>
           {msg && <p className="note">{msg}</p>}

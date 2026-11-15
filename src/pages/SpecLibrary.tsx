@@ -21,6 +21,7 @@ import { loadMyItems, saveMyItems, SPECLIB_EVENT, autoLoadEquipment } from '../d
 import { parseCsv, toCsv } from '../engine/csv';
 import type { Antenna, Feeder, Radio } from '../data/catalog';
 import { bodyById, BODIES_CHECKED } from '../data/bodies';
+import { askDelete } from '../components/askConfirm';
 
 export { loadMyItems };
 
@@ -201,7 +202,7 @@ export function SpecLibraryPage() {
           update((d) => { d.alarm.devices = d.alarm.devices.map((x) => x.name.trim() === item.model ? { ...x, standbyMa: sb ?? x.standbyMa, alarmMa: al ?? x.alarmMa } : x); });
           setMsg(`Battery calculation now uses ${item.model}: ${sb ?? '—'} mA standby, ${al ?? '—'} mA alarm ✓`);
         }}>Update project devices</button>}
-        {item.kind === 'My item' && <button className="danger" onClick={async () => { if (confirm(`Remove ${item.model} from your library?`)) { await persist(mine.filter((m) => m.id !== item.id)); setSel(null); } }}>Delete</button>}
+        {item.kind === 'My item' && <button className="danger" onClick={async () => { if (await askDelete(<>Delete <b>{item.model}</b> from your library?</>)) { await persist(mine.filter((m) => m.id !== item.id)); setSel(null); } }}>Delete</button>}
       </div>}>
         <p className="muted small">{item.category}{item.sub ? ` · ${item.sub}` : ''} · {item.origin ? 'Loaded from project' : item.kind}{item.reference ? ` · ${item.reference}` : ''}{item.projects?.length ? ` · Used in: ${item.projects.join(', ')}` : ''}</p>
         <table className="tbl"><tbody>{Object.entries(item.specs).map(([k, v]) => <tr key={k}><th style={{ width: '45%' }}>{k}</th><td style={{ whiteSpace: 'pre-line' }}>{String(v)}</td></tr>)}</tbody></table>

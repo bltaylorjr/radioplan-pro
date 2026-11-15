@@ -4,6 +4,8 @@
 - **Asks first**: a Yes / No box says exactly what will be cleared on that page. Other pages, saved projects, the RadioReference login and downloads, the specifications library and contacts are never touched.
 - **↶ Undo** right after clearing puts the page back, and a copy from before is saved in Projects → History of this project.
 - Pages with nothing to type in (RadioReference, 3D Model, Map & Directions, Service, Library, Contacts, Projects, Sync) have no button. On a page that is already empty the button says "Nothing to clear".
+- **Delete works everywhere, with an "Are you sure?" box.** Deleting attached files (Projects & Storage, Reports), field notes, saved datasheets and manuals, library items, contacts, RadioReference saved lists, Wi-Fi readings, survey points, indoor walls and checklist ticks did nothing in the Windows app, because it used a browser pop-up the app does not show. Every delete now uses the app's own box with **Delete** and **Cancel** buttons, and the other yes / no questions use the same box.
+- **Deleted projects stay deleted** when a data folder (flash drive) is used: the project's file in the folder is deleted too, and Update folder no longer loads it back.
 - **Introduction video**: a new part shows Clear all fields and Undo.
 
 # LvPlan Pro 1.5.41

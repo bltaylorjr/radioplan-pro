@@ -5,6 +5,7 @@ import { Card, Stat, fmt, Sel } from '../components/ui';
 import { MapView, gridCanvas } from '../components/MapView';
 import { decodeGrid, diffInputs, diffResults, diffGrid, tierChange } from '../engine/scenario';
 import { toCsv } from '../engine/csv';
+import { askConfirm } from '../components/askConfirm';
 
 const DIFF_SCALE: [number, [number, number, number], string][] = [[6, [0, 120, 50], '≥ +6 dB'], [2, [120, 200, 120], '+2 to +6'], [-2, [235, 235, 235], 'within ±2 dB'], [-6, [240, 150, 120], '−2 to −6'], [-999, [200, 40, 40], '≤ −6 dB']];
 const diffColor = (v: number): [number, number, number] | null => { if (Number.isNaN(v)) return null; for (const [m, c] of DIFF_SCALE) if (v >= m) return c; return null; };
@@ -43,7 +44,7 @@ export function ScenariosPage() {
               {s.results.map((r) => <td key={r.label} className={r.pass ? 'ok-text' : 'bad-text'}>{fmt(r.pct, 1)}% {r.pass ? '✓' : '✗'}</td>)}
               <td>{fmt(s.meanDbm, 1)}</td>
               <td className="row"><button className="small" title="Show this scenario on the Coverage map" onClick={() => { setRt((x) => ({ ...x, coverage: decodeGrid(s.grid) })); go('coverage'); }}>Show</button>
-                <button className="small" title="Put this scenario's radio settings, tuning and TX site back into the project" onClick={() => { if (!confirm(`Restore the inputs of "${s.label}"? Current radio settings will be replaced.`)) return; update((d) => { d.radio = structuredClone(s.project.radio); d.propagation = structuredClone(s.project.propagation); if (s.project.tx) { const i = d.sites.findIndex((x) => x.id === s.project.tx!.id); if (i >= 0) d.sites[i] = structuredClone(s.project.tx); } }); }}>Restore inputs</button>
+                <button className="small" title="Put this scenario's radio settings, tuning and TX site back into the project" onClick={async () => { if (!(await askConfirm({ title: 'Restore inputs?', message: <>Restore the inputs of <b>“{s.label}”</b>? Current radio settings will be replaced.</>, ok: 'Restore', cancel: 'Cancel' }))) return; update((d) => { d.radio = structuredClone(s.project.radio); d.propagation = structuredClone(s.project.propagation); if (s.project.tx) { const i = d.sites.findIndex((x) => x.id === s.project.tx!.id); if (i >= 0) d.sites[i] = structuredClone(s.project.tx); } }); }}>Restore inputs</button>
                 <button className="small" onClick={() => update((d) => { d.scenarios = d.scenarios.filter((x) => x.id !== s.id); })} aria-label="Delete scenario">✕</button></td></tr>)}</tbody></table></div>}
       </Card>
       {sc.length >= 2 && <>

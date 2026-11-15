@@ -14,6 +14,7 @@ import { ProjectTypePicker } from '../components/SystemsUI';
 import { missingRequired, isMissing } from '../engine/required';
 import { findProjectSpot, moveSiteA } from '../engine/locateSite';
 import { loadCompanyDefault, saveCompanyDefault, clearCompanyDefault, applyCompanyDefault, CompanyDefault } from '../engine/companyDefault';
+import { askDelete } from '../components/askConfirm';
 
 export function CompanyPage() {
   const { project: p, update, go, rt, setRt, lib } = useStore();
@@ -100,7 +101,7 @@ export function CompanyPage() {
         <div className="row wrap company-default">
           <button className="primary" disabled={!c.name.trim()} onClick={async () => { await saveCompanyDefault(p); setDef(await loadCompanyDefault()); setDefMsg('Saved as your default ✓ New projects fill these in by themselves.'); }}>💾 Save as my default</button>
           {def && <button onClick={() => { update((x) => { x.company = structuredClone(def.company); if (def.engineer) x.meta.engineer = def.engineer; if (def.peLicense) x.meta.peLicense = def.peLicense; }); setDefMsg('Filled from your default ✓'); }}>↺ Fill from my default</button>}
-          {def && <button className="ghost" onClick={async () => { if (confirm('Stop filling new projects with your saved company information?')) { await clearCompanyDefault(); setDef(undefined); setDefMsg('Default removed. This project keeps its information.'); } }}>Remove default</button>}
+          {def && <button className="ghost" onClick={async () => { if (await askDelete('Delete your saved company default?', 'New projects stop filling in your company information. This project keeps its information.')) { await clearCompanyDefault(); setDef(undefined); setDefMsg('Default removed. This project keeps its information.'); } }}>Remove default</button>}
           <span className="small muted">{def ? `Default saved ${new Date(def.savedAt).toLocaleDateString()}: ${def.company.name}${def.company.logoDataUrl ? ', with logo' : ''}${def.engineer ? `, engineer ${def.engineer}` : ''}. Empty fields fill in automatically.` : 'Save your company, logo, engineer and PE license once; every new project fills them in.'}</span>
         </div>
         {defMsg && <p className="small note" role="status">{defMsg}</p>}
