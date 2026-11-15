@@ -1,10 +1,10 @@
 import React, { useMemo, useState } from 'react';
 import { useStore } from '../store';
 import { Card, Num } from '../components/ui';
-import { autoDesign, defaultInputs, AutoInputs, BLDG, BldgType, KIND_LABEL, Kind, TerrainInfo } from '../engine/autodesign';
+import { autoDesign, defaultInputs, AutoInputs, BLDG, BldgType, Kind, TerrainInfo } from '../engine/autodesign';
 import { ProjectTypePicker } from '../components/SystemsUI';
-import { Building3D, KIND_COLOR } from '../components/Building3D';
-import { FloorPlan2D } from '../components/FloorPlan2D';
+import { LayeredModel } from '../components/LayeredModel';
+import { buildModel } from '../engine/models';
 import { sampleDem } from '../engine/terrain';
 import { projectSystems } from '../data/systems';
 
@@ -24,12 +24,8 @@ export function AutoDesignPage() {
   const site = p.sites[0];
   const terrain = useMemo(() => (site ? terrainAround(rt.dem, site.lat, site.lon) : undefined), [rt.dem, site?.lat, site?.lon]); // eslint-disable-line react-hooks/exhaustive-deps
   const r = useMemo(() => autoDesign(p, x, terrain), [p, terrain]); // eslint-disable-line react-hooks/exhaustive-deps
-  const [floor, setFloor] = useState<number | 'all'>('all');
-  const [view, setView] = useState<'3d' | '2d'>(() => { try { return localStorage.getItem('radioplan.designView') === '2d' ? '2d' : '3d'; } catch { return '3d'; } });
-  const pickView = (v: '3d' | '2d') => { setView(v); try { localStorage.setItem('radioplan.designView', v); } catch { /* ignore */ } };
-  const [hidden, setHidden] = useState<Set<Kind>>(new Set());
+  const scene = useMemo(() => buildModel(p), [p]);
   const [msg, setMsg] = useState('');
-  const kinds = [...new Set([...r.trs, ...r.devices].map((d) => d.kind))];
   const systems = projectSystems(p.meta);
   const num = (k: keyof AutoInputs, label: string, unit?: string, tip?: string) => (
     <label className="field" title={tip}><span>{label}</span><Num min={0} value={x[k] as number} onChange={(v) => set(k, (v || 0) as never)} unit={unit} /></label>);
@@ -69,10 +65,9 @@ export function AutoDesignPage() {
         {!terrain && <p className="small muted">No terrain loaded for the site yet. <a href="#terrain" onClick={(e) => { e.preventDefault(); go('terrain'); }}>Map & Terrain</a> downloads it automatically when online.</p>}
       </Card>
 
-      <Card title={`3. ${view === '3d' ? '3D model' : '2D floor plan'}`} className="wide" actions={<span className="row"><span className="seg" role="group" aria-label="View"><button className={view === '2d' ? 'primary' : ''} aria-pressed={view === '2d'} onClick={() => pickView('2d')}>2D plan</button><button className={view === '3d' ? 'primary' : ''} aria-pressed={view === '3d'} onClick={() => pickView('3d')}>3D model</button></span><select value={String(floor)} onChange={(e) => setFloor(e.target.value === 'all' ? 'all' : +e.target.value)} aria-label="Floor to show"><option value="all">All floors</option>{Array.from({ length: Math.max(1, x.floors) }, (_, i) => <option key={i} value={i}>Floor {i + 1}</option>)}</select></span>}>
-        {view === '2d' ? <FloorPlan2D r={r} lengthFt={x.lengthFt} widthFt={x.widthFt} floor={floor} hidden={hidden} /> : <Building3D r={r} lengthFt={x.lengthFt} widthFt={x.widthFt} floorHeightFt={x.floorHeightFt} floor={floor} hidden={hidden} />}
-        <div className="row wrap" style={{ marginTop: 8 }}>{kinds.map((k) => <button key={k} className={'legend-chip' + (hidden.has(k) ? ' off' : '')} onClick={() => { const n = new Set(hidden); if (n.has(k)) n.delete(k); else n.add(k); setHidden(n); }}><i style={{ background: KIND_COLOR[k] }} />{KIND_LABEL[k]} ({k === 'tr' ? r.trs.length : r.devices.filter((d) => d.kind === k).length})</button>)}</div>
-        <p className="small muted">{view === '3d' ? 'Drag to turn, scroll or pinch to zoom. ' : 'Point at a dot to see what it is. '}Tap a legend item to hide it. Devices are placed on a grid as a starting layout; move them to suit the real floor plan.</p>
+      <Card title="3. 2D plan and 3D model with layers" className="wide" actions={<button className="small-btn" onClick={() => go('models')}>Building materials and more →</button>}>
+        <LayeredModel scene={scene} northDeg={p.blueprint?.planNorthDeg ?? 0} parking={x.parkingSpaces} title="Auto-design model" />
+        <p className="small muted">Every system has its own layers (devices, coverage, cable runs, heat maps). Devices are placed on a grid as a starting layout; move them to suit the real floor plan. Pick the building materials on <a href="#models" onClick={(e) => { e.preventDefault(); go('models'); }}>2D & 3D Models with Layers</a>.</p>
       </Card>
 
       <Card title="4. Recommended equipment" className="wide">

@@ -125,6 +125,8 @@ export interface Project {
   siteRuns?: import('./engine/siteruns').SiteRun[];
   /** Auto-design inputs; when applied, its equipment and materials join the Materials list. */
   autoDesign?: import('./engine/autodesign').AutoInputs & { applied?: boolean };
+  /** Building materials (walls, floors, roof, windows, doors, shafts) used by the 2D/3D models and their results. */
+  buildingMaterials?: Partial<import('./engine/bldgmaterials').BuildingSpec>;
   /** Drawing set settings (sheet size, scale, revisions). */
   blueprint?: Blueprint;
   /** Proposal pricing, schedule and terms. */
