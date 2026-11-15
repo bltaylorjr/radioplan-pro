@@ -8,6 +8,7 @@ import { installChunkRecovery } from './components/SelfRepair';
 import { bootStart, platform, rollBackTo } from './engine/update';
 import { logRepair, notify } from './engine/carelog';
 import { applyStoredPacks } from './engine/contentupdate';
+import { installOfflineWeb } from './engine/offlineweb';
 
 // Update safety: if a newly installed version keeps failing to start, put the last good one back (Windows app).
 const boot = bootStart();
@@ -32,6 +33,7 @@ class RootBoundary extends React.Component<{ children: React.ReactNode }, { err:
 }
 
 installChunkRecovery();
+installOfflineWeb();
 import('./components/chooseOne').then((m) => m.installChooseOne());
 
 const render = () => createRoot(document.getElementById('root')!).render(<React.StrictMode><RootBoundary><StoreProvider><App /></StoreProvider></RootBoundary></React.StrictMode>);

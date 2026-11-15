@@ -7,7 +7,7 @@ import { AzLine } from './Azimuth';
 import { useDrawnLines, useLineAnalysis, signalColor } from './RouteTools';
 import { predictPoint } from '../engine/coverage';
 import { Terrain3D, meshN, type PathPoint } from './Terrain3D';
-import { BASEMAPS } from './MapView';
+import { BASEMAPS } from './basemaps';
 import { buildDrape, type Drape } from '../engine/drape';
 import { downloadTerrain, boundsAround, demCovers, type Bounds } from '../engine/autoterrain';
 import { bundledDem, cropDem } from '../engine/bundledTerrain';

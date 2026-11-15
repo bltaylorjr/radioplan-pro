@@ -23,13 +23,16 @@ export function sampleDem(g: DemGrid, p: LatLon): number | null {
   const x0 = Math.max(0, Math.min(g.ncols - 1, Math.floor(x))), y0 = Math.max(0, Math.min(g.nrows - 1, Math.floor(y)));
   const x1 = Math.min(g.ncols - 1, x0 + 1), y1 = Math.min(g.nrows - 1, y0 + 1);
   const fx = Math.max(0, Math.min(1, x - x0)), fy = Math.max(0, Math.min(1, y - y0));
-  const v = (c: number, r: number) => g.data[r * g.ncols + c];
-  const vals = [v(x0, y0), v(x1, y0), v(x0, y1), v(x1, y1)];
-  if (vals.some((z) => z === g.nodata || Number.isNaN(z))) {
-    const ok = vals.filter((z) => z !== g.nodata && !Number.isNaN(z));
-    return ok.length ? ok.reduce((a, b) => a + b, 0) / ok.length : null;
+  // Called millions of times by coverage maps, so no temporary arrays here.
+  const d = g.data, nc = g.ncols, nd = g.nodata;
+  const a = d[y0 * nc + x0], b = d[y0 * nc + x1], c = d[y1 * nc + x0], e = d[y1 * nc + x1];
+  const bad = (z: number) => z === nd || z !== z;
+  if (bad(a) || bad(b) || bad(c) || bad(e)) {
+    let sum = 0, cnt = 0;
+    for (const z of [a, b, c, e]) if (!bad(z)) { sum += z; cnt++; }
+    return cnt ? sum / cnt : null;
   }
-  return (vals[0] * (1 - fx) + vals[1] * fx) * (1 - fy) + (vals[2] * (1 - fx) + vals[3] * fx) * fy;
+  return (a * (1 - fx) + b * fx) * (1 - fy) + (c * (1 - fx) + e * fx) * fy;
 }
 
 /** ESRI ASCII grid (.asc) in geographic coordinates. */

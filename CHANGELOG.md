@@ -1,3 +1,11 @@
+# LvPlan Pro 1.5.60
+
+- **Starts about twice as fast.** Each page now loads the first time you open it instead of all at start, so the app downloads 427 KB instead of 922 KB before it is ready (online version, slow phone connection: about 2.7 s instead of 5.6 s) and uses a third less memory.
+- **The online version works with no internet.** After the first visit the whole app, every page and the FCC, airport and terrain data are saved in the browser, so it opens and works offline. You can also add it to the phone's home screen like an app.
+- **Coverage maps are up to 3 times faster** and the screen no longer freezes while they are worked out: the math was tightened and the map is split across the device's processor cores. The button shows the percent done. Same results as before. Multi-site & interference and the heat map on drawn lines use the same helpers.
+- **Typing stays quick in big projects with many photos.** Only the part of the project you change is copied, and autosave turns the project into text once instead of three times.
+- Program updates download less: the map, 3D and screen libraries are kept in their own files, which stay the same between versions.
+
 # LvPlan Pro 1.5.59
 
 - **📱 How to take a panorama correctly** on the Photo Site Survey page: six short steps (turn on location and the compass, stand still and turn on the spot, phone level at eye height with the horizon in every picture, overlap each photo about a third, do not zoom, and use 📷 Take photos here if your photos lose their location) with a **▶ Play** button for a one minute narrated video with captions. The video is inside the app, so it plays offline.

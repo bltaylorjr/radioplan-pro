@@ -5,7 +5,7 @@ import { useStore } from '../store';
 import { Card, Field, Num, Sel, Stat, fmt } from '../components/ui';
 import { MapView, gridCanvas } from '../components/MapView';
 import { GisExport } from '../components/GisExport';
-import { computeNetwork, defaultSiteTx, siteEirpDbm, NetworkResult } from '../engine/network';
+import { computeNetwork, computeNetworkAsync, defaultSiteTx, siteEirpDbm, NetworkResult } from '../engine/network';
 import { ANTENNAS } from '../data/catalog';
 import { legacyTag } from '../data/lvequipment';
 import { rssiColor } from '../engine/coverage';
@@ -24,7 +24,7 @@ export function NetworkPage() {
   const [gridN, setGridN] = useState(60);
   const nw = p.network;
   const setTx = (id: string, fn: (t: SiteTx) => void) => update((d) => { const s = d.sites.find((x) => x.id === id)!; if (!s.tx) s.tx = { ...defaultSiteTx(d), enabled: false }; fn(s.tx); });
-  const run = () => { setBusy(true); setTimeout(() => { setRes(computeNetwork(p, rt.dem, gridN)); setBusy(false); }, 30); };
+  const run = () => { setBusy(true); computeNetworkAsync(p, rt.dem, gridN).then(setRes).catch(() => setRes(computeNetwork(p, rt.dem, gridN))).finally(() => setBusy(false)); };
   const txSites = p.sites.filter((s) => s.tx?.enabled);
   const ciScale = CI_SCALE.map(([m, c, l]) => [m === 17 ? nw.requiredCiDb : m, c, l.replace('required', `${nw.requiredCiDb} dB`)] as [number, [number, number, number], string]);
   const color = (r: NetworkResult, i: number): [number, number, number] | null => {

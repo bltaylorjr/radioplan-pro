@@ -11,7 +11,8 @@ import { uid } from '../defaults';
 import { analyzeLine, simplifyLine, moveVertex, insertVertex, removeVertex, type DrawnLine, type RouteResult } from '../engine/routes';
 import { loadAreaDem, boundsOf } from '../engine/areaTerrain';
 import { primaryCoverageInputs } from '../engine/network';
-import { computeCoverage, rssiColor } from '../engine/coverage';
+import { rssiColor } from '../engine/coverage';
+import { computeCoverageAsync } from '../engine/coverageAsync';
 import { designLink } from '../engine/design';
 import { fmtAz } from '../engine/azimuth';
 import { coverageCanvas } from './MapView';
@@ -153,11 +154,13 @@ export function RouteTools({ map, projectDem, active, onClose, resultsEl }: { ma
   useEffect(() => {
     heatLayer.current?.remove(); heatLayer.current = null;
     if (!map || !heat || !cov || !area || !dem) return;
-    const t = window.setTimeout(() => {
-      const c = computeCoverage({ ...cov, dem, radiusKm: 1e6, gridN: 70, bounds: area });
+    let alive = true;
+    computeCoverageAsync({ ...cov, dem, radiusKm: 1e6, gridN: 70, bounds: area }).then((c) => {
+      if (!alive) return;
+      heatLayer.current?.remove();
       heatLayer.current = L.imageOverlay(coverageCanvas(c, -125), [[c.south, c.west], [c.north, c.east]], { opacity: 0.6, interactive: false }).addTo(map);
-    }, 30);
-    return () => window.clearTimeout(t);
+    });
+    return () => { alive = false; };
   }, [heat, map, areaKey, dem, cov]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // drawing: freehand (press and drag) or straight (tap points)

@@ -1,6 +1,6 @@
 // Terrain-aware coverage prediction: Hata/COST-231 median loss + worst-obstacle knife-edge diffraction
 // along each pixel's radial, plus 3GPP sector antenna pattern with downtilt.
-import { LatLon, haversineKm, bearingDeg, interpolate } from './geo';
+import { LatLon, haversineKm, bearingDeg, destination } from './geo';
 import { empiricalPathLoss, sectorPatternDb, earthBulgeM, diffractionV, knifeEdgeLossDb, Environment, CitySize } from './rf';
 import { DemGrid, sampleDem } from './terrain';
 
@@ -29,10 +29,20 @@ export function boundsFor(site: LatLon, radiusKm: number): Bounds4 {
 
 /** Predicted received signal (dBm) at one point. Returns NaN beyond the analysis radius. */
 export function predictPoint(i: CoverageInputs, p: LatLon): number {
-  const k = i.k ?? 4 / 3, t = i.tune ?? NO_TUNING;
-  const elev = (q: LatLon) => (i.dem ? sampleDem(i.dem, q) : null);
+  return predictWith(prepare(i), i, p);
+}
+
+/** Values that are the same for every cell, worked out once per map instead of once per cell. */
+interface Prepared { k: number; t: Tuning; g0: number; txAbs: number; elev: (q: LatLon) => number | null }
+function prepare(i: CoverageInputs): Prepared {
+  const dem = i.dem;
+  const elev = dem ? (q: LatLon) => sampleDem(dem, q) : () => null;
   const g0 = i.siteGroundM ?? elev(i.site) ?? 0;
-  const txAbs = g0 + i.antennaAglM;
+  return { k: i.k ?? 4 / 3, t: i.tune ?? NO_TUNING, g0, txAbs: g0 + i.antennaAglM, elev };
+}
+
+function predictWith(pr: Prepared, i: CoverageInputs, p: LatLon): number {
+  const { k, t, g0, txAbs, elev } = pr;
   const d = Math.max(haversineKm(i.site, p), 0.05);
   if (d > i.radiusKm) return NaN;
   const gp = elev(p);
@@ -45,8 +55,9 @@ export function predictPoint(i: CoverageInputs, p: LatLon): number {
     const steps = Math.min(40, Math.max(6, Math.round(d / 0.15)));
     const rxAbs = gp + i.mobileHeightM;
     let worst = -Infinity;
+    const brgP = bearingDeg(i.site, p), dTrue = haversineKm(i.site, p); // same path as interpolate(), worked out once
     for (let s = 1; s < steps; s++) {
-      const f = s / steps, q = interpolate(i.site, p, f), z = elev(q);
+      const f = s / steps, q = destination(i.site, brgP, dTrue * f), z = elev(q);
       if (z == null) continue;
       const d1 = d * f, d2 = d - d1;
       const h = z + earthBulgeM(d1, d2, k) - (txAbs + (rxAbs - txAbs) * f);
@@ -69,8 +80,14 @@ export function computeCoverage(i: CoverageInputs): CoverageResult {
   const b = i.bounds ?? boundsFor(i.site, i.radiusKm);
   const n = i.gridN, rssi = new Float32Array(n * n);
   const res = { n, ...b, rssi };
-  for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) rssi[r * n + c] = predictPoint(i, cellCenter(res, r, c));
+  fillRows(i, res, 0, n);
   return res;
+}
+
+/** Fill rows [r0, r1) of a coverage grid. Used directly and by the background workers. */
+export function fillRows(i: CoverageInputs, res: CoverageResult, r0: number, r1: number, out: Float32Array = res.rssi.subarray(r0 * res.n, r1 * res.n)) {
+  const pr = prepare(i), n = res.n;
+  for (let r = r0; r < r1; r++) for (let c = 0; c < n; c++) out[(r - r0) * n + c] = predictWith(pr, i, cellCenter(res, r, c));
 }
 
 export const RSSI_SCALE = [

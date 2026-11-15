@@ -1,5 +1,6 @@
 import { autoLoadEquipment } from './data/projectEquipment';
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { produce, setAutoFreeze } from 'immer';
 import type { Project } from './types';
 import { defaultProject } from './defaults';
 import { repairProject } from './engine/repair';
@@ -42,6 +43,9 @@ interface Ctx {
   page: string; go: (page: string) => void;
   lib: Library;
 }
+// Some screens still change objects they were handed, so results are not frozen.
+setAutoFreeze(false);
+
 const C = createContext<Ctx | null>(null);
 
 function load(): Project {
@@ -94,11 +98,12 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     clearTimeout(t.current);
     t.current = window.setTimeout(async () => {
-      try { localStorage.setItem(KEY, JSON.stringify(project)); } catch { /* quota: the library still has it */ }
+      const json = JSON.stringify(project); // once, reused for the quick copy, the size and the checksum
+      try { localStorage.setItem(KEY, json); } catch { /* quota: the library still has it */ }
       if (!ready || saveState === 'unavailable') return;
       setSaveState('saving');
       try {
-        await putProject(projectId, project);
+        await putProject(projectId, project, Date.now(), json);
         if (Date.now() - lastVersion.current > VERSION_EVERY_MS) { lastVersion.current = Date.now(); await addVersion(projectId, project, 'Autosave'); }
         setSaveState('saved'); setSaveError('');
         mirrorToFolder(projectId, project);
@@ -178,7 +183,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   const v = useMemo<Ctx>(() => ({
     project,
-    update: (fn) => setProject((p) => { const d = structuredClone(p); fn(d); return d; }),
+    // Only the parts that change are copied (photos and big lists are shared), so typing stays quick in big projects.
+    update: (fn) => setProject((p) => produce(p, (d) => { fn(d as Project); })),
     replace: (p) => setProject(fresh(p)),
     rt, setRt: (fn) => setRtState(fn),
     page, go: (pg) => { location.hash = pg; setPage(pg); window.scrollTo(0, 0); },

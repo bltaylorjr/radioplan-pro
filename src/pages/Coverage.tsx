@@ -4,7 +4,8 @@ import { useStore } from '../store';
 import { Card, Field, Num, Stat, fmt, Sel, Txt } from '../components/ui';
 import { MapView } from '../components/MapView';
 import { GisExport } from '../components/GisExport';
-import { computeCoverage, RSSI_SCALE } from '../engine/coverage';
+import { RSSI_SCALE } from '../engine/coverage';
+import { computeCoverageAsync } from '../engine/coverageAsync';
 import { designLink } from '../engine/design';
 import { primaryCoverageInputs } from '../engine/network';
 import { resolveTiers, evaluateAcceptance, contourSegments, mapLevel } from '../engine/acceptance';
@@ -18,19 +19,19 @@ export default function CoveragePage() {
   const r = p.radio, L0 = designLink(p), t = p.propagation, u = useUnits();
   const [busy, setBusy] = useState(false);
   const [ms, setMs] = useState(0);
+  const [pct, setPct] = useState(0);
   const [scName, setScName] = useState('');
   const [showContours, setShowContours] = useState(true);
   const tiers = resolveTiers(p);
   const run = () => {
     const inp = primaryCoverageInputs(p, rt.dem); if (!inp) return;
-    setBusy(true);
-    setTimeout(() => {
-      const t0 = performance.now();
-      const res = computeCoverage(inp);
-      setMs(performance.now() - t0); setRt((x) => ({ ...x, coverage: res })); setBusy(false);
+    setBusy(true); setPct(0);
+    const t0 = performance.now();
+    computeCoverageAsync(inp, setPct).then((res) => {
+      setMs(performance.now() - t0); setRt((x) => ({ ...x, coverage: res }));
       const rec = makeRunRecord(p, rt.dem, res);
       update((d) => { d.runLog = [rec, ...d.runLog].slice(0, 50); });
-    }, 30);
+    }).finally(() => setBusy(false));
   };
   const ev = rt.coverage ? evaluateAcceptance(rt.coverage, tiers) : null;
   const designThreshold = r.rxSensitivityDbm + L0.fadeMarginDb + r.interferenceMarginDb;
@@ -53,7 +54,7 @@ export default function CoveragePage() {
           <Field label="Design threshold" tip={`Suggested: sensitivity + shadow + interference margin = ${designThreshold.toFixed(1)} dBm. Used by the "Design target" criterion.`}><Num value={r.coverageThresholdDbm} onChange={(v) => update((d) => { d.radio.coverageThresholdDbm = v!; })} unit="dBm" /></Field>
           <Field label="Model"><span className="muted">{r.fMHz > 1500 ? 'COST-231 Hata' : 'Okumura-Hata'} + ITU-R P.526 knife-edge · {r.env} · {rt.dem ? `terrain: ${rt.dem.source}` : 'no terrain loaded (smooth earth)'}</span></Field>
         </div>
-        <div className="row wrap"><button className="primary" disabled={busy} onClick={run}>{busy ? 'Computing…' : '📡 Run coverage prediction'}</button>
+        <div className="row wrap"><button className="primary" disabled={busy} onClick={run}>{busy ? `Computing… ${Math.round(pct * 100)}%` : '📡 Run coverage prediction'}</button>
           <button onClick={() => update((d) => { d.radio.coverageThresholdDbm = Math.round(designThreshold); })}>Use design threshold</button></div>
         <p className="small muted">The map shows street-level signal at {r.mobileHeightM} m with the receive antenna gain from the Equipment page. Body and building losses are applied by each acceptance criterion below, so one run answers mobile, portable and in-building coverage together.</p>
       </Card>
