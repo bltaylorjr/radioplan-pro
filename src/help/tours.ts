@@ -142,6 +142,11 @@ export const PAGE_TOURS: Record<string, TourStep[]> = {
     { target: 'text:Around my project sites', title: 'Choose the area', text: 'Around your sites, or around an address or GPS point.' },
     { target: 'text:Download map pack', title: '⬇ Download map pack', text: 'Shows the size first, then downloads with the percent and time left.' },
   ],
+  devices: [
+    { target: 'text:Signal meter', title: 'Signal meter', text: 'Connect a signal meter once; every page that takes readings uses it.' },
+    { target: 'text:GPS receiver', title: 'GPS receiver', text: 'A connected GPS receiver is used by every GPS button and the maps.' },
+    { target: 'text:Laser distance meter', title: 'Laser distance meter', text: 'Tap a box, then measure; the distance goes into the box.' },
+  ],
   settings: [
     { target: 'text:Tools shown in the menu', title: 'Tools in the menu', text: 'Untick the tools you do not use. They leave the menu and the step numbers; nothing is deleted.' },
     { target: 'text:Check my data', title: 'Check my data', text: 'Lists every empty, out-of-range or mismatched entry, with a button to fix it.' },

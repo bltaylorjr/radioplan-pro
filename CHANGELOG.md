@@ -10,6 +10,7 @@
 - **Using the menu**: a new help page lists every section and page.
 - Newer pages have their place in the order: Photo Site Survey and Live Signal Readings under Site survey, FCC Towers & Licenses under Design: radio & antennas, FAA Height Check under Codes, permits & drawings, Equipment & Asset Tags under Service, troubleshooting & repair, and Offline Map Packs and Bluetooth & Wi-Fi Devices under Tools & reference.
 - Help text lists and paragraphs now show correctly when they are mixed in one section.
+- **Introduction video**: the old "How it is organized" card is replaced by a part that shows the new menu order, Find a tool, What's new with Show me, and Page help and Guide me.
 
 # LvPlan Pro 1.5.53
 
