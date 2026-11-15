@@ -349,3 +349,8 @@ body { font-size: clamp(15px, 0.6vw + 12.5px, 17px); }
 .tilt-point .addr-wrap, .tilt-point input[type=text] { width: 100%; }
 @media (max-width: 640px) { .tilt-controls > label { min-width: 100% !important; } }
 .tilt-agl input { width: 80px; }
+/* Azimuth / measure tool */
+.leaflet-tooltip.measure-label { background: rgba(255,255,255,.92); border: 1px solid #ef6c00; color: #222; font-weight: 600; padding: 1px 5px; box-shadow: none; white-space: nowrap; }
+.measure-panel { margin: 4px 0; }
+.az-line { color: var(--muted); }
+.az-line b { color: var(--ink); }

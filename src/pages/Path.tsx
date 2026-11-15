@@ -7,6 +7,7 @@ import { designLink } from '../engine/design';
 import { fsplDb, receivedPowerDbm, radioHorizonKm, losDistanceKm, fresnelRadiusM } from '../engine/rf';
 import { interpolate, haversineKm } from '../engine/geo';
 import { useUnits, DistNum } from '../units';
+import { AzStats, AzLine } from '../components/Azimuth';
 
 export function PathPage() {
   const { project: p, update, rt, setRt } = useStore();
@@ -59,6 +60,7 @@ export function PathPage() {
       <Card title="Results" tour="path-results">
         <div className="stats">
           <Stat label="Path length" value={fmt(u.d(D), 2)} unit={` ${u.unit}`} />
+          {tx && rx && tx !== rx && <AzStats a={tx} b={rx} aName="TX" bName="RX" />}
           <Stat label="Radio horizon TX / RX" value={`${fmt(u.d(radioHorizonKm(tx?.antennaAglM ?? 0, r.kFactor)), 1)} / ${fmt(u.d(radioHorizonKm(rx?.antennaAglM ?? 0, r.kFactor)), 1)}`} unit={` ${u.unit}`} />
           <Stat label="Smooth-earth LOS limit" value={fmt(u.d(losDistanceKm(tx?.antennaAglM ?? 0, rx?.antennaAglM ?? 0, r.kFactor)), 1)} unit={` ${u.unit}`} tone={D <= losDistanceKm(tx?.antennaAglM ?? 0, rx?.antennaAglM ?? 0, r.kFactor) ? 'ok' : 'bad'} />
           <Stat label="F1 radius at midpoint" value={fmt(fresnelRadiusM(D / 2, D / 2, r.fMHz), 1)} unit=" m" tip="r = √(λ d1 d2 / d)" />
@@ -69,6 +71,7 @@ export function PathPage() {
           <Stat label="Predicted RX level" value={fmt(rxLvl)} unit=" dBm" tone={rxLvl - r.rxSensitivityDbm > 20 ? 'ok' : rxLvl > r.rxSensitivityDbm ? 'warn' : 'bad'} />
           <Stat label="Fade margin vs sensitivity" value={fmt(rxLvl - r.rxSensitivityDbm)} unit=" dB" tip="Point-to-point margin above receiver sensitivity" />
         </div>
+        {tx && rx && tx !== rx && <p><AzLine a={tx} b={rx} aName={tx.name} bName={rx.name} elev={a ? { aAmslM: a.points[0].groundM + tx.antennaAglM, bAmslM: a.points[a.points.length - 1].groundM + rx.antennaAglM, k: r.kFactor } : undefined} /></p>}
         {a && !a.meets60 && <div className="warnbox">Fresnel clearance below 60%. Raise the antenna at the end nearest the obstruction (worst point at {u.f(a.points[a.worstIndex].dKm)}) or relocate the site. <Tip topic="path" /></div>}
       </Card>
     </div>

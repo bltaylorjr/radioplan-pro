@@ -4,7 +4,8 @@ import { Num, Sel, fmt, useMeasure } from '../components/ui';
 import { useUnits, DistNum } from '../units';
 import * as K from '../engine/calcs';
 import { fsplDb, fresnelRadiusM, radioHorizonKm, losDistanceKm, earthBulgeM, diffractionV, knifeEdgeLossDb, dbmToWatts, wattsToDbm, mpeComplianceDistanceM, mpeLimitMwCm2, cableLossPer100ft, empiricalPathLoss, mToFt, ftToM, Environment, CitySize } from '../engine/rf';
-import { haversineKm, bearingDeg } from '../engine/geo';
+import { haversineKm } from '../engine/geo';
+import { azimuthPair, fmtAz, fmtDecl, declinationDeg, trueToMag, magToTrue, fmtDeg, compassPoint } from '../engine/azimuth';
 import { parseLatLon } from '../engine/locparse';
 import { AWG_SIZES, Awg, AMPACITY_75C_CU, sizeConductor } from '../engine/electrical';
 import { FEEDERS } from '../data/catalog';
@@ -71,6 +72,7 @@ export function CalculatorsPage() {
   const [gyH, setGyH] = useN(30); const [gyR, setGyR] = useN(24);
   // location / units
   const [c1, setC1] = useState('35.5951, -82.5515'); const [c2, setC2] = useState('35.6400, -82.4800');
+  const [azIn, setAzIn] = useN(90); const [azMag, setAzMag] = useState(false);
   const [cv, setCv] = useN(100); const [cvT, setCvT] = useN(25); const [awg, setAwg] = useState('10');
 
   const r = (n: number | null) => n ?? NaN;
@@ -250,10 +252,18 @@ export function CalculatorsPage() {
       </Group>
 
       <Group title="Location & units" q={q}>
-        <Calc q={q} title="Distance & bearing between points" k="coordinates gps haversine azimuth dms">
+        <Calc q={q} title="Distance & azimuth between points" k="coordinates gps haversine azimuth bearing back azimuth magnetic compass dms">
           <In label="Point A (decimal or DMS)"><input type="text" value={c1} onChange={(e) => setC1(e.target.value)} /></In>
           <In label="Point B"><input type="text" value={c2} onChange={(e) => setC2(e.target.value)} /></In>
-          {ll1 && ll2 ? <><Out label="Distance" v={u.f(haversineKm(ll1, ll2), 3)} /><Out label="Bearing A → B" v={bearingDeg(ll1, ll2)} u="°T" /><Out label="A in DMS" v={`${K.ddToDms(ll1.lat, 'N', 'S')}, ${K.ddToDms(ll1.lon, 'E', 'W')}`} /></> : <p className="bad-text small">Could not read a coordinate.</p>}
+          {ll1 && ll2 ? <><Out label="Distance" v={u.f(haversineKm(ll1, ll2), 3)} />{(() => { const z = azimuthPair(ll1, ll2); return <><Out label="Azimuth A → B" v={fmtAz(z.fwd, z.decA, 2)} /><Out label="Back azimuth B → A" v={fmtAz(z.back, z.decB, 2)} /></>; })()}<Out label="A in DMS" v={`${K.ddToDms(ll1.lat, 'N', 'S')}, ${K.ddToDms(ll1.lon, 'E', 'W')}`} /></> : <p className="bad-text small">Could not read a coordinate.</p>}
+        </Calc>
+        <Calc q={q} title="Magnetic declination: true ↔ compass azimuth" k="magnetic declination variation compass true north azimuth bearing wmm">
+          <In label="Location (decimal or DMS)"><input type="text" value={c1} onChange={(e) => setC1(e.target.value)} /></In>
+          <div className="form"><In label={azMag ? 'Compass (magnetic) azimuth' : 'True azimuth'}><Num value={azIn} onChange={setAzIn} unit={azMag ? '°M' : '°T'} /></In>
+            <In label="I have"><Sel value={azMag ? 'm' : 't'} onChange={(v) => setAzMag(v === 'm')} options={[['t', 'True azimuth (map / GPS)'], ['m', 'Compass reading']]} /></In></div>
+          {ll1 ? (() => { const d = declinationDeg(ll1), a = r(azIn); return <><Out label="Declination here (WMM2025)" v={fmtDecl(d)} />
+            {Number.isFinite(a) && (azMag ? <Out label="True azimuth" v={`${fmtDeg(magToTrue(a, d))}°T ${compassPoint(magToTrue(a, d))}`} /> : <Out label="Compass reading" v={`${fmtDeg(trueToMag(a, d))}°M ${compassPoint(a)}`} />)}
+            <p className="small muted">Magnetic = true − declination (east positive, west negative). Declination changes about 0.1° a year; this uses today's date.</p></>; })() : <p className="bad-text small">Could not read the location.</p>}
         </Calc>
         <Calc q={q} title="Unit conversions" k="feet meters miles km temperature fahrenheit celsius">
           <div className="form"><In label="Value"><Num value={cv} onChange={setCv} /></In></div>

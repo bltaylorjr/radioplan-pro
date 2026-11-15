@@ -7,6 +7,8 @@ import { designLink } from '../engine/design';
 import type { RadioDesign } from '../types';
 import { dbmToWatts, wattsToDbm } from '../engine/rf';
 import { useUnits, DistNum } from '../units';
+import { AzStats, MagNote } from '../components/Azimuth';
+import { bearingDeg } from '../engine/geo';
 
 export function EquipmentPage() {
   const { project: p, update } = useStore();
@@ -34,7 +36,9 @@ export function EquipmentPage() {
             <Field label="Feeder length" tip="Total run: vertical on the structure + horizontal to the equipment."><Num value={r.feederLenM} onChange={(v) => set('feederLenM', v!)} unit="m" /></Field>
             <Field label="Jumper loss"><Num value={r.jumperLossDb} onChange={(v) => set('jumperLossDb', v!)} unit="dB" /></Field>
             <Field label="Connector / combiner loss"><Num value={r.connectorLossDb} onChange={(v) => set('connectorLossDb', v!)} unit="dB" /></Field>
-            <Field label="Antenna azimuth"><Num value={r.azimuthDeg} onChange={(v) => set('azimuthDeg', v!)} unit="°T" /></Field>
+            <Field label="Antenna azimuth" tip="Direction the TX antenna points, degrees true. Omni antennas ignore it."><span className="stack-tight"><span className="row"><Num value={r.azimuthDeg} onChange={(v) => set('azimuthDeg', ((v! % 360) + 360) % 360)} unit="°T" />
+              {L.tx && L.rx && L.tx !== L.rx && <button onClick={() => set('azimuthDeg', Math.round(bearingDeg(L.tx!, L.rx!) * 10) / 10)} title="Point the antenna at the far-end (RX) site">🎯 Aim at {L.rx.name}</button>}</span>
+              <MagNote trueDeg={r.azimuthDeg} at={L.tx} /></span></Field>
           </div>
           {L.ant && <p className="small muted">{L.ant.type}, {L.ant.hBwDeg}° H / {L.ant.vBwDeg}° V beamwidth, {L.ant.connector}. Feeder {fmt(L.feederPer100, 2)} dB/100 ft at {r.fMHz} MHz.</p>}
         </Card>
@@ -65,6 +69,8 @@ export function EquipmentPage() {
           <Stat label={`Cell-edge range (${L.modelName})`} value={fmt(u.d(L.rangeKm), 2)} unit={` ${u.unit}`} tone={L.rangeKm < 1 ? 'warn' : 'ok'} />
           <Stat label="Radio horizon to mobile" value={fmt(u.d(L.losKm), 1)} unit={` ${u.unit}`} tip="4/3-earth smooth-earth LOS from base to mobile antenna" />
           <Stat label="Area reliability (Jakes)" value={fmt(L.areaReliability * 100, 1)} unit=" %" />
+          {L.tx && L.rx && L.tx !== L.rx && <Stat label={`Path ${L.tx.name} → ${L.rx.name}`} value={fmt(u.d(L.pathKm), 2)} unit={` ${u.unit}`} />}
+          {L.tx && L.rx && L.tx !== L.rx && <AzStats a={L.tx} b={L.rx} aName="TX" bName="RX" />}
         </div>
         <table className="tbl budget"><tbody>
           <tr><td>TX power</td><td>{fmt(r.txPowerDbm)} dBm</td></tr>

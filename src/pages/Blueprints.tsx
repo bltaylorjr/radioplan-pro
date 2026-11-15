@@ -10,6 +10,7 @@ import { alarmBatteryAh } from '../engine/alarm';
 import { zip } from '../engine/gisexport';
 import { projectSystems } from '../data/systems';
 import type { Project, Blueprint } from '../types';
+import { declinationDeg, fmtDecl } from '../engine/azimuth';
 
 export const defaultBlueprint = (): Blueprint => ({ size: 'ARCH D', scale: 'auto', drawnBy: '', checkedBy: '', revisions: [{ rev: '0', date: new Date().toISOString().slice(0, 10), desc: 'Issued for permit' }], off: [] });
 const T = (s: unknown) => String(s ?? '');
@@ -80,7 +81,7 @@ function PlanSheet({ c, sh }: { c: Ctx; sh: SheetDef }) {
     <text x={ox - dim - 0.06} y={oy + bh / 2} fontSize={fs} textAnchor="middle" transform={`rotate(-90 ${ox - dim - 0.06} ${oy + bh / 2})`}>{ftIn(c.W)}</text>
     {list.map((d, i) => { const x = ox + d.x * s, y = oy + d.y * s; return <g key={i}><Sym k={d.kind} x={x} y={y} s={d.kind === 'tr' || d.kind === 'facp' ? sym * 1.5 : sym} /><text x={x + sym * 0.65} y={y - sym * 0.45} fontSize={sym * 0.38}>{tags[i]}</text></g>; })}
     {/* north arrow, scale bar, drawing title */}
-    <g transform={`translate(${a.x + a.w - 0.5} ${a.y + 0.6})`}><circle r={0.3} fill="none" stroke="#000" strokeWidth={0.015} /><polygon points="0,-0.28 0.1,0.1 0,0.02 -0.1,0.1" fill="#000" /><text y={-0.36} fontSize={0.14} textAnchor="middle" fontWeight={700}>N</text></g>
+    <NorthArrow c={c} x={a.x + a.w - 0.5} y={a.y + 0.6} />
     <g transform={`translate(${a.x + 0.2} ${a.y + a.h - 0.25})`}>
       <circle cx={0.25} cy={-0.35} r={0.22} fill="none" stroke="#000" strokeWidth={0.02} /><text x={0.25} y={-0.31} fontSize={0.13} textAnchor="middle" fontWeight={700}>{(sh.floor ?? 0) + 1}</text>
       <text x={0.6} y={-0.38} fontSize={0.17} fontWeight={700}>FLOOR {(sh.floor ?? 0) + 1} PLAN: {sh.title.split(':')[0].toUpperCase()}</text>
@@ -89,6 +90,17 @@ function PlanSheet({ c, sh }: { c: Ctx; sh: SheetDef }) {
     </g>
     {/* legend */}
     <g transform={`translate(${a.x + a.w - 2.6} ${a.y + a.h - 0.25 - kinds.length * 0.26})`}><text y={-0.1} fontSize={0.11} fontWeight={700}>LEGEND</text>{kinds.map((k, i) => <g key={k} transform={`translate(0 ${i * 0.26})`}><Sym k={k} x={0.12} y={0.1} s={0.18} /><text x={0.32} y={0.14} fontSize={0.09}>{KIND_LABEL[k]} ({list.filter((d) => d.kind === k).length})</text></g>)}</g>
+  </g>;
+}
+/** North arrow turned to the plan orientation: solid = true north, half arrow = magnetic north (WMM2025 declination at the site). */
+function NorthArrow({ c, x, y }: { c: Ctx; x: number; y: number }) {
+  const rot = -(c.bp.planNorthDeg ?? 0), s0 = c.p.sites[0], dec = s0 ? declinationDeg(s0) : null;
+  return <g transform={`translate(${x} ${y})`}>
+    <circle r={0.3} fill="none" stroke="#000" strokeWidth={0.015} />
+    <g transform={`rotate(${rot})`}><polygon points="0,-0.28 0.1,0.1 0,0.02 -0.1,0.1" fill="#000" /><text y={-0.36} fontSize={0.14} textAnchor="middle" fontWeight={700}>N</text></g>
+    {dec != null && Math.abs(dec) >= 0.5 && <g transform={`rotate(${rot + dec})`}><line x1={0} y1={0} x2={0} y2={-0.27} stroke="#000" strokeWidth={0.012} /><polygon points="0,-0.27 0.05,-0.17 0,-0.19" fill="#000" /><text x={0.02} y={-0.5} fontSize={0.08} textAnchor="middle">MN</text></g>}
+    <text y={0.44} fontSize={0.075} textAnchor="middle">{dec != null ? `TRUE N · MAG. DECL. ${fmtDecl(dec).toUpperCase()} (${new Date().getFullYear()})` : 'TRUE NORTH'}</text>
+    {(c.bp.planNorthDeg ?? 0) !== 0 && <text y={0.54} fontSize={0.075} textAnchor="middle">PLAN TOP FACES {Math.round(c.bp.planNorthDeg ?? 0)}°T</text>}
   </g>;
 }
 const ftIn = (ft: number) => { const f = Math.floor(ft), i = Math.round((ft - f) * 12); return `${f}'-${i}"`; };
@@ -197,6 +209,7 @@ export function BlueprintsPage() {
           <label className="field"><span>Plan scale</span><select value={bp.scale} onChange={(e) => set('scale', e.target.value)} aria-label="Plan scale"><option value="auto">Largest that fits ({scaleOf(c).label})</option>{SCALES.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}</select></label>
           <label className="field"><span>Drawn by</span><input value={bp.drawnBy} onChange={(e) => set('drawnBy', e.target.value)} /></label>
           <label className="field"><span>Checked by</span><input value={bp.checkedBy} onChange={(e) => set('checkedBy', e.target.value)} /></label>
+          <label className="field"><span>Plan orientation (azimuth the top of the plan faces, °T)</span><input type="number" min={0} max={359} step={1} value={bp.planNorthDeg ?? 0} onChange={(e) => set('planNorthDeg', ((Math.round(+e.target.value || 0) % 360) + 360) % 360)} aria-label="Plan orientation azimuth" /></label>
         </div>
         <h4>Revisions</h4>
         <table className="tbl"><thead><tr><th>Rev</th><th>Date</th><th>Description</th><th /></tr></thead><tbody>{bp.revisions.map((rv, i) => <tr key={i}>

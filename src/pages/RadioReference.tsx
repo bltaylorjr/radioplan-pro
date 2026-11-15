@@ -1,3 +1,5 @@
+import { fmtAz, declinationDeg } from '../engine/azimuth';
+import { useUnits } from '../units';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useStore } from '../store';
 import { Card } from '../components/ui';
@@ -251,6 +253,7 @@ export function RrErcesCard() {
   const on = useRrLoggedIn();
   const d = useRrDownload(here.state, here.county ?? '');
   const [all, setAll] = useState(false);
+  const u = useUnits();
   if (d && !on) return <Card title="Public-safety radio here (RadioReference)"><p className="small">🔒 Log in to RadioReference to see the saved channels, bands and donor sites for {here.county}. <button className="ghost" onClick={() => go('radioref')}>Log in</button></p></Card>;
   if (!d) return <Card title="Public-safety channels here (RadioReference)"><p className="small">No RadioReference list saved for {here.county || 'the project county'} yet. <button className="ghost" onClick={() => go('radioref')}>Open RadioReference Frequencies</button></p></Card>;
   const ps = publicSafetyFreqs(d);
@@ -268,11 +271,11 @@ export function RrErcesCard() {
         <button className="ghost" onClick={() => update((q) => { q.radio.fMHz = Math.round(worst * 1000) / 1000; q.radio.bandPreset = 'Custom'; })}>Use for link budget</button></div>}
       {hasPos && donors.length > 0 && <>
         <h4>Nearest trunked tower sites (donor candidates)</h4>
-        <div className="tbl-wrap"><table className="tbl"><thead><tr><th>Site</th><th>Distance</th><th>Bearing</th><th>Est. donor signal</th><th></th></tr></thead>
-          <tbody>{donors.map((x, i) => <tr key={i}><td>{x.system}<div className="small muted">{x.site}{x.county ? `, ${x.county}` : ''}</div></td><td className="nowrap">{(x.km * 0.621371).toFixed(1)} mi</td><td>{Math.round(x.bearing)}°</td>
+        <div className="tbl-wrap"><table className="tbl"><thead><tr><th>Site</th><th>Distance</th><th>Azimuth to aim</th><th>Est. donor signal</th><th></th></tr></thead>
+          <tbody>{donors.map((x, i) => <tr key={i}><td>{x.system}<div className="small muted">{x.site}{x.county ? `, ${x.county}` : ''}</div></td><td className="nowrap">{u.f(x.km, 1)}</td><td className="nowrap">{fmtAz(x.bearing, declinationDeg(s0), 0)}</td>
             <td className="nowrap">{x.estDbm} dBm</td>
-            <td className="nowrap"><button className="ghost" onClick={() => update((q) => { q.erces.donorRssiDbm = x.estDbm; })}>Use estimate</button><button className="ghost" onClick={() => addSite(x)}>Add as site</button></td></tr>)}</tbody></table></div>
-        <p className="small muted">Estimate assumes 100 W ERP from a 60 m tower antenna, a 10 dBi donor antenna aimed at the site, and suburban terrain. Point the donor antenna on the bearing shown and measure. <button className="ghost" onClick={() => setAll(!all)}>{all ? 'Show fewer' : 'Show more sites'}</button></p>
+            <td className="nowrap"><button className="ghost" onClick={() => update((q) => { q.erces.donorRssiDbm = x.estDbm; })}>Use estimate</button><button className="ghost" onClick={() => update((q) => { q.erces.donorLat = x.lat; q.erces.donorLon = x.lon; q.erces.donorName = `${x.system} ${x.site}`.slice(0, 60); })}>Aim donor here</button><button className="ghost" onClick={() => addSite(x)}>Add as site</button></td></tr>)}</tbody></table></div>
+        <p className="small muted">Estimate assumes 100 W ERP from a 60 m tower antenna, a 10 dBi donor antenna aimed at the site, and suburban terrain. Point the donor antenna on the azimuth shown (°T true, °M on a compass) and measure. <button className="ghost" onClick={() => setAll(!all)}>{all ? 'Show fewer' : 'Show more sites'}</button></p>
       </>}
       {!hasPos && d.systems.length > 0 && <p className="small muted">Set the building position on Site Data & GPS to list the nearest donor towers.</p>}
       <details className="small"><summary>{ps.length} conventional public-safety channels</summary>

@@ -3,6 +3,7 @@ import { useStore } from '../store';
 import { useUnits } from '../units';
 import { Num } from './ui';
 import { AddressInput } from './AddressInput';
+import { AzLine } from './Azimuth';
 import { Terrain3D, meshN, type PathPoint } from './Terrain3D';
 import { BASEMAPS } from './MapView';
 import { buildDrape, type Drape } from '../engine/drape';
@@ -254,6 +255,8 @@ export default function TiltView({ view, sites, txId, rxId, dem: projectDem, hei
               {h.an.meets60 ? <span style={{ color: '#2e7d32' }}>✓ clear line of sight ({Math.round(h.an.minClearancePct)}% of the Fresnel zone clear)</span>
                 : h.an.los ? <span style={{ color: '#e65100' }}>⚠ line of sight, but the ground comes within {Math.round(h.an.minClearancePct)}% of the Fresnel zone{w ? ` ${u.f(w.dKm)} from ${w.from}` : ''} (60% is the usual minimum)</span>
                 : <span style={{ color: '#c62828' }}>✗ blocked by terrain{w ? `: ground is ${u.len(w.byM, 0)} above the beam ${u.f(w.dKm)} from ${w.from}` : ''}. Add a relay point or raise the antennas.</span>}
+              <br /><AzLine a={h.a} b={h.b} aName={h.a.name.split(':')[0]} bName={h.b.name.split(':')[0]}
+                elev={{ aAmslM: h.an.points[0].groundM + h.a.aglM, bAmslM: h.an.points[h.an.points.length - 1].groundM + h.b.aglM, k: p.radio.kFactor }} />
             </li>;
           })}
         </ul>}

@@ -9,6 +9,9 @@ import { primaryCoverageInputs } from '../engine/network';
 import { predictPoint } from '../engine/coverage';
 import { rssiColor } from '../engine/coverage';
 import { useUnits, DistNum } from '../units';
+import { azimuthPair, fmtAz } from '../engine/azimuth';
+import { Tip } from '../components/ui';
+import { AZ_TIP } from '../components/Azimuth';
 
 export function SurveyPage() {
   const { project: p, update, rt, go } = useStore();
@@ -34,9 +37,18 @@ export function SurveyPage() {
       (e) => setMsg(`GPS error: ${e.message}`), { enableHighAccuracy: true, timeout: 20000 });
   };
   const preds = useMemo(() => (inp ? sv.points.map((pt) => predictPoint(inp, pt)) : []), [p.radio, p.propagation, p.sites, rt.dem, sv.points]); // eslint-disable-line react-hooks/exhaustive-deps
+  const txSite = p.sites.find((s) => s.id === p.radio.txSiteId) ?? p.sites[0];
+  const az = useMemo(() => (txSite ? sv.points.map((pt) => azimuthPair(txSite, pt)) : []), [txSite?.lat, txSite?.lon, sv.points]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Readings grouped by direction from the transmitter (8 compass sectors): shows a mis-aimed or blocked sector at a glance.
+  const sectors = useMemo(() => {
+    const names = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+    const acc = names.map((n) => ({ n, k: 0, sum: 0, err: 0, ek: 0, far: 0 }));
+    sv.points.forEach((pt, i) => { const z = az[i]; if (!z) return; const s = acc[Math.round(z.fwd / 45) % 8]; s.k++; s.sum += pt.rssiDbm; s.far = Math.max(s.far, z.km); if (Number.isFinite(preds[i])) { s.err += pt.rssiDbm - preds[i]; s.ek++; } });
+    return acc.filter((s) => s.k > 0);
+  }, [az, preds, sv.points]);
   const draw = (g: L.LayerGroup) => {
-    sv.points.forEach((pt, i) => { const c = rssiColor(pt.rssiDbm, -200); const col = c[3] ? `rgb(${c[0]},${c[1]},${c[2]})` : '#888';
-      L.circleMarker([pt.lat, pt.lon], { radius: 5, weight: 1, color: '#333', fillColor: col, fillOpacity: 0.9 }).bindTooltip(`${pt.rssiDbm} dBm measured${Number.isFinite(preds[i]) ? `, ${preds[i].toFixed(1)} predicted` : ''}`).addTo(g); });
+    sv.points.forEach((pt, i) => { const c = rssiColor(pt.rssiDbm, -200); const col = c[3] ? `rgb(${c[0]},${c[1]},${c[2]})` : '#888'; const z = az[i];
+      L.circleMarker([pt.lat, pt.lon], { radius: 5, weight: 1, color: '#333', fillColor: col, fillOpacity: 0.9 }).bindTooltip(`${pt.rssiDbm} dBm measured${Number.isFinite(preds[i]) ? `, ${preds[i].toFixed(1)} predicted` : ''}${z && txSite ? `<br>${u.f(z.km)} from ${txSite.name} at ${fmtAz(z.fwd, z.decA, 0)}` : ''}`).addTo(g); });
   };
   const run = () => { if (!inp) return; setCal(calibrate(inp, sv.points, p.propagation, { fitSlope, floorDbm: floor })); };
   const apply = () => { if (!cal) return; update((d) => { d.propagation = cal.tuning; if (setSigma && Number.isFinite(cal.after.sdErr)) d.radio.shadowSigmaDb = Math.round(cal.after.sdErr * 10) / 10; }); setMsg('Calibration applied. Re-run coverage to see the calibrated prediction.'); setCal(null); };
@@ -76,7 +88,10 @@ export function SurveyPage() {
       </div>
       <Card title="Measured points" tour="survey-map">
         <MapView sites={p.sites} txId={p.radio.txSiteId} coverage={rt.coverage} floor={-125} height={500} extra={draw} extraKey={[sv.points, preds]} />
-        <p className="small muted">Points are coloured with the same scale as the coverage map. Hover a point to compare measured and predicted.</p>
+        <p className="small muted">Points are coloured with the same scale as the coverage map. Hover a point to compare measured and predicted, and to see its distance and azimuth from the transmitter.</p>
+        {sectors.length > 0 && txSite && <><h4>Readings by direction from {txSite.name} <Tip text={'Azimuth sectors 45° wide, centred on N, NE, E… (degrees true). A sector much weaker than the others, or than predicted, points to a mis-aimed antenna, a blocked direction or a bad feeder. ' + AZ_TIP} /></h4>
+          <div className="tbl-wrap"><table className="tbl"><thead><tr><th>Direction (azimuth)</th><th>Points</th><th>Mean measured</th><th>Measured − predicted</th><th>Farthest</th></tr></thead>
+            <tbody>{sectors.map((s) => { const c = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'].indexOf(s.n) * 45; return <tr key={s.n}><td>{s.n} ({String((c + 337.5) % 360).padStart(3, '0')}° to {String((c + 22.5) % 360).padStart(3, '0')}°T)</td><td>{s.k}</td><td>{fmt(s.sum / s.k, 1)} dBm</td><td>{s.ek ? `${fmt(s.err / s.ek, 1)} dB` : '—'}</td><td>{u.f(s.far)}</td></tr>; })}</tbody></table></div></>}
         {sv.points.length > 0 && <GisExport title={`${p.meta.name} survey`} sites={p.sites} survey={sv.points} />}
       </Card>
     </div>

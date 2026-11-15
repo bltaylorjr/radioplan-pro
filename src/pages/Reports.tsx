@@ -14,7 +14,7 @@ import { JURISDICTIONS } from '../compliance/jurisdictions';
 import { CodesHere } from '../components/CodesHere';
 import { JurisdictionInfo } from '../components/JurisdictionInfo';
 import { fsplDb, mpeComplianceDistanceM } from '../engine/rf';
-import { bearingDeg } from '../engine/geo';
+import { azimuthPair, fmtAz, fmtDecl, declinationDeg, fmtDeg, trueToMag } from '../engine/azimuth';
 import { coverageStats } from '../engine/coverage';
 import type { Project, Proposal } from '../types';
 import { autoDesign, defaultInputs, KIND_LABEL, Kind } from '../engine/autodesign';
@@ -171,11 +171,16 @@ export function ReportsPage() {
         {n.text && <p style={{ whiteSpace: 'pre-wrap' }}>{n.text}</p>}
         {n.photos.length > 0 && <div className="rpt-photos">{n.photos.map((ph) => <figure key={ph.id}><img src={ph.dataUrl} alt={ph.caption || 'Field photo'} />{ph.caption && <figcaption>{ph.caption}</figcaption>}</figure>)}</div>}
       </div>))}</>,
-    site: () => <><table className="rpt-tbl"><thead><tr><th>Site</th><th>Lat / Lon (WGS84)</th><th>Ground AMSL</th><th>Structure</th><th>Antenna AGL</th><th>Position source</th></tr></thead>
-      <tbody>{p.sites.map((s) => <tr key={s.id}><td>{s.name}<br /><small>{s.address}</small></td><td>{s.lat.toFixed(6)}, {s.lon.toFixed(6)}</td><td>{u.len(s.groundElevM, 0)}</td><td>{s.structure}, {u.len(s.structureHeightM)}</td><td>{u.len(s.antennaAglM)}</td><td>{s.positionSource}{s.positionAccuracyM != null && ` ±${u.len(s.positionAccuracyM)}`}</td></tr>)}</tbody></table>
+    site: () => <><table className="rpt-tbl"><thead><tr><th>Site</th><th>Lat / Lon (WGS84)</th><th>Ground AMSL</th><th>Structure</th><th>Antenna AGL</th><th>From TX (azimuth)</th><th>Position source</th></tr></thead>
+      <tbody>{p.sites.map((s) => <tr key={s.id}><td>{s.name}<br /><small>{s.address}</small></td><td>{s.lat.toFixed(6)}, {s.lon.toFixed(6)}</td><td>{u.len(s.groundElevM, 0)}</td><td>{s.structure}, {u.len(s.structureHeightM)}</td><td>{u.len(s.antennaAglM)}</td><td>{L.tx && s.id !== L.tx.id ? (() => { const z = azimuthPair(L.tx!, s); return `${u.f(z.km)} at ${fmtDeg(z.fwd)}°T (${fmtDeg(trueToMag(z.fwd, z.decA))}°M)`; })() : 'TX'}</td><td>{s.positionSource}{s.positionAccuracyM != null && ` ±${u.len(s.positionAccuracyM)}`}</td></tr>)}</tbody></table>
       {rt.dem && <p>Terrain source: {rt.dem.source} ({rt.dem.name}).</p>}</>,
     link: () => <><KV rows={[
-      ['Path', `${L.tx?.name} → ${L.rx?.name}: ${u.f(L.pathKm)}, bearing ${L.tx && L.rx ? fmt(bearingDeg(L.tx, L.rx), 1) : '—'}°T`],
+      ['Path', `${L.tx?.name} → ${L.rx?.name}: ${u.f(L.pathKm)}`],
+      ...(L.tx && L.rx && L.tx !== L.rx ? (() => { const z = azimuthPair(L.tx!, L.rx!); return [
+        [`Azimuth ${L.tx!.name} → ${L.rx!.name}`, fmtAz(z.fwd, z.decA)],
+        [`Back azimuth ${L.rx!.name} → ${L.tx!.name}`, fmtAz(z.back, z.decB)],
+        ['Magnetic declination', `${fmtDecl(z.decA)} at ${L.tx!.name} (WMM2025, ${new Date().toISOString().slice(0, 10)}); °M = °T − declination`]] as [string, string][]; })() : []),
+      ['TX antenna azimuth', L.tx ? fmtAz(p.radio.azimuthDeg, declinationDeg(L.tx)) : `${p.radio.azimuthDeg}°T`],
       ['Frequency', `${p.radio.fMHz} MHz`], ['TX power', `${p.radio.txPowerDbm} dBm`],
       ['Antenna', `${L.ant?.brand} ${L.ant?.model} (${L.ant?.gainDbi} dBi)`], ['Feeder', `${L.fd?.model}, ${p.radio.feederLenM} m, ${fmt(L.feederLoss, 2)} dB`],
       ['EIRP / ERP', `${fmt(L.eirpDbm)} dBm (${fmt(L.eirpW, 0)} W) / ${fmt(L.erpDbm)} dBm`],
@@ -187,12 +192,12 @@ export function ReportsPage() {
       ['RF exposure', `General-public MPE distance ${fmt(mpeComplianceDistanceM(L.eirpW, p.radio.fMHz, 'general'), 1)} m (OET-65)`],
     ]} />{rt.profile ? <ProfileChart a={rt.profile} height={260} /> : <p className="muted">Path profile not computed this session.</p>}</>,
     coverage: () => <KV rows={[['Model', `${L.modelName}, ${p.radio.env}, ${p.radio.city}`], ['Analysis radius', u.f(p.radio.coverageRadiusKm, 1)], ['Threshold', `${p.radio.coverageThresholdDbm} dBm`],
-      ['Area above threshold', rt.coverage ? `${fmt(coverageStats(rt.coverage, p.radio.coverageThresholdDbm).pct, 1)} %` : 'not computed this session'], ['Azimuth / tilt', `${p.radio.azimuthDeg}°T / ${p.radio.mechTiltDeg + p.radio.elecTiltDeg}°`], ['Terrain', rt.dem ? rt.dem.source : 'smooth earth']]} />,
+      ['Area above threshold', rt.coverage ? `${fmt(coverageStats(rt.coverage, p.radio.coverageThresholdDbm).pct, 1)} %` : 'not computed this session'], ['Azimuth / tilt', `${L.tx ? fmtAz(p.radio.azimuthDeg, declinationDeg(L.tx)) : `${p.radio.azimuthDeg}°T`} / ${p.radio.mechTiltDeg + p.radio.elecTiltDeg}° down`], ['Terrain', rt.dem ? rt.dem.source : 'smooth earth']]} />,
     grounding: () => { const g = p.grounding; return <KV rows={[['Bonding conductor', `#${g.bondingConductorAwg} AWG Cu, ${u.len(g.bondingConductorLengthM)}`], ['Ground ring', `#${g.groundRingAwg} AWG tinned`], ['Rods', `${g.groundRods} × ${g.rodLengthFt} ft at ${g.rodSpacingFt} ft spacing`], ['Feeder ground kits', g.towerGroundKits], ['Surge protector / IBT', `${g.surgeProtector ? 'Yes' : 'No'} / ${g.intersystemBond ? 'Yes' : 'No'}`], ['Measured resistance', g.measuredResistanceOhm != null ? `${g.measuredResistanceOhm} Ω` : 'not measured'], ['TIA-222-H', `Risk Category ${g.structureClass}${g.ice ? ', ice' : ''}`]]} />; },
     solar: () => { const r = sizeSolar({ ...p.solar, module: mod, onBuilding: L.tx?.onBuilding ?? false }); return <KV rows={[['Daily load', `${fmt(r.dailyWh, 0)} Wh/day`], ['Battery', `${fmt(r.batteryAh, 0)} Ah @ ${p.solar.systemVdc} V, ${p.solar.autonomyDays} days, ${p.solar.depthOfDischarge * 100}% DoD`], ['Array', `${r.modulesTotal} × ${mod.brand} ${mod.model} (${r.strings} strings × ${r.modulesPerString})`], ['Peak sun hours', `${p.solar.peakSunHours} (${p.solar.pshLocation})`], ['Cold Voc (690.7)', `${fmt(r.maxStringVoc, 1)} V`], ['690.8 currents', `${fmt(r.circuitCurrentA, 1)} A max circuit; ${fmt(r.conductorAmpsRequired, 1)} A conductor`], ['PV conductor / OCPD', `#${r.pvConductor?.awg} AWG / ${r.pvOcpdA} A`]]} />; },
     alarm: () => { const b = alarmBatteryAh(p.alarm); return <><table className="rpt-tbl"><thead><tr><th>Device</th><th>Qty</th><th>Standby mA</th><th>Alarm mA</th></tr></thead><tbody>{p.alarm.devices.map((d, i) => <tr key={i}><td>{d.name}</td><td>{d.qty}</td><td>{d.standbyMa}</td><td>{d.alarmMa}</td></tr>)}</tbody></table>
       <KV rows={[['Standby', `${fmt(b.standbyA, 3)} A × ${p.alarm.standbyHours} h`], ['Alarm', `${fmt(b.alarmA, 3)} A × ${p.alarm.alarmMinutes} min`], ['Required', `${fmt(b.rawAh, 2)} Ah × ${p.alarm.safetyFactor} = ${fmt(b.requiredAh, 2)} Ah`], ['Installed', `${p.alarm.installedBatteryAh} Ah`]]} /></>; },
-    erces: () => { const d = ercesDownlink(p.erces); return <KV rows={[['Building', `${p.erces.floors} floors × ${p.erces.areaPerFloorSqft} ft²`], ['Donor', `${p.erces.donorRssiDbm} dBm`], ['BDA output', `${fmt(d.bdaOutputDbm)} dBm`], ['Per antenna', `${fmt(d.perAntennaDbm)} dBm (${p.erces.floors * p.erces.antennasPerFloor} antennas)`], ['Worst-point signal', `${fmt(d.edgeRssiDbm)} dBm (≥ −95 required)`], ['Secondary power', `${p.erces.standbyHours} h`]]} />; },
+    erces: () => { const d = ercesDownlink(p.erces); return <KV rows={[['Building', `${p.erces.floors} floors × ${p.erces.areaPerFloorSqft} ft²`], ['Donor', `${p.erces.donorRssiDbm} dBm`], ...(p.erces.donorLat != null && p.erces.donorLon != null && p.sites[0] ? (() => { const z = azimuthPair(p.sites[0], { lat: p.erces.donorLat!, lon: p.erces.donorLon! }); return [['Donor antenna aim', `${p.erces.donorName || 'donor tower'}: ${u.f(z.km)} at ${fmtAz(z.fwd, z.decA)}`]] as [string, string][]; })() : []), ['BDA output', `${fmt(d.bdaOutputDbm)} dBm`], ['Per antenna', `${fmt(d.perAntennaDbm)} dBm (${p.erces.floors * p.erces.antennasPerFloor} antennas)`], ['Worst-point signal', `${fmt(d.edgeRssiDbm)} dBm (≥ −95 required)`], ['Secondary power', `${p.erces.standbyHours} h`]]} />; },
     compliance: () => <><CodesHere /><JurisdictionInfo j={JURISDICTIONS[m.state]} compact /><table className="rpt-tbl"><thead><tr><th>Status</th><th>Code / section</th><th>Finding</th><th>Recommended fix</th></tr></thead>
       <tbody>{findings.map((f) => <tr key={f.id} className={f.severity}><td>{f.severity === 'violation' ? 'NOT IN COMPLIANCE' : f.severity.toUpperCase()}</td><td>{f.code} §{f.section}{f.verified === 'primary' ? ' ✓' : ''}</td><td><b>{f.title}</b><br />{f.detail}</td><td>{f.fix ?? ''}</td></tr>)}</tbody></table>
       <p className="small">✓ = section text checked in the official source on {JURISDICTIONS[m.state].checked}. Other sections are from the published code books and must be confirmed in the adopted edition.</p></>,

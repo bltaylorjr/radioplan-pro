@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { loadCommSites, nearestSites } from '../engine/towers';
 import type { Site } from '../types';
 import { useUnits } from '../units';
+import { declinationDeg, fmtAz } from '../engine/azimuth';
 
 export function NearbyTowers({ site }: { site: Site }) {
   const u = useUnits();
@@ -25,9 +26,9 @@ export function NearbyTowers({ site }: { site: Site }) {
       <p className="small">Before planning a new structure, check what is already up: an existing tower may be a place to co-locate, and nearby transmitters matter for interference.</p>
       <button onClick={find} disabled={busy}>📡 Find existing towers near {site.name}</button>
       {msg && <p className="note">{msg}</p>}
-      {rows && rows.length > 0 && <div className="scroll-x"><table className="tbl"><thead><tr><th>Name / operator</th><th>Type</th><th>Height</th><th>Distance</th><th>Bearing</th></tr></thead>
+      {rows && rows.length > 0 && <div className="scroll-x"><table className="tbl"><thead><tr><th>Name / operator</th><th>Type</th><th>Height</th><th>Distance</th><th>Azimuth from site</th></tr></thead>
         <tbody>{rows.map((c) => <tr key={c.id}><td>{c.name || c.operator || '(no name)'}{c.name && c.operator ? <span className="small"> · {c.operator}</span> : null}</td><td>{c.kind}{c.services.length ? <span className="small"> ({c.services.join(', ')})</span> : null}</td>
-          <td>{c.heightFt ? `${c.heightFt} ft` : '—'}</td><td>{u.f(c.km, 2)}</td><td>{c.brg.toFixed(0)}°</td></tr>)}</tbody></table></div>}
+          <td>{c.heightFt ? `${c.heightFt} ft` : '—'}</td><td>{u.f(c.km, 2)}</td><td className="nowrap">{fmtAz(c.brg, declinationDeg(site), 0)}</td></tr>)}</tbody></table></div>}
       {rows && rows.length > 0 && <p className="small muted">Source: OpenStreetMap contributors. Heights and owners may be missing or out of date; check the FCC Antenna Structure Registration (ASR) database and the owner before relying on a tower.</p>}
     </div>
   );
