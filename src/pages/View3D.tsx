@@ -42,7 +42,7 @@ export default function View3DPage() {
   return (
     <Card title="3D terrain model" tip="Drag to orbit · right-drag to pan · scroll to zoom">
       <div className="form">
-        <Field label="Vertical exaggeration"><Num value={exag} onChange={(v) => setExag(Math.max(1, Math.min(20, v!)))} unit="×" /></Field>
+        <Field label="Vertical exaggeration" tip="1× = true scale: heights and distances to the same scale. Higher numbers stretch heights so hills are easier to see."><span className="row" style={{ gap: 6 }}><Num value={exag} onChange={(v) => setExag(Math.max(1, Math.min(20, v!)))} unit="×" /><button className={exag === 1 ? 'primary' : ''} aria-pressed={exag === 1} onClick={() => setExag(exag === 1 ? 3 : 1)}>True scale</button></span></Field>
         <Field label="Overlays"><span className="row wrap"><Check value={showF} onChange={setShowF} label="First Fresnel zone" /><Check value={showT} onChange={setShowT} label="Existing towers (labeled)" /></span></Field>
         <Field label="Terrain"><span className="row"><span className="muted small">{rt.dem ? rt.dem.source : 'none loaded'}</span><button onClick={fetchArea}>🌐 Download terrain</button></span></Field>
       </div>

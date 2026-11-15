@@ -1,3 +1,10 @@
+# LvPlan Pro 1.5.43
+
+- **Tilt, Azimuth & Power: side view of the beam over the real ground.** The side view now follows the ground along the antenna's azimuth (terrain and earth curve) and shows where the main beam and the −3 dB edges come down on it, with the ground colored by predicted signal and the far-end site when it is in the beam.
+- **True scale or stretched.** Pick **True scale (1 : 1)** to see heights and distances to the same scale, or stretch heights automatically or ×2 to ×50. Scale bars show a distance across and a height up. Pick the distance shown to look close in at the tower.
+- **2D or 3D.** **⛰ 3D view** shows the beam as a see-through green wedge over the terrain that stops where it meets the ground, with a tilt slider and an optional signal heat map.
+- **True scale on every side view and 3D view**: Path Profile, the chart under drawn lines, the ground profile of runs between sites, the 3D tilt view and the 3D terrain model. Path Profile heights are now in feet (or metres when metric is chosen).
+- **Introduction video**: a new part shows the side view in 2D and 3D, true scale and stretched.
 # LvPlan Pro 1.5.42
 
 - **⌫ Clear all fields on each page.** Every page with boxes to fill in has a **Clear all fields** button at the top, next to **? Page help**. It clears only that page's entries: lists are emptied and numbers go back to their starting values. Pages that only hold typed-in numbers (Calculators, Troubleshooting Wizard, Find Location) start over too.

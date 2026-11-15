@@ -15,6 +15,7 @@ import { computeCoverage, rssiColor } from '../engine/coverage';
 import { designLink } from '../engine/design';
 import { fmtAz } from '../engine/azimuth';
 import { coverageCanvas } from './MapView';
+import { useScaleChoice, ScaleSelect, ScaleBars, frameFor } from './scale';
 import type { DemGrid } from '../engine/terrain';
 import type { LatLon } from '../engine/geo';
 
@@ -48,10 +49,13 @@ export function useLineAnalysis(lines: DrawnLine[], dem: DemGrid | null) {
 /** Terrain and imagery chart: ground along the line, signal from the transmitter, and stretches it cannot see. */
 function LineChart({ r, thr, onHover }: { r: RouteResult; thr: number; onHover: (q: LatLon | null) => void }) {
   const u = useUnits();
-  const W = 640, H = 170, pl = 46, pr = 46, pt = 10, pb = 24;
+  const [ex, setEx] = useScaleChoice('lines');
+  const W = 640, pl = 46, pr = 46, pt = 10, pb = 44;
   const s = r.samples; if (s.length < 2) return null;
   const gs = s.map((q) => q.groundM ?? NaN).filter(Number.isFinite);
-  const g0 = gs.length ? Math.min(...gs) : 0, g1 = gs.length ? Math.max(...gs) : 1;
+  const fr = frameFor({ km: r.lengthKm, plotW: W - pl - pr, lo: gs.length ? Math.min(...gs) : 0, hi: gs.length ? Math.max(...gs) : 1, ex, autoH: 136, minH: 120, maxH: 360 });
+  const autoE = frameFor({ km: r.lengthKm, plotW: W - pl - pr, lo: gs.length ? Math.min(...gs) : 0, hi: gs.length ? Math.max(...gs) : 1, ex: 0, autoH: 136 }).E;
+  const H = pt + fr.ph + pb, g0 = fr.yLo, g1 = fr.yHi;
   const rs = s.map((q) => q.rssi).filter((v): v is number => v != null);
   const r0 = Math.min(-120, ...(rs.length ? [Math.min(...rs)] : [])), r1 = Math.max(-50, ...(rs.length ? [Math.max(...rs)] : []));
   const X = (d: number) => pl + ((W - pl - pr) * d) / Math.max(1e-6, r.lengthKm);
@@ -66,19 +70,22 @@ function LineChart({ r, thr, onHover }: { r: RouteResult; thr: number; onHover: 
     const b = (e.currentTarget as SVGSVGElement).getBoundingClientRect(); const d = ((e.clientX - b.left) / b.width * W - pl) / (W - pl - pr) * r.lengthKm;
     let best = s[0]; for (const q of s) if (Math.abs(q.dKm - d) < Math.abs(best.dKm - d)) best = q; onHover(best);
   };
-  return (
+  return (<>
+    <div className="row" style={{ justifyContent: 'flex-end', margin: '4px 0' }}><ScaleSelect value={ex} onChange={setEx} autoEx={autoE} /></div>
     <svg viewBox={`0 0 ${W} ${H}`} className="line-chart" role="img" aria-label="Ground height and predicted signal along the line" onPointerMove={move} onPointerLeave={() => onHover(null)} style={{ width: '100%', touchAction: 'pan-y' }}>
       {hidden.map(([a, b], i) => <rect key={i} x={X(a)} y={pt} width={Math.max(1, X(b) - X(a))} height={H - pt - pb} fill="rgba(229,57,53,.13)" />)}
-      {ground.length > 1 && <polygon points={`${X(0)},${H - pb} ${ground.join(' ')} ${X(r.lengthKm)},${H - pb}`} fill="#c8b48a" stroke="#8a6d3b" strokeWidth={1} />}
+      <defs><clipPath id="lc-clip"><rect x={pl} y={pt} width={W - pl - pr} height={H - pt - pb} /></clipPath></defs>
+      {ground.length > 1 && <polygon clipPath="url(#lc-clip)" points={`${X(0)},${H - pb} ${ground.join(' ')} ${X(r.lengthKm)},${H - pb}`} fill="#c8b48a" stroke="#8a6d3b" strokeWidth={1} />}
       {rs.length > 0 && <line x1={pl} x2={W - pr} y1={Yr(thr)} y2={Yr(thr)} stroke="#555" strokeDasharray="4 3" strokeWidth={1} />}
       {segs}
       <text x={4} y={pt + 8} fontSize={10} fill="#8a6d3b">{Math.round(ft ? g1 / 0.3048 : g1)} {ft ? 'ft' : 'm'}</text>
       <text x={4} y={H - pb} fontSize={10} fill="#8a6d3b">{Math.round(ft ? g0 / 0.3048 : g0)} {ft ? 'ft' : 'm'}</text>
       {rs.length > 0 && <><text x={W - pr + 4} y={pt + 8} fontSize={10}>{Math.round(r1)} dBm</text><text x={W - pr + 4} y={H - pb} fontSize={10}>{Math.round(r0)} dBm</text>
         <text x={W - pr + 4} y={Yr(thr) + 3} fontSize={9} fill="#555">need {Math.round(thr)}</text></>}
-      <text x={pl} y={H - 6} fontSize={10}>0</text><text x={W - pr} y={H - 6} fontSize={10} textAnchor="end">{u.f(r.lengthKm)}</text>
+      <text x={pl} y={H - pb + 14} fontSize={10}>0</text><text x={W - pr} y={H - pb + 14} fontSize={10} textAnchor="end">{u.f(r.lengthKm)}</text>
+      <ScaleBars f={fr} x={pl + 40} y={H - 4} xNote={W - pr} vx={pl + 4} vy={H - pb} maxW={(W - pl - pr) / 2} />
     </svg>
-  );
+  </>);
 }
 
 /** The drawing / editing tools and results panel for a Leaflet map. */
