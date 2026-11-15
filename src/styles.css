@@ -367,3 +367,12 @@ body { font-size: clamp(15px, 0.6vw + 12.5px, 17px); }
 .rr-stages li.now { opacity: 1; background: #2f7de1; color: #fff; }
 .rr-counts { display: flex; flex-wrap: wrap; gap: 4px 14px; }
 .rr-chip { cursor: pointer; border: 0; font: inherit; }
+/* drawn lines */
+.route-panel { margin-bottom: 6px; }
+.route-stats { margin: 6px 0; padding-left: 18px; }
+.route-stats li { margin: 2px 0; }
+.line-chart { display: block; background: var(--card, #fff); border: 1px solid var(--line); border-radius: 6px; margin-top: 4px; }
+.map.drawing, .map.drawing .leaflet-interactive { cursor: crosshair !important; }
+.line-handle { background: #fff; border: 3px solid #7b1fa2; border-radius: 50%; box-shadow: 0 0 0 1px #0004; }
+.line-handle.on { background: #ffeb3b; border-color: #d50000; }
+.line-handle.mid { background: #e1bee7; border: 2px solid #7b1fa2; opacity: .85; }

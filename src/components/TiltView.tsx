@@ -4,6 +4,8 @@ import { useUnits } from '../units';
 import { Num } from './ui';
 import { AddressInput } from './AddressInput';
 import { AzLine } from './Azimuth';
+import { useDrawnLines, useLineAnalysis, signalColor } from './RouteTools';
+import { predictPoint } from '../engine/coverage';
 import { Terrain3D, meshN, type PathPoint } from './Terrain3D';
 import { BASEMAPS } from './MapView';
 import { buildDrape, type Drape } from '../engine/drape';
@@ -149,6 +151,22 @@ export default function TiltView({ view, sites, txId, rxId, dem: projectDem, hei
     return () => window.clearTimeout(t);
   }, [showView, dem, pts[0]?.lat, pts[0]?.lon, pts[0]?.aglM, pts[pts.length - 1]?.aglM]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Lines drawn on the flat map, and the predicted-signal heat map, laid over the 3D ground
+  const { lines } = useDrawnLines();
+  const [showLines, setShowLines] = useState(true);
+  const [showHeat, setShowHeat] = useState(false);
+  const la = useLineAnalysis(lines, dem);
+  const routes = useMemo(() => (showLines ? lines.map((l) => { const r = la.res[l.id]; const s = r?.samples ?? l.pts; return { pts: s, colors: s.map((q) => ('rssi' in q && (q as { rssi: number | null }).rssi != null ? signalColor((q as { rssi: number }).rssi) : l.color ?? '#7b1fa2')) }; }) : []), [showLines, lines, la]);
+  const [heat, setHeat] = useState<Float32Array | null>(null);
+  useEffect(() => {
+    if (!showHeat || !dem || !la.cov) { setHeat(null); return; }
+    const t = window.setTimeout(() => {
+      const N = meshN(dem), b = demBounds(dem), out = new Float32Array((N + 1) * (N + 1)), cov = { ...la.cov!, dem, radiusKm: 1e6 };
+      for (let r = 0; r <= N; r++) for (let c = 0; c <= N; c++) out[r * (N + 1) + c] = predictPoint(cov, { lat: b.north - ((b.north - b.south) * r) / N, lon: b.west + ((b.east - b.west) * c) / N });
+      setHeat(out);
+    }, 30);
+    return () => window.clearTimeout(t);
+  }, [showHeat, dem, la.cov]);
   const obstructions = useMemo(() => (showLos ? hops.flatMap((h) => h.obs) : []), [hops, showLos]);
   const path = useMemo(() => (pts.length ? { points: pts, hops: hops.map((h) => ({ ok: h.an.meets60, los: h.an.los })) } : null), [pts, hops]);
 
@@ -219,11 +237,13 @@ export default function TiltView({ view, sites, txId, rxId, dem: projectDem, hei
         <label><input type="checkbox" checked={showF} onChange={(e) => setShowF(e.target.checked)} /> Fresnel zone</label>
         <label><input type="checkbox" checked={showView} onChange={(e) => setShowView(e.target.checked)} /> What point A can see (red = hidden)</label>
         <label><input type="checkbox" checked={showT} onChange={(e) => setShowT(e.target.checked)} /> Existing towers</label>
+        {lines.length > 0 && <label><input type="checkbox" checked={showLines} onChange={(e) => setShowLines(e.target.checked)} /> Drawn lines</label>}
+        <label title={la.cov ? '' : 'Set a transmit site and radio first'}><input type="checkbox" checked={showHeat} disabled={!la.cov} onChange={(e) => setShowHeat(e.target.checked)} /> Signal heat map</label>
       </div>
       {placing != null && <p className="note">👆 Tap the ground in the 3D view to place <b>{pts[placing]?.name}</b>. <button onClick={() => setPlacing(null)}>Cancel</button></p>}
       {dem ? <Terrain3D dem={dem} sites={path ? [] : sites} txId={txId} rxId={rxId} fMHz={p.radio.fMHz} kFactor={p.radio.kFactor} clutterM={p.radio.clutterM}
         exag={exag} showFresnel={showF} drape={drape} tilt={tilt} onTilt={setTilt} viewshed={vs} obstructions={obstructions} path={path} onPick={onPick}
-        comm={showT ? comm : undefined} height={height} fmtLen={(m) => u.len(m, 0)} fmtDist={(km) => u.f(km)} />
+        comm={showT ? comm : undefined} routes={routes} heat={heat} height={height} fmtLen={(m) => u.len(m, 0)} fmtDist={(km) => u.f(km)} />
         : <div className="three empty" style={{ height }}>{msg || 'Loading terrain…'}</div>}
       {msg && dem && <p className="note">{msg}</p>}
 

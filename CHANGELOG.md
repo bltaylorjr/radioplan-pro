@@ -1,3 +1,11 @@
+# LvPlan Pro 1.5.41
+
+- **✏️ Draw lines on any map.** Draw a line by hand with your finger or mouse, or tap points for straight lines, or add the line between the transmit and receive sites, to map out obstacles and signal along a road, trail or cable route.
+- **Predictions along each line**: colored by predicted signal from the transmitter and dotted where terrain hides it, with length, azimuth of each piece (true and compass), lowest / average signal, the share that meets the signal needed, the distance hidden, and a chart of ground and signal along the line. Straight two-point lines also get an end-to-end line-of-sight check with the blocking ground marked.
+- **Heat map**: shade predicted signal over the area around the lines, on the flat map and on the 3D tilt view, where the drawn lines also show on the ground.
+- **Edit**: drag points, add a point from a middle handle, delete a point, smooth a hand-drawn line, rename or delete a line. Lines are saved with the project and work offline.
+- **Introduction video**: a new part shows drawing and editing lines, the predictions and the heat map.
+
 # LvPlan Pro 1.5.40
 
 - **RadioReference download progress.** While a county downloads you see a progress bar with the percent done, the step it is on (find county, agencies, frequencies, trunked systems, save), what it is reading right now (for example "Frequencies: Fire · Dispatch, 7 of 12"), running counts of frequencies, lists, trunked systems, sites and talkgroups, the time so far and about how long is left. **Stop download** stops it.
