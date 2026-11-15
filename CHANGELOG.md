@@ -1,6 +1,6 @@
 # LvPlan Pro 1.5.60
 
-- **Starts about twice as fast.** Each page now loads the first time you open it instead of all at start, so the app downloads 372 KB instead of 846 KB before it is ready (online version, slow phone connection: about 2.4 s instead of 5.2 s) and uses a third less memory.
+- **Starts about twice as fast.** Each page now loads the first time you open it instead of all at start, so the app downloads 427 KB instead of 922 KB before it is ready (online version, slow phone connection: about 2.7 s instead of 5.6 s) and uses a third less memory.
 - **The online version works with no internet.** After the first visit the whole app, every page and the FCC, airport and terrain data are saved in the browser, so it opens and works offline. You can also add it to the phone's home screen like an app.
 - **Coverage maps are up to 3 times faster** and the screen no longer freezes while they are worked out: the math was tightened and the map is split across the device's processor cores. The button shows the percent done. Same results as before. Multi-site & interference and the heat map on drawn lines use the same helpers.
 - **Typing stays quick in big projects with many photos.** Only the part of the project you change is copied, and autosave turns the project into text once instead of three times.
