@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { HELP } from '../help/content';
+import { checkValue, defaultRange, issueText, suggestFix } from '../engine/validate';
 
 /** Small "?" bubble with an on-hover/on-tap explanation. Pass text or a help topic id. */
 export function Tip({ text, topic }: { text?: string; topic?: string }) {
@@ -16,7 +17,7 @@ export function Field({ label, tip, topic, children, tour, wide, required, missi
   return (
     <label className={'field' + (wide ? ' wide' : '') + (required ? ' req' : '') + (missing ? ' missing' : '')} data-tour={tour}>
       <span className="field-label">{label}{required && <span className="req-star" title="Required"> *</span>} {(tip || topic) && <Tip text={tip} topic={topic} />}{missing && <span className="req-msg"> Required</span>}</span>
-      {children}
+      <FieldLabel.Provider value={label}>{children}</FieldLabel.Provider>
     </label>
   );
 }
@@ -46,16 +47,36 @@ export function shownIn(value: string | number, unit: string | undefined, sys: M
 }
 export const useShown = (value: string | number, unit?: string) => shownIn(value, unit, React.useContext(MeasureCtx));
 
-export function Num({ value, onChange, step = 'any', min, max, unit, nullable }: { value: number | null; onChange: (v: number | null) => void; step?: number | 'any'; min?: number; max?: number; unit?: string; nullable?: boolean }) {
+/** The label of the field around a number box, so its messages can name it. */
+export const FieldLabel = React.createContext<string | undefined>(undefined);
+export function Num({ value, onChange, step = 'any', min, max, unit, nullable, required, integer, label }: { value: number | null; onChange: (v: number | null) => void; step?: number | 'any'; min?: number; max?: number; unit?: string; nullable?: boolean; required?: boolean; integer?: boolean; label?: string }) {
   const [txt, setTxt] = useState<string | null>(null);
+  const ctxLabel = React.useContext(FieldLabel); label = label ?? ctxLabel;
   const m = useMeasure(unit), k = m.k;
+  const d = defaultRange(unit);
+  const lo = min ?? d.min, hi = max ?? d.max;
+  const shown = (x: number) => String(+(x * k).toFixed(unit && CONVERT[unit.trim()] ? 2 : 6));
+  const range = { min: lo == null ? lo : lo * k, max: hi == null ? hi : hi * k, integer, required, label, unit: m.unit };
+  // What the box holds now: the typed text while editing, else the stored value.
+  const typed = txt == null ? value : txt.trim() === '' ? null : parseFloat(txt);
+  const issue = txt == null && value == null && !required ? null : checkValue(typed, range);
+  const blank = txt != null && txt.trim() === '' && !nullable && value != null;
+  const ok = (v: number | null) => !checkValue(v, { ...range, required: false });
+  const put = (v: number | null) => onChange(v == null ? null : k === 1 ? v : v / k);
+  const fix = issue && typed != null ? suggestFix(typed, range) : null;
   return (
-    <span className="num">
-      <input type="number" inputMode="decimal" step={k === 1 ? step : 'any'} min={min == null ? min : min * k} max={max == null ? max : max * k} value={txt ?? (value == null ? '' : String(+(value * k).toFixed(unit && CONVERT[unit.trim()] ? 2 : 6)))}
-        onChange={(e) => { setTxt(e.target.value); const v = e.target.value === '' ? null : parseFloat(e.target.value); if (v == null ? nullable : !Number.isNaN(v)) onChange(v == null ? null : k === 1 ? v : v / k); }}
-        onBlur={() => setTxt(null)} />
+    <>
+    <span className={'num' + (issue || blank ? ' num-bad' : '')}>
+      <input type="number" inputMode="decimal" step={k === 1 ? step : 'any'} min={range.min} max={range.max} aria-invalid={issue || blank ? true : undefined} value={txt ?? (value == null ? '' : shown(value))}
+        onChange={(e) => { setTxt(e.target.value); const v = e.target.value === '' ? null : parseFloat(e.target.value); if (v == null ? nullable : !Number.isNaN(v) && ok(v)) put(v); }}
+        onBlur={() => { if (!issue && !blank) setTxt(null); }} />
       {m.unit && <span className="unit">{m.unit}</span>}
     </span>
+    {(issue || blank) && <span className="num-msg" role="alert">⚠ {blank ? `${label ? label + ' is empty' : 'This box is empty'}. The last value (${shown(value!)}${m.unit ? ' ' + m.unit.trim() : ''}) is still used. Type a number.` : issueText(issue!)}{issue && txt != null && typed != null && value != null && !nullable && ' Until it is fixed, the last good value (' + shown(value) + ') is used.'}
+      {fix != null && <button type="button" className="num-fix" onClick={(e) => { e.preventDefault(); put(fix); setTxt(null); }}>Use {fix}</button>}
+      {(blank || (issue && txt != null && value != null && !nullable)) && <button type="button" className="num-fix ghost" onClick={(e) => { e.preventDefault(); setTxt(null); }}>Undo</button>}
+    </span>}
+    </>
   );
 }
 export function Txt({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder?: string }) {

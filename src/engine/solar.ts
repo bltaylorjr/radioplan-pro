@@ -1,6 +1,8 @@
 // Off-grid / backup solar sizing for remote radio sites with NEC Article 690 checks.
 import { sizeConductor, nextStandardOcpd, Awg } from './electrical';
 
+/** Blank load entries add nothing instead of turning the total into NaN. */
+const fin = (x: number) => (Number.isFinite(x) ? x : 0);
 export interface SolarLoad { name: string; watts: number; hoursPerDay: number; qty: number }
 export interface SolarInputs {
   loads: SolarLoad[]; systemVdc: number; autonomyDays: number; depthOfDischarge: number;
@@ -27,7 +29,7 @@ export function table6907Factor(lowC: number): number {
 
 export function sizeSolar(i: SolarInputs): SolarResult {
   const notes: string[] = [];
-  const dailyWh = i.loads.reduce((s, l) => s + l.watts * l.hoursPerDay * l.qty, 0) / i.inverterEff;
+  const dailyWh = i.loads.reduce((s, l) => s + fin(l.watts) * fin(l.hoursPerDay) * fin(l.qty), 0) / i.inverterEff;
   const batteryWh = (dailyWh * i.autonomyDays) / (i.depthOfDischarge * i.batteryTempFactor);
   const batteryAh = batteryWh / i.systemVdc;
   const arrayW = dailyWh / (i.peakSunHours * i.systemDerate);
@@ -52,7 +54,7 @@ export function sizeSolar(i: SolarInputs): SolarResult {
   if (strings <= 2) notes.push('690.9(A): OCPD for PV source circuits may not be required with ≤2 parallel strings when ampacity is adequate (verify module series fuse rating).');
   const controllerOutputA = (modulesTotal * i.module.pmaxW) / i.systemVdc;
   if (controllerOutputA > i.controllerMaxA) notes.push(`Controller output ${controllerOutputA.toFixed(1)} A exceeds rating ${i.controllerMaxA} A; parallel a second controller.`);
-  const peakLoadW = i.loads.reduce((s, l) => s + l.watts * l.qty, 0);
+  const peakLoadW = i.loads.reduce((s, l) => s + fin(l.watts) * fin(l.qty), 0);
   const loadCurrentA = peakLoadW / i.systemVdc;
   const batteryConductor = sizeConductor(loadCurrentA * 1.25, i.batteryToLoadFt, i.systemVdc, 2);
   return { dailyWh, batteryAh, batteryWh, arrayW, modulesTotal, modulesPerString, strings, maxStringVoc, vocCorrection, circuitCurrentA, conductorAmpsRequired, pvConductor, pvOcpdA, controllerOutputA, loadCurrentA, batteryConductor, maxSystemVoltageLimit: maxSys, notes };

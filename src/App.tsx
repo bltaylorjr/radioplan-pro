@@ -50,6 +50,9 @@ import { Maintainer } from './components/Maintainer';
 import { Welcome } from './components/Welcome';
 import { ClearPageButton, UndoClearBar } from './components/ClearPage';
 import type { Project } from './types';
+import { SettingsPage } from './pages/Settings';
+import { ToolNotice, useAutoTools } from './components/ToolNotice';
+import { useHiddenTools, setToolOn } from './engine/toolPrefs';
 const TerrainPage = lazy(() => import('./pages/Terrain'));
 const CoveragePage = lazy(() => import('./pages/Coverage'));
 const View3DPage = lazy(() => import('./pages/View3D'));
@@ -93,6 +96,7 @@ export const WORKFLOW: { id: string; label: string; group: string; el: React.Rea
   { id: 'calculators', label: 'Calculators', group: 'Tools', el: <CalculatorsPage /> },
   { id: 'projects', label: 'Projects & Storage', group: 'Tools', el: <ProjectsPage /> },
   { id: 'sync', label: 'Sync Devices', group: 'Tools', el: <SyncPage /> },
+  { id: 'settings', label: 'User Settings', group: 'Tools', el: <SettingsPage /> },
 ];
 
 
@@ -112,7 +116,11 @@ export default function App() {
   const [showAll, setShowAll] = useState(false);
   const custom = project.meta.projectType === 'custom' && (project.meta.customPages?.length ?? 0) > 0;
   /** The pages in the menu: all of them, or only the custom pick. */
-  const VIS = custom && !showAll ? WORKFLOW.filter((w) => ALWAYS_PAGES.includes(w.id) || project.meta.customPages!.includes(w.id)) : WORKFLOW;
+  const hiddenTools = useHiddenTools();
+  useAutoTools();
+  const off = new Set(hiddenTools.filter((x) => !ALWAYS_PAGES.includes(x)));
+  /** The pages in the menu: all of them, or only the custom pick, less the tools turned off in User Settings. */
+  const VIS = (custom && !showAll ? WORKFLOW.filter((w) => ALWAYS_PAGES.includes(w.id) || project.meta.customPages!.includes(w.id)) : WORKFLOW).filter((w) => !off.has(w.id));
   /** Step number in the workflow; the Tools pages are not steps and have none. */
   const STEPS = VIS.filter((w) => w.group !== 'Tools');
   const stepNo = (w: { id: string }) => { const i = STEPS.findIndex((x) => x.id === w.id); return i < 0 ? null : i + 1; };
@@ -188,6 +196,7 @@ export default function App() {
           </div>
         ))}
         {project.meta.projectType === 'custom' && custom && <div className="nav-custom small">{showAll ? 'Showing every page.' : `Custom project: ${VIS.length} of ${WORKFLOW.length} pages.`} <a href="#" onClick={(e) => { e.preventDefault(); setShowAll(!showAll); }}>{showAll ? 'Show my pick' : 'Show all'}</a> · <a href="#systems" onClick={(e) => { e.preventDefault(); go('systems'); }}>Change</a></div>}
+        {off.size > 0 && <div className="nav-custom small">{off.size} tool{off.size > 1 ? 's' : ''} turned off. <a href="#settings" onClick={(e) => { e.preventDefault(); go('settings'); }}>User Settings</a></div>}
         <div className="nav-group"><a href={lastTopic ? `#help/${lastTopic}` : '#help'} className={isHelp ? 'active' : ''}><span className="step-dot">?</span>Help manual</a></div>
         <div className="nav-group mobile-only"><div className="nav-group-title">Project file</div>
           <div className="row wrap" style={{ padding: '0 8px' }}><button onClick={() => go('projects')}>Projects</button><button onClick={open}>Open file</button><button onClick={save}>Export</button></div></div>
@@ -211,6 +220,7 @@ export default function App() {
               </div>
             </div>
             {cleared && cleared.page === current.id && <UndoClearBar key={resetN} page={current.id} label={current.label} before={cleared.before} onDone={endClear} />}
+            {off.has(current.id) && <p className="note no-print">This tool is turned off in User Settings, so it is not in the menu. <button onClick={() => setToolOn(current.id, true)}>Turn it back on</button></p>}
             {skipped.has(current.id) && <p className="note no-print">This step is skipped on this project. <button onClick={() => setSkip(current.id, false)}>Don't skip it</button></p>}
             <SelfRepair page={current.id}><Suspense fallback={<div className="card">Loading…</div>}><React.Fragment key={resetN}>{current.el}</React.Fragment></Suspense>{checklistFor(current.id) && <div data-tour="checklist" className="no-print" style={{ marginTop: 16 }}><Checklist def={checklistFor(current.id)!} /></div>}</SelfRepair>
             <footer className="page-foot">
@@ -223,6 +233,7 @@ export default function App() {
         )}
         <p className="copyright no-print">© {new Date().getFullYear()} Bobby Taylor. All rights reserved. · LvPlan Pro {APP_VERSION}</p>
       </main>
+      <ToolNotice />
       {video && <IntroVideo first={video === 'first'} onClose={() => setVideo(false)} />}
       {helpOpen && !isHelp && <HelpPanel topic={topic} onClose={() => setHelpOpen(false)} onTour={topic.tour ? () => { setHelpOpen(false); setTour(true); } : undefined} />}
       {tour && topic.tour && <Tour steps={topic.tour} onClose={() => setTour(false)} />}

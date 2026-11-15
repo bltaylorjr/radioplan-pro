@@ -64,3 +64,14 @@ describe('clear all fields on one page', () => {
     for (const page of Object.keys(PAGE_CLEAR)) expect(WORKFLOW_IDS).toContain(page);
   });
 });
+
+describe('reset the whole project', () => {
+  it('clears every page but keeps settings, sync and the saved company', async () => {
+    const { resetProject } = await import('../src/engine/clearPage');
+    const p = filled(); p.settings.units = 'km'; p.sync = { projectId: 'x', deviceId: 'd', deviceName: 'PC', sections: {}, items: {}, tombstones: {}, peers: {} };
+    const r = resetProject(p, { company: { ...p.company, name: 'Saved Co' }, savedAt: '' });
+    expect(r.meta.name).toBe('New project'); expect(r.fieldNotes).toBeUndefined(); expect(r.alarm.devices).toEqual([]);
+    expect(r.sites[0].tx).toBeUndefined(); expect(r.checklists).toBeUndefined(); expect(r.radio.fMHz).toBe(460);
+    expect(r.settings.units).toBe('km'); expect(r.sync?.projectId).toBe('x'); expect(r.company.name).toBe('Saved Co');
+  });
+});

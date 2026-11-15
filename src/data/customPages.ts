@@ -3,7 +3,7 @@
 import type { LvSystem } from './systems';
 
 /** Pages that always show, so the custom pick can always be changed. */
-export const ALWAYS_PAGES = ['company', 'systems', 'projects'];
+export const ALWAYS_PAGES = ['company', 'systems', 'projects', 'settings'];
 
 /** Menu groups and their pages, in menu order (kept in step with WORKFLOW in App.tsx by a test). */
 export const PAGE_GROUPS: [string, string[]][] = [
@@ -14,7 +14,7 @@ export const PAGE_GROUPS: [string, string[]][] = [
   ['5 · Planning: codes & materials', ['compliance', 'materials', 'blueprints']],
   ['6 · Testing & closeout', ['testing', 'reports']],
   ['7 · Troubleshooting & repair', ['troubleshoot']],
-  ['Tools', ['directions', 'service', 'install', 'theory', 'library', 'contacts', 'calculators', 'projects', 'sync']],
+  ['Tools', ['directions', 'service', 'install', 'theory', 'library', 'contacts', 'calculators', 'projects', 'sync', 'settings']],
 ];
 
 /** Pages most low-voltage jobs use, whatever the systems. */
@@ -32,5 +32,15 @@ const EXTRA: Record<string, string[]> = {
 export function suggestPages(systems: LvSystem[]): string[] {
   const set = new Set([...ALWAYS_PAGES, ...COMMON]);
   for (const s of systems) { for (const pg of s.pages) set.add(pg); for (const pg of EXTRA[s.id] ?? []) set.add(pg); }
+  return PAGE_GROUPS.flatMap(([, ids]) => ids).filter((id) => set.has(id));
+}
+
+/** Pages a system itself needs (its toolkit pages, design pages, calculators, library and service), without the common ones. */
+export function systemPages(systems: LvSystem[]): string[] {
+  const set = new Set<string>();
+  for (const s of systems) {
+    for (const pg of s.pages) set.add(pg); for (const pg of EXTRA[s.id] ?? []) set.add(pg);
+    if (s.calcs.length) set.add('calculators'); if (s.libCats.length) set.add('library'); if (s.pm.length) set.add('service');
+  }
   return PAGE_GROUPS.flatMap(([, ids]) => ids).filter((id) => set.has(id));
 }
