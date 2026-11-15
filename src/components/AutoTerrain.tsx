@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useStore } from '../store';
 import { downloadTerrain, boundsAround, demCovers, retryDelayMs, Bounds } from '../engine/autoterrain';
 import { countTiles, prefetchTiles } from '../engine/offline';
-import { BASEMAPS } from './MapView';
+import { BASEMAPS } from './basemaps';
 import { sampleDem } from '../engine/terrain';
 
 export function AutoTerrain() {

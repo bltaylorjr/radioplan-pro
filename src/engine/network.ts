@@ -63,10 +63,27 @@ export function interferenceRejectionDb(fS: number, fI: number, bwKHz: number, a
 }
 
 export function computeNetwork(p: Project, dem: DemGrid | null | undefined, gridN = 60): NetworkResult | null {
+  const plan = networkPlan(p, dem, gridN);
+  return plan && combineNetwork(p, plan.sites, plan.b, gridN, plan.inputs.map(computeCoverage));
+}
+
+/** Same as computeNetwork, with each site's map worked out in background helpers so the screen stays responsive. */
+export async function computeNetworkAsync(p: Project, dem: DemGrid | null | undefined, gridN = 60): Promise<NetworkResult | null> {
+  const plan = networkPlan(p, dem, gridN);
+  if (!plan) return null;
+  const { computeManyAsync } = await import('./coverageAsync');
+  return combineNetwork(p, plan.sites, plan.b, gridN, await computeManyAsync(plan.inputs));
+}
+
+function networkPlan(p: Project, dem: DemGrid | null | undefined, n: number) {
   const sites = p.sites.filter((s) => s.tx?.enabled);
   if (!sites.length) return null;
-  const b = unionBounds(sites, p.radio.coverageRadiusKm), n = gridN, N = n * n;
-  const perSite = sites.map((s) => computeCoverage(siteInputs(p, s, dem, b, n)));
+  const b = unionBounds(sites, p.radio.coverageRadiusKm);
+  return { sites, b, inputs: sites.map((s) => siteInputs(p, s, dem, b, n)) };
+}
+
+function combineNetwork(p: Project, sites: Site[], b: Bounds4, n: number, perSite: CoverageResult[]): NetworkResult {
+  const N = n * n;
   const f = sites.map((s) => s.tx!.fMHz);
   const best = new Float32Array(N).fill(NaN), server = new Int16Array(N).fill(-1), ci = new Float32Array(N).fill(NaN), overlap = new Uint8Array(N);
   const thr = p.network.serviceDbm;

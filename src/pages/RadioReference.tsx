@@ -127,14 +127,7 @@ export function RadioReferencePage() {
 }
 
 /** Top-bar badge while a RadioReference download runs (and briefly after): tap to open the page. */
-export function RrJobBadge({ onOpen }: { onOpen: () => void }) {
-  const job = useRrJob();
-  if (!job) return null;
-  const pct = Math.round(job.frac * 100);
-  const label = job.running ? `⬇ RadioRef ${pct}%` : job.result ? '✓ RadioRef saved' : '⚠ RadioRef stopped';
-  return <button className={'chip rr-chip' + (job.running ? ' running' : job.result ? ' on' : ' off')} onClick={onOpen} title={job.running ? `${job.text} (tap to see the download)` : 'Open RadioReference Frequencies'}
-    style={job.running ? { background: `linear-gradient(90deg, rgba(80,160,255,.35) ${pct}%, transparent ${pct}%)` } : undefined}>{label}</button>;
-}
+export { RrJobBadge } from '../components/RrJobBadge';
 
 /** The download progress panel: bar with percent, the stages, what is being read now, counts so far and time left. */
 function RrProgress({ job, explain, onClose }: { job: RrJob; explain: (e: unknown) => string; onClose: () => void }) {

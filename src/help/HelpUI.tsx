@@ -1,4 +1,3 @@
-import { HelpMedia } from './HelpMedia';
 import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { HELP, HelpTopic, TourStep } from './content';
 import { FEATURES, Feature, featuresFor, showFeature } from './features';
@@ -49,6 +48,10 @@ export function FeatureCards({ ids, list, compact, heading }: { ids?: string[]; 
     </div>
   );
 }
+
+// Diagrams and guides in help load only when help is opened.
+const HelpMediaLazy = React.lazy(() => import('./HelpMedia').then((m) => ({ default: m.HelpMedia })));
+const HelpMedia = (p: { topic: HelpTopic; compact?: boolean }) => <React.Suspense fallback={null}><HelpMediaLazy {...p} /></React.Suspense>;
 
 /** Minimal markdown: paragraphs, "- " lists, numbered lists, **bold**. */
 export function Md({ text }: { text: string }) {

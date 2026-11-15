@@ -3,7 +3,7 @@
 // and in the USB / browser build in the browser profile. Optionally mirrored to a folder (e.g. on the USB drive).
 import type { Project } from '../types';
 import type { DemGrid } from './terrain';
-import { checksumOf, isIntact, wrapChecked, Checked } from './maintain';
+import { checksumOf, isIntact, wrapChecked, Checked, sha256 } from './maintain';
 
 export interface ProjectRecord {
   id: string; name: string; number: string; client: string; state: string;
@@ -25,8 +25,7 @@ export const VERSION_EVERY_MS = 10 * 60 * 1000;
 export const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 
 // ---------- pure helpers (unit-tested) ----------
-export function summarize(id: string, p: Project, created: number, now = Date.now()): ProjectRecord {
-  const json = JSON.stringify(p);
+export function summarize(id: string, p: Project, created: number, now = Date.now(), json = JSON.stringify(p)): ProjectRecord {
   return {
     id, name: p.meta?.name || 'Untitled project', number: p.meta?.number || '', client: p.meta?.client || '',
     state: p.meta?.state || '', created, updated: now, bytes: json.length, sites: p.sites?.length ?? 0, project: p,
@@ -106,10 +105,12 @@ function run<T>(store: string, mode: IDBTransactionMode, fn: (s: IDBObjectStore)
   }));
 }
 export const getRecord = (id: string) => run<ProjectRecord | undefined>('projects', 'readonly', (s) => s.get(id));
-export async function putProject(id: string, p: Project, now = Date.now()): Promise<ProjectRecord> {
+/** `json` = JSON.stringify(p) when the caller already has it (autosave), so a big project is turned into text only once. */
+export async function putProject(id: string, p: Project, now = Date.now(), json?: string): Promise<ProjectRecord> {
   const old = await getRecord(id);
-  const r = summarize(id, p, old?.created ?? now, now);
-  r.sum = await checksumOf(p).catch(() => undefined);
+  const text = json ?? JSON.stringify(p);
+  const r = summarize(id, p, old?.created ?? now, now, text);
+  r.sum = await sha256(text).catch(() => undefined);
   await run('projects', 'readwrite', (s) => s.put(r)); return r;
 }
 export async function listProjects(): Promise<ProjectSummary[]> {
