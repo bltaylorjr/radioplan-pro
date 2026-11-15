@@ -14,11 +14,12 @@ import { useUnits, DistNum } from '../units';
 import { AddressInput } from '../components/AddressInput';
 import { SiteRunsCard } from '../components/SiteRuns';
 import { NearbyTowers } from '../components/NearbyTowers';
+import { faaCheck, FT_PER_M } from '../engine/faa';
 import { AzStats } from '../components/Azimuth';
 import { usesRadioFields } from '../data/systems';
 
 export function SitesPage() {
-  const { project: p, update, rt } = useStore();
+  const { project: p, update, rt, go } = useStore();
   const radioJob = usesRadioFields(p.meta);
   const [showTower, setShowTower] = useState(false);
   const u = useUnits();
@@ -115,6 +116,11 @@ export function SitesPage() {
           <Field label="On / in a building"><Check value={s.onBuilding} onChange={(v) => set('onBuilding', v)} label="Yes" /></Field>
           <Field label="Nearest public-use airport" tip="Distance to nearest runway for 14 CFR 77.9(b)."><DistNum km={s.nearestAirportKm} nullable onChange={(v) => set('nearestAirportKm', v)} /></Field>
           <Field label="Longest runway"><Num value={s.nearestRunwayFt} nullable onChange={(v) => set('nearestRunwayFt', v)} unit="ft" /></Field>
+          <Field label="FAA airports" tip="Fill the nearest public-use airport from the FAA data built into the app (works offline)."><span className="row wrap"><button className="small" onClick={async () => {
+            const r = await faaCheck(s, s.structureHeightM * FT_PER_M, s.groundElevM != null ? s.groundElevM * FT_PER_M : null).catch(() => null);
+            const n = r?.nearest.find((c) => c.qualifies === 'yes');
+            if (n) update((d) => { const x = d.sites.find((y) => y.id === s.id); if (x) { x.nearestAirportKm = n.distFt / FT_PER_M / 1000; x.nearestRunwayFt = n.longestFt; } });
+          }}>✈ Fill from FAA data</button><button className="small ghost" onClick={() => go('faa')}>FAA Height Check →</button></span></Field>
         </div>
         <NearbyTowers site={s} />
         {!radioJob && <p className="small"><button className="ghost" onClick={() => setShowTower(false)}>Hide tower and antenna fields</button></p>}
