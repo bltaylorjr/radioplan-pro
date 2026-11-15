@@ -69,6 +69,7 @@ const SystemsPage = page(() => import('./pages/Systems'), 'SystemsPage');
 const ServicePage = page(() => import('./pages/Service'), 'ServicePage');
 const AutoDesignPage = page(() => import('./pages/AutoDesign'), 'AutoDesignPage');
 const ModelsPage = page(() => import('./pages/Models'), 'ModelsPage');
+const CampusPage = page(() => import('./pages/Campus'), 'CampusPage');
 const SettingsPage = page(() => import('./pages/Settings'), 'SettingsPage');
 const SignalReadingsPage = page(() => import('./pages/SignalReadings'), 'SignalReadingsPage');
 const AssetsPage = page(() => import('./pages/Assets'), 'AssetsPage');
@@ -94,6 +95,7 @@ export const PAGE_ELEMENTS: Record<string, React.ReactNode> = {
   signal: <SignalReadingsPage />,
   autodesign: <AutoDesignPage />,
   models: <ModelsPage />,
+  campus: <CampusPage />,
   alarm: <AlarmPage />,
   erces: <ErcesPage />,
   indoor: <IndoorPage />,

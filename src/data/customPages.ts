@@ -13,9 +13,9 @@ export const PAGE_GROUPS: [string, string[]][] = MENU_GROUPS.map((g) => [groupHe
 const COMMON = ['locate', 'sites', 'fieldnotes', 'compliance', 'materials', 'blueprints', 'testing', 'reports', 'troubleshoot', 'directions', 'service', 'assets', 'devices', 'install', 'theory', 'library', 'contacts', 'calculators'];
 /** Extra pages for systems that need radio or design pages. */
 const EXTRA: Record<string, string[]> = {
-  firealarm: ['alarm', 'autodesign', 'models'], massnotif: ['alarm', 'autodesign', 'models'], security: ['autodesign', 'models'], access: ['autodesign', 'models'], cctv: ['autodesign', 'models'],
-  cabling: ['autodesign', 'models'], nursecall: ['autodesign', 'models'], paging: ['autodesign', 'models'], sound: ['autodesign', 'models'], intercom: ['autodesign', 'models'],
-  erces: ['photosurvey', 'erces', 'indoor', 'models', 'survey', 'signal', 'grounding', 'fcc'], das: ['photosurvey', 'indoor', 'erces', 'models', 'survey', 'signal', 'grounding', 'fcc'], wifi: ['wifi', 'indoor', 'models', 'signal'],
+  firealarm: ['alarm', 'autodesign', 'models', 'campus'], massnotif: ['alarm', 'autodesign', 'models', 'campus'], security: ['autodesign', 'models', 'campus'], access: ['autodesign', 'models', 'campus'], cctv: ['autodesign', 'models', 'campus'],
+  cabling: ['autodesign', 'models', 'campus'], nursecall: ['autodesign', 'models', 'campus'], paging: ['autodesign', 'models', 'campus'], sound: ['autodesign', 'models', 'campus'], intercom: ['autodesign', 'models', 'campus'],
+  erces: ['photosurvey', 'erces', 'indoor', 'models', 'campus', 'survey', 'signal', 'grounding', 'fcc'], das: ['photosurvey', 'indoor', 'erces', 'models', 'campus', 'survey', 'signal', 'grounding', 'fcc'], wifi: ['wifi', 'indoor', 'models', 'campus', 'signal'],
   radio: ['photosurvey', 'terrain', 'equipment', 'path', 'coverage', 'optimize', 'network', 'scenarios', 'view3d', 'grounding', 'survey', 'signal', 'lfhf', 'fcc', 'faa', 'mappacks'],
   callbox: ['photosurvey', 'solar', 'terrain', 'coverage', 'equipment', 'faa', 'mappacks', 'signal'], solar: ['solar', 'grounding'],
 };

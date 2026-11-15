@@ -20,20 +20,25 @@ export const sysLabel = (id: string) => SYSTEMS.find((s) => s.id === id)?.label 
 
 export type SubLayer = 'dev' | 'cov' | 'cab' | 'heat';
 export interface LayerDef { id: string; group: string; groupLabel: string; label: string; color: string; on: boolean; tip: string }
-export interface MDevice { layer: string; floor: number; x: number; y: number; z: number; kind: Kind; system: string; tag: string; label: string; outdoor?: boolean; info: string }
+export interface MDevice { bld?: string; layer: string; floor: number; x: number; y: number; z: number; kind: Kind; system: string; tag: string; label: string; outdoor?: boolean; info: string }
 /** A route; each point is [x, y, floor, height above that floor in ft]. */
-export interface MPath { layer: string; pts: [number, number, number, number][]; color: string; label: string; dash?: boolean; width?: number }
-export interface MArea { layer: string; floor: number; shape: 'circle' | 'square' | 'poly'; x: number; y: number; r: number; pts?: [number, number][]; z: number; color: string; label: string }
-export interface MWall { layer: string; floor: number; x1: number; y1: number; x2: number; y2: number; material: string; color: string; ratedHr: number; part: string; height?: number }
-export interface MHeat { layer: string; floor: number; nx: number; ny: number; v: Float32Array; label: string; fMHz: number; targetDbm: number; pct: number }
-export interface MLabel { layer: string; floor: number; x: number; y: number; z: number; text: string }
+export interface MPath { bld?: string; layer: string; pts: [number, number, number, number][]; color: string; label: string; dash?: boolean; width?: number }
+export interface MArea { bld?: string; layer: string; floor: number; shape: 'circle' | 'square' | 'poly'; x: number; y: number; r: number; pts?: [number, number][]; z: number; color: string; label: string }
+export interface MWall { bld?: string; layer: string; floor: number; x1: number; y1: number; x2: number; y2: number; material: string; color: string; ratedHr: number; part: string; height?: number }
+export interface MHeat { bld?: string; layer: string; floor: number; nx: number; ny: number; v: Float32Array; label: string; fMHz: number; targetDbm: number; pct: number;
+  /** Where the grid sits (site plans): top-left corner, size and clockwise turn. Default 0, 0, L × W, 0°. */
+  ox?: number; oy?: number; w?: number; h?: number; rot?: number }
+export interface MLabel { bld?: string; layer: string; floor: number; x: number; y: number; z: number; text: string }
 export interface ModelScene {
   L: number; W: number; floorH: number; ceilingFt: number; floors: number; spec: BuildingSpec;
   layers: LayerDef[]; devices: MDevice[]; paths: MPath[]; areas: MArea[]; walls: MWall[]; heat: MHeat[]; labels: MLabel[];
   donor?: { x: number; y: number; bearing: number; km: number; name: string };
   stats: { label: string; value: string; tone?: 'ok' | 'warn' | 'bad'; tip?: string }[];
   notes: string[]; r: AutoResult; firestops: number;
+  /** Site plans with several buildings: each building's outline. When set, views draw these instead of one 0..L × 0..W shell. */
+  footprints?: Footprint[];
 }
+export interface Footprint { id: string; name: string; x: number; y: number; L: number; W: number; rot: number; floors: number; floorH: number; spec: BuildingSpec }
 
 /** How high a device sits above its floor (ft). */
 export function deviceHeight(kind: Kind, ceilingFt: number, outdoor?: boolean): number {

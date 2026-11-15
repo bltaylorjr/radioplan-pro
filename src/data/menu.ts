@@ -55,6 +55,7 @@ export const MENU_PAGES: MenuPage[] = [
 
   { id: 'autodesign', label: 'Auto-Design & 3D Model', group: 'lv', keywords: 'recommend equipment layout floor plan 3d' },
   { id: 'models', label: '2D & 3D Models with Layers', group: 'lv', keywords: 'layers 2d 3d plan model building materials walls floors glass concrete block brick rf loss echo fire rating firestop camera view heat map scenario dxf' },
+  { id: 'campus', label: 'Multi-Building Site & Campus', group: 'lv', keywords: 'campus site multi building outbuilding fiber underground aerial conduit handhole pole wireless bridge point to point fresnel cable schedule site plan bom' },
   { id: 'alarm', label: 'Fire Alarm & Batteries', group: 'lv', keywords: 'nfpa 72 battery standby nac voltage drop mass notification' },
   { id: 'erces', label: 'Emergency Radio (ERCES / BDA)', group: 'lv', keywords: 'bda das public safety donor antenna aim' },
   { id: 'indoor', label: 'Indoor Coverage & DAS', group: 'lv', keywords: 'indoor walls floor plan das antennas' },

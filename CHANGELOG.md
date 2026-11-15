@@ -1,3 +1,11 @@
+# LvPlan Pro 1.5.61
+
+- **🏫 Multi-Building Site & Campus** (new page after 2D & 3D Models): plan a whole site with more than one building. The main building comes from Auto-Design; add outbuildings, a gym, a guard house or a parking deck, each with its own type, size, floors and outside walls.
+- **Site plan in 2D and 3D**: every building to scale on one site plan with all its system layers, plus a layer for each building so you can show or hide one. Drag a building's ✥ handle to move it; turn it with the Turn box.
+- **Links between buildings**: underground or aerial fiber, underground copper, empty conduit, or a wireless bridge. The app works out the route length, cable length with slack, handholes every 300 ft, poles every 150 ft for aerial, and for wireless the signal margin and whether another building blocks the path (60% Fresnel clearance).
+- **Outdoor signal heat map** for the whole site, using each building's outside walls.
+- **Cable schedule** and **site materials list** (cable, conduit, handholes, poles, fiber enclosures, entrance protectors, wireless radios), with CSV download and **Add to Materials list**. **CAD drawing (DXF)** of the whole site.
+- **Introduction video**: a new part shows the site and campus package.
 # LvPlan Pro 1.5.60
 
 - **Starts about twice as fast.** Each page now loads the first time you open it instead of all at start, so the app downloads 427 KB instead of 922 KB before it is ready (online version, slow phone connection: about 2.7 s instead of 5.6 s) and uses a third less memory.

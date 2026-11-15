@@ -49,3 +49,27 @@ describe('layered model', () => {
     expect(pct(hard)).toBeLessThan(pct(soft));
   });
 });
+
+describe('multi-building site', () => {
+  it('places buildings, links and outdoor signal', async () => {
+    const { buildCampus, campusBom, linkResults } = await import('../src/engine/campus');
+    const p = proj('custom'); p.meta.subSystems = ['firealarm', 'cabling', 'wifi', 'erces'];
+    p.campus = { main: { name: 'Main', x: 0, y: 0, rot: 0 }, buildings: [
+      { id: 'b', name: 'Gym', x: 400, y: 0, rot: 0, inputs: { bldg: 'school', floors: 4, lengthFt: 120, widthFt: 80 } },
+      { id: 'c', name: 'Annex', x: 900, y: 0, rot: 90, inputs: { bldg: 'office', floors: 3, lengthFt: 100, widthFt: 60 } },
+    ], links: [{ id: 'l1', from: 'main', to: 'b', kind: 'fiber-ug', strands: 12 }, { id: 'l2', from: 'main', to: 'c', kind: 'wireless', strands: 0 }] };
+    const { scene, buildings } = buildCampus(p);
+    expect(buildings.map((b) => b.code)).toEqual(['A', 'B', 'C']);
+    expect(scene.footprints).toHaveLength(3);
+    expect(scene.layers.some((l) => l.id === 'bldg:b')).toBe(true);
+    expect(scene.devices.some((d) => d.tag.startsWith('B-'))).toBe(true);
+    const lr = linkResults(p);
+    const ug = lr.find((r) => r.link.id === 'l1')!;
+    expect(ug.straightFt).toBeCloseTo(200, 0); // main is 200 ft long, gym starts at 400
+    expect(ug.cableFt).toBeGreaterThan(ug.routeFt);
+    const w = lr.find((r) => r.link.id === 'l2')!;
+    expect(w.wireless?.blockedBy).toContain('Gym'); // the 4-storey gym stands between A and C, above the path
+    expect(campusBom(p).some((m) => m.item.includes('OSP fiber'))).toBe(true);
+    expect(scene.heat.some((h) => h.layer.endsWith(':siteheat'))).toBe(true);
+  });
+});
