@@ -124,6 +124,28 @@ The cache lives in the app's storage on that device (browser profile for the USB
 **Web browser / flash drive copy:** browsers can't talk to RadioReference directly. Download the county's CSV from RadioReference.com and tap **Import a CSV**, then delete the downloaded file.
 
 The **Emergency Radio (ERCES / BDA)** page lists the county's public-safety channels from this list.` },
+  { id: 'fcc', title: 'FCC towers & licenses', page: 'fcc', keywords: 'fcc uls asr antenna structure registration tower license licensee call sign frequency frequencies public safety business microwave paging who is on the tower co-locate donor erces bda offline', summary: 'See the FCC-registered towers and licensed transmitters around any spot, who is on each tower and on what frequencies. Built in, works offline.',
+    body: `**Look around** a project site, an address, GPS coordinates or your device's GPS, or tap the map. Pick the distance, and narrow it by **band** (VHF, UHF, 700, 800, 900, microwave), **kind of user** (public safety, business, commercial, microwave, paging) or a name, call sign or frequency.
+
+**🗼 Towers** are FCC Antenna Structure Registrations: owner, structure, overall height above ground, ground elevation, distance and azimuth (true and compass), and FAA marking and lighting. Tap **▸ licenses** to see who is on the tower and their frequencies. **+ Add as site** adds it to Site Data & GPS, **Use as donor** aims the ERCES donor antenna at it, **FAA check** opens the FAA Height Check for it.
+
+**📻 Licenses** are active FCC licenses with a transmitter near the spot: call sign, licensee and phone, radio service, frequencies, station class (base, repeater, mobile), power (ERP) and emission (for example 8K10F1E = P25 digital, 11K2F3E = analog). The **county** tab lists licenses for mobiles and portables anywhere in the project county. **⬇ CSV** saves the list.
+
+The data is the FCC's public weekly files for NC, SC, GA, TN and VA, built into the app and updated with each app update. **FCC ↗** opens the live FCC page when you are online. FCC data is public; RadioReference talkgroups are kept separate and protected.` },
+  { id: 'faa', title: 'FAA height check', page: 'faa', keywords: 'faa part 77 77.9 notice 7460-1 oe/aaa airport runway heliport height tower mast antenna obstruction notice criteria tool towair asr registration 200 ft imaginary surface', summary: 'Find out whether a new tower, mast or antenna needs FAA notice (Form 7460-1), with the airports built in so it works offline.',
+    body: `Pick the structure location (a project site, an address, GPS, or **FAA check** on an FCC tower) and type the **overall height above ground**, to the very top including antennas and the lightning rod. The **ground elevation** fills in by itself (from the site, terrain or USGS); type a surveyed value if you have one.
+
+The check follows 14 CFR 77.9: notice is needed for anything **over 200 ft above ground**, or taller than a surface that rises from the nearest point of the nearest runway: **1 ft up for every 100 ft out to 20,000 ft** (longest runway over 3,200 ft), **1 for 50 out to 10,000 ft** (shorter runways) and **1 for 25 out to 5,000 ft** for heliports. It counts public-use, military and instrument-approach airports; a private airport counts only if it has an FAA instrument approach.
+
+The result shows **Needed / Not needed / Check**, the **tallest structure without notice** at that spot, and each nearby airport with the surface height and your margin. If notice is needed, file Form 7460-1 on FAA OE/AAA at least 45 days ahead; the tower then also needs FCC Antenna Structure Registration. **Save airport on site** stores the nearest airport for the Code Compliance checks.
+
+Not counted: roads and railroads under the structure (77.9(c)), shielding (77.9(e)). Always confirm with the FAA Notice Criteria Tool (button) and keep the printout.` },
+  { id: 'mappacks', title: 'Offline map packs', page: 'mappacks', keywords: 'offline map pack download satellite imagery topo terrain area no signal no internet field rural mountain storage size estimate progress', summary: 'Download satellite pictures, topo maps and terrain for a whole job area before going where there is no signal.',
+    body: `Choose the **area**: around your project sites, around an address or GPS point, or (on Map & Terrain) what the map shows. Pick the **detail** (street level suits most jobs) and **what to save**: satellite pictures, satellite with roads and names, topo map, shaded relief, and terrain (needed for path profiles, line of sight, coverage and 3D).
+
+Before you download you see the **area size, number of tiles and about how many MB**, and the free space on the device. **⬇ Download map pack** shows the percent done, tiles, MB and time left; you can open other pages while it runs (a **⬇ Map pack** badge at the top shows progress) and **■ Stop** keeps what was downloaded.
+
+**Saved on this device** lists each pack: **Finish** downloads anything missing, **Update** downloads it all again for the newest pictures, **Verify** checks what is on the device, **Delete** removes it (tiles another pack uses are kept). Packs use public-domain USGS maps and pictures and USGS 3DEP terrain.` },
   { id: 'equipment', title: 'Equipment & link budget', page: 'equipment', keywords: 'equipment radio antenna feeder coax heliax lmr eirp erp link budget mapl sensitivity margin fade shadow body loss penetration', summary: 'Choose band, radio, antenna and feeder; the app computes EIRP, ERP and Maximum Allowable Path Loss.',
     body: `**EIRP** (Effective Isotropic Radiated Power) = TX power − feeder loss − jumper/connector loss + antenna gain (dBi). **ERP** = EIRP − 2.15 dB.
 

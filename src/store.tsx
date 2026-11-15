@@ -20,6 +20,8 @@ export interface Runtime {
   terrainStatus?: string; mapStatus?: string; locate?: LocateTarget | null; query?: string;
   /** Set after Save or an export with required fields empty: only then are they highlighted. */
   showRequired?: boolean;
+  /** A point handed from one tool to another (FCC towers → FAA height check, etc.). */
+  focus?: { lat: number; lon: number; label?: string; heightFt?: number; groundM?: number | null } | null;
 }
 export type SaveState = 'loading' | 'saving' | 'saved' | 'error' | 'unavailable';
 

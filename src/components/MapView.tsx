@@ -48,6 +48,30 @@ function towersOverlay(m: L.Map): L.LayerGroup {
   return g;
 }
 
+const asrIcon = L.divIcon({ className: 'tower-pin', html: '<div style="background:#ff9800;color:#000;border-radius:3px;padding:0 2px">🗼</div>', iconSize: [22, 22], iconAnchor: [11, 20] });
+/** FCC Antenna Structure Registrations (built in, works offline) as a map layer. */
+function fccOverlay(m: L.Map): L.LayerGroup {
+  const g = L.layerGroup(); let timer: number | undefined; let seq = 0;
+  const refresh = () => {
+    if (!m.hasLayer(g)) return;
+    if (m.getZoom() < 9) { g.clearLayers(); return; }
+    const b = m.getBounds(), my = ++seq;
+    import('../engine/fccdata').then(({ towersInBox, structureName }) => towersInBox(b.getSouth(), b.getWest(), b.getNorth(), b.getEast()).then((ts) => {
+      if (my !== seq) return; g.clearLayers(); const labels = m.getZoom() >= 12;
+      for (const t of ts.slice(0, 800)) {
+        const h = t.heightAglM != null ? `${Math.round(t.heightAglM * 3.28084)} ft` : '';
+        L.marker([t.lat, t.lon], { icon: asrIcon, keyboard: false })
+          .bindPopup(`<b>FCC ASR ${t.regNo}</b><br>${esc(t.owner)}<br>${esc(structureName(t.type))}${h ? `, ${h} above ground` : ''}<br>${esc(t.status)}${t.faaStudy ? `<br>FAA study ${esc(t.faaStudy)}` : ''}<br>${t.lat.toFixed(5)}, ${t.lon.toFixed(5)}<br><span style="color:#777">Who is on it: FCC Towers & Licenses page.</span>`)
+          .bindTooltip(esc(`${h}${h ? ' · ' : ''}${t.owner.split(/[,]/)[0]}`), { permanent: labels, direction: 'right', offset: [10, -8], className: 'tower-label' }).addTo(g);
+      }
+    })).catch(() => g.clearLayers());
+  };
+  m.on('moveend zoomend', () => { window.clearTimeout(timer); timer = window.setTimeout(refresh, 400); });
+  g.on('add', () => { try { localStorage.setItem('radioplan.fccTowers', '1'); } catch { /* ignore */ } refresh(); });
+  g.on('remove', () => { if (!(m as unknown as { _lvClosing?: boolean })._lvClosing) try { localStorage.setItem('radioplan.fccTowers', '0'); } catch { /* ignore */ } g.clearLayers(); });
+  return g;
+}
+
 /** Base maps. `bulk: true` = public-domain (USGS) sources that may be pre-downloaded for offline use.
  *  OSM-community and Esri tiles are cached only as you view them, per their usage policies. */
 export const BASEMAPS: Record<string, { url: string; attr: string; max: number; bulk: boolean }> = {
@@ -142,9 +166,10 @@ export function MapView({ sites, txId, rxId, coverage, floor = -110, dem, onClic
     try { chosen = base ?? localStorage.getItem('radioplan.basemap') ?? DEFAULT_BASE; } catch { /* ignore */ }
     (bases.current[chosen] ?? bases.current[DEFAULT_BASE]).addTo(m); baseName.current = bases.current[chosen] ? chosen : DEFAULT_BASE;
     m.on('baselayerchange', (e: L.LayersControlEvent) => { baseName.current = e.name; try { localStorage.setItem('radioplan.basemap', e.name); } catch { /* ignore */ } });
-    const towers = towersOverlay(m);
-    L.control.layers(bases.current, { '📡 Existing towers & comm sites': towers }, { position: 'topright' }).addTo(m);
+    const towers = towersOverlay(m), fcc = fccOverlay(m);
+    L.control.layers(bases.current, { '📡 Existing towers & comm sites': towers, '🗼 FCC registered towers (offline)': fcc }, { position: 'topright' }).addTo(m);
     try { if (localStorage.getItem('radioplan.towers') === '1') towers.addTo(m); } catch { /* ignore */ }
+    try { if (localStorage.getItem('radioplan.fccTowers') === '1') fcc.addTo(m); } catch { /* ignore */ }
     L.control.scale({ imperial: true, metric: true }).addTo(m);
     addLocateControl(m);
     m.on('click', (e: L.LeafletMouseEvent) => { if (drawRef.current) return; if (measRef.current) setMpts((x) => [...x, { lat: e.latlng.lat, lon: e.latlng.lng }]); else clickRef.current?.(e.latlng.lat, e.latlng.lng); });

@@ -44,3 +44,6 @@ export async function cachedFetchBlob(url: string, preferCache = true): Promise<
     throw e;
   }
 }
+export const cacheDelete = (url: string) => tx('readwrite', (s) => s.delete(url)).catch(() => undefined);
+/** Size of a cached tile in bytes, or 0 when it is not cached. */
+export const cacheSize = (url: string) => cacheGet(url).then((b) => b?.size ?? 0);
