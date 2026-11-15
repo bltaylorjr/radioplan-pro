@@ -92,7 +92,7 @@ export function LvCalcCard({ c }: { c: LvCalc }) {
         </label>))}</div>
       {notes.length > 0 && <ul className="calc-msgs">{notes.map((i, n) => <li key={n} className={i.level}>⚠ {issueText(i)}</li>)}</ul>}
       {chk.out ? chk.out.map((o) => { const [val, un] = shownIn(o.value, o.unit, sys); return <div key={o.label} className={'calc-out' + (o.tone ? ' ' + o.tone : '')}><span>{o.label}</span><b>{val}{un && <small> {un}</small>}</b></div>; })
-        : <p className="small calc-wait">{chk.missing.length ? `Fill in ${chk.missing.join(', ')} to see the result.` : 'Fix the entry marked in red to see the result.'}</p>}
+        : <p className="small calc-wait">{chk.missing.length ? `Fill in ${chk.missing.join(', ')} to see the result.` : notes.some((i) => i.level === 'bad') ? 'Fix the problem above to see the result.' : 'Fix the entry marked in red to see the result.'}</p>}
       {c.note && <p className="small muted">{c.note}</p>}
       <CalcActions applyWhat={`“${c.title}”`}
         apply={c.apply && chk.out ? () => c.apply!(full()).map((t) => ({ id: t.id, label: t.label, page: t.page, sets: [[t.path, t.value]], to: t.to, on: t.on, now: (p) => { const x = getPath(p, t.path); return x == null ? '' : t.show ? t.show(x) : String(x); } })) : undefined}
