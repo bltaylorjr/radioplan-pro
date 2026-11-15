@@ -1,3 +1,8 @@
+# LvPlan Pro 1.5.40
+
+- **RadioReference download progress.** While a county downloads you see a progress bar with the percent done, the step it is on (find county, agencies, frequencies, trunked systems, save), what it is reading right now (for example "Frequencies: Fire · Dispatch, 7 of 12"), running counts of frequencies, lists, trunked systems, sites and talkgroups, the time so far and about how long is left. **Stop download** stops it.
+- The download keeps going if you open another page. A **⬇ RadioRef 57%** badge at the top shows how far along it is; tap it to go back. When it finishes, the badge shows ✓ and the page lists what was saved.
+
 # LvPlan Pro 1.5.39
 
 - **Azimuth everywhere a direction matters.** Every azimuth is shown in degrees **true (°T)**, as on maps, GPS and FCC filings, and as a **compass (°M)** reading, with the compass point (NE, SSW…). Magnetic declination comes from the World Magnetic Model WMM2025, built in, so it works offline (about 7° west around Asheville).

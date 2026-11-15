@@ -174,7 +174,7 @@ export function parseResponse(xml: string): Val {
   const ret = kidsOf(resp)[0];
   return ret ? toVal(ret) : '';
 }
-export async function call(method: string, args: Arg[], login: RrLogin): Promise<Val> {
+export async function callApi(method: string, args: Arg[], login: RrLogin): Promise<Val> {
   const w = await wsdl();
   const xml = await http(w.endpoint, envelope(w.ns, method, args, login, w.parts[method]), `${w.ns}#${method}`);
   return parseResponse(xml);
@@ -266,6 +266,7 @@ export async function testLogin(login: RrLogin): Promise<string> {
 }
 
 const STATE_IDS: Record<string, number> = { NC: 37, SC: 45, GA: 13, TN: 47, VA: 51 };
+const call = callApi;
 async function findStid(code: string, login: RrLogin): Promise<number> {
   try {
     const c = await call('getCountryInfo', [['coid', 1]], login);
@@ -276,14 +277,24 @@ async function findStid(code: string, login: RrLogin): Promise<number> {
   return STATE_IDS[code];
 }
 
-export interface DlOptions { trunked: boolean; statewide: boolean; signal?: { cancelled: boolean }; progress?: (msg: string, frac: number) => void }
+/** Live progress of a download, for the progress panel. */
+export interface DlProgress {
+  stage: 'start' | 'county' | 'agencies' | 'frequencies' | 'trunked' | 'saving' | 'done';
+  /** Step within the stage and how many there are (e.g. frequency list 12 of 40). */
+  step: number; of: number;
+  /** Counts downloaded so far. */
+  freqs: number; lists: number; agencies: number; systems: number; sites: number; talkgroups: number; requests: number; problems: number;
+}
+export interface DlOptions { trunked: boolean; statewide: boolean; signal?: { cancelled: boolean }; progress?: (msg: string, frac: number, p: DlProgress) => void }
 export async function downloadCounty(state: string, county: string, login0: RrLogin, o: DlOptions): Promise<RrDownload> {
   const login = { ...login0, appKey: effectiveKey(login0) };
   if (!login.appKey) throw new RrError('No app key entered yet', 'key');
-  const say = o.progress ?? (() => undefined);
+  const pr: DlProgress = { stage: 'start', step: 0, of: 0, freqs: 0, lists: 0, agencies: 0, systems: 0, sites: 0, talkgroups: 0, requests: 0, problems: 0 };
+  const say = (msg: string, frac: number, stage: DlProgress['stage'] = pr.stage, step = pr.step, of = pr.of) => { Object.assign(pr, { stage, step, of, problems: warnings.length }); o.progress?.(msg, frac, { ...pr }); };
+  const call = (m: string, a: Arg[], l: RrLogin) => { pr.requests++; return callApi(m, a, l); };
   const stop = () => { if (o.signal?.cancelled) throw new RrError('Download stopped'); };
   const warnings: string[] = [];
-  say('Finding the state…', 0.02);
+  say('Finding the state…', 0.02, 'start', 1, 3);
   const stid = await findStid(state, login);
   const st = await call('getStateInfo', [['stid', stid]], login);
   const counties = list(st, 'countyList', 'counties');
@@ -292,7 +303,7 @@ export async function downloadCounty(state: string, county: string, login0: RrLo
   const ctid = num(hit, 'ctid');
   if (!ctid) throw new RrError(`RadioReference has no county named “${county}” in ${state}`);
   const ctName = new Map<number, string>(counties.map((c) => [num(c, 'ctid') ?? 0, str(c, 'countyName', 'name')]));
-  say(`Reading ${str(hit, 'countyName') || county}…`, 0.06);
+  say(`Reading ${str(hit, 'countyName') || county}…`, 0.06, 'county', 3, 3);
   const ci = await call('getCountyInfo', [['ctid', ctid]], login);
 
   // Conventional frequencies: the county's categories, plus (optional) statewide agencies.
@@ -305,13 +316,13 @@ export async function downloadCounty(state: string, county: string, login0: RrLo
   const seenA = new Set<number>();
   for (const [i, a] of agencies.entries()) {
     stop(); const aid = num(a, 'aid'); if (!aid || seenA.has(aid)) continue; seenA.add(aid);
-    say(`Agency ${str(a, 'aName', 'name')}…`, 0.08 + 0.12 * (i / Math.max(1, agencies.length)));
-    try { const ai = await call('getAgencyInfo', [['aid', aid]], login); const g: RrGroup = { name: str(a, 'aName', 'name') || str(ai, 'aName'), kind: 'agency', subcats: [] }; groups.push(g); addCats(list(ai, 'cats'), g); }
+    say(`Agency: ${str(a, 'aName', 'name')}`, 0.08 + 0.12 * (i / Math.max(1, agencies.length)), 'agencies', i + 1, agencies.length);
+    try { const ai = await call('getAgencyInfo', [['aid', aid]], login); const g: RrGroup = { name: str(a, 'aName', 'name') || str(ai, 'aName'), kind: 'agency', subcats: [] }; groups.push(g); addCats(list(ai, 'cats'), g); pr.agencies++; }
     catch (e) { if (e instanceof RrError && e.kind !== 'other') throw e; warnings.push(`Agency ${str(a, 'aName')}: ${(e as Error).message}`); }
   }
   for (const [i, j] of jobs.entries()) {
-    stop(); say(`Frequencies: ${j.name}`, 0.2 + 0.45 * (i / Math.max(1, jobs.length)));
-    try { const fr = await call('getSubcatFreqs', [['scid', j.scid]], login); j.group.subcats.push({ name: j.name, freqs: list(fr).map(mapFreq).filter((f) => f.out !== null) }); }
+    stop(); say(`Frequencies: ${j.group.kind === 'agency' ? j.group.name + ' · ' : ''}${j.name}`, 0.2 + 0.45 * (i / Math.max(1, jobs.length)), 'frequencies', i + 1, jobs.length);
+    try { const fr = await call('getSubcatFreqs', [['scid', j.scid]], login); const fs = list(fr).map(mapFreq).filter((f) => f.out !== null); j.group.subcats.push({ name: j.name, freqs: fs }); pr.freqs += fs.length; pr.lists++; }
     catch (e) { if (e instanceof RrError && e.kind !== 'other') throw e; warnings.push(`${j.name}: ${(e as Error).message}`); }
   }
 
@@ -324,7 +335,7 @@ export async function downloadCounty(state: string, county: string, login0: RrLo
     for (const [i, { s, local }] of all.entries()) {
       stop(); const sid = num(s, 'sid'); if (!sid || seen.has(sid)) continue; seen.add(sid);
       const name = str(s, 'sName', 'name');
-      say(`Trunked system ${name}…`, 0.65 + 0.33 * (i / Math.max(1, all.length)));
+      say(`Trunked system: ${name} (sites and talkgroups)`, 0.65 + 0.33 * (i / Math.max(1, all.length)), 'trunked', i + 1, all.length);
       try {
         const d = await call('getTrsDetails', [['sid', sid]], login).catch(() => '' as Val);
         const sites = list(await call('getTrsSites', [['sid', sid]], login)).map((x) => mapSite(x, (c) => ctName.get(c) ?? ''));
@@ -335,13 +346,15 @@ export async function downloadCounty(state: string, county: string, login0: RrLo
           const cats = new Map<number, string>(list(d, 'talkgroupCats', 'tgCats').map((c) => [num(c, 'tgCid') ?? -1, str(c, 'tgCname', 'name')]));
           tgs = list(await call('getTrsTalkgroups', [['sid', sid], ['tgCid', 0], ['tgTag', 0], ['tgDec', 0]], login)).map((t) => mapTalkgroup(t, cats));
         } catch (e) { if (e instanceof RrError && e.kind !== 'other') throw e; warnings.push(`${name} talkgroups: ${(e as Error).message}`); }
+        pr.systems++; pr.sites += mine.length; pr.talkgroups += tgs.length;
         systems.push({ sid, name: name || str(d, 'sName'), type: str(s, 'sType') || str(d, 'sType', 'sTypeDescr'), city: str(s, 'sCity') || str(d, 'sCity'), sysid: str(d, 'sysid', 'sysId'), sites: mine, talkgroups: tgs });
       } catch (e) { if (e instanceof RrError && e.kind !== 'other') throw e; warnings.push(`${name}: ${(e as Error).message}`); }
     }
   }
-  say('Saving on this device…', 0.99);
+  say('Saving on this device (encrypted)…', 0.99, 'saving', 1, 1);
   const dl: RrDownload = { key: dlKey(state, county), state, county, ctid, fetchedAt: new Date().toISOString(), groups: groups.filter((g) => g.subcats.length), systems, warnings, source: 'api' };
   await kvSet(dl.key, dl);
+  say('Done', 1, 'done', 1, 1);
   return dl;
 }
 

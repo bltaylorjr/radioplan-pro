@@ -354,3 +354,16 @@ body { font-size: clamp(15px, 0.6vw + 12.5px, 17px); }
 .measure-panel { margin: 4px 0; }
 .az-line { color: var(--muted); }
 .az-line b { color: var(--ink); }
+
+/* RadioReference download progress */
+.rr-progress { border: 1px solid var(--border, #cfd6e0); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 8px; margin: 8px 0; }
+.rr-bar { height: 14px; border-radius: 7px; background: rgba(127,127,127,.18); overflow: hidden; }
+.rr-bar > div { height: 100%; background: #2f7de1; border-radius: 7px; transition: width .4s ease; }
+.rr-bar > div.ok { background: #2e9b57; }
+.rr-bar > div.bad { background: #c94a3a; }
+.rr-stages { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; padding: 0; margin: 0; font-size: .85em; }
+.rr-stages li { padding: 2px 8px; border-radius: 10px; background: rgba(127,127,127,.12); color: inherit; opacity: .7; }
+.rr-stages li.done { opacity: 1; }
+.rr-stages li.now { opacity: 1; background: #2f7de1; color: #fff; }
+.rr-counts { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.rr-chip { cursor: pointer; border: 0; font: inherit; }
