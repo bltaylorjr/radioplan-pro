@@ -467,13 +467,15 @@ Enter measured values and mark pass/fail; the results print in the Commissioning
 
 Distances and lengths follow **Measurements** on Company & Project: Imperial (ft, in, mi, the default) or Metric (m, mm, km).` },
 
-  { id: 'settings', title: 'User settings and data check', page: 'settings', keywords: 'user settings preferences turn off tools hide pages menu checkbox show all tools only what i need project type turned on notice check my data verify validate errors wrong entry invalid blank empty null zero range typo unit mistake',
+  { id: 'settings', title: 'User settings and data check', page: 'settings', keywords: 'info icon i hover explain value meaning default industry standard use default typical range source user settings preferences turn off tools hide pages menu checkbox show all tools only what i need project type turned on notice check my data verify validate errors wrong entry invalid blank empty null zero range typo unit mistake',
     summary: 'Turn tools on or off in the menu, and check the whole project for empty, out-of-range or mismatched entries with the fix for each.',
     body: `**Tools shown in the menu**: untick any tool you do not use. It leaves the menu, the step numbers and Next / Previous; nothing is deleted and you can tick it again any time. **Show every tool** brings them all back; **Only what this project needs** keeps just the tools for the project's systems. The choice is for you on this device and applies to every project. Company & Project, Project Systems, Projects and User Settings always show.
 
 **Automatic turn-on**: when you pick a project type or add a sub-project, any tool that job needs is turned back on and a notice lists what was turned on. On a custom project the needed tools are also added to your page pick.
 
 **Wrong or blank entries**: every number box checks what you type. If it is outside the normal range (for example a negative length, or 2,500 % fill) the box turns red, a message says what is wrong, and a **Use …** button offers the likely value (a slipped decimal point or the wrong unit). The last good value is kept until you fix it. A blank box is never counted as zero: calculators ask you to fill it in, and optional boxes are skipped.
+
+**ⓘ beside each value**: point at it (or tap it) to see what the value means, its unit, the typical and allowed range, and the industry-standard default with its source. **Use default** puts that value in the box.
 
 **Cross-checks**: calculators also compare related values, for example a cable wider than the conduit, a device minimum voltage above the supply, alarm current below standby current, or an ear height above the ceiling.
 

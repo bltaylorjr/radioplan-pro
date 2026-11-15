@@ -7,8 +7,9 @@ import { PAGE_GROUPS, ALWAYS_PAGES, suggestPages } from '../data/customPages';
 import { WORKFLOW_LABELS } from '../data/pageLabels';
 import { LvCalc, checkCalc } from '../data/lvcalcs';
 import { Issue, issueText } from '../engine/validate';
+import { CALC_INPUT_INFO, FieldInfo } from '../data/fieldInfo';
 import type { Project } from '../types';
-import { Num, MeasureCtx, shownIn } from './ui';
+import { Num, MeasureCtx, shownIn, fieldInfoFor } from './ui';
 
 /** Set the main type and sub-projects; turns on the matching design pages. */
 export function applySystems(d: Project, type: string | undefined, subs: string[]) {
@@ -88,7 +89,7 @@ export function LvCalcCard({ c }: { c: LvCalc }) {
       <div className="form">{c.inputs.map((i) => (
         <label key={i.k} className="field"><span className="field-label">{i.label}</span>
           {i.options ? <select value={v[i.k] ?? i.v} onChange={(e) => setV({ ...v, [i.k]: parseFloat(e.target.value) })}>{i.options.map(([n, l]) => <option key={n} value={n}>{l}</option>)}</select>
-            : <Num nullable required={!i.optional} label={i.label} min={i.min} max={i.max} integer={i.integer} step={i.step ?? 'any'} value={i.k in v ? v[i.k] : i.v} onChange={(x) => setV({ ...v, [i.k]: x })} unit={i.unit} />}
+            : <Num nullable required={!i.optional} label={i.label} min={i.min} max={i.max} integer={i.integer} step={i.step ?? 'any'} value={i.k in v ? v[i.k] : i.v} onChange={(x) => setV({ ...v, [i.k]: x })} unit={i.unit} info={calcInputInfo(c, i)} />}
         </label>))}</div>
       {notes.length > 0 && <ul className="calc-msgs">{notes.map((i, n) => <li key={n} className={i.level}>⚠ {issueText(i)}</li>)}</ul>}
       {chk.out ? chk.out.map((o) => { const [val, un] = shownIn(o.value, o.unit, sys); return <div key={o.label} className={'calc-out' + (o.tone ? ' ' + o.tone : '')}><span>{o.label}</span><b>{val}{un && <small> {un}</small>}</b></div>; })
@@ -102,3 +103,9 @@ export function LvCalcCard({ c }: { c: LvCalc }) {
 }
 /** Range problems are shown next to the box itself, so the card list only shows cross-checks and general notes. */
 const isRangeIssue = (i: Issue) => / must be | is not a number/.test(i.msg);
+
+/** ⓘ text for a calculator input: its explanation, and the calculator's standard value as the default. */
+function calcInputInfo(c: LvCalc, i: LvCalc['inputs'][number]): FieldInfo {
+  const what = CALC_INPUT_INFO[`${c.id}.${i.k}`] ?? fieldInfoFor(i.label, i.unit)?.what ?? `${i.label.replace(/\s*\(optional\)$/i, '')} for this calculation.`;
+  return { what, def: i.optional ? undefined : i.v, src: 'common value; see the note under this calculator' };
+}
