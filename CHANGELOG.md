@@ -1,3 +1,11 @@
+# LvPlan Pro 1.5.54
+
+- **Everything updates itself when online.** Besides the app itself, LvPlan Pro now downloads newer **code editions and state rules, city and county code lists, contacts and web links, the equipment catalog, manufacturer recommendations, the help manual and the magnetic model** from the LvPlan Pro website as soon as they are published, with no app update needed (this matters most on Android and the flash drive). Each download is checked (SHA-256, and that it is laid out the way this version of the app understands) before it is used, and a spare copy is kept. A short notice says when code information changed.
+- **Maps around every project stay fresh.** The topo map the app saves around your sites is now kept complete and downloaded fresh twice a year, like areas you save yourself.
+- **Saved datasheets stay current.** Datasheets saved from a manufacturer link are downloaded again twice a year; a download that is not a real document never replaces the saved one. An empty or unreadable one is downloaded again by itself.
+- **Safe start.** If the app did not finish starting last time, it starts once with only its built-in data.
+- **Introduction video**: the Automatic care part now covers online updates for codes and other data.
+
 # LvPlan Pro 1.5.48
 
 - **🔧 Automatic care: the app looks after itself and its data.** Nothing to set up. A new **Automatic care** card on **Projects** shows what it keeps checked and when, with **Check everything now**.

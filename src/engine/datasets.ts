@@ -1,14 +1,15 @@
 // The app's own datasets, registered with the automatic care engine (maintain.ts).
 // Other features add theirs the same way: registerDataset({...}) in their own module, imported once from here.
 import { registerDataset, MaintCtx, MaintState } from './maintain';
-import { addVersion, demIntact, getRecord, getRecordVerified, kvGet, kvSet, listProjects, listVersions, loadTerrain, recordIntact, terrainIds } from './projectdb';
+import { addVersion, demIntact, getRecord, getRecordVerified, kvGet, kvKeys as kvKeysPrefix, kvSet, listProjects, listVersions, loadTerrain, recordIntact, terrainIds } from './projectdb';
 import { cacheDelete, scanDamaged } from './tilecache';
 import { prefetchTiles } from './offline';
 import type { Bounds } from './autoterrain';
 import { refCounts } from './refdata';
-import { declinationDeg } from './azimuth';
+import { declinationDeg, getMagModel } from './azimuth';
 import { canReachApi, checkDownload, countFreqs, downloadCounty, downloadKeys, keepSpare, loadDownloadByKey, loadLogin, restoreSpare, putDownloadRaw } from './radioref';
 import { currentJob } from './rrjob';
+import './contentupdate'; // codes, contacts, catalog, help and magnetic model from the website
 
 const H = 3600e3, DAY = 24 * H;
 export const STATE_KEY = 'maint.state.v1';
@@ -146,12 +147,52 @@ registerDataset({
 
 // ---------------------------------------------------------------- data built into the app (comes with app updates)
 registerDataset({
-  id: 'builtin', label: 'Built-in maps of counties, ZIPs, codes and magnetic model', everyHours: 0, updatedBy: 'comes with app updates',
+  id: 'builtin', label: 'Built-in county and ZIP maps', everyHours: 0, updatedBy: 'comes with app updates',
   async verify(ctx: MaintCtx) {
     const c = refCounts();
     if (!c.counties || !c.zips) return { ok: false, problem: 'built-in county / ZIP data did not load; restart the app' };
-    if (new Date(ctx.now).getUTCFullYear() >= 2030) return { ok: false, problem: 'the magnetic model (WMM2025) ends in 2030; an app update brings the new one' };
+    const mm = getMagModel(); if (new Date(ctx.now).getUTCFullYear() >= mm.epoch + 5) return { ok: false, problem: `the magnetic model (${mm.name}) has ended; the new one downloads by itself when online` };
     if (!Number.isFinite(declinationDeg({ lat: 35.6, lon: -82.55 }, ctx.now))) return { ok: false, problem: 'the magnetic model could not be read' };
     return { ok: true };
   },
 });
+
+// ---------------------------------------------------------------- datasheets saved from a web link
+// Saved from a manufacturer link: fetched again twice a year so the newest revision is kept. A download that is
+// not a real document (an error page, empty) never replaces the saved one. Attached files (no link) are left alone.
+interface Sheet { name: string; type: string; size: number; blob: Blob; savedAt: string; from?: string }
+const SHEET = 'datasheet:';
+registerDataset({
+  id: 'datasheets', label: 'Saved datasheets', everyHours: 24 * 7, verifyEveryHours: 24 * 7,
+  async verify() {
+    let bad = 0; for (const k of await kvKeysPrefix(SHEET)) { const v = await kvGet<Sheet>(k); if (!v || !(v.blob instanceof Blob) || !v.blob.size) bad++; }
+    return bad ? { ok: false, problem: `${bad} saved datasheet${bad > 1 ? 's' : ''} empty or unreadable` } : { ok: true };
+  },
+  async repair() {
+    let fixed = 0, gone = 0;
+    for (const k of await kvKeysPrefix(SHEET)) {
+      const v = await kvGet<Sheet>(k); if (v && v.blob instanceof Blob && v.blob.size) continue;
+      const got = v?.from ? await fetchSheet(v.from) : null;
+      if (got) { await kvSet(k, got); fixed++; } else gone++;
+    }
+    return [fixed && `downloaded ${fixed} again`, gone && `${gone} need to be attached again (open it in the Specifications Library)`].filter(Boolean).join('; ');
+  },
+  async refresh(ctx) {
+    let n = 0;
+    for (const k of await kvKeysPrefix(SHEET)) {
+      const v = await kvGet<Sheet>(k); if (!v?.from || ctx.now - Date.parse(v.savedAt) < 180 * DAY) continue;
+      const got = await fetchSheet(v.from);
+      if (got) { await kvSet(k, got); n++; } else await kvSet(k, { ...v, savedAt: new Date(ctx.now).toISOString() }); // try again in six months
+    }
+    return { changed: n > 0, detail: n ? `${n} datasheet${n > 1 ? 's' : ''} refreshed` : 'datasheets current' };
+  },
+});
+async function fetchSheet(url: string): Promise<Sheet | null> {
+  try {
+    const r = await fetch(url, { mode: 'cors', cache: 'no-store' }); if (!r.ok) return null;
+    const blob = await r.blob(); if (blob.size < 1024 || /text\/html/.test(blob.type)) return null;
+    const head = new Uint8Array(await blob.slice(0, 5).arrayBuffer());
+    if (/pdf/.test(blob.type) || /\.pdf($|\?)/i.test(url)) { if (String.fromCharCode(...head) !== '%PDF-') return null; }
+    return { name: decodeURIComponent(url.split('/').pop()?.split('?')[0] || 'datasheet.pdf'), type: blob.type || 'application/pdf', size: blob.size, blob, savedAt: new Date().toISOString(), from: url };
+  } catch { return null; }
+}

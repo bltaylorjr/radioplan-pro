@@ -50,7 +50,8 @@ export function AutoCare() {
       <ul className="small muted">
         <li>Before every app update, and before going back to an earlier version, a copy of the open project goes into its History. A backup of each changed project is made every day; the last 7 days are kept.</li>
         <li>App updates are checked against the file's SHA-256 before they install. If a new version does not start properly 3 times, the Windows app goes back to the last version that worked{good ? ` (${good})` : ''}{skip ? `, and skips ${skip} until a newer one comes out` : ''}.</li>
-        <li>RadioReference lists stay encrypted on this device; their spare copy too. Codes, county data and the magnetic model come with app updates.</li>
+        <li>When online, newer code editions, city and county code lists, contacts, the equipment catalog, manufacturer recommendations, help and the magnetic model download by themselves from the LvPlan Pro website, are checked, and are used right away (the catalog from the next start). Maps around your sites and datasheets saved from a link are kept fresh too.</li>
+        <li>RadioReference lists stay encrypted on this device; their spare copy too.</li>
       </ul>
       {log.length > 0 && <details><summary className="small">What the app did recently</summary><ul className="small">{log.map((l, i) => <li key={i}>{new Date(l.at).toLocaleString()}: {l.what}</li>)}</ul></details>}
     </Card>
