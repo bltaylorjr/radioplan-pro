@@ -468,3 +468,5 @@ button.nav-group-title:hover { color: #fff; }
 .layer-group .legend-chip input { margin: 0 2px 0 0; }
 .swatch { width: 12px; height: 12px; border-radius: 3px; display: inline-block; border: 1px solid #0003; }
 .tone-ok { color: var(--ok, #2e7d32); font-weight: 600; } .tone-warn { color: var(--warn, #b26a00); font-weight: 600; } .tone-bad { color: var(--bad, #c62828); font-weight: 600; }
+.ps-howto summary { cursor: pointer; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 4px 0; }
+.ps-howto ol { margin: 6px 0 10px; padding-left: 22px; } .ps-howto li { margin: 3px 0; }

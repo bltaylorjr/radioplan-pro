@@ -7,6 +7,7 @@ import { useStore } from '../store';
 import { Card, Num, Tip, fmt } from '../components/ui';
 import { MapView } from '../components/MapView';
 import { askConfirm } from '../components/askConfirm';
+import { IntroVideo } from '../components/IntroVideo';
 import { uid } from '../defaults';
 import { useUnits } from '../units';
 import { readPhotoMeta } from '../engine/exif';
@@ -235,6 +236,7 @@ export function PhotoSurveyPage() {
   const setPhoto = (id: string, f: Partial<SurveyPhoto>) => setSpot((s) => ({ ...s, photos: s.photos.map((q) => (q.id === id ? { ...q, ...f } : q)) }));
   const [msg, setMsg] = useState('');
   const [busy, setBusy] = useState('');
+  const [howto, setHowto] = useState(false);
   const compass = useCompass();
   const [layers, setLayersS] = useState(loadLayers);
   const setLayer = (k: LayerId, v: boolean) => setLayersS((x) => { const n = { ...x, [k]: v }; try { localStorage.setItem(LAYER_KEY, JSON.stringify(n)); } catch { /* ignore */ } return n; });
@@ -386,6 +388,18 @@ export function PhotoSurveyPage() {
   return (
     <div className="stack">
       <Card title="Photo site survey" tip="Take photos (one, several views around you, or a panorama) where you plan to put an antenna or a tower. The app places them in the direction they face, matches them to the terrain, and shows the horizon, towers, sites, what blocks the view and the signal right on the pictures.">
+        <details className="ps-howto">
+          <summary><b>📱 How to take a panorama correctly</b> <button className="primary" onClick={(e) => { e.preventDefault(); setHowto(true); }}>▶ Play (1 min)</button></summary>
+          <ol className="small">
+            <li><b>Turn on location and the compass</b> on the phone (and “Save location” in the camera), so each photo saves where you stood and which way it faced.</li>
+            <li><b>Stand still in one spot.</b> Turn your body on the spot; do not walk around.</li>
+            <li><b>Hold the phone level, at eye height.</b> Keep the horizon (where the sky meets the ground) in every picture.</li>
+            <li><b>Overlap each photo with the last one by about a third.</b> That is about 8 to 12 photos all the way around, or one sweep in the phone's Panorama mode.</li>
+            <li><b>Do not zoom.</b> Use the normal 1× camera, so the app knows how wide each photo is.</li>
+            <li><b>No location in your photos?</b> Some apps and messages remove it. Press <b>📷 Take photos here</b> and the app saves your position for you.</li>
+          </ol>
+        </details>
+        {howto && <IntroVideo file="panorama-howto.mp4" title="How to take a panorama" about="Six quick steps for photos the app can place and line up, with captions. " onClose={() => setHowto(false)} />}
         <p className="small">Stand at the spot, then take photos all the way around, or one panorama. The photo's GPS and compass tell the app where you stood and which way each photo faces. <b>Tip:</b> keep some sky above the hills in each photo, so the app can line them up with the terrain.</p>
         <div className="row wrap">
           <label className="btn primary" onClick={() => compass.start()}>📷 Take photos here<input hidden type="file" accept="image/*" capture="environment" multiple onChange={(e) => { addFiles(e.target.files, true); e.target.value = ''; }} /></label>
