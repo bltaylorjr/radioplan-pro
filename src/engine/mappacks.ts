@@ -6,6 +6,9 @@ import { tileRange } from './webmercator';
 import { cacheGet, cacheDelete, cachedFetchBlob } from './tilecache';
 import { TERRARIUM_URL, type Bounds } from './autoterrain';
 import { tileUrl } from './offline';
+import { rememberTileArea, loadTileAreas } from './datasets';
+const TILE_AREAS_KEY = 'maint.tileAreas.v1';
+const TERRARIUM_TPL = 'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png';
 
 /** Layers a pack can hold. Only public-domain sources (USGS, AWS open terrain) may be bulk-downloaded. */
 export const PACK_LAYERS: Record<string, { label: string; url: string; maxZ: number; kbPerTile: number; note: string }> = {
@@ -96,6 +99,10 @@ export async function downloadPack(p: MapPack, onProgress: (pr: PackProgress) =>
   onProgress({ ...pr });
   const out: MapPack = { ...p, tiles: pr.done - pr.failed, failed: pr.failed + (urls.length - pr.done), bytes: pr.bytes, complete: pr.done === urls.length && pr.failed === 0 };
   await upsertPack(out);
+  // Automatic care keeps saved areas complete and fresh (fills gaps monthly, new copy twice a year).
+  const tpls = p.layers.map((k) => PACK_LAYERS[k]?.url).filter(Boolean) as string[];
+  if (tpls.length) await rememberTileArea({ templates: tpls, b: p.bounds, zMin: p.zMin, zMax: p.zMax }).catch(() => undefined);
+  if (p.terrain) { const tz = terrainZooms(p.zMax); if (tz.length) await rememberTileArea({ templates: [TERRARIUM_TPL], b: p.bounds, zMin: tz[0], zMax: tz[tz.length - 1] }).catch(() => undefined); }
   return out;
 }
 
@@ -111,8 +118,12 @@ export async function deletePack(id: string): Promise<number> {
   const all = await listPacks(); const p = all.find((x) => x.id === id); if (!p) return 0;
   const rest = all.filter((x) => x.id !== id);
   const keep = new Set<string>(); for (const o of rest) for (const u of packUrls(o)) keep.add(u);
-  let n = 0; for (const u of packUrls(p)) if (!keep.has(u)) { await cacheDelete(u); n++; }
+  const gone = packUrls(p).filter((u) => !keep.has(u));
+  await cacheDelete(gone);
   await savePacks(rest);
+  // stop the automatic care from refilling this area (Projects → Automatic care)
+  const areas = await loadTileAreas(); await kvSet(TILE_AREAS_KEY, areas.filter((a) => !(a.b.north === p.bounds.north && a.b.south === p.bounds.south && a.b.east === p.bounds.east && a.b.west === p.bounds.west)));
+  const n = gone.length;
   return n;
 }
 

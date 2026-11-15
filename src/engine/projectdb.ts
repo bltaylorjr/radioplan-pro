@@ -3,13 +3,19 @@
 // and in the USB / browser build in the browser profile. Optionally mirrored to a folder (e.g. on the USB drive).
 import type { Project } from '../types';
 import type { DemGrid } from './terrain';
+import { checksumOf, isIntact, wrapChecked, Checked } from './maintain';
 
 export interface ProjectRecord {
   id: string; name: string; number: string; client: string; state: string;
   created: number; updated: number; bytes: number; sites: number; project: Project;
+  /** SHA-256 of the project, to notice damaged storage. */
+  sum?: string;
 }
 export type ProjectSummary = Omit<ProjectRecord, 'project'> & { hasTerrain?: boolean };
-export interface VersionRecord { vid?: number; pid: string; at: number; reason: string; name: string; bytes: number; project: Project }
+/** daily = automatic daily backup, safety = taken before an update or repair. These are kept longer than autosaves. */
+export type VersionKeep = 'daily' | 'safety';
+export interface VersionRecord { vid?: number; pid: string; at: number; reason: string; name: string; bytes: number; project: Project; sum?: string; keep?: VersionKeep }
+export const KEEP_DAILY = 7, KEEP_SAFETY = 5;
 export interface BackupEntry { record: Omit<ProjectRecord, 'project'>; project: Project; terrain?: SerialDem | null }
 export interface SerialDem extends Omit<DemGrid, 'data'> { b64: string }
 export const BACKUP_FORMAT = 'radioplan-backup/1';
@@ -27,8 +33,25 @@ export function summarize(id: string, p: Project, created: number, now = Date.no
   };
 }
 /** Version ids to delete so that only the newest `keep` remain. */
-export function pruneIds(versions: { vid?: number; at: number }[], keep = KEEP_VERSIONS): number[] {
-  return [...versions].sort((a, b) => b.at - a.at).slice(keep).map((v) => v.vid!).filter((v) => v != null);
+export function pruneIds(versions: { vid?: number; at: number; keep?: VersionKeep }[], keep = KEEP_VERSIONS): number[] {
+  // Autosaves: the newest `keep`. Daily backups (last week) and safety copies (before updates/repairs) are kept apart,
+  // so a long day of autosaves never pushes them out.
+  const old = (kind: VersionKeep | undefined, n: number) => [...versions].filter((v) => v.keep === kind).sort((a, b) => b.at - a.at).slice(n);
+  return [...old(undefined, keep), ...old('daily', KEEP_DAILY), ...old('safety', KEEP_SAFETY)].map((v) => v.vid!).filter((v) => v != null);
+}
+/** Is a stored project record readable and unchanged since it was saved? */
+export async function recordIntact(r: { project?: unknown; sum?: string } | undefined): Promise<boolean> {
+  const p = r?.project as Project | undefined;
+  if (!p || typeof p !== 'object' || !p.meta || typeof p.meta !== 'object' || !p.radio || !Array.isArray(p.sites)) return false;
+  return !r!.sum || (await checksumOf(p)) === r!.sum;
+}
+/** Is a terrain grid complete (right number of heights, real numbers)? */
+export function demIntact(g: unknown): boolean {
+  const d = g as DemGrid | undefined;
+  if (!d || !(d.data instanceof Float32Array) || !(d.ncols > 0) || !(d.nrows > 0) || !Number.isFinite(d.west) || !Number.isFinite(d.north) || !(d.cellDeg > 0)) return false;
+  if (d.data.length !== d.ncols * d.nrows) return false;
+  let good = 0; for (let i = 0; i < d.data.length; i += 97) if (Number.isFinite(d.data[i])) good++;
+  return good > 0;
 }
 export function encodeDem(g: DemGrid): SerialDem {
   const u = new Uint8Array(g.data.buffer, g.data.byteOffset, g.data.byteLength);
@@ -86,6 +109,7 @@ export const getRecord = (id: string) => run<ProjectRecord | undefined>('project
 export async function putProject(id: string, p: Project, now = Date.now()): Promise<ProjectRecord> {
   const old = await getRecord(id);
   const r = summarize(id, p, old?.created ?? now, now);
+  r.sum = await checksumOf(p).catch(() => undefined);
   await run('projects', 'readwrite', (s) => s.put(r)); return r;
 }
 export async function listProjects(): Promise<ProjectSummary[]> {
@@ -100,9 +124,15 @@ export async function deleteProject(id: string) {
 }
 export type StoredDem = DemGrid & { auto?: boolean };
 export const saveTerrain = (id: string, g: DemGrid | null, auto?: boolean) => run('terrain', 'readwrite', (s) => g ? s.put(auto === undefined ? g : { ...g, auto }, id) : s.delete(id));
-export const loadTerrain = (id: string) => run<StoredDem | undefined>('terrain', 'readonly', (s) => s.get(id)).then((g) => g ?? null).catch(() => null);
-export async function addVersion(pid: string, p: Project, reason: string, now = Date.now()) {
-  await run('versions', 'readwrite', (s) => s.add({ pid, at: now, reason, name: p.meta?.name ?? '', bytes: JSON.stringify(p).length, project: p } as VersionRecord));
+/** A damaged terrain grid is dropped, so the app downloads it again by itself. */
+export const loadTerrain = (id: string) => run<StoredDem | undefined>('terrain', 'readonly', (s) => s.get(id)).then(async (g) => {
+  if (g && !demIntact(g)) { await run('terrain', 'readwrite', (s) => s.delete(id)).catch(() => undefined); return null; }
+  return g ?? null;
+}).catch(() => null);
+export const terrainIds = () => run<IDBValidKey[]>('terrain', 'readonly', (s) => s.getAllKeys()).then((k) => k.map(String)).catch(() => [] as string[]);
+export async function addVersion(pid: string, p: Project, reason: string, now = Date.now(), keep?: VersionKeep) {
+  const sum = await checksumOf(p).catch(() => undefined);
+  await run('versions', 'readwrite', (s) => s.add({ pid, at: now, reason, name: p.meta?.name ?? '', bytes: JSON.stringify(p).length, project: p, sum, ...(keep ? { keep } : {}) } as VersionRecord));
   const del = pruneIds(await listVersions(pid));
   for (const vid of del) await run('versions', 'readwrite', (s) => s.delete(vid));
 }
@@ -113,6 +143,31 @@ export async function listVersions(pid: string): Promise<VersionRecord[]> {
 export const getVersion = (vid: number) => run<VersionRecord | undefined>('versions', 'readonly', (s) => s.get(vid));
 export const kvGet = <T,>(k: string) => run<T | undefined>('kv', 'readonly', (s) => s.get(k)).catch(() => undefined);
 export const kvSet = (k: string, v: unknown) => run('kv', 'readwrite', (s) => v === undefined ? s.delete(k) : s.put(v, k));
+/** The project as saved, checked. If the saved copy is damaged, the newest good version from history is put back.
+ *  `restored` says when that happened (for a plain notice). */
+export async function getRecordVerified(id: string): Promise<{ record: ProjectRecord | undefined; restored?: VersionRecord; damaged?: boolean }> {
+  const r = await getRecord(id).catch(() => undefined);
+  if (!r || (await recordIntact(r))) return { record: r };
+  for (const v of await listVersions(id).catch(() => [] as VersionRecord[])) {
+    if (!(await recordIntact(v))) continue;
+    return { record: await putProject(id, v.project), restored: v };
+  }
+  return { record: r, damaged: true };
+}
+/** Store a value with a checksum and keep the previous good copy (key + '#prev'). */
+export async function putChecked(k: string, v: unknown) {
+  const cur = await kvGet<Checked<unknown>>(k);
+  if (cur && (await isIntact(cur))) await kvSet(k + '#prev', cur);
+  await kvSet(k, await wrapChecked(v));
+}
+/** Read a checked value; a damaged one is replaced by the previous good copy. */
+export async function getChecked<T>(k: string): Promise<{ v: T | undefined; repaired?: boolean }> {
+  const cur = await kvGet<Checked<T>>(k);
+  if (cur && (await isIntact(cur))) return { v: cur.v };
+  const prev = await kvGet<Checked<T>>(k + '#prev');
+  if (prev && (await isIntact(prev))) { await kvSet(k, prev); return { v: prev.v, repaired: true }; }
+  return { v: undefined, repaired: cur !== undefined };
+}
 /** Keys in the app database that start with a prefix. */
 export const kvKeys = async (prefix: string) => ((await run<IDBValidKey[]>('kv', 'readonly', (s) => s.getAllKeys()).catch(() => [] as IDBValidKey[])).map(String).filter((k) => k.startsWith(prefix)));
 
@@ -131,11 +186,14 @@ const unb64 = (s: string) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
 /** Everything in the app's own database besides projects: your library, contacts, web links and saved datasheets. */
 /** Keys that are protected information: kept on this device only (not in backups, sync or exports). */
 export const isPrivateKey = (k: string) => k.startsWith('radioref.');
+/** Keys that only describe this device (automatic care state, spare copies): not carried in backups or sync. */
+export const isDeviceKey = (k: string) => k.startsWith('maint.') || k.endsWith('#prev');
 export async function kvDump(): Promise<Record<string, unknown>> {
   const keys = await run<IDBValidKey[]>('kv', 'readonly', (s) => s.getAllKeys()).catch(() => [] as IDBValidKey[]);
   const out: Record<string, unknown> = {};
   for (const k of keys) {
     if (isPrivateKey(String(k))) continue; // RadioReference data and sign-in never leave the device
+    if (isDeviceKey(String(k))) continue; // this device's own upkeep records and spare copies
     const v = await kvGet<unknown>(String(k)); if (v === undefined) continue;
     const enc1 = async (x: unknown) => { const blob = (x as { blob?: Blob })?.blob; return blob instanceof Blob ? { ...(x as object), blob: { __b64: b64(new Uint8Array(await blob.arrayBuffer())), type: blob.type } } : x; };
     out[String(k)] = Array.isArray(v) ? await Promise.all(v.map(enc1)) : await enc1(v);
@@ -146,7 +204,7 @@ export async function kvDump(): Promise<Record<string, unknown>> {
 export async function kvRestore(kv: Record<string, unknown> | undefined): Promise<number> {
   let n = 0;
   for (const [k, raw] of Object.entries(kv ?? {})) {
-    if (isPrivateKey(k)) continue;
+    if (isPrivateKey(k) || isDeviceKey(k)) continue;
     const dec1 = (x: unknown) => { const enc = (x as { blob?: { __b64?: string; type?: string } })?.blob; return enc?.__b64 ? { ...(x as object), blob: new Blob([unb64(enc.__b64)], { type: enc.type }) } : x; };
     let v = (Array.isArray(raw) ? raw.map(dec1) : dec1(raw)) as Record<string, unknown> | unknown[];
     const cur = await kvGet<unknown>(k);
@@ -205,6 +263,20 @@ export async function writeToFolder(h: Dir, id: string, p: Project) {
   const w = await fh.createWritable(); await w.write(JSON.stringify(p, null, 1)); await w.close();
   // Remove an older file of the same project saved under a previous name.
   if (h.values) for await (const e of h.values()) if (e.kind === 'file' && e.name.endsWith(`.${id}.radioplan.json`) && e.name !== folderFileName(id, p)) await h.removeEntry(e.name).catch(() => undefined);
+}
+/** Delete this project's file(s) from the data folder. */
+export async function removeFromFolder(h: Dir, id: string) {
+  if (!h.values) return;
+  const names: string[] = [];
+  for await (const e of h.values()) if (e.kind === 'file' && e.name.endsWith(`.${id}.radioplan.json`)) names.push(e.name);
+  for (const n of names) await h.removeEntry(n).catch(() => undefined);
+}
+/** Projects deleted on this device: a folder sync must not bring them back. */
+const DELETED = 'deletedProjects';
+export const deletedProjectIds = async () => new Set((await kvGet<string[]>(DELETED)) ?? []);
+export async function markProjectDeleted(id: string, deleted = true) {
+  const ids = await deletedProjectIds(); if (deleted) ids.add(id); else ids.delete(id);
+  await kvSet(DELETED, [...ids].slice(-500));
 }
 export async function readFolder(h: Dir): Promise<BackupEntry[]> {
   const out: BackupEntry[] = [];

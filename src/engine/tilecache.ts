@@ -44,6 +44,22 @@ export async function cachedFetchBlob(url: string, preferCache = true): Promise<
     throw e;
   }
 }
-export const cacheDelete = (url: string) => tx('readwrite', (s) => s.delete(url)).catch(() => undefined);
+
+/** Cached tiles that are empty or no longer readable (they are downloaded again when next needed). */
+export async function scanDamaged(limit = 5000): Promise<string[]> {
+  const d = await db();
+  return new Promise((res) => {
+    const bad: string[] = [];
+    const c = d.transaction(STORE).objectStore(STORE).openCursor();
+    c.onsuccess = () => {
+      const cur = c.result; if (!cur || bad.length >= limit) { res(bad); return; }
+      const v = cur.value as Blob | undefined;
+      if (!v || typeof (v as Blob).size !== 'number' || v.size === 0) bad.push(String(cur.key));
+      cur.continue();
+    };
+    c.onerror = () => res(bad);
+  });
+}
+export async function cacheDelete(keys: string[]) { for (const k of keys) await tx('readwrite', (s) => s.delete(k)).catch(() => undefined); }
 /** Size of a cached tile in bytes, or 0 when it is not cached. */
 export const cacheSize = (url: string) => cacheGet(url).then((b) => b?.size ?? 0);

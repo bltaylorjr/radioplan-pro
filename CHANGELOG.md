@@ -1,10 +1,45 @@
-# LvPlan Pro 1.5.46
+# LvPlan Pro 1.5.49
 
 - **🗼 FCC Towers & Licenses** (new page, works offline). Pick a project site, an address or your GPS and see every FCC-registered tower and licensed transmitter nearby: owner, height above ground, distance and azimuth, and **who is on each tower and on what frequencies** (licensee and phone, radio service, station class, power, analog or digital). Narrow it by band (VHF, UHF, 700, 800, 900, microwave), by kind of user (public safety, business, commercial, microwave, paging) or by name, call sign or frequency. A county tab lists county-wide mobile licenses. **+ Add as site**, **Use as donor** (ERCES) and **FAA check** on every tower, **⬇ CSV** to save the list. The FCC public data for NC, SC, GA, TN and VA (22,710 registered towers, 48,841 active licenses) is built into the app and updates with each app update. A new **🗼 FCC registered towers** map layer shows them on every map, and Site Data & GPS lists them under Existing towers nearby.
 - **✈ FAA Height Check** (new page, works offline). Type the overall height; the ground height fills in. The app applies 14 CFR 77.9 to every airport and heliport nearby (FAA airport data built in) and shows **Needed / Not needed / Check**, the **tallest structure without notice** at that spot, and each airport's distance, rule and your margin. Links to the FAA Notice Criteria Tool, OE/AAA and TOWAIR. **✈ Fill from FAA data** on Site Data & GPS fills the nearest public airport for the code checks.
 - **FCC Class B booster registration** (Emergency Radio page). Fills in the registration from the project (operator from the client, location, booster make, model and FCC ID, passbands), checks the **5 W ERP per channel** limit, finds the **public-safety licensees** whose channels are in the passbands, writes each **consent request letter**, tracks when consent comes back, and copies everything ready to paste into the FCC site.
 - **⬇ Offline map packs** (new Tools page, also on Map & Terrain). Choose an area around your sites or an address or GPS point, pick the detail and what to save (satellite pictures, topo, shaded relief, terrain), see the size and free space first, then download with percent, MB and time left. It keeps going on other pages (a badge at the top shows progress). Saved packs can be finished, updated, verified or deleted. With no signal, terrain now uses the most detailed saved level.
 - **Introduction video**: a new part shows the FCC towers and licenses, the FAA height check, booster registration and map packs.
+# LvPlan Pro 1.5.48
+
+- **🔧 Automatic care: the app looks after itself and its data.** Nothing to set up. A new **Automatic care** card on **Projects** shows what it keeps checked and when, with **Check everything now**.
+- **Checks and repairs saved data by itself.** Each saved project now carries a SHA-256 checksum. A damaged project is put back from its last good version, damaged terrain and map tiles are removed and downloaded again, and a damaged RadioReference list is put back from its encrypted spare copy. A short plain notice tells you when something was fixed.
+- **Keeps downloaded data current when online.** RadioReference county lists refresh every 30 days (Windows and Android, while logged in; still encrypted, still only on this device). Areas saved for offline maps are kept complete monthly and downloaded fresh twice a year. A new copy replaces the old one only after it passes its check; if a download fails, the old copy stays and it tries again later.
+- **Backups before changes.** Each changed project gets a daily backup (the last 7 days are kept apart from autosaves), and a copy goes into History before every app update.
+- **Safer updates.** The Windows app checks each update's SHA-256 before installing it. If a new version fails to start 3 times in a row, it goes back to the last version that worked and skips the bad one until a fix comes out. If the app ever stops at start, it shows a Restart button instead of a blank window.
+- **For new features:** downloaded packs (FCC, FAA, map packs and others) plug into the same automatic checks, repairs and refreshes.
+- **Introduction video**: a new part shows Automatic care, including a damaged project being put back by itself.
+# LvPlan Pro 1.5.44
+
+- **🧭 Azimuth calculator** on Calculators: type two GPS positions or addresses (or pick project sites) and get the azimuth from A to B and the back azimuth from B to A, both in degrees true (°T) and as a compass reading (°M) with the declination at each end, the distance in miles, and the up / down tilt at each antenna from the ground and antenna heights (with the earth's curve). Ground heights fill in from the built-in or project terrain, so it works offline; online, **Look up** asks USGS.
+- **Every calculator stands on its own.** Calculators start from examples and keep their own numbers: changing the project no longer changes them, and they never change the project by themselves.
+- **↺ Reset** on each calculator puts just that one back to its example.
+- **⇣ Use project values** copies the matching project numbers into a calculator (frequency, power, heights, k-factor, feeder, alarm values and more), without changing the project.
+- **➜ Apply to fields…** puts a calculator's result into the matching fields on other pages: the azimuth and downtilt on Tilt, Azimuth & Power, the donor tower for ERCES / BDA and DAS aiming, transmitter azimuth and tilt on Multi-site, TX power, RX sensitivity, feeder and k-factor, solar, ground rod, fire alarm battery and NAC circuit values. A box lists every field with its value now → the new value, so you can untick any you don't want; **Undo** right after, and a copy is kept in Projects → History.
+- **Introduction video**: a new part shows the azimuth calculator, Reset and Apply to fields.
+
+# LvPlan Pro 1.5.43
+
+- **Tilt, Azimuth & Power: side view of the beam over the real ground.** The side view now follows the ground along the antenna's azimuth (terrain and earth curve) and shows where the main beam and the −3 dB edges come down on it, with the ground colored by predicted signal and the far-end site when it is in the beam.
+- **True scale or stretched.** Pick **True scale (1 : 1)** to see heights and distances to the same scale, or stretch heights automatically or ×2 to ×50. Scale bars show a distance across and a height up. Pick the distance shown to look close in at the tower.
+- **2D or 3D.** **⛰ 3D view** shows the beam as a see-through green wedge over the terrain that stops where it meets the ground, with a tilt slider and an optional signal heat map.
+- **True scale on every side view and 3D view**: Path Profile, the chart under drawn lines, the ground profile of runs between sites, the 3D tilt view and the 3D terrain model. Path Profile heights are now in feet (or metres when metric is chosen).
+- **Introduction video**: a new part shows the side view in 2D and 3D, true scale and stretched.
+
+# LvPlan Pro 1.5.42
+
+- **⌫ Clear all fields on each page.** Every page with boxes to fill in has a **Clear all fields** button at the top, next to **? Page help**. It clears only that page's entries: lists are emptied and numbers go back to their starting values. Pages that only hold typed-in numbers (Calculators, Troubleshooting Wizard, Find Location) start over too.
+- **Asks first**: a Yes / No box says exactly what will be cleared on that page. Other pages, saved projects, the RadioReference login and downloads, the specifications library and contacts are never touched.
+- **↶ Undo** right after clearing puts the page back, and a copy from before is saved in Projects → History of this project.
+- Pages with nothing to type in (RadioReference, 3D Model, Map & Directions, Service, Library, Contacts, Projects, Sync) have no button. On a page that is already empty the button says "Nothing to clear".
+- **Delete works everywhere, with an "Are you sure?" box.** Deleting attached files (Projects & Storage, Reports), field notes, saved datasheets and manuals, library items, contacts, RadioReference saved lists, Wi-Fi readings, survey points, indoor walls and checklist ticks did nothing in the Windows app, because it used a browser pop-up the app does not show. Every delete now uses the app's own box with **Delete** and **Cancel** buttons, and the other yes / no questions use the same box.
+- **Deleted projects stay deleted** when a data folder (flash drive) is used: the project's file in the folder is deleted too, and Update folder no longer loads it back.
+- **Introduction video**: a new part shows Clear all fields and Undo.
 
 # LvPlan Pro 1.5.41
 

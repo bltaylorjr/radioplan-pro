@@ -51,6 +51,8 @@ export interface Terrain3DProps {
   routes?: { pts: LatLon[]; colors: string[] }[];
   /** Predicted signal (dBm) per mesh vertex, (meshN+1)² values, painted over the ground as a heat map. */
   heat?: Float32Array | null;
+  /** Antenna beam: a see-through wedge from the antenna out to where each part of the beam meets the ground. */
+  beam?: { lat: number; lon: number; aglM: number; azimuthDeg: number; tiltDeg: number; hBwDeg: number; vBwDeg: number; maxKm: number } | null;
   /** Tap / click on the ground: gives the spot's latitude and longitude (used to plot path points). */
   onPick?: (p: LatLon) => void;
   path?: { points: PathPoint[]; hops: { ok: boolean; los: boolean }[] } | null;
@@ -70,7 +72,7 @@ function setTilt(camera: THREE.PerspectiveCamera, ctl: OrbitControls, deg: numbe
 /** Interactive three.js terrain model with towers, the radio path and the first Fresnel zone. */
 export function Terrain3D(props: Terrain3DProps) {
   const mount = useRef<HTMLDivElement>(null);
-  const { dem, sites, fMHz, exag, marker, comm, drape, viewshed, obstructions, routes, heat } = props;
+  const { dem, sites, fMHz, exag, marker, comm, drape, viewshed, obstructions, routes, heat, beam } = props;
   const cam = useRef<{ camera: THREE.PerspectiveCamera; ctl: OrbitControls } | null>(null);
   const saved = useRef<{ dem: DemGrid; pos: THREE.Vector3; target: THREE.Vector3 } | null>(null);
   const tiltRef = useRef(props.tilt); tiltRef.current = props.tilt;
@@ -222,6 +224,41 @@ export function Terrain3D(props: Terrain3DProps) {
       tube.setAttribute('color', new THREE.BufferAttribute(col, 3));
       scene.add(new THREE.Mesh(tube, new THREE.MeshBasicMaterial({ vertexColors: true })));
     });
+    if (beam) { // the antenna beam: rays across the horizontal and vertical beamwidth, each stopped where it meets the ground
+      const g0 = sampleDem(dem, beam) ?? zmin, apexM = g0 + beam.aglM, ax = mx(beam.lon), az = mz(beam.lat);
+      const omni = beam.hBwDeg >= 360, nA = omni ? 49 : 15, nE = 5, step = Math.max(10, widthM / 300), maxM = beam.maxKm * 1000;
+      const ground = (x: number, z: number) => sampleDem(dem, { lat: lat0 - z / 110540, lon: lon0 + x / (111320 * Math.cos((lat0 * Math.PI) / 180)) });
+      const cast = (azDeg: number, downDeg: number) => {
+        const a = (azDeg * Math.PI) / 180, e = (downDeg * Math.PI) / 180, hx = Math.sin(a) * Math.cos(e), hz = -Math.cos(a) * Math.cos(e), vy = -Math.sin(e);
+        let t = step, hit = false;
+        for (; t <= maxM; t += step) { const g = ground(ax + hx * t, az + hz * t); if (g == null) break; if (apexM + vy * t <= g) { hit = true; break; } }
+        t = Math.min(t, maxM);
+        return { v: new THREE.Vector3(ax + hx * t, (apexM + vy * t - zmin) * exag, az + hz * t), hit };
+      };
+      const apex = new THREE.Vector3(ax, (apexM - zmin) * exag, az);
+      const grid: { v: THREE.Vector3; hit: boolean }[][] = [];
+      for (let i = 0; i < nA; i++) {
+        const azd = omni ? (360 * i) / (nA - 1) : beam.azimuthDeg - beam.hBwDeg / 2 + (beam.hBwDeg * i) / (nA - 1);
+        const row: { v: THREE.Vector3; hit: boolean }[] = [];
+        for (let j = 0; j < nE; j++) row.push(cast(azd, beam.tiltDeg - beam.vBwDeg / 2 + (beam.vBwDeg * j) / (nE - 1)));
+        grid.push(row);
+      }
+      const vs: number[] = [], tri = (a: THREE.Vector3, b: THREE.Vector3, c: THREE.Vector3) => vs.push(a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z);
+      for (let i = 0; i + 1 < nA; i++) {
+        for (let j = 0; j + 1 < nE; j++) { if (!grid[i][j].hit && !grid[i + 1][j].hit && !grid[i][j + 1].hit && !grid[i + 1][j + 1].hit) continue; // no wall in the air where the beam never comes down
+          tri(grid[i][j].v, grid[i + 1][j].v, grid[i + 1][j + 1].v); tri(grid[i][j].v, grid[i + 1][j + 1].v, grid[i][j + 1].v); }
+        tri(apex, grid[i][0].v, grid[i + 1][0].v); tri(apex, grid[i][nE - 1].v, grid[i + 1][nE - 1].v);
+      }
+      if (!omni) for (const i of [0, nA - 1]) for (let j = 0; j + 1 < nE; j++) tri(apex, grid[i][j].v, grid[i][j + 1].v);
+      const wg = new THREE.BufferGeometry(); wg.setAttribute('position', new THREE.Float32BufferAttribute(vs, 3)); wg.computeVertexNormals();
+      const wedge = new THREE.Mesh(wg, new THREE.MeshBasicMaterial({ color: 0x43a047, transparent: true, opacity: 0.2, side: THREE.DoubleSide, depthWrite: false })); wedge.renderOrder = 5; scene.add(wedge);
+      // footprint outline on the ground and the main-beam line
+      for (const j of [0, nE - 1]) { const run = grid.map((r) => r[j]); if (run.every((q) => q.hit)) scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(run.map((q) => q.v)), new THREE.LineBasicMaterial({ color: 0x1b5e20 }))); }
+      const mid = cast(beam.azimuthDeg, beam.tiltDeg);
+      scene.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.LineCurve3(apex, mid.v), 2, widthM / 900, 6), new THREE.MeshBasicMaterial({ color: 0x1b5e20 })));
+      if (mid.hit) { const dot = new THREE.Mesh(new THREE.SphereGeometry(widthM / 200, 16, 12), new THREE.MeshBasicMaterial({ color: 0xffeb3b })); dot.position.copy(mid.v); scene.add(dot);
+        const spr = labelSprite(`Main beam meets the ground ${fmtDist(Math.hypot(mid.v.x - ax, mid.v.z - az) / 1000)} out`, 'rgba(232,245,233,.95)', '#1b5e20', widthM, 4.5); spr.renderOrder = 10; spr.position.set(mid.v.x, mid.v.y + widthM / 60, mid.v.z); scene.add(spr); }
+    }
     if (comm?.length) {
       // existing towers: purple masts; the 15 nearest the middle (named ones first) get labels so the view stays readable
       const inside = comm.filter((c) => c.lat <= b.north && c.lat >= b.south && c.lon >= b.west && c.lon <= b.east);
@@ -264,7 +301,7 @@ export function Terrain3D(props: Terrain3DProps) {
     window.addEventListener('resize', onR);
     return () => { saved.current = { dem, pos: camera.position.clone(), target: ctl.target.clone() }; cam.current = null; cancelAnimationFrame(raf); window.removeEventListener('resize', onR); ctl.dispose(); renderer.dispose(); geo.dispose(); tex?.dispose(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dem, props.profile, exag, showF, sites, fMHz, props.txId, props.rxId, marker?.lat, marker?.lon, comm, drape, viewshed, obstructions, props.path, routes, heat]);
+  }, [dem, props.profile, exag, showF, sites, fMHz, props.txId, props.rxId, marker?.lat, marker?.lon, comm, drape, viewshed, obstructions, props.path, routes, heat, beam?.lat, beam?.lon, beam?.aglM, beam?.azimuthDeg, beam?.tiltDeg, beam?.hBwDeg, beam?.vBwDeg, beam?.maxKm]);
   useEffect(() => { // tilt slider: swing the camera up or down around the same point, keeping direction and distance
     const c = cam.current; if (!c || props.tilt == null) return;
     if (Math.abs((c.ctl.getPolarAngle() * 180) / Math.PI - props.tilt) < 0.5) return;

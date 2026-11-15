@@ -109,7 +109,7 @@ function Generator() {
   };
   return (
     <div>
-      <h4>Test signal generator</h4>
+      <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}><h4>Test signal generator</h4><button className="ghost small calc-reset" data-calc-reset title="Stop and put the generator back to a quiet 1 kHz tone" onClick={() => { node.current?.stop(); setSig('tone'); setHz(1000); setVol(0.2); }}>↺ Reset</button></div>
       <div className="row wrap">
         <select value={sig} onChange={(e) => setSig(e.target.value as Sig)} aria-label="Signal">
           <option value="tone">Sine tone</option><option value="pink">Pink noise</option><option value="sweep">Sweep 20 Hz – 20 kHz (10 s, repeats)</option>
@@ -124,9 +124,11 @@ function Generator() {
   );
 }
 
+/** True when the search words match the sound tools. */
+export const soundToolsMatch = (q: string) => q.toLowerCase().split(/\s+/).filter(Boolean).every((w) => `sound tools ${KEYS} paging`.includes(w));
+
 export function SoundTools({ q }: { q: string }) {
-  const words = q.toLowerCase().split(/\s+/).filter(Boolean);
-  if (!words.every((w) => `sound tools ${KEYS} paging`.includes(w))) return null;
+  if (!soundToolsMatch(q)) return null;
   return (
     <div className="card" data-tour="sound-tools">
       <h3>🔊 Sound tools (this device)</h3>

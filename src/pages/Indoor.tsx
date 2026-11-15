@@ -9,6 +9,7 @@ import { uid } from '../defaults';
 import type { IndoorDesign } from '../types';
 import { DonorAimCard } from '../components/DonorAim';
 import { Indoor3D, WALL_HEIGHT_M as WALL_H } from '../components/Indoor3D';
+import { askDelete } from '../components/askConfirm';
 
 type Tool = 'wall' | 'antenna' | 'erase';
 
@@ -92,7 +93,7 @@ export function IndoorPage() {
           {(['wall', 'antenna', 'erase'] as Tool[]).map((t) => <button key={t} className={tool === t ? 'primary' : ''} onClick={() => setTool(t)}>{t === 'wall' ? '✏ Draw wall' : t === 'antenna' ? '📡 Place antenna' : '⌫ Erase'}</button>)}
           {tool === 'wall' && <Sel value={d.currentMaterial} onChange={(v) => set('currentMaterial', v)} options={Object.entries(WALL_MATERIALS).map(([k, m]) => [k, `${m.label} (${wallLossDb(k, d.fMHz).toFixed(0)} dB)`] as [string, string])} />}
           {tool === 'antenna' && <><Num value={eirp} onChange={(v) => setEirp(v!)} unit="dBm EIRP" /><Txt value={model} onChange={setModel} /></>}
-          <button onClick={() => { if (confirm('Clear all walls and antennas?')) update((q) => { q.indoor.walls = []; q.indoor.antennas = []; }); }}>Clear</button>
+          <button onClick={async () => { if (await askDelete('Delete all walls and antennas?')) update((q) => { q.indoor.walls = []; q.indoor.antennas = []; }); }}>Clear</button>
         </div>
         <p className="small muted">Drag to draw walls (hold Shift for straight lines); click to place antennas; erase removes the nearest item. Grid = 5 m.</p>
       </Card>

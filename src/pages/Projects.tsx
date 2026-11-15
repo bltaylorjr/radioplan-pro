@@ -5,9 +5,10 @@ import { askConfirm } from '../components/askConfirm';
 import React, { useEffect, useState } from 'react';
 import { useStore, downloadText, safeName } from '../store';
 import { Card, Stat } from '../components/ui';
+import { AutoCare } from '../components/AutoCare';
 import {
   listProjects, listVersions, importEntries, getRecord, backupAll, readBackup, kvRestore, storageInfo, requestPersist, fmtBytes,
-  folderCopySupported, pickDataFolder, savedDataFolder, forgetDataFolder, folderAllowed, writeToFolder, readFolder,
+  folderCopySupported, pickDataFolder, savedDataFolder, forgetDataFolder, folderAllowed, writeToFolder, readFolder, removeFromFolder, deletedProjectIds,
   ProjectSummary, VersionRecord, StorageInfo, BackupEntry,
 } from '../engine/projectdb';
 import { refCounts, REF_SOURCE } from '../engine/refdata';
@@ -78,7 +79,11 @@ export function ProjectsPage() {
   };
   const syncFolder = async (h: NonNullable<Dir>) => {
     // Load projects from the folder that are new or newer, then write every project to the folder.
-    const inFolder = await readFolder(h); const mine = await listProjects(); const byId = new Map(mine.map((m) => [m.id, m]));
+    const gone = await deletedProjectIds();
+    const all = await readFolder(h); const mine = await listProjects(); const byId = new Map(mine.map((m) => [m.id, m]));
+    // Projects deleted on this device: delete their old copy in the folder instead of loading it back.
+    for (const e of all) if (gone.has(e.record.id) && !byId.has(e.record.id)) await removeFromFolder(h, e.record.id);
+    const inFolder = all.filter((e) => !gone.has(e.record.id) || byId.has(e.record.id));
     const newer = inFolder.filter((e) => !byId.has(e.record.id) || e.record.updated > (byId.get(e.record.id)!.updated + 2000));
     if (newer.length) {
       const cur = newer.find((e) => e.record.id === lib.projectId);
@@ -126,7 +131,7 @@ export function ProjectsPage() {
                 <button disabled={busy} title="Save as a file" onClick={() => exportOne(p.id)}>Export</button>
                 <button disabled={busy} className="danger" title="Delete this project from this device" onClick={async () => {
                   const open_ = p.id === lib.projectId, nm = (open_ ? project.meta.name : p.name) || 'this project';
-                  const yes = await askConfirm({ title: 'Delete project?', danger: true, ok: 'Yes, delete it', cancel: 'No, keep it',
+                  const yes = await askConfirm({ title: 'Are you sure?', danger: true, ok: 'Delete', cancel: 'Cancel',
                     message: <>Delete <b>“{nm}”</b> and its saved history from this device? This cannot be undone.{open_ && <><br /><br />It is the project that is open now, so the most recent other project opens instead (or a new blank one).</>}<br /><br /><span className="small muted">Tip: press Export first if you want a backup file.</span></> });
                   if (yes) act('Delete', () => lib.removeProject(p.id));
                 }}>Delete</button>
@@ -159,7 +164,7 @@ export function ProjectsPage() {
         {versions.length === 0 ? <p className="muted">No earlier versions yet.</p> : (
           <div className="tbl-wrap"><table className="tbl"><thead><tr><th>Saved</th><th>Why</th><th>Name</th><th></th></tr></thead>
             <tbody>{versions.map((v) => <tr key={v.vid}><td>{when(v.at)}</td><td>{v.reason}</td><td>{v.name}</td>
-              <td><button disabled={busy} onClick={() => { if (confirm('Go back to this version? The current state is kept in history first.')) act('Restore', () => lib.restoreVersion(v.vid!)); }}>Restore</button></td></tr>)}</tbody></table></div>)}
+              <td><button disabled={busy} onClick={async () => { if (await askConfirm({ title: 'Go back to this version?', message: 'The current state is kept in history first.', ok: 'Restore', cancel: 'Cancel' })) act('Restore', () => lib.restoreVersion(v.vid!)); }}>Restore</button></td></tr>)}</tbody></table></div>)}
       </Card>
 
       <Card title="Version & updates" tip="New versions are published on the LvPlan Pro GitHub page. The Windows app installs them by itself; Android and the flash drive offer a one-tap download.">
@@ -169,6 +174,8 @@ export function ProjectsPage() {
           <button disabled={busy || !navigator.onLine} onClick={() => act('Check for updates', async () => { const u = await checkForUpdate(); markChecked(); return u ? `Version ${u.version} is available. ${u.url ? 'It will be offered at the bottom of the screen; restart the app to install it now.' : ''}` : 'You have the latest version ✓'; })}>Check for updates now</button>
         </div>
       </Card>
+
+      <AutoCare />
 
       <Card title="Built-in reference data" tip="Installed with the app and used automatically when there is no internet.">
         <ul className="small">

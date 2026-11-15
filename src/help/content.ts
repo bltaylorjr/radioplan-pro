@@ -4,8 +4,8 @@ export interface TourStep { target: string; title: string; text: string }
 export interface HelpTopic { id: string; title: string; page?: string; keywords: string; summary: string; body: string; tour?: TourStep[] }
 
 export const HELP: HelpTopic[] = [
-  { id: 'getting-started', title: 'Getting started', keywords: 'start intro video tour overview workflow usb android install save open project', summary: 'The left sidebar is your workflow: work top to bottom from Company & Project to Testing.',
-    body: `LvPlan Pro walks a project from first site visit to commissioning. Press **▶ Video** at the top of the screen for a narrated, captioned tour of every page and tool (it plays offline). Press **⛶ Full page** above any map, 3D view or diagram to show it on its own full screen; **✕ Close** (or Esc) brings you back. The tour opens and plays by itself the first time the app is opened; if it starts without sound, tap **🔊 Tap to turn on the sound**. Press **Skip this step** at the bottom of any step you don't need on this job: it is greyed out in the menu and Next / Previous pass over it (open it from the menu and press **Don't skip it** to bring it back). Each page in the left sidebar is one **task**, in the order engineers normally perform them. Pages where work gets checked off (site survey, permits, installation, testing, closeout) have a **checklist** at the bottom; the sidebar shows ✓ when a checklist is finished.
+  { id: 'getting-started', title: 'Getting started', keywords: 'start clear reset erase undo intro video tour overview workflow usb android install save open project', summary: 'The left sidebar is your workflow: work top to bottom from Company & Project to Testing.',
+    body: `LvPlan Pro walks a project from first site visit to commissioning. Press **▶ Video** at the top of the screen for a narrated, captioned tour of every page and tool (it plays offline). Press **⛶ Full page** above any map, 3D view or diagram to show it on its own full screen; **✕ Close** (or Esc) brings you back. The tour opens and plays by itself the first time the app is opened; if it starts without sound, tap **🔊 Tap to turn on the sound**. Press **⌫ Clear all fields** at the top of a page to start that page over: it asks first, clears only that page (other pages, saved projects, the RadioReference login and downloads, the specifications library and contacts stay), and **↶ Undo** puts it back; a copy from before is also kept in Projects → History of this project. Press **Skip this step** at the bottom of any step you don't need on this job: it is greyed out in the menu and Next / Previous pass over it (open it from the menu and press **Don't skip it** to bring it back). Each page in the left sidebar is one **task**, in the order engineers normally perform them. Pages where work gets checked off (site survey, permits, installation, testing, closeout) have a **checklist** at the bottom; the sidebar shows ✓ when a checklist is finished.
 
 - Your work saves automatically in this computer's browser storage.
 - Use **Save project** (top bar) to write a .radioplan.json file you can keep on the USB drive, email, or open on the Android app.
@@ -248,12 +248,20 @@ Use survey data taken with the same transmitter, frequency and antenna height as
 Browsers and Android web apps cannot scan Wi-Fi themselves, so readings always come from a scan you paste or import. Windows and nmcli report signal as a percentage, converted with dBm ≈ % ÷ 2 − 100.`,
     tour: [ { target: 'wifi-setup', title: 'Setup', text: 'Floor plan, scale, target and network filter.' }, { target: 'wifi-add', title: 'Add readings', text: 'Click your spot on the plan, paste the scan, add.' }, { target: 'wifi-map', title: 'Views', text: 'Switch between signal, noise, SNR, channel and AP maps.' } ] },
 
-  { id: 'optimize', title: 'Tilt, azimuth & power', page: 'optimize', keywords: 'tilt downtilt azimuth power footprint shaping optimize sector beamwidth', summary: 'Shape the footprint: see where the main beam and −3 dB edges land and get a recommended downtilt.',
+  { id: 'optimize', title: 'Tilt, azimuth & power', page: 'optimize', keywords: 'tilt downtilt azimuth power footprint shaping optimize sector beamwidth side view to scale true scale 3d beam', summary: 'Shape the footprint: see where the main beam and −3 dB edges land and get a recommended downtilt.',
     body: `For an antenna at height h with downtilt θ and vertical beamwidth β:
 - Main beam hits the ground at d = h / tan θ.
 - Inner −3 dB edge at h / tan(θ + β/2); outer edge at h / tan(θ − β/2) (∞ when θ ≤ β/2).
 
 **Recommended tilt** places the upper −3 dB edge at your target cell radius: θ = atan(h/R) + β/2.
+
+**Side view of the beam**: shows the real ground along the antenna's azimuth (with the earth curve) and where the main beam and its −3 dB edges come down on it, so a hill in the way shows up. The ground is colored by predicted signal.
+- **📐 2D side view** or **⛰ 3D view**: the 3D view shows the beam as a see-through green wedge over the terrain that stops where it meets the ground, with a yellow dot where the main beam lands. Tick **Signal heat map** to shade predicted signal on the ground.
+- **Height scale**: **True scale (1 : 1)** draws heights and distances to the same scale, so the tower, hills and tilt angles look as they really are. **Stretched** makes heights taller so small hills are easy to see (tilt angles then look steeper); pick automatic or ×2 to ×50.
+- **Distance shown**: automatic, or pick a distance; a short distance in true scale shows the tower and the first stretch of ground up close.
+- Scale bars show a distance across and a height up.
+
+**True scale everywhere**: the same **Height scale** choice is on the Path Profile chart, the chart under drawn lines, the ground profile of runs between sites, and the 3D views (**True scale** button, or height boost / vertical exaggeration 1×). Maps, blueprints and floor plans are always drawn to scale.
 
 Adjust power to balance uplink and downlink and to avoid interference into neighbouring cells. Re-run coverage after changes.` },
 
@@ -373,7 +381,7 @@ This checker is a planning aid only. A licensed professional must verify complia
 
 Enter measured values and mark pass/fail; the results print in the Commissioning report.` },
 
-  { id: 'calculators', title: 'Calculators', page: 'calculators', keywords: 'calculator dbm watts microvolt field strength eirp erp wavelength dipole isolation tilt fspl fresnel horizon diffraction hata link budget vswr return loss coax noise floor intermod mpe erlang ohm voltage drop conductor battery solar ground rod guy wire distance bearing conversion awg', summary: 'Calculators for cabling, power, fire alarm, sound and audio (with a sound level meter and test tones), RF, antennas, grounding and units.',
+  { id: 'calculators', title: 'Calculators', page: 'calculators', keywords: 'calculator dbm watts microvolt field strength eirp erp wavelength dipole isolation tilt fspl fresnel horizon diffraction hata link budget vswr return loss coax noise floor intermod mpe erlang ohm voltage drop conductor battery solar ground rod guy wire distance bearing azimuth back azimuth magnetic compass tilt reset apply to fields use project values conversion awg', summary: 'Calculators for cabling, power, fire alarm, sound and audio (with a sound level meter and test tones), RF, antennas, grounding and units.',
     body: `Type in the search box to filter (for example "vswr", "voltage drop", "erlang").
 
 - **RF levels**: dBm ↔ W ↔ dBW, dBm ↔ µV / dBµV (50 Ω), field strength ↔ received power, EIRP / ERP.
@@ -384,7 +392,12 @@ Enter measured values and mark pass/fail; the results print in the Commissioning
 - **Traffic**: Erlang B channels for trunked systems.
 - **Electrical**: Ohm's law, voltage drop (DC, single- and three-phase), conductor sizing, battery bank, solar array.
 - **Grounding & structure**: ground rod resistance (Dwight), guy wire length.
-- **Location & units**: distance and bearing, DMS, unit and AWG conversions.
+- **Location & units**: the **azimuth calculator** (two GPS points or addresses → true and compass azimuth, back azimuth, distance in miles, and the up / down tilt from the antenna heights), magnetic declination, DMS, unit and AWG conversions.
+
+**Each calculator stands on its own.** It starts from an example and keeps its own numbers: changing the project does not change a calculator, and a calculator never changes the project by itself.
+- **↺ Reset** (top right of each calculator) puts just that calculator back to its example.
+- **⇣ Use project values** copies the matching numbers from this project into the calculator (the project is not changed).
+- **➜ Apply to fields…** puts the result into the matching fields on the other pages, for example the azimuth and downtilt on Tilt, Azimuth & Power, the donor tower for ERCES / BDA aiming, or the battery and circuit values on Fire Alarm & Batteries. A box lists every field with its value now → the new value; untick any you don't want. Press **Undo** right after if you change your mind, and a copy from before is kept in Projects → History.
 
 Distances and lengths follow **Measurements** on Company & Project: Imperial (ft, in, mi, the default) or Metric (m, mm, km).` },
 
@@ -486,10 +499,12 @@ Every sheet has a **title block** (your company, project, seal box, revisions, d
 Export: Reports page (PDF, Word, Excel, HTML, CSV, KML), Blueprints (PDF, DXF, SVG), Materials (CSV), Map pages (KML, KMZ, GeoJSON, Shapefile), and the project file itself (top bar **Export**).` },
   { id: 'checklists', title: 'Checklists', keywords: 'checklist check off progress task survey permit install testing closeout punch', summary: 'Checklists on the survey, permit, installation, testing and closeout pages, saved with the project.',
     body: `Checklists sit at the bottom of **Field Notes** (site survey), **Code Compliance** (permit and submittal), **Installation Guides**, **Final Testing** and **Reports** (closeout). Installation and testing lists include the steps for every system on the project. Tick items as you go; add your own with **Add your own item**. The sidebar shows ✓ when a page's checklist is finished, and the bottom of the menu shows the total. Checklists print in the Build plan and Closeout reports.` },
-  { id: 'selfrepair', title: 'Updates and self-repair', keywords: 'update automatic repair crash error fix broken damaged restore version recover offline database', summary: 'The app updates itself and repairs damaged data automatically.',
+  { id: 'selfrepair', title: 'Updates and self-repair', keywords: 'update automatic repair crash error fix broken damaged restore version recover offline database checksum backup rollback refresh care maintenance', summary: 'The app updates itself and repairs damaged data automatically.',
     body: `**Updates:** the app checks for a new version every hour when online. On Windows it installs the update by itself; on Android and the flash drive it shows a one-tap download. The built-in codes, contacts and reference data are updated with each new version.
 
 **Self-repair:** when a project opens, missing or damaged values are filled in with safe defaults. If a page stops working, the app repairs the project data and opens it again; if that does not fix it, it goes back to the last saved version (your newer work is kept in Projects → History). After an update, it reloads itself to pick up the new program files.
+
+**Automatic care (Projects → Automatic care):** without being asked, the app checks its saved data for damage (each saved project carries a SHA-256 checksum) and repairs it: a damaged project is put back from its last good version, damaged terrain or map tiles are removed and downloaded again, and a damaged RadioReference list is put back from its encrypted spare copy. When online, it keeps downloaded data current: RadioReference county lists every 30 days (Windows and Android, while logged in), and the areas you saved for offline maps (gaps filled monthly, a fresh copy twice a year). A new copy only replaces the old one after it passes its check; if a download fails, the old copy stays and the app tries again later. Each changed project gets a daily backup (the last 7 days are kept), and a copy goes into History before every app update. App updates are checked against the file's SHA-256 before they install; if a new version fails to start 3 times, the Windows app goes back to the last version that worked and waits for the next fix. **Check everything now** runs all of this at once.
 
 **Offline database:** projects, history, terrain, your specifications library, saved datasheets, contacts and web links are all kept in a database inside the app and work with no internet. **Back up all projects** saves all of it in one file.` },
   { id: 'fieldnotes', title: 'Field notes', page: 'fieldnotes', keywords: 'field notes photos camera gps site visit punch list follow-up dictate', summary: 'Notes, photos and GPS positions taken on site, saved in the project.',

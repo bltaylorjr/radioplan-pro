@@ -15,6 +15,7 @@ import type { StateCode } from '../types';
 import { uid } from '../defaults';
 import { useRrJob, startJob, stopJob, clearJob, timeLeft, elapsed, STAGES, summary, RrJob } from '../engine/rrjob';
 import { bandsInUse, worstCaseMHz, bdaAdvice, donorSites, freqChoices, DonorSite } from '../engine/rrdesign';
+import { askConfirm, askDelete } from '../components/askConfirm';
 
 const STATES: StateCode[] = ['NC', 'SC', 'GA', 'TN', 'VA'];
 const MHZ = (f: number | null) => (f == null ? '' : f.toFixed(5).replace(/0{1,2}$/, ''));
@@ -62,7 +63,7 @@ export function RadioReferencePage() {
   };
   const doLogout = async () => { await logOut(); setMsg({ text: 'Logged out. Your username and password were removed from this device.', tone: 'ok' }); };
   const forget = async () => {
-    if (!confirm('Log out and delete every downloaded frequency list from this device?')) return;
+    if (!(await askDelete('Log out and delete every downloaded frequency list from this device?'))) return;
     await wipeAll(); setTick((t) => t + 1);
     setMsg({ text: 'Removed from this device.', tone: 'ok' });
   };
@@ -115,7 +116,7 @@ export function RadioReferencePage() {
         {!hasLogin && <p className="small muted">Save your sign-in above first.</p>}
         {saved.length > 0 && <table className="tbl"><thead><tr><th>Saved on this device</th><th>Frequencies</th><th>Talkgroups</th><th>Updated</th><th></th></tr></thead>
           <tbody>{saved.map((s) => <tr key={s.key}><td><a href="#" onClick={(e) => { e.preventDefault(); setSt(s.state as StateCode); setCounty(s.county); }}>{s.county}, {s.state}</a></td><td>{s.nFreq}</td><td>{s.nTg}</td><td>{day(s.fetchedAt)}</td>
-            <td><button className="ghost" onClick={async () => { if (confirm(`Delete the saved list for ${s.county}?`)) { await deleteDownload(s.key); setTick((t) => t + 1); } }}>Delete</button></td></tr>)}</tbody></table>}
+            <td><button className="ghost" onClick={async () => { if (await askDelete(<>Delete the saved list for <b>{s.county}</b>?</>)) { await deleteDownload(s.key); setTick((t) => t + 1); } }}>Delete</button></td></tr>)}</tbody></table>}
       </Card>
 
       {county && <RrBrowser d={d} county={county} state={st} />}
@@ -301,7 +302,7 @@ export function RrErcesCard() {
   const worst = worstCaseMHz(bands);
   const s0 = p.sites[0], hasPos = s0 && (s0.lat !== 0 || s0.lon !== 0);
   const donors = hasPos ? donorSites(d, s0, s0.antennaAglM || 15).slice(0, all ? 50 : 5) : [];
-  const addSite = (x: DonorSite) => { if (!confirm('Add this donor tower as a site in the project? Its position will be saved in the project file.')) return; update((q) => { q.sites.push({ ...q.sites[0], id: uid(), name: `Donor: ${x.system} ${x.site}`.slice(0, 60), address: '', lat: x.lat, lon: x.lon, groundElevM: null, positionSource: 'RadioReference', positionAccuracyM: null, onBuilding: false }); }); };
+  const addSite = async (x: DonorSite) => { if (!(await askConfirm({ title: 'Add as a site?', message: 'Add this donor tower as a site in the project? Its position will be saved in the project file.', ok: 'Add site', cancel: 'Cancel' }))) return; update((q) => { q.sites.push({ ...q.sites[0], id: uid(), name: `Donor: ${x.system} ${x.site}`.slice(0, 60), address: '', lat: x.lat, lon: x.lon, groundElevM: null, positionSource: 'RadioReference', positionAccuracyM: null, onBuilding: false }); }); };
   return (
     <Card title="Public-safety radio here (RadioReference)" tip="From the RadioReference list saved (encrypted) on this device for the project county. Used to size the BDA and DAS. Estimates only: always measure the donor signal on the roof.">
       <h4>Bands the BDA must pass</h4>
