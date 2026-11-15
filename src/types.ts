@@ -137,6 +137,10 @@ export interface Project {
   checklistExtra?: { id: string; list: string; text: string }[];
   /** PM tasks done: key = system id + task, value = last date done (YYYY-MM-DD). */
   pmDone?: Record<string, string>;
+  /** Live signal readings: typed, from a Bluetooth / USB meter, the phone, or imported. */
+  signalReadings?: import('./engine/signal').SignalReading[];
+  /** Installed equipment logged by its barcode or QR tag, with PM and service history. */
+  assets?: import('./engine/assets').Asset[];
 }
 export interface Blueprint { size: string; scale: string; drawnBy: string; checkedBy: string; revisions: { rev: string; date: string; desc: string }[]; off: string[];
   /** Azimuth (degrees true) that the top of the plan faces; turns the north arrow. 0 = plan north is true north. */

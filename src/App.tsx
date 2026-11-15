@@ -54,6 +54,10 @@ import type { Project } from './types';
 import { SettingsPage } from './pages/Settings';
 import { ToolNotice, useAutoTools } from './components/ToolNotice';
 import { useHiddenTools, setToolOn } from './engine/toolPrefs';
+import { SignalReadingsPage } from './pages/SignalReadings';
+import { AssetsPage } from './pages/Assets';
+import { DevicesPage, useDevices } from './pages/Devices';
+import { setDistanceUnit, ROLE_LABEL } from './engine/devices';
 const TerrainPage = lazy(() => import('./pages/Terrain'));
 const CoveragePage = lazy(() => import('./pages/Coverage'));
 const View3DPage = lazy(() => import('./pages/View3D'));
@@ -72,6 +76,7 @@ export const WORKFLOW: { id: string; label: string; group: string; el: React.Rea
   { id: 'terrain', label: 'Map & Terrain', group: '2 · Planning: site survey', el: <TerrainPage /> },
   { id: 'wifi', label: 'Wi-Fi & Network Survey', group: '2 · Planning: site survey', el: <WifiSurveyPage /> },
   { id: 'survey', label: 'Drive Test & Calibration', group: '2 · Planning: site survey', el: <SurveyPage /> },
+  { id: 'signal', label: 'Live Signal Readings', group: '2 · Planning: site survey', el: <SignalReadingsPage /> },
   { id: 'autodesign', label: 'Auto-Design & 3D Model', group: '3 · Planning: low-voltage design', el: <AutoDesignPage /> },
   { id: 'alarm', label: 'Fire Alarm & Batteries', group: '3 · Planning: low-voltage design', el: <AlarmPage /> },
   { id: 'erces', label: 'Emergency Radio (ERCES / BDA)', group: '3 · Planning: low-voltage design', el: <ErcesPage /> },
@@ -97,6 +102,8 @@ export const WORKFLOW: { id: string; label: string; group: string; el: React.Rea
   { id: 'troubleshoot', label: 'Troubleshooting Wizard', group: '7 · Troubleshooting & repair', el: <TroubleshootPage /> },
   { id: 'directions', label: 'Map & Directions', group: 'Tools', el: <DirectionsPage /> },
   { id: 'service', label: 'Service & Maintenance Resources', group: 'Tools', el: <ServicePage /> },
+  { id: 'assets', label: 'Equipment & Asset Tags', group: 'Tools', el: <AssetsPage /> },
+  { id: 'devices', label: 'Bluetooth & Wi-Fi Devices', group: 'Tools', el: <DevicesPage /> },
   { id: 'install', label: 'Installation Guides', group: 'Tools', el: <InstallPage /> },
   { id: 'theory', label: 'Low-Voltage Principles', group: 'Tools', el: <TheoryPage /> },
   { id: 'library', label: 'Specifications Library', group: 'Tools', el: <SpecLibraryPage /> },
@@ -155,6 +162,8 @@ export default function App() {
   const [resetN, setResetN] = useState(0);
   useEffect(() => { setCleared((c) => (c && c.page !== page ? null : c)); }, [page]);
   const endClear = React.useCallback((undone: boolean) => { setCleared(null); if (undone) setResetN((n) => n + 1); }, []);
+  const devs = useDevices();
+  useEffect(() => setDistanceUnit(project.settings.units === 'km' ? 'm' : 'ft'), [project.settings.units]);
   useEffect(() => { if (firstVisitVideo()) setVideo('first'); }, []);
   useEffect(() => { try { if (!localStorage.getItem('radioplan.seenIntro')) { localStorage.setItem('radioplan.seenIntro', '1'); setWelcome(true); } } catch { /* ignore */ } }, []);
 
@@ -180,6 +189,7 @@ export default function App() {
         <MapPackBadge onOpen={() => go('mappacks')} />
         {rt.terrainStatus && <span className="chip terr" title="Automatic terrain">{rt.terrainStatus}</span>}
         {rt.mapStatus && <span className="chip terr" title="Automatic offline maps">{rt.mapStatus}</span>}
+        {devs.roles.length > 0 && <a href="#devices" className="chip on" title={devs.roles.map((r) => `${ROLE_LABEL[r]}: ${devs.state(r)?.name}`).join('\n')} onClick={(e) => { e.preventDefault(); go('devices'); }}>🔵 {devs.roles.length} device{devs.roles.length > 1 ? 's' : ''}</a>}
         <div className="proj">{project.company.name && <span className="muted">{project.company.name} · </span>}{project.meta.name} <span className="muted">({project.meta.state})</span></div>
         <div className="top-actions">
           <span className={'chip save ' + lib.saveState} title={lib.saveError || 'Projects save automatically in the app'}>{{ loading: '… Opening', saving: '● Saving', saved: '✓ Saved', error: '⚠ Not saved', unavailable: 'File only' }[lib.saveState]}</span>
