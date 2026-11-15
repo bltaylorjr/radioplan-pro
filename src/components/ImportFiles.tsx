@@ -10,6 +10,7 @@ import { shrinkPhoto } from '../pages/FieldNotes';
 import { uid } from '../defaults';
 import type { BomExtra, ProjectDoc } from '../types';
 import type { Contact } from '../data/contacts';
+import { askDelete } from './askConfirm';
 
 const MAX = 15 * 1048576;
 const readDataUrl = (f: File) => new Promise<string>((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result)); r.onerror = () => rej(r.error); r.readAsDataURL(f); });
@@ -78,7 +79,7 @@ export function ImportFiles({ compact }: { compact?: boolean }) {
           <table className="tbl"><thead><tr><th>File</th><th>Size</th><th>Added</th><th>Note</th><th></th></tr></thead><tbody>{docs.map((d) => <tr key={d.id}>
             <td><a href={d.dataUrl} target="_blank" rel="noreferrer" download={d.name}>{d.name}</a></td><td className="nowrap">{fmtBytes(d.size)}</td><td className="nowrap small">{d.addedAt.slice(0, 10)}</td>
             <td><input value={d.note} placeholder="Note" aria-label={`Note for ${d.name}`} onChange={(e) => update((x) => { const t = x.documents?.find((y) => y.id === d.id); if (t) t.note = e.target.value; })} /></td>
-            <td className="nowrap"><button className="ghost" onClick={async () => downloadBytes(d.name, await (await fetch(d.dataUrl)).blob())}>⬇</button><button className="ghost" onClick={() => confirm(`Remove ${d.name} from the project?`) && update((x) => { x.documents = (x.documents ?? []).filter((y) => y.id !== d.id); })}>Remove</button></td></tr>)}</tbody></table>}
+            <td className="nowrap"><button className="ghost" onClick={async () => downloadBytes(d.name, await (await fetch(d.dataUrl)).blob())}>⬇</button><button className="ghost" onClick={async () => (await askDelete(<>Delete <b>{d.name}</b> from this project?</>)) && update((x) => { x.documents = (x.documents ?? []).filter((y) => y.id !== d.id); })}>Remove</button></td></tr>)}</tbody></table>}
       </>}
     </Card>
   );

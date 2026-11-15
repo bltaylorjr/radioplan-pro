@@ -5,6 +5,15 @@
 - **2D or 3D.** **⛰ 3D view** shows the beam as a see-through green wedge over the terrain that stops where it meets the ground, with a tilt slider and an optional signal heat map.
 - **True scale on every side view and 3D view**: Path Profile, the chart under drawn lines, the ground profile of runs between sites, the 3D tilt view and the 3D terrain model. Path Profile heights are now in feet (or metres when metric is chosen).
 - **Introduction video**: a new part shows the side view in 2D and 3D, true scale and stretched.
+# LvPlan Pro 1.5.42
+
+- **⌫ Clear all fields on each page.** Every page with boxes to fill in has a **Clear all fields** button at the top, next to **? Page help**. It clears only that page's entries: lists are emptied and numbers go back to their starting values. Pages that only hold typed-in numbers (Calculators, Troubleshooting Wizard, Find Location) start over too.
+- **Asks first**: a Yes / No box says exactly what will be cleared on that page. Other pages, saved projects, the RadioReference login and downloads, the specifications library and contacts are never touched.
+- **↶ Undo** right after clearing puts the page back, and a copy from before is saved in Projects → History of this project.
+- Pages with nothing to type in (RadioReference, 3D Model, Map & Directions, Service, Library, Contacts, Projects, Sync) have no button. On a page that is already empty the button says "Nothing to clear".
+- **Delete works everywhere, with an "Are you sure?" box.** Deleting attached files (Projects & Storage, Reports), field notes, saved datasheets and manuals, library items, contacts, RadioReference saved lists, Wi-Fi readings, survey points, indoor walls and checklist ticks did nothing in the Windows app, because it used a browser pop-up the app does not show. Every delete now uses the app's own box with **Delete** and **Cancel** buttons, and the other yes / no questions use the same box.
+- **Deleted projects stay deleted** when a data folder (flash drive) is used: the project's file in the folder is deleted too, and Update folder no longer loads it back.
+- **Introduction video**: a new part shows Clear all fields and Undo.
 
 # LvPlan Pro 1.5.41
 

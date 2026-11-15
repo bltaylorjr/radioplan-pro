@@ -6,6 +6,7 @@ import { Card, Stat } from '../components/ui';
 import { mergeProjects, fromPackage, stampSync, toPackage, MergeReport } from '../engine/sync';
 import { hostLink, joinLink, exchange, DirectLink, canShareFiles, shareProject, folderSyncSupported, pickSyncFolder, savedSyncFolder, forgetSyncFolder, folderPermission, folderRound } from '../engine/syncTransport';
 import type { Project } from '../types';
+import { askConfirm } from '../components/askConfirm';
 
 function QR({ text }: { text: string }) {
   const q = qrcode(0, 'L'); q.addData(text); q.make();
@@ -61,9 +62,9 @@ export function SyncPage() {
   const latest = useRef(p); latest.current = p;
 
   const stamped = (x: Project): Project => { const s = stampSync(x, deviceInfo()); return s ? { ...x, sync: s } : x; };
-  const applyRemote = (remote: Project, how: string) => {
+  const applyRemote = async (remote: Project, how: string) => {
     const local = stamped(latest.current);
-    if (remote.sync && local.sync && remote.sync.projectId !== local.sync.projectId && !confirm(`The other copy is a different project ("${remote.meta.name}"). Merge it into "${local.meta.name}" anyway?\n\nCancel = keep this project unchanged.`)) { setMsg('Not merged: different project.'); return; }
+    if (remote.sync && local.sync && remote.sync.projectId !== local.sync.projectId && !(await askConfirm({ title: 'Different project', message: <>The other copy is a different project (<b>“{remote.meta.name}”</b>). Merge it into <b>“{local.meta.name}”</b> anyway? Cancel keeps this project unchanged.</>, ok: 'Merge', cancel: 'Cancel' }))) { setMsg('Not merged: different project.'); return; }
     const { project: merged, report: r } = mergeProjects(local, stamped(remote));
     replace(merged); setReport(r); setMsg(`Synced with ${r.remoteDevice} via ${how}.`);
   };
@@ -72,7 +73,7 @@ export function SyncPage() {
   const reset = () => { link?.pc.close(); setLink(null); setPhase('idle'); setCodeIn(''); setScan(false); };
   const runExchange = async (l: DirectLink) => {
     const dc = await l.channel; setPhase('connected'); setMsg('Connected. Exchanging projects…');
-    try { const remote = await exchange(dc, stamped(latest.current), (m) => setMsg(m)); applyRemote(remote, 'direct Wi-Fi link'); setPhase('done'); }
+    try { const remote = await exchange(dc, stamped(latest.current), (m) => setMsg(m)); await applyRemote(remote, 'direct Wi-Fi link'); setPhase('done'); }
     catch (e) { setMsg(`Transfer failed: ${(e as Error).message}`); }
     setTimeout(() => l.pc.close(), 3000);
   };
@@ -100,7 +101,7 @@ export function SyncPage() {
   };
   useEffect(() => { if (!folder || !folderOk) return; round(); const iv = setInterval(round, 60000); return () => clearInterval(iv); }, [folder, folderOk]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const importFile = async (f?: File) => { if (!f) return; try { applyRemote(fromPackage(await f.text()), `file ${f.name}`); } catch (e) { setMsg(`Could not read ${f.name}: ${(e as Error).message}`); } };
+  const importFile = async (f?: File) => { if (!f) return; try { await applyRemote(fromPackage(await f.text()), `file ${f.name}`); } catch (e) { setMsg(`Could not read ${f.name}: ${(e as Error).message}`); } };
   const fileName = `${safeName(p.meta.name)}.${dev.id}.rpsync.json`;
   const peers = Object.entries(p.sync?.peers ?? {});
 
