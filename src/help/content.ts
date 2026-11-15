@@ -523,6 +523,18 @@ Export: Reports page (PDF, Word, Excel, HTML, CSV, KML), Blueprints (PDF, DXF, S
 
 Photos are reduced to 1280 pixels so projects stay small enough to sync. Notes sync between devices like the rest of the project, export to CSV, and print in **Reports → Field Notes & Photos**.` },
 
+  { id: 'photosurvey', title: 'Photo site survey', page: 'photosurvey', keywords: 'photo site survey panorama pictures camera compass heading gps exif horizon skyline terrain towers obstructions line of sight heat map view cone 3d', summary: 'Phone photos or a panorama placed where and in the direction they were taken, matched to the terrain, with the horizon, towers, sites, what blocks the view and the signal drawn on them.',
+    body: `Stand where an antenna or tower might go and press **📷 Take photos here**. Take photos all the way around you (let each one overlap the last a little), or one panorama. **🖼 Add photos or a panorama** brings in photos you already took; photos taken at the same spot (within 100 ft) go together.
+
+**Where and which way:** the app reads the GPS position, height and compass direction saved in each photo (and the tilt from drones). If a photo has no compass direction, the app uses the phone's compass while you take photos in the app, or lines the photos up side by side. Press **⛰ Line up with the terrain**: the app finds the skyline in each photo and turns it until it sits on the terrain horizon. You can always nudge a photo with **◀ ▶**, type its direction in degrees true, or type a reading from a hand compass (°M). If a photo has no position, use **◎ My GPS** at the spot, type coordinates, or tap the map.
+
+**Layers** (tick on or off): Photos, Terrain horizon (yellow), Azimuth & compass (°T and °M across the top), Project sites, Existing towers, RadioReference sites (only while logged in, never in reports), What blocks the view (red ✕ on the ridge that hides a site), Drawn lines, Signal heat map (predicted signal from the transmit site on the ground you can see) and Photo edges. Hover or tap the picture to read the direction and up / down angle.
+
+**What is in view from here** lists every site and nearby tower with distance, azimuth, up / down angle and whether the terrain hides it.
+
+The spots and each photo's view cone show on every flat map (layer **📷 Photo survey spots**) and in the **⛰ 3D tilt view** over the satellite pictures. Press **📄 Save picture for reports** to put the panorama with its overlays and the in-view list in **Reports → Photo site survey** (part of the Site survey report).
+
+**Limits:** the horizon uses terrain heights and the earth's curve; trees and buildings are not in the terrain, so the real skyline can be higher. The app does not build a 3D model of buildings from photos. Satellite pictures are only as new as the last download. Some phones remove the location from photos when they are shared; take them in the app or set the spot by hand. Always confirm on site.` },
   { id: 'directions', title: 'Map & directions', page: 'directions', keywords: 'map directions route drive navigate google apple waze gps address location office', summary: 'The project site on a map, with one-tap driving directions from where you are or from your office.',
     body: `Shows the **project site address** from Company & Project at Site A's position, with the client contact for the crew.
 

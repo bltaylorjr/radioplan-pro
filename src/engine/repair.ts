@@ -5,7 +5,7 @@ import { defaultProject } from '../defaults';
 import { countyOfTown, placeFromText } from '../compliance/place';
 
 const isObj = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
-const LISTS = ['tests', 'runLog', 'scenarios', 'fieldNotes', 'serviceLog', 'bomExtra', 'documents', 'proposal'] as const;
+const LISTS = ['tests', 'runLog', 'scenarios', 'fieldNotes', 'serviceLog', 'bomExtra', 'documents', 'proposal', 'photoSpots'] as const;
 
 /** Merge a stored section onto its defaults, one level deep, fixing wrong types. */
 function heal(def: Record<string, unknown>, got: unknown, path: string, fixes: string[]): Record<string, unknown> {
@@ -49,7 +49,7 @@ export function repairProject(input: unknown): { project: Project; fixes: string
   });
   if ((out.sites as unknown[]).length < sites.length) fixes.push('A site with bad coordinates was removed');
   // Ids inside every list must be unique, or edits hit the wrong row.
-  for (const k of ['tests', 'fieldNotes', 'serviceLog', 'bomExtra', 'documents'] as const) {
+  for (const k of ['tests', 'fieldNotes', 'serviceLog', 'bomExtra', 'documents', 'photoSpots'] as const) {
     const arr = out[k]; if (!Array.isArray(arr)) continue; const ids = new Set<string>();
     out[k] = arr.filter(isObj).map((x) => { let id = String(x.id ?? ''); if (!id || ids.has(id)) { id = Math.random().toString(36).slice(2, 10); fixes.push(`A ${k} entry had a duplicate id; fixed`); } ids.add(id); return { ...x, id }; });
   }

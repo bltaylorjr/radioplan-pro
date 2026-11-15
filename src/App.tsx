@@ -34,6 +34,7 @@ import { ProjectsPage } from './pages/Projects';
 import { SpecLibraryPage } from './pages/SpecLibrary';
 import { InstallPage } from './pages/Install';
 import { FieldNotesPage } from './pages/FieldNotes';
+import { PhotoSurveyPage } from './pages/PhotoSurvey';
 import { ContactsPage } from './pages/Contacts';
 import { RadioReferencePage, RrJobBadge } from './pages/RadioReference';
 import { BlueprintsPage } from './pages/Blueprints';
@@ -67,6 +68,7 @@ export const WORKFLOW: { id: string; label: string; group: string; el: React.Rea
   { id: 'locate', label: 'Find Location & Auto-Plan', group: '1 · Project setup', el: <LocatePage /> },
   { id: 'sites', label: 'Site Data & GPS', group: '1 · Project setup', el: <SitesPage /> },
   { id: 'fieldnotes', label: 'Field Notes & Photos', group: '2 · Planning: site survey', el: <FieldNotesPage /> },
+  { id: 'photosurvey', label: 'Photo Site Survey', group: '2 · Planning: site survey', el: <PhotoSurveyPage /> },
   { id: 'terrain', label: 'Map & Terrain', group: '2 · Planning: site survey', el: <TerrainPage /> },
   { id: 'wifi', label: 'Wi-Fi & Network Survey', group: '2 · Planning: site survey', el: <WifiSurveyPage /> },
   { id: 'survey', label: 'Drive Test & Calibration', group: '2 · Planning: site survey', el: <SurveyPage /> },

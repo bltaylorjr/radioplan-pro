@@ -15,6 +15,29 @@ import { Tip } from './ui';
 
 const TiltView = lazy(() => import('./TiltView'));
 import { RouteTools } from './RouteTools';
+import { useStore } from '../store';
+import { destination } from '../engine/geo';
+import type { PhotoSpot } from '../engine/photosurvey';
+
+const camIcon = L.divIcon({ className: 'photo-pin', html: '<div>📷</div>', iconSize: [24, 24], iconAnchor: [12, 12] });
+const PHOTO_SPOT_KEY = 'radioplan.photospot';
+/** Photo survey spots: a camera pin and a see-through cone for the direction and width of each photo. */
+export function drawPhotoSpots(g: L.LayerGroup, spots: PhotoSpot[], open?: (id: string) => void, radiusKm = 0.45) {
+  g.clearLayers();
+  for (const s of spots) {
+    s.photos.forEach((ph, i) => {
+      if (ph.hidden || ph.headingDeg == null) return;
+      const color = ['#1565c0', '#00838f', '#6a1b9a', '#ef6c00', '#2e7d32'][i % 5];
+      if (ph.hfovDeg >= 350) { L.circle([s.lat, s.lon], { radius: radiusKm * 1000, color, weight: 1, fillOpacity: 0.12, interactive: false }).addTo(g); return; }
+      const pts: [number, number][] = [[s.lat, s.lon]];
+      for (let k = 0; k <= 12; k++) { const q = destination(s, ph.headingDeg - ph.hfovDeg / 2 + (ph.hfovDeg * k) / 12, radiusKm); pts.push([q.lat, q.lon]); }
+      L.polygon(pts, { color, weight: 1, fillOpacity: 0.16, interactive: false }).addTo(g);
+    });
+    const thumb = s.photos.find((q) => !q.hidden)?.dataUrl;
+    const m = L.marker([s.lat, s.lon], { icon: camIcon }).bindPopup(`<b>📷 ${esc(s.name)}</b><br>${s.photos.length} photo(s)${thumb ? `<br><img src="${thumb}" alt="" style="width:180px;max-height:110px;object-fit:cover;border-radius:4px;margin-top:4px">` : ''}${open ? `<br><a href="#photosurvey" data-spot="${s.id}">Open the photo survey →</a>` : ''}`).addTo(g);
+    if (open) m.on('popupopen', (e) => { const a = (e.popup.getElement() as HTMLElement | undefined)?.querySelector('a[data-spot]'); a?.addEventListener('click', (ev) => { ev.preventDefault(); open(s.id); }); });
+  }
+}
 
 const towerIcon = L.divIcon({ className: 'tower-pin', html: '<div>📡</div>', iconSize: [22, 22], iconAnchor: [11, 20] });
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
@@ -141,6 +164,8 @@ export function MapView({ sites, txId, rxId, coverage, floor = -110, dem, onClic
   const extraRef = useRef(extra); extraRef.current = extra;
   const [mode3d, setMode3d] = useState(false);
   const u = useUnits();
+  const { project: proj, go } = useStore();
+  const photoLayer = useRef<L.LayerGroup>();
   // Measure tool: tap points on the map for distance and azimuth (true and magnetic) of each leg.
   const [measuring, setMeasuring] = useState(false);
   const [mpts, setMpts] = useState<LatLon[]>([]);
@@ -167,7 +192,11 @@ export function MapView({ sites, txId, rxId, coverage, floor = -110, dem, onClic
     (bases.current[chosen] ?? bases.current[DEFAULT_BASE]).addTo(m); baseName.current = bases.current[chosen] ? chosen : DEFAULT_BASE;
     m.on('baselayerchange', (e: L.LayersControlEvent) => { baseName.current = e.name; try { localStorage.setItem('radioplan.basemap', e.name); } catch { /* ignore */ } });
     const towers = towersOverlay(m), fcc = fccOverlay(m);
-    L.control.layers(bases.current, { '📡 Existing towers & comm sites': towers, '🗼 FCC registered towers (offline)': fcc }, { position: 'topright' }).addTo(m);
+    const photos = L.layerGroup(); photoLayer.current = photos;
+    L.control.layers(bases.current, { '📡 Existing towers & comm sites': towers, '🗼 FCC registered towers (offline)': fcc, '📷 Photo survey spots': photos }, { position: 'topright' }).addTo(m);
+    try { if (localStorage.getItem('radioplan.photomap') !== '0') photos.addTo(m); } catch { photos.addTo(m); }
+    photos.on('add', () => { try { localStorage.setItem('radioplan.photomap', '1'); } catch { /* ignore */ } });
+    photos.on('remove', () => { if (!(m as unknown as { _lvClosing?: boolean })._lvClosing) try { localStorage.setItem('radioplan.photomap', '0'); } catch { /* ignore */ } });
     try { if (localStorage.getItem('radioplan.towers') === '1') towers.addTo(m); } catch { /* ignore */ }
     try { if (localStorage.getItem('radioplan.fccTowers') === '1') fcc.addTo(m); } catch { /* ignore */ }
     L.control.scale({ imperial: true, metric: true }).addTo(m);
@@ -207,6 +236,10 @@ export function MapView({ sites, txId, rxId, coverage, floor = -110, dem, onClic
     if (marker) L.marker([marker.lat, marker.lon], { icon: icon('★', '#ef6c00') }).bindPopup(marker.label ?? 'Search location').addTo(g);
     extraRef.current?.(g);
   }, [sites, txId, rxId, coverage, floor, dem, selectedId, marker, extraKey, u.unit]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    const g = photoLayer.current; if (!g) return;
+    drawPhotoSpots(g, proj.photoSpots ?? [], (id) => { try { localStorage.setItem(PHOTO_SPOT_KEY, id); } catch { /* ignore */ } window.dispatchEvent(new CustomEvent('lv-photospot', { detail: id })); go('photosurvey'); });
+  }, [proj.photoSpots, mapObj]); // eslint-disable-line react-hooks/exhaustive-deps
   const legs = mpts.slice(1).map((b, i) => azimuthPair(mpts[i], b));
   useEffect(() => {
     const g = mlayer.current; if (!g) return; g.clearLayers();
