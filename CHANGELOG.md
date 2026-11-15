@@ -1,3 +1,12 @@
+# LvPlan Pro 1.5.48
+
+- **🔧 Automatic care: the app looks after itself and its data.** Nothing to set up. A new **Automatic care** card on **Projects** shows what it keeps checked and when, with **Check everything now**.
+- **Checks and repairs saved data by itself.** Each saved project now carries a SHA-256 checksum. A damaged project is put back from its last good version, damaged terrain and map tiles are removed and downloaded again, and a damaged RadioReference list is put back from its encrypted spare copy. A short plain notice tells you when something was fixed.
+- **Keeps downloaded data current when online.** RadioReference county lists refresh every 30 days (Windows and Android, while logged in; still encrypted, still only on this device). Areas saved for offline maps are kept complete monthly and downloaded fresh twice a year. A new copy replaces the old one only after it passes its check; if a download fails, the old copy stays and it tries again later.
+- **Backups before changes.** Each changed project gets a daily backup (the last 7 days are kept apart from autosaves), and a copy goes into History before every app update.
+- **Safer updates.** The Windows app checks each update's SHA-256 before installing it. If a new version fails to start 3 times in a row, it goes back to the last version that worked and skips the bad one until a fix comes out. If the app ever stops at start, it shows a Restart button instead of a blank window.
+- **For new features:** downloaded packs (FCC, FAA, map packs and others) plug into the same automatic checks, repairs and refreshes.
+- **Introduction video**: a new part shows Automatic care, including a damaged project being put back by itself.
 # LvPlan Pro 1.5.44
 
 - **🧭 Azimuth calculator** on Calculators: type two GPS positions or addresses (or pick project sites) and get the azimuth from A to B and the back azimuth from B to A, both in degrees true (°T) and as a compass reading (°M) with the declination at each end, the distance in miles, and the up / down tilt at each antenna from the ground and antenna heights (with the earth's curve). Ground heights fill in from the built-in or project terrain, so it works offline; online, **Look up** asks USGS.

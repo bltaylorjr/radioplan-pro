@@ -44,3 +44,20 @@ export async function cachedFetchBlob(url: string, preferCache = true): Promise<
     throw e;
   }
 }
+
+/** Cached tiles that are empty or no longer readable (they are downloaded again when next needed). */
+export async function scanDamaged(limit = 5000): Promise<string[]> {
+  const d = await db();
+  return new Promise((res) => {
+    const bad: string[] = [];
+    const c = d.transaction(STORE).objectStore(STORE).openCursor();
+    c.onsuccess = () => {
+      const cur = c.result; if (!cur || bad.length >= limit) { res(bad); return; }
+      const v = cur.value as Blob | undefined;
+      if (!v || typeof (v as Blob).size !== 'number' || v.size === 0) bad.push(String(cur.key));
+      cur.continue();
+    };
+    c.onerror = () => res(bad);
+  });
+}
+export async function cacheDelete(keys: string[]) { for (const k of keys) await tx('readwrite', (s) => s.delete(k)).catch(() => undefined); }

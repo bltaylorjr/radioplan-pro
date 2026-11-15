@@ -5,6 +5,7 @@ import { askConfirm } from '../components/askConfirm';
 import React, { useEffect, useState } from 'react';
 import { useStore, downloadText, safeName } from '../store';
 import { Card, Stat } from '../components/ui';
+import { AutoCare } from '../components/AutoCare';
 import {
   listProjects, listVersions, importEntries, getRecord, backupAll, readBackup, kvRestore, storageInfo, requestPersist, fmtBytes,
   folderCopySupported, pickDataFolder, savedDataFolder, forgetDataFolder, folderAllowed, writeToFolder, readFolder, removeFromFolder, deletedProjectIds,
@@ -173,6 +174,8 @@ export function ProjectsPage() {
           <button disabled={busy || !navigator.onLine} onClick={() => act('Check for updates', async () => { const u = await checkForUpdate(); markChecked(); return u ? `Version ${u.version} is available. ${u.url ? 'It will be offered at the bottom of the screen; restart the app to install it now.' : ''}` : 'You have the latest version ✓'; })}>Check for updates now</button>
         </div>
       </Card>
+
+      <AutoCare />
 
       <Card title="Built-in reference data" tip="Installed with the app and used automatically when there is no internet.">
         <ul className="small">

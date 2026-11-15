@@ -61,6 +61,8 @@ export interface RrSystem { sid: number; name: string; type: string; city: strin
 export interface RrDownload {
   key: string; state: string; county: string; ctid: number; fetchedAt: string;
   groups: RrGroup[]; systems: RrSystem[]; warnings: string[]; source: 'api' | 'csv';
+  /** What was asked for, so the automatic refresh asks for the same again. */
+  opts?: { trunked: boolean; statewide: boolean };
 }
 export const LOGIN_KEY = 'radioref.login.v1';
 const DL_PREFIX = 'radioref.dl.v1:';
@@ -352,7 +354,7 @@ export async function downloadCounty(state: string, county: string, login0: RrLo
     }
   }
   say('Saving on this device (encrypted)…', 0.99, 'saving', 1, 1);
-  const dl: RrDownload = { key: dlKey(state, county), state, county, ctid, fetchedAt: new Date().toISOString(), groups: groups.filter((g) => g.subcats.length), systems, warnings, source: 'api' };
+  const dl: RrDownload = { key: dlKey(state, county), state, county, ctid, fetchedAt: new Date().toISOString(), groups: groups.filter((g) => g.subcats.length), systems, warnings, source: 'api', opts: { trunked: o.trunked, statewide: o.statewide } };
   await kvSet(dl.key, dl);
   say('Done', 1, 'done', 1, 1);
   return dl;
@@ -360,13 +362,34 @@ export async function downloadCounty(state: string, county: string, login0: RrLo
 
 export const saveDownload = (d: RrDownload) => kvSet(d.key, d);
 export const loadDownload = (state: string, county: string) => kvGet<RrDownload>(dlKey(state, county)).then((v) => v ?? null).catch(() => null);
-export const deleteDownload = (key: string) => kvSet(key, undefined);
+export const deleteDownload = async (key: string) => { await kvSet(key, undefined); await kvSetPlain(prevKey(key), undefined); };
 export async function listDownloads(): Promise<{ key: string; state: string; county: string; fetchedAt: string; nFreq: number; nTg: number }[]> {
   const ks = await kvKeys(DL_PREFIX).catch(() => [] as string[]);
   const out = [];
   for (const k of ks) { const d = await kvGet<RrDownload>(k); if (d) out.push({ key: k, state: d.state, county: d.county, fetchedAt: d.fetchedAt, nFreq: countFreqs(d), nTg: d.systems.reduce((a, s) => a + s.talkgroups.length, 0) }); }
   return out.sort((a, b) => a.state.localeCompare(b.state) || a.county.localeCompare(b.county));
 }
+// ---------------------------------------------------------------- automatic care (checks, spare copy, refresh)
+// Everything stays sealed (AES-GCM, which also detects any damage) and stays on this device.
+const PREV_PREFIX = 'radioref.prev.v1:';
+const prevKey = (key: string) => PREV_PREFIX + key.slice(DL_PREFIX.length);
+export const downloadKeys = () => kvKeys(DL_PREFIX).catch(() => [] as string[]);
+/** 'damaged' when the sealed copy no longer opens (changed or broken on disk). */
+export async function checkDownload(key: string): Promise<'ok' | 'damaged' | 'missing'> {
+  const raw = await kvGetPlain<Sealed>(key); if (raw === undefined) return 'missing';
+  const d = await kvGet<RrDownload>(key);
+  return d && Array.isArray(d.groups) && Array.isArray(d.systems) ? 'ok' : 'damaged';
+}
+/** Keep the current sealed copy as the spare, before it is replaced. */
+export async function keepSpare(key: string) { if ((await checkDownload(key)) === 'ok') await kvSetPlain(prevKey(key), await kvGetPlain<Sealed>(key)); }
+/** Put the spare back. False when there is no good spare. */
+export async function restoreSpare(key: string): Promise<boolean> {
+  const raw = await kvGetPlain<Sealed>(prevKey(key)); if (!raw) return false;
+  const d = await kvGet<RrDownload>(prevKey(key)); if (!d) return false;
+  await kvSetPlain(key, raw); return true;
+}
+export const loadDownloadByKey = (key: string) => kvGet<RrDownload>(key).then((v) => v ?? null).catch(() => null);
+export const putDownloadRaw = (key: string, d: RrDownload) => kvSet(key, d);
 export const countFreqs = (d: RrDownload) => d.groups.reduce((a, g) => a + g.subcats.reduce((b, s) => b + s.freqs.length, 0), 0);
 
 // ---------------------------------------------------------------- CSV saved from RadioReference.com (works without the API)

@@ -49,6 +49,7 @@ jobs:
         env: { GH_TOKEN: '${{ github.token }}' }
         run: |
           TAG="${{ steps.ver.outputs.tag }}"
+          (cd out && sha256sum RadioPlan-Pro-Setup.exe RadioPlan-Pro.apk RadioPlan-Pro-FlashDrive.zip > SHA256SUMS.txt)
           gh release create "$TAG" --target "$GITHUB_SHA" --title "LvPlan Pro ${TAG#v}" --notes-file CHANGELOG.md --latest \
-            out/RadioPlan-Pro-Setup.exe out/RadioPlan-Pro.apk out/RadioPlan-Pro-FlashDrive.zip || \
-          gh release upload "$TAG" --clobber out/RadioPlan-Pro-Setup.exe out/RadioPlan-Pro.apk out/RadioPlan-Pro-FlashDrive.zip
+            out/RadioPlan-Pro-Setup.exe out/RadioPlan-Pro.apk out/RadioPlan-Pro-FlashDrive.zip out/SHA256SUMS.txt || \
+          gh release upload "$TAG" --clobber out/RadioPlan-Pro-Setup.exe out/RadioPlan-Pro.apk out/RadioPlan-Pro-FlashDrive.zip out/SHA256SUMS.txt
