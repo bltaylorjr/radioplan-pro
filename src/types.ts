@@ -119,6 +119,8 @@ export interface Project {
   bomExtra?: BomExtra[];
   /** Lines drawn on the map (by hand or point to point) to check signal and obstacles along them. */
   drawnLines?: import('./engine/routes').DrawnLine[];
+  /** Photo site survey: spots where photos or panoramas were taken, with direction and terrain matching. */
+  photoSpots?: import('./engine/photosurvey').PhotoSpot[];
   /** Cable and conduit runs between sites, measured on the map and over the terrain. */
   siteRuns?: import('./engine/siteruns').SiteRun[];
   /** Auto-design inputs; when applied, its equipment and materials join the Materials list. */

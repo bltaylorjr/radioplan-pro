@@ -5,6 +5,7 @@ export const WORKFLOW_LABELS: Record<string, string> = {
   locate: 'Find Location & Auto-Plan',
   sites: 'Site Data & GPS',
   fieldnotes: 'Field Notes & Photos',
+  photosurvey: 'Photo Site Survey',
   terrain: 'Map & Terrain',
   wifi: 'Wi-Fi & Network Survey',
   survey: 'Drive Test & Calibration',

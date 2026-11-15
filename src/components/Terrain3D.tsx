@@ -55,6 +55,8 @@ export interface Terrain3DProps {
   beam?: { lat: number; lon: number; aglM: number; azimuthDeg: number; tiltDeg: number; hBwDeg: number; vBwDeg: number; maxKm: number } | null;
   /** Tap / click on the ground: gives the spot's latitude and longitude (used to plot path points). */
   onPick?: (p: LatLon) => void;
+  /** Photo survey spots: a camera post with a see-through fan on the ground for each photo's direction and width. */
+  photos?: { lat: number; lon: number; name: string; views: { headingDeg: number; hfovDeg: number }[] }[];
   path?: { points: PathPoint[]; hops: { ok: boolean; los: boolean }[] } | null;
   /** Formats a height in metres and a distance in km in the person's units (labels on obstructions). */
   fmtLen?: (m: number) => string; fmtDist?: (km: number) => string;
@@ -280,6 +282,25 @@ export function Terrain3D(props: Terrain3DProps) {
         spr.center.set(0, 0); spr.scale.set(widthM / 5, widthM / 5 * 56 / 384, 1); spr.position.set(mx(c.lon), base + hM + widthM / 120, mz(c.lat)); scene.add(spr);
       });
     }
+    props.photos?.forEach((s) => { // photo survey spots: blue post, label, and a fan per photo
+      const g = sampleDem(dem, s); if (g == null) return;
+      const base = (g - zmin) * exag, hM = widthM / 30, R = widthM / 9;
+      const post = new THREE.Mesh(new THREE.CylinderGeometry(widthM / 900, widthM / 900, hM, 8), new THREE.MeshBasicMaterial({ color: 0x1565c0 })); post.position.set(mx(s.lon), base + hM / 2, mz(s.lat)); scene.add(post);
+      const cam = new THREE.Mesh(new THREE.BoxGeometry(widthM / 160, widthM / 240, widthM / 240), new THREE.MeshBasicMaterial({ color: 0x0d47a1 })); cam.position.set(mx(s.lon), base + hM, mz(s.lat)); scene.add(cam);
+      const spr = labelSprite(`Photos: ${s.name}`.slice(0, 30), 'rgba(227,242,253,.95)', '#0d47a1', widthM, 4); spr.position.set(mx(s.lon), base + hM + widthM / 120, mz(s.lat)); scene.add(spr);
+      s.views.forEach((v, i) => {
+        const pos: number[] = [], n = 16, cx0 = mx(s.lon), cz0 = mz(s.lat), y0 = base + widthM / 400;
+        for (let k = 0; k < n; k++) {
+          const a1 = ((v.headingDeg - v.hfovDeg / 2 + (v.hfovDeg * k) / n) * Math.PI) / 180, a2 = ((v.headingDeg - v.hfovDeg / 2 + (v.hfovDeg * (k + 1)) / n) * Math.PI) / 180;
+          const p1 = { lat: s.lat + (R * Math.cos(a1)) / 110540, lon: s.lon + (R * Math.sin(a1)) / (111320 * Math.cos((lat0 * Math.PI) / 180)) };
+          const p2 = { lat: s.lat + (R * Math.cos(a2)) / 110540, lon: s.lon + (R * Math.sin(a2)) / (111320 * Math.cos((lat0 * Math.PI) / 180)) };
+          const g1 = sampleDem(dem, p1) ?? g, g2 = sampleDem(dem, p2) ?? g;
+          pos.push(cx0, y0, cz0, mx(p1.lon), (g1 - zmin) * exag + widthM / 400, mz(p1.lat), mx(p2.lon), (g2 - zmin) * exag + widthM / 400, mz(p2.lat));
+        }
+        const fg = new THREE.BufferGeometry(); fg.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+        scene.add(new THREE.Mesh(fg, new THREE.MeshBasicMaterial({ color: [0x1e88e5, 0x00acc1, 0x8e24aa, 0xfb8c00, 0x43a047][i % 5], transparent: true, opacity: 0.32, side: THREE.DoubleSide, depthWrite: false })));
+      });
+    });
     if (marker) {
       const g = sampleDem(dem, marker);
       if (g != null) {
@@ -301,7 +322,7 @@ export function Terrain3D(props: Terrain3DProps) {
     window.addEventListener('resize', onR);
     return () => { saved.current = { dem, pos: camera.position.clone(), target: ctl.target.clone() }; cam.current = null; cancelAnimationFrame(raf); window.removeEventListener('resize', onR); ctl.dispose(); renderer.dispose(); geo.dispose(); tex?.dispose(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dem, props.profile, exag, showF, sites, fMHz, props.txId, props.rxId, marker?.lat, marker?.lon, comm, drape, viewshed, obstructions, props.path, routes, heat, beam?.lat, beam?.lon, beam?.aglM, beam?.azimuthDeg, beam?.tiltDeg, beam?.hBwDeg, beam?.vBwDeg, beam?.maxKm]);
+  }, [dem, props.profile, exag, showF, sites, fMHz, props.txId, props.rxId, marker?.lat, marker?.lon, comm, drape, viewshed, obstructions, props.path, routes, heat, beam?.lat, beam?.lon, beam?.aglM, beam?.azimuthDeg, beam?.tiltDeg, beam?.hBwDeg, beam?.vBwDeg, beam?.maxKm, props.photos]);
   useEffect(() => { // tilt slider: swing the camera up or down around the same point, keeping direction and distance
     const c = cam.current; if (!c || props.tilt == null) return;
     if (Math.abs((c.ctl.getPolarAngle() * 180) / Math.PI - props.tilt) < 0.5) return;
