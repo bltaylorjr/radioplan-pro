@@ -47,6 +47,8 @@ import { AutoDesignPage } from './pages/AutoDesign';
 import { readBackup } from './engine/projectdb';
 import { Updater } from './components/Updater';
 import { Welcome } from './components/Welcome';
+import { ClearPageButton, UndoClearBar } from './components/ClearPage';
+import type { Project } from './types';
 const TerrainPage = lazy(() => import('./pages/Terrain'));
 const CoveragePage = lazy(() => import('./pages/Coverage'));
 const View3DPage = lazy(() => import('./pages/View3D'));
@@ -130,6 +132,11 @@ export default function App() {
   }, []);
   useEffect(() => { setHelpOpen(false); setTour(false); setNavOpen(false); }, [page]);
   const [welcome, setWelcome] = useState(false);
+  /** After "Clear all fields": the page's entries before clearing (for Undo) and a counter that resets typed-in boxes. */
+  const [cleared, setCleared] = useState<{ page: string; before: Project } | null>(null);
+  const [resetN, setResetN] = useState(0);
+  useEffect(() => { setCleared((c) => (c && c.page !== page ? null : c)); }, [page]);
+  const endClear = React.useCallback((undone: boolean) => { setCleared(null); if (undone) setResetN((n) => n + 1); }, []);
   useEffect(() => { if (firstVisitVideo()) setVideo('first'); }, []);
   useEffect(() => { try { if (!localStorage.getItem('radioplan.seenIntro')) { localStorage.setItem('radioplan.seenIntro', '1'); setWelcome(true); } } catch { /* ignore */ } }, []);
 
@@ -198,10 +205,12 @@ export default function App() {
                 <button disabled={!nextW} onClick={() => nextW && go(nextW.id)} aria-label="Next page" title={nextW?.label}>→</button>
                 {topic.tour && <button onClick={() => setTour(true)} data-tour-btn>▶ Guide me</button>}
                 <button onClick={() => setHelpOpen(true)}>? Page help</button>
+                <ClearPageButton page={current.id} label={current.label} onCleared={(before) => { setCleared({ page: current.id, before }); setResetN((n) => n + 1); }} />
               </div>
             </div>
+            {cleared && cleared.page === current.id && <UndoClearBar key={resetN} page={current.id} label={current.label} before={cleared.before} onDone={endClear} />}
             {skipped.has(current.id) && <p className="note no-print">This step is skipped on this project. <button onClick={() => setSkip(current.id, false)}>Don't skip it</button></p>}
-            <SelfRepair page={current.id}><Suspense fallback={<div className="card">Loading…</div>}>{current.el}</Suspense>{checklistFor(current.id) && <div data-tour="checklist" className="no-print" style={{ marginTop: 16 }}><Checklist def={checklistFor(current.id)!} /></div>}</SelfRepair>
+            <SelfRepair page={current.id}><Suspense fallback={<div className="card">Loading…</div>}><React.Fragment key={resetN}>{current.el}</React.Fragment></Suspense>{checklistFor(current.id) && <div data-tour="checklist" className="no-print" style={{ marginTop: 16 }}><Checklist def={checklistFor(current.id)!} /></div>}</SelfRepair>
             <footer className="page-foot">
               <button disabled={!prevW} onClick={() => prevW && go(prevW.id)}>← {prevW?.label ?? 'Back'}</button>
               {canSkip(current.id) && !skipped.has(current.id) ? <button className="ghost" onClick={() => { setSkip(current.id, true); if (nextW) go(nextW.id); }} title="Mark this step as not needed on this project and go to the next one. You can still open it from the menu.">Skip this step ⤼</button> : <span />}

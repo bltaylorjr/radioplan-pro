@@ -1,3 +1,11 @@
+# LvPlan Pro 1.5.42
+
+- **⌫ Clear all fields on each page.** Every page with boxes to fill in has a **Clear all fields** button at the top, next to **? Page help**. It clears only that page's entries: lists are emptied and numbers go back to their starting values. Pages that only hold typed-in numbers (Calculators, Troubleshooting Wizard, Find Location) start over too.
+- **Asks first**: a Yes / No box says exactly what will be cleared on that page. Other pages, saved projects, the RadioReference login and downloads, the specifications library and contacts are never touched.
+- **↶ Undo** right after clearing puts the page back, and a copy from before is saved in Projects → History of this project.
+- Pages with nothing to type in (RadioReference, 3D Model, Map & Directions, Service, Library, Contacts, Projects, Sync) have no button. On a page that is already empty the button says "Nothing to clear".
+- **Introduction video**: a new part shows Clear all fields and Undo.
+
 # LvPlan Pro 1.5.41
 
 - **✏️ Draw lines on any map.** Draw a line by hand with your finger or mouse, or tap points for straight lines, or add the line between the transmit and receive sites, to map out obstacles and signal along a road, trail or cable route.

@@ -376,3 +376,4 @@ body { font-size: clamp(15px, 0.6vw + 12.5px, 17px); }
 .line-handle { background: #fff; border: 3px solid #7b1fa2; border-radius: 50%; box-shadow: 0 0 0 1px #0004; }
 .line-handle.on { background: #ffeb3b; border-color: #d50000; }
 .line-handle.mid { background: #e1bee7; border: 2px solid #7b1fa2; opacity: .85; }
+.clear-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
