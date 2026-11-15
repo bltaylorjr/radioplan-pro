@@ -445,3 +445,12 @@ button.nav-group-title:hover { color: #fff; }
 .feature-card summary { cursor: pointer; padding: 2px 0; } .feature-card .pill { font-size: .7rem; margin-left: 6px; opacity: .75; }
 .feature-card ol { margin: 6px 0 8px 18px; padding: 0; } .feature-card p { margin: 6px 0; }
 .help-panel .feature-card { padding: 6px 10px; }
+/* 1.5.50 value info */
+.vinfo { position: relative; display: inline-flex; flex: none; }
+.vinfo-btn { width: 20px; height: 20px; min-width: 20px; padding: 0; border-radius: 50%; border: 1px solid var(--accent); background: transparent; color: var(--accent); font: italic 700 12px/1 Georgia, serif; cursor: help; display: inline-flex; align-items: center; justify-content: center; }
+.vinfo-btn:hover, .vinfo-btn[aria-expanded="true"] { background: var(--accent); color: #fff; }
+.vinfo-pop { position: absolute; z-index: 2100; right: 0; top: 24px; width: min(300px, 80vw); display: grid; gap: 4px; background: #13263b; color: #fff; font-size: .8rem; font-weight: 400; line-height: 1.35; padding: 9px 11px; border-radius: 8px; box-shadow: 0 6px 20px rgba(0,0,0,.28); text-align: left; white-space: normal; }
+.vinfo-pop i { font-style: normal; color: #8fd0ff; }
+.vinfo-pop .small { color: #b9c6d3; }
+.vinfo-pop .num-fix { justify-self: start; margin: 2px 0; }
+.vinfo-pop.left { right: auto; left: 0; }

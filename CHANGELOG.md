@@ -1,3 +1,10 @@
+# LvPlan Pro 1.5.55
+
+- **ⓘ beside every value.** Point at it on a computer, or tap it on a phone or tablet, to see what the value means in plain words, its unit, the typical range, the allowed range, and the industry-standard default with its source (for example NFPA 72 10.6.7.2.1 for 24 h fire alarm standby, NEC 250.52 for an 8 ft ground rod, IFC 510 for −95 dBm and 12 h ERCES battery, TIA TSB-88 for 8 dB shadow fading).
+- **Use default** puts the industry default straight into the box. If the box already has it, you see ✓.
+- About 140 project fields and calculator inputs have their own explanation; every calculator input offers that calculator's standard value as its default.
+- **Introduction video**: a new part shows the ⓘ info and Use default.
+
 # LvPlan Pro 1.5.54
 
 - **Menu in project order.** Every tool and step now follows the project lifecycle: **1 Project setup**, **2 Site survey**, **3 Design: low-voltage systems**, **4 Design: radio & antennas** (RadioReference frequencies first, then equipment, path, coverage and aiming), **5 Codes, permits & drawings**, **6 Equipment & materials** (Specifications Library, Materials List), **7 Installation**, **8 Testing & commissioning**, **9 Service, troubleshooting & repair**, and **10 Reports & closeout**. **Tools & reference** (Calculators, Low-Voltage Principles, Contacts, Map & Directions) and **Projects & settings** (Projects, Sync Devices, User Settings) are at the bottom and open any time. Next / Previous, step numbers, the custom-project page picker and User Settings all follow the same order, and tools turned off in User Settings stay out of the menu and Find a tool.
