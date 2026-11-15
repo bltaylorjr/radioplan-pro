@@ -31,6 +31,7 @@ import { fmtBytes } from '../engine/projectdb';
 import { useUnits, DistNum } from '../units';
 import { missingRequired } from '../engine/required';
 import { siteRunHours } from '../engine/siteruns';
+import { askConfirm } from '../components/askConfirm';
 
 const REPORTS = [
   ['cover', 'Cover letter & summary'], ['scope', 'Scope of work'], ['autoequip', 'Recommended equipment'], ['bom', 'Materials list'], ['price', 'Price'],
@@ -97,7 +98,7 @@ export function ReportsPage() {
   const u = useUnits();
   const { update, setRt } = useStore();
   /** Before printing or exporting: if required project information is empty, highlight it and ask. */
-  const ready = () => { const miss = missingRequired(p); if (!miss.length) return true; setRt((r) => ({ ...r, showRequired: true })); return confirm(`Required project information is missing: ${miss.map((x) => x.label).join(', ')}.\n\nPress Cancel to fill it in on Company & Project, or OK to continue anyway.`); };
+  const ready = async () => { const miss = missingRequired(p); if (!miss.length) return true; setRt((r) => ({ ...r, showRequired: true })); return askConfirm({ title: 'Required information is missing', message: <>Missing: <b>{miss.map((x) => x.label).join(', ')}</b>. Press Cancel to fill it in on Company &amp; Project, or Continue anyway.</>, ok: 'Continue anyway', cancel: 'Cancel' }); };
   const [pkg, setPkg] = useState(() => { try { return localStorage.getItem('radioplan.reportPkg') || 'proposal'; } catch { return 'proposal'; } });
   const P = PACKAGES.find((x) => x.id === pkg) ?? PACKAGES[0];
   const [sel, setSel] = useState<Partial<Record<RK, boolean>>>({});
@@ -190,7 +191,7 @@ export function ReportsPage() {
       ['Free-space loss over path', `${fmt(fsplDb(p.radio.fMHz, Math.max(L.pathKm, 0.01)))} dB`],
       ...(rt.profile ? [['Min. Fresnel clearance', `${fmt(rt.profile.minClearancePct, 0)}% of F1 (${rt.profile.meets60 ? 'meets' : 'FAILS'} 60%), LOS ${rt.profile.los ? 'clear' : 'obstructed'}, diffraction ${fmt(rt.profile.diffractionLossDb)} dB`] as [string, string]] : []),
       ['RF exposure', `General-public MPE distance ${fmt(mpeComplianceDistanceM(L.eirpW, p.radio.fMHz, 'general'), 1)} m (OET-65)`],
-    ]} />{rt.profile ? <ProfileChart a={rt.profile} height={260} /> : <p className="muted">Path profile not computed this session.</p>}</>,
+    ]} />{rt.profile ? <ProfileChart a={rt.profile} height={260} fixed /> : <p className="muted">Path profile not computed this session.</p>}</>,
     coverage: () => <KV rows={[['Model', `${L.modelName}, ${p.radio.env}, ${p.radio.city}`], ['Analysis radius', u.f(p.radio.coverageRadiusKm, 1)], ['Threshold', `${p.radio.coverageThresholdDbm} dBm`],
       ['Area above threshold', rt.coverage ? `${fmt(coverageStats(rt.coverage, p.radio.coverageThresholdDbm).pct, 1)} %` : 'not computed this session'], ['Azimuth / tilt', `${L.tx ? fmtAz(p.radio.azimuthDeg, declinationDeg(L.tx)) : `${p.radio.azimuthDeg}°T`} / ${p.radio.mechTiltDeg + p.radio.elecTiltDeg}° down`], ['Terrain', rt.dem ? rt.dem.source : 'smooth earth']]} />,
     grounding: () => { const g = p.grounding; return <KV rows={[['Bonding conductor', `#${g.bondingConductorAwg} AWG Cu, ${u.len(g.bondingConductorLengthM)}`], ['Ground ring', `#${g.groundRingAwg} AWG tinned`], ['Rods', `${g.groundRods} × ${g.rodLengthFt} ft at ${g.rodSpacingFt} ft spacing`], ['Feeder ground kits', g.towerGroundKits], ['Surge protector / IBT', `${g.surgeProtector ? 'Yes' : 'No'} / ${g.intersystemBond ? 'Yes' : 'No'}`], ['Measured resistance', g.measuredResistanceOhm != null ? `${g.measuredResistanceOhm} Ω` : 'not measured'], ['TIA-222-H', `Risk Category ${g.structureClass}${g.ice ? ', ice' : ''}`]]} />; },
@@ -229,11 +230,11 @@ export function ReportsPage() {
         <div className="row wrap"><button className="ghost" onClick={() => setSel(Object.fromEntries(REPORTS.map(([k]) => [k, true])))}>Select all</button><button className="ghost" onClick={() => setSel(Object.fromEntries(REPORTS.map(([k]) => [k, false])))}>Select none</button><button className="ghost" onClick={() => setSel({})}>Reset to {P.label.toLowerCase()}</button></div>
         <h4>Print and export</h4>
         <div className="row wrap">
-          <button className="primary" onClick={() => ready() && window.print()}>🖨 Print / Save as PDF</button>
-          <button onClick={() => ready() && exportWord()}>⬇ Word (.docx)</button>
-          <button onClick={() => ready() && exportExcel()}>⬇ Excel (.xlsx)</button>
+          <button className="primary" onClick={async () => (await ready()) && window.print()}>🖨 Print / Save as PDF</button>
+          <button onClick={async () => (await ready()) && exportWord()}>⬇ Word (.docx)</button>
+          <button onClick={async () => (await ready()) && exportExcel()}>⬇ Excel (.xlsx)</button>
           <button onClick={() => downloadText(`${safeName(m.name)}-materials.csv`, bomToCsv(bom), 'text/csv')}>⬇ Materials CSV</button>
-          <button onClick={() => ready() && exportHtml()}>⬇ Web page (.html)</button>
+          <button onClick={async () => (await ready()) && exportHtml()}>⬇ Web page (.html)</button>
           <button onClick={() => downloadText(`${m.name || 'project'}.kml`, kml(p), 'application/vnd.google-earth.kml+xml')}>⬇ KML (Google Earth)</button>
         </div>
         <p className="small muted">To make a PDF, press Print and choose “Save as PDF” as the printer. Drawings for CAD are on the Blueprints page.</p>

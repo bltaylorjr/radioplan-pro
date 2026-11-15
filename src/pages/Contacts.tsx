@@ -9,6 +9,7 @@ import { kvGet, kvSet } from '../engine/projectdb';
 import { uid } from '../defaults';
 import { CONTACTS, RESOURCES, CONTACT_KINDS, RESOURCE_KINDS, Contact, Resource, Level, atPlace, lookupUrl, mergeMine } from '../data/contacts';
 import type { StateCode } from '../types';
+import { askConfirm, askDelete } from '../components/askConfirm';
 
 const STATES: StateCode[] = ['NC', 'SC', 'GA', 'TN', 'VA'];
 type Mine<T> = T & { replaces?: string };
@@ -63,8 +64,8 @@ export function ContactsPage() {
 
   const newContact = (): Mine<Contact> => ({ id: '', level: levelOf(county, city), state, county: county || undefined, city: city || undefined, office: '', kind: 'Building inspections', address: '', phone: '', email: '', url: '', note: '' });
   const newResource = (): Mine<Resource> => ({ id: '', level: levelOf(county, city), state, county: county || undefined, city: city || undefined, title: '', kind: 'Adopted codes', url: '', note: '' });
-  const remove = (type: 'contact' | 'resource', x: { id: string; mine?: boolean }) => {
-    if (!confirm('Remove this entry?')) return;
+  const remove = async (type: 'contact' | 'resource', x: { id: string; mine?: boolean }) => {
+    if (!(await askDelete('Delete this entry?', x.mine ? undefined : 'Built-in entries can be shown again with Show removed entries.'))) return;
     if (type === 'contact') saveC(x.mine ? { ...cs, mine: cs.mine.filter((m) => m.id !== x.id) } : { ...cs, hidden: [...cs.hidden, x.id] });
     else saveR(x.mine ? { ...rs, mine: rs.mine.filter((m) => m.id !== x.id) } : { ...rs, hidden: [...rs.hidden, x.id] });
   };
@@ -75,7 +76,7 @@ export function ContactsPage() {
     else saveR({ ...rs, mine: [...rs.mine.filter((m) => m.id !== edit.v.id), v as Mine<Resource>] });
     setEdit(null);
   };
-  const restore = () => { if (confirm('Show the built-in entries you removed again?')) { saveC({ ...cs, hidden: [] }); saveR({ ...rs, hidden: [] }); } };
+  const restore = async () => { if (await askConfirm({ title: 'Show removed entries?', message: 'Show the built-in entries you removed again?', ok: 'Show them', cancel: 'Cancel' })) { saveC({ ...cs, hidden: [] }); saveR({ ...rs, hidden: [] }); } };
   const hasLocal = (lvl: Level) => shownC.some((c) => c.level === lvl);
 
   return (

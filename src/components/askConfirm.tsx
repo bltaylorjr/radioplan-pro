@@ -26,3 +26,8 @@ function Box({ title, message, ok = 'OK', cancel = 'Cancel', danger, done }: { t
     </div>
   );
 }
+
+/** "Are you sure?" box for every delete, with Delete and Cancel buttons. */
+export function askDelete(what: React.ReactNode, more?: React.ReactNode): Promise<boolean> {
+  return askConfirm({ title: 'Are you sure?', danger: true, ok: 'Delete', cancel: 'Cancel', message: <><p>{what}</p>{more && <p className="small muted">{more}</p>}</> });
+}

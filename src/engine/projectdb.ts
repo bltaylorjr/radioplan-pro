@@ -264,6 +264,20 @@ export async function writeToFolder(h: Dir, id: string, p: Project) {
   // Remove an older file of the same project saved under a previous name.
   if (h.values) for await (const e of h.values()) if (e.kind === 'file' && e.name.endsWith(`.${id}.radioplan.json`) && e.name !== folderFileName(id, p)) await h.removeEntry(e.name).catch(() => undefined);
 }
+/** Delete this project's file(s) from the data folder. */
+export async function removeFromFolder(h: Dir, id: string) {
+  if (!h.values) return;
+  const names: string[] = [];
+  for await (const e of h.values()) if (e.kind === 'file' && e.name.endsWith(`.${id}.radioplan.json`)) names.push(e.name);
+  for (const n of names) await h.removeEntry(n).catch(() => undefined);
+}
+/** Projects deleted on this device: a folder sync must not bring them back. */
+const DELETED = 'deletedProjects';
+export const deletedProjectIds = async () => new Set((await kvGet<string[]>(DELETED)) ?? []);
+export async function markProjectDeleted(id: string, deleted = true) {
+  const ids = await deletedProjectIds(); if (deleted) ids.add(id); else ids.delete(id);
+  await kvSet(DELETED, [...ids].slice(-500));
+}
 export async function readFolder(h: Dir): Promise<BackupEntry[]> {
   const out: BackupEntry[] = [];
   if (!h.values) return out;

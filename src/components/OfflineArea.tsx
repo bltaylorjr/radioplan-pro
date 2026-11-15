@@ -6,6 +6,7 @@ import { BASEMAPS } from './MapView';
 import { boundsAround, downloadTerrain, Bounds } from '../engine/autoterrain';
 import { countTiles, prefetchTiles } from '../engine/offline';
 import { cacheStats, cacheClear } from '../engine/tilecache';
+import { askDelete } from './askConfirm';
 
 /** Pre-download maps + terrain for the project area so everything works with no connection. */
 export function OfflineArea({ viewBounds }: { viewBounds?: Bounds | null }) {
@@ -51,7 +52,7 @@ export function OfflineArea({ viewBounds }: { viewBounds?: Bounds | null }) {
       <p className="small">{n.toLocaleString()} map tiles (≈ {(n * 0.025).toFixed(0)} MB) + terrain. {n > limit && <b className="bad-text">Too large: reduce the area or zoom (limit {limit.toLocaleString()}).</b>}</p>
       <div className="row wrap">
         {prog ? <button onClick={() => abort.current?.abort()}>■ Stop</button> : <button className="primary" disabled={n > limit || !navigator.onLine} onClick={run}>⬇ Save area for offline</button>}
-        <button onClick={async () => { if (confirm('Delete all cached map and terrain tiles?')) { await cacheClear(); refresh(); } }}>Clear cache</button>
+        <button onClick={async () => { if (await askDelete('Delete all saved map and terrain tiles?', 'They download again the next time you are online.')) { await cacheClear(); refresh(); } }}>Clear cache</button>
         {stats && <span className="muted small">Cache: {stats.count.toLocaleString()} tiles, {(stats.bytes / 1e6).toFixed(1)} MB</span>}
       </div>
       {prog && <div className="progressbar"><div style={{ width: `${(prog.d / prog.n) * 100}%` }} /></div>}

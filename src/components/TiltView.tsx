@@ -230,7 +230,8 @@ export default function TiltView({ view, sites, txId, rxId, dem: projectDem, hei
         <span className="row" style={{ gap: 4 }}>
           {(Object.keys(IMAGERY) as Imagery[]).map((k) => <button key={k} className={imagery === k ? 'primary' : ''} onClick={() => setImagery(k)}>{IMAGERY[k].label}</button>)}
         </span>
-        <label className="row small" style={{ gap: 4 }}>Height boost <input type="range" min={1} max={5} step={0.5} value={exag} onChange={(e) => setExag(+e.target.value)} aria-label="Height boost" /> {exag}×</label>
+        <label className="row small" style={{ gap: 4 }}>Height boost <input type="range" min={1} max={5} step={0.5} value={exag} onChange={(e) => setExag(+e.target.value)} aria-label="Height boost" /> {exag === 1 ? 'true scale' : `${exag}×`}</label>
+        <button className={exag === 1 ? 'primary' : ''} aria-pressed={exag === 1} onClick={() => setExag(exag === 1 ? 2 : 1)} title="Heights and distances to the same scale (no height boost)">True scale</button>
       </div>
       <div className="row wrap small">
         <label><input type="checkbox" checked={showLos} onChange={(e) => setShowLos(e.target.checked)} /> Line of sight and obstructions</label>

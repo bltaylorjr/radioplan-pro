@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { kvGet, kvSet, fmtBytes } from '../engine/projectdb';
 import type { SpecItem } from '../data/speclib';
+import { askDelete } from './askConfirm';
 
 /** A datasheet saved on the device, so it opens with no internet. */
 export interface SavedSheet { name: string; type: string; size: number; blob: Blob; savedAt: string; from?: string }
@@ -40,7 +41,7 @@ export function Datasheet({ item, searchUrl }: { item: SpecItem; searchUrl: stri
     <div className="datasheet">
       <div className="row wrap">
         {s ? <><button className="primary" onClick={open}>📄 Open saved datasheet</button><span className="small muted">{s.name} · {fmtBytes(s.size)} · works offline</span>
-          <button className="ghost" onClick={async () => { if (confirm('Remove the saved datasheet from this device?')) { await kvSet(key, undefined); setS(null); } }}>Remove</button></>
+          <button className="ghost" onClick={async () => { if (await askDelete('Delete the saved datasheet from this device?')) { await kvSet(key, undefined); setS(null); } }}>Remove</button></>
           : <>{item.datasheet && /^https?:\/\//.test(item.datasheet) && <button onClick={tryLink}>⬇ Save datasheet for offline</button>}
             {item.brand !== 'Standard' && <a className="button" href={searchUrl} target="_blank" rel="noreferrer">🔎 Find datasheet online</a>}
             <button onClick={attach}>📎 Attach saved PDF</button></>}

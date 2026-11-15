@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { kvGet, kvSet, kvKeys, fmtBytes } from '../engine/projectdb';
 import type { SpecItem } from '../data/speclib';
+import { askDelete } from './askConfirm';
 
 export const MANUAL_KINDS = ['Installation manual', 'Service / repair manual', 'Technician / programming manual', 'Operation / user manual', 'Wiring diagram', 'Parts list', 'Firmware / software notes', 'Training / video', 'Other'] as const;
 export interface Manual { id: string; kind: string; name: string; url?: string; type?: string; size?: number; blob?: Blob; savedAt: string; note?: string }
@@ -49,7 +50,7 @@ export function ManualShelf({ owner, title, searchFor }: { owner: string; title:
       {byKind.map(([k, l]) => <div key={k}><div className="small muted">{k}</div><ul className="manual-list">{l.map((m) => (
         <li key={m.id}><button className="ghost" onClick={() => openManual(m)}>{m.blob ? '📄' : '🔗'} {m.name}</button>
           <span className="small muted">{m.blob ? `${fmtBytes(m.size ?? 0)} · offline` : 'link (needs internet)'}</span>
-          <button className="ghost small" onClick={async () => { if (confirm(`Remove "${m.name}"?`)) await save(list.filter((x) => x.id !== m.id)); }}>Remove</button></li>))}</ul></div>)}
+          <button className="ghost small" onClick={async () => { if (await askDelete(<>Delete <b>“{m.name}”</b>?</>)) await save(list.filter((x) => x.id !== m.id)); }}>Remove</button></li>))}</ul></div>)}
       <div className="row wrap">
         <select value={kind} onChange={(e) => setKind(e.target.value)} aria-label="Manual type" style={{ width: 'auto' }}>{MANUAL_KINDS.map((k) => <option key={k}>{k}</option>)}</select>
         <button onClick={attach}>📎 Attach file</button>
