@@ -403,3 +403,4 @@ body { font-size: clamp(15px, 0.6vw + 12.5px, 17px); }
 .tool-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 2px 14px; }
 .check-row { display: flex; gap: 8px; align-items: flex-start; padding: 6px 0; border-bottom: 1px dashed var(--line); }
 .check-row.bad b { color: var(--bad); } .check-row.warn b { color: var(--warn); }
+.project-actions { padding: 8px 14px; margin-bottom: 12px; }

@@ -1,3 +1,11 @@
+# LvPlan Pro 1.5.50
+
+- **↺ Reset project** and **🗑 Delete project** at the top of the main page (Company & Project).
+- **Reset project** clears every entry on every page of the open project (project and client information, sites, designs, field notes and photos, tests, materials, checklists, drawings, pricing) and keeps it as a blank project. Your measurement setting and saved company default stay.
+- **Delete project** removes the open project from this device with its history and terrain, and its copy in the data folder (flash drive); the most recent other project opens, or a new blank one.
+- Both ask **Are you sure?** first (Reset / Delete and Cancel), and **↶ Undo** right after puts the project back. A copy from before a reset is also kept in Projects → History.
+- **Introduction video**: a new part shows Reset project, Delete project and Undo.
+
 # LvPlan Pro 1.5.49
 
 - **⚙ User Settings page** (Tools menu): a check box for every tool. Untick the ones you do not use and they leave the menu, step numbers and Next / Previous. Nothing is deleted; tick a tool to bring it back. **Show every tool** and **Only what this project needs** buttons.

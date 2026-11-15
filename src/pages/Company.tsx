@@ -15,6 +15,7 @@ import { missingRequired, isMissing } from '../engine/required';
 import { findProjectSpot, moveSiteA } from '../engine/locateSite';
 import { loadCompanyDefault, saveCompanyDefault, clearCompanyDefault, applyCompanyDefault, CompanyDefault } from '../engine/companyDefault';
 import { askDelete } from '../components/askConfirm';
+import { ProjectActions } from '../components/ProjectActions';
 
 export function CompanyPage() {
   const { project: p, update, go, rt, setRt, lib } = useStore();
@@ -55,6 +56,8 @@ export function CompanyPage() {
   useEffect(() => { loadCompanyDefault().then((d) => { setDef(d); if (d) update((x) => { applyCompanyDefault(x, d); }); }).catch(() => undefined); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const j = JURISDICTIONS[m.state];
   return (
+    <>
+    <ProjectActions />
     <div className="grid2">
       <Card title="Project information" tour="project-form" tip="Project name and number print on every report header. Fields marked * are required.">
         {showReq && (() => { const miss = missingRequired(p); return miss.length ? <p className="note req-note" role="alert">⚠ Required before reports, proposals and drawings: <b>{miss.map((x) => x.label).join(', ')}</b>. Fields marked <span className="req-star">*</span> are required.</p> : <p className="small ok-text">✓ All required project information is filled in.</p>; })()}
@@ -128,5 +131,6 @@ export function CompanyPage() {
         </div>
       </Card>
     </div>
+    </>
   );
 }
