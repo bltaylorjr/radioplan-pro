@@ -1,3 +1,7 @@
+# LvPlan Pro 1.5.38
+
+- **Introduction video updated.** A new part right after Map & Terrain shows the 3D tilt view: satellite pictures on 3D terrain, the tilt slider, plotting point A and point B by GPS coordinates or address, line of sight with the blocked spots marked, a suggested relay point, and shading of ground point A cannot see.
+
 # LvPlan Pro 1.5.37
 
 - **3D tilt view on every map.** Tap **⛰ 3D tilt view** above any map to see the area as a 3D model with satellite pictures on top (or the topo map, or height colors). A **Tilt** slider and **Straight down / Tilted / Low angle** buttons, plus a height boost slider. **🗺 Flat map** goes back.
