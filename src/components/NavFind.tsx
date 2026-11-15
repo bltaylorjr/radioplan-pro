@@ -29,6 +29,7 @@ export function findTools(q: string, visiblePages?: string[]): Hit[] {
     if (s) hits.push({ kind: 'page', id: p.id, title: p.label, sub: h?.summary ?? '', score: s + 1 });
   }
   for (const f of FEATURES) {
+    if (visiblePages && !visiblePages.includes(f.page)) continue;
     const s = matchScore(words, f.title, `${f.keywords} ${f.summary} ${f.where}`);
     if (s) hits.push({ kind: 'tool', id: f.id, title: f.title, sub: f.where, score: s + 1.5 });
   }

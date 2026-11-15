@@ -125,6 +125,10 @@ export const PAGE_TOURS: Record<string, TourStep[]> = {
     { target: 'text:Share by Bluetooth', title: 'Share', text: 'Send a sync file by Bluetooth, Nearby Share or email.' },
     { target: 'text:Automatic sync through a cloud-drive folder', title: 'Cloud folder', text: 'Pick a cloud-drive folder to keep devices in step over cellular.' },
   ],
+  settings: [
+    { target: 'text:Tools shown in the menu', title: 'Tools in the menu', text: 'Untick the tools you do not use. They leave the menu and the step numbers; nothing is deleted.' },
+    { target: 'text:Check my data', title: 'Check my data', text: 'Lists every empty, out-of-range or mismatched entry, with a button to fix it.' },
+  ],
 };
 
 /** Extra steps added to the end of existing page tours, for tools added later. */
