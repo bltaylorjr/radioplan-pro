@@ -563,6 +563,16 @@ The results under the model use the materials: signal coverage, outside signal l
 **4. Compare a scenario**: see what changes with a different building (steel and low-E glass, wood frame, tilt-up, metal building, block walls, glass curtain wall, a basement, soft or hard finishes) without changing your choices, then **Use this scenario** if you want it.
 
 Everything is a starting layout from rules of thumb; a designer must check it against the adopted codes, the manufacturer and the AHJ.` },
+  { id: 'campus', title: 'Multi-building site and campus', page: 'campus', keywords: 'campus multi building site plan several buildings outbuilding fiber underground conduit handhole aerial pole copper protector wireless bridge point to point line of sight fresnel cable schedule site materials outdoor coverage', summary: 'Plan a whole site: several buildings, each with its own size, floors and materials, the links between them, one layered site model, a cable schedule and the materials for everything.',
+    body: `**1. Buildings on the site**: the main building (A) comes from Auto-Design and 2D & 3D Models. **+ Add a building** for each other building: name, type, floors, size, where it sits (feet east and south of building A's corner), how far it is turned, and its outside walls and floor construction. You can also drag a building on the site plan.
+
+**2. Links between buildings**: fiber or copper in underground conduit, aerial fiber on poles, empty conduit for later, or a wireless bridge between roofs. Each link shows its route length, cable length, handholes or poles. Wireless links get a link budget and a check that no other building blocks the path.
+
+**3. Site plan and 3D site model**: every building with all its layers, the links (dashed = underground), handholes and poles, and **Outdoor signal** showing indoor Wi-Fi or radio antennas reaching outside through each building's walls. The **Buildings** layers show or hide a whole building.
+
+**4. Cable schedule** and **5. Materials for the whole site** add up every building and every link; download either as a spreadsheet, or **Add to Materials list**.
+
+Routes are straight lines with 15% added for bends; a designer must walk the route, call 811 before digging, and check everything against the codes and the AHJ.` },
   { id: 'theory', title: 'Low-voltage principles', page: 'theory', keywords: 'theory training basics advanced principles ohm law voltage drop cabling fiber plenum riser grounding bonding systems installation troubleshooting learn study index', summary: 'A built-in reading guide to low-voltage work, from basic electrical theory to advanced design and troubleshooting, with an index.',
     body: `**Low-Voltage Principles** (in Tools) is a reading guide built into the app, so it works offline. It runs in a logical order:
 

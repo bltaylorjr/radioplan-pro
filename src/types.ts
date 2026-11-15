@@ -127,6 +127,8 @@ export interface Project {
   autoDesign?: import('./engine/autodesign').AutoInputs & { applied?: boolean };
   /** Building materials (walls, floors, roof, windows, doors, shafts) used by the 2D/3D models and their results. */
   buildingMaterials?: Partial<import('./engine/bldgmaterials').BuildingSpec>;
+  /** Multi-building site: other buildings, where each one sits, and the links between them. */
+  campus?: import('./engine/campus').Campus;
   /** Drawing set settings (sheet size, scale, revisions). */
   blueprint?: Blueprint;
   /** Proposal pricing, schedule and terms. */
