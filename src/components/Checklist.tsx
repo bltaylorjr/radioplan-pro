@@ -3,6 +3,7 @@ import { useStore } from '../store';
 import { Card } from './ui';
 import { ChecklistDef, itemsOf, doneKey } from '../data/checklists';
 import { uid } from '../defaults';
+import { askDelete } from './askConfirm';
 
 /** A checklist saved in the project, grouped by system, with your own items. */
 export function Checklist({ def }: { def: ChecklistDef }) {
@@ -21,7 +22,7 @@ export function Checklist({ def }: { def: ChecklistDef }) {
           <li key={i.id} className={on ? 'done' : ''}><label className="check"><input type="checkbox" checked={on} onChange={(e) => set(i.id, e.target.checked)} /> {i.text}</label>
             {i.mine && <button className="ghost small" aria-label={`Remove ${i.text}`} onClick={() => update((d) => { d.checklistExtra = (d.checklistExtra ?? []).filter((x) => x.id !== i.id); })}>✕</button>}</li>); })}</ul></div>)}
       <div className="row"><input value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && add()} placeholder="Add your own item" aria-label={`Add item to ${def.title}`} style={{ flex: 1 }} /><button onClick={add} disabled={!text.trim()}>+ Add</button>
-        {done > 0 && <button className="ghost" onClick={() => { if (confirm('Untick every item on this checklist?')) update((d) => { const c = { ...(d.checklists ?? {}) }; for (const k of Object.keys(c)) if (k.startsWith(def.id + ':')) delete c[k]; d.checklists = c; }); }}>Clear ticks</button>}</div>
+        {done > 0 && <button className="ghost" onClick={async () => { if (await askDelete('Untick every item on this checklist?')) update((d) => { const c = { ...(d.checklists ?? {}) }; for (const k of Object.keys(c)) if (k.startsWith(def.id + ':')) delete c[k]; d.checklists = c; }); }}>Clear ticks</button>}</div>
     </Card>
   );
 }

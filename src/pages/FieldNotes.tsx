@@ -4,6 +4,7 @@ import { Card } from '../components/ui';
 import { toCsv } from '../engine/csv';
 import { uid } from '../defaults';
 import type { FieldNote } from '../types';
+import { askDelete } from '../components/askConfirm';
 
 export const NOTE_CATEGORIES = ['Site visit', 'Measurement', 'Punch list', 'Safety', 'Customer / AHJ', 'Installation', 'Other'];
 
@@ -105,7 +106,7 @@ export function FieldNotesPage() {
               {n.followUp && <label className="check small"><input type="checkbox" checked={n.done} onChange={(e) => update((d) => { d.fieldNotes = (d.fieldNotes ?? []).map((x) => x.id === n.id ? { ...x, done: e.target.checked } : x); })} /> Follow-up done</label>}
               <span style={{ flex: 1 }} />
               <button onClick={() => setEdit(n)}>Edit</button>
-              <button className="danger" onClick={() => { if (confirm('Delete this note?')) update((d) => { d.fieldNotes = (d.fieldNotes ?? []).filter((x) => x.id !== n.id); }); }}>Delete</button>
+              <button className="danger" onClick={async () => { if (await askDelete(<>Delete the note <b>“{n.title || 'Untitled'}”</b> and its photos?</>)) update((d) => { d.fieldNotes = (d.fieldNotes ?? []).filter((x) => x.id !== n.id); }); }}>Delete</button>
             </footer>
           </article>))}
         </div>

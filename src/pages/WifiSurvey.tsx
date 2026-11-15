@@ -7,6 +7,7 @@ import { parseScan, importSurveyFile, wifiGrid, WIFI_VIEWS, WifiView, signalColo
 import { toCsv } from '../engine/csv';
 import { uid } from '../defaults';
 import type { WifiAp, WifiReading } from '../types';
+import { askDelete } from '../components/askConfirm';
 
 const PX = 900;
 const hexRgb = (h: string): [number, number, number] => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
@@ -104,7 +105,7 @@ export function WifiSurveyPage() {
           </div>
           <div className="row wrap"><label className="btn">📂 Import survey file (CSV)<input hidden type="file" accept=".csv,.txt,.tsv" onChange={(e) => { importFile(e.target.files?.[0]); e.target.value = ''; }} /></label>
             <button disabled={!w.readings.length} onClick={exportCsv}>⬇ Export readings CSV</button>
-            <button disabled={!w.readings.length} onClick={() => { if (confirm('Delete all Wi-Fi readings?')) update((d) => { d.wifi.readings = []; }); }}>Clear readings</button></div>
+            <button disabled={!w.readings.length} onClick={async () => { if (await askDelete('Delete all Wi-Fi readings?')) update((d) => { d.wifi.readings = []; }); }}>Clear readings</button></div>
           <p className="small muted">Web browsers and Android web apps are not allowed to scan Wi-Fi, so each reading comes from a scan you paste or import. On a Windows laptop run <code>netsh wlan show networks mode=bssid</code>; on Linux <code>nmcli dev wifi</code> or <code>sudo iw dev wlan0 scan</code>; on a Mac hold Option and click the Wi-Fi icon, or use <code>airport -I</code> for signal and noise. Survey apps that export CSV (with x/y or latitude/longitude per row) import in one step.</p>
         </Card>
         <Card title="Add a reading" tour="wifi-add">
