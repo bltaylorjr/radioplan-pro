@@ -56,6 +56,10 @@ import { useHiddenTools, setToolOn } from './engine/toolPrefs';
 const TerrainPage = lazy(() => import('./pages/Terrain'));
 const CoveragePage = lazy(() => import('./pages/Coverage'));
 const View3DPage = lazy(() => import('./pages/View3D'));
+const FccPage = lazy(() => import('./pages/Fcc'));
+const FaaPage = lazy(() => import('./pages/Faa'));
+import { OfflineArea } from './components/OfflineArea';
+import { MapPackBadge } from './components/MapPacks';
 
 export const WORKFLOW: { id: string; label: string; group: string; el: React.ReactNode }[] = [
   { id: 'company', label: 'Company & Project', group: '1 · Project setup', el: <CompanyPage /> },
@@ -80,8 +84,10 @@ export const WORKFLOW: { id: string; label: string; group: string; el: React.Rea
   { id: 'scenarios', label: 'Scenarios & Compare', group: '4 · Planning: radio & RF', el: <ScenariosPage /> },
   { id: 'view3d', label: '3D Model', group: '4 · Planning: radio & RF', el: <View3DPage /> },
   { id: 'radioref', label: 'RadioReference Frequencies', group: '4 · Planning: radio & RF', el: <RadioReferencePage /> },
+  { id: 'fcc', label: 'FCC Towers & Licenses', group: '4 · Planning: radio & RF', el: <FccPage /> },
   { id: 'lfhf', label: 'LF / HF Systems', group: '4 · Planning: radio & RF', el: <LfHfPage /> },
   { id: 'compliance', label: 'Code Compliance', group: '5 · Planning: codes & materials', el: <CompliancePage /> },
+  { id: 'faa', label: 'FAA Height Check', group: '5 · Planning: codes & materials', el: <FaaPage /> },
   { id: 'materials', label: 'Materials List', group: '5 · Planning: codes & materials', el: <MaterialsPage /> },
   { id: 'blueprints', label: 'Blueprints & Drawing Sets', group: '5 · Planning: codes & materials', el: <BlueprintsPage /> },
   { id: 'testing', label: 'Final Testing', group: '6 · Testing & closeout', el: <TestingPage /> },
@@ -94,6 +100,7 @@ export const WORKFLOW: { id: string; label: string; group: string; el: React.Rea
   { id: 'library', label: 'Specifications Library', group: 'Tools', el: <SpecLibraryPage /> },
   { id: 'contacts', label: 'Contacts & Web Resources', group: 'Tools', el: <ContactsPage /> },
   { id: 'calculators', label: 'Calculators', group: 'Tools', el: <CalculatorsPage /> },
+  { id: 'mappacks', label: 'Offline Map Packs', group: 'Tools', el: <OfflineArea /> },
   { id: 'projects', label: 'Projects & Storage', group: 'Tools', el: <ProjectsPage /> },
   { id: 'sync', label: 'Sync Devices', group: 'Tools', el: <SyncPage /> },
   { id: 'settings', label: 'User Settings', group: 'Tools', el: <SettingsPage /> },
@@ -168,6 +175,7 @@ export default function App() {
         <div className="brand" title="Low-voltage system planning"><span className="logo">◉</span> LvPlan <b>Pro</b></div>
         <span className={'chip ' + (online ? 'on' : 'off')} title={online ? 'Online: maps and terrain download automatically and are cached' : 'Offline: using cached maps and terrain'}>{online ? '● Online' : '○ Offline'}</span>
         <RrJobBadge onOpen={() => go('radioref')} />
+        <MapPackBadge onOpen={() => go('mappacks')} />
         {rt.terrainStatus && <span className="chip terr" title="Automatic terrain">{rt.terrainStatus}</span>}
         {rt.mapStatus && <span className="chip terr" title="Automatic offline maps">{rt.mapStatus}</span>}
         <div className="proj">{project.company.name && <span className="muted">{project.company.name} · </span>}{project.meta.name} <span className="muted">({project.meta.state})</span></div>

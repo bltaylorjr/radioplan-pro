@@ -2,7 +2,7 @@
 // built from USGS 3DEP (1/3 arc-second, ~10 m; 1 m LiDAR-derived in some areas), elsewhere from SRTM/GMTED/ETOPO.
 // Tiles are cached in IndexedDB so terrain stays available offline. Also: USGS 3DEP point elevation (EPQS).
 import type { DemGrid } from './terrain';
-import { cachedFetchBlob } from './tilecache';
+import { cachedFetchBlob, cacheGet } from './tilecache';
 import { lonToTileX, latToTileY, tileRange, metersPerPixel, terrariumElevation } from './webmercator';
 import type { LatLon } from './geo';
 
@@ -48,7 +48,9 @@ export const retryDelayMs = (n: number) => Math.min(15000 * Math.pow(2, n), 3000
 
 /** Download (or load from cache) terrain covering `b` and resample it to a WGS84 DemGrid. */
 export async function downloadTerrain(b: Bounds, opts: { maxTiles?: number; maxCells?: number; onProgress?: (done: number, total: number) => void; retries?: number; sleep?: (ms: number) => Promise<unknown> } = {}): Promise<AutoTerrainResult> {
-  const z = chooseZoom(b, opts.maxTiles ?? 48);
+  let z = chooseZoom(b, opts.maxTiles ?? 48);
+  // Offline: use the most detailed zoom that is fully saved (offline map packs save terrain at zoom 8-13).
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) z = (await bestCachedTerrainZoom(b, z)) ?? z;
   const r = tileRange(b, z);
   const tiles = new Map<string, Float32Array>();
   let done = 0, fromCache = 0;
@@ -90,6 +92,17 @@ export async function downloadTerrain(b: Bounds, opts: { maxTiles?: number; maxC
     dem: { name: `Auto terrain z${z}`, ncols, nrows, west: b.west, north: b.north, cellDeg, cellDegY, data, nodata: NaN, source: `USGS 3DEP / SRTM via AWS Terrain Tiles (z${z}, ~${resM.toFixed(0)} m)` },
     zoom: z, tiles: r.count - failed, fromCache, resolutionM: resM, missingTiles: failed,
   };
+}
+
+/** Highest zoom from `zMax` down to 8 whose terrain tiles for `b` are all in the cache. */
+export async function bestCachedTerrainZoom(b: Bounds, zMax: number): Promise<number | null> {
+  for (let z = zMax; z >= 8; z--) {
+    const r = tileRange(b, z); if (r.count > 400) continue;
+    let all = true;
+    for (let x = r.x0; x <= r.x1 && all; x++) for (let y = r.y0; y <= r.y1 && all; y++) if (!(await cacheGet(TERRARIUM_URL(z, x, y)))) all = false;
+    if (all) return z;
+  }
+  return null;
 }
 
 /** USGS 3DEP Elevation Point Query Service (US only, 1/3 arc-second or best available). */

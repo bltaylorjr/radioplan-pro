@@ -1,0 +1,92 @@
+# Public FCC and FAA data for the offline FCC towers & licenses and FAA height check tools.
+# The build machine cannot reach fcc.gov / faa.gov, so a GitHub runner fetches the public files,
+# keeps only NC, SC, GA, TN and VA (plus nearby airports), and publishes them to the pre-release tag
+# "fccdata" (never "latest"). The app itself ships the processed data; this is only the raw source.
+name: FCC and FAA public data
+on:
+  workflow_dispatch:
+  push:
+    paths: ['.github/workflows/fcc-faa-data.yml', 'scripts/fccdata-run.txt']
+permissions:
+  contents: write
+jobs:
+  data:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - name: Download and filter
+        run: |
+          mkdir -p out work && cd work
+          UA='LvPlanPro-data/1.0'
+          get() { curl -fsSL --retry 4 --retry-delay 10 -A "$UA" -o "$2" "$1" && echo "ok $1 $(stat -c %s "$2")" || echo "FAILED $1"; }
+          get https://data.fcc.gov/download/pub/uls/complete/r_tower.zip r_tower.zip || true
+          for s in LMpriv LMcomm micro paging; do get https://data.fcc.gov/download/pub/uls/complete/l_$s.zip l_$s.zip || true; done
+          get https://davidmegginson.github.io/ourairports-data/airports.csv ../out/oa-airports.csv || true
+          get https://davidmegginson.github.io/ourairports-data/runways.csv ../out/oa-runways.csv || true
+          # FAA NASR 28-day subscription, airport CSV: try the current cycle and the two before it.
+          python3 - <<'PY'
+          import datetime, subprocess
+          d = datetime.date(2026, 1, 22); today = datetime.date.today()
+          while d + datetime.timedelta(28) <= today: d += datetime.timedelta(28)
+          for k in range(4):
+              c = d - datetime.timedelta(28 * k)
+              name = c.strftime('%d_%b_%Y')
+              url = f'https://nfdc.faa.gov/webContent/28DaySub/extra/{name}_APT_CSV.zip'
+              r = subprocess.run(['curl', '-fsSL', '--retry', '3', '-A', 'LvPlanPro-data/1.0', '-o', '../out/faa-apt-csv.zip', url])
+              print(url, r.returncode)
+              if r.returncode == 0:
+                  open('../out/faa-cycle.txt', 'w').write(name); break
+          PY
+          ls -la . ../out
+      - name: Keep NC, SC, GA, TN and VA
+        run: |
+          cd work
+          python3 - <<'PY'
+          import zipfile, os, io
+          ST = {'NC', 'SC', 'GA', 'TN', 'VA'}
+          man = open('../out/manifest.txt', 'w')
+          def sample(name, data):
+              lines = data.split('\n')[:3]
+              man.write(f'== {name} ({len(data)} chars)\n' + '\n'.join(lines) + '\n')
+          # ASR: keep every record whose structure (RA) is in the five states, joined on the unique system id (field 4 in RA? detect)
+          if os.path.exists('r_tower.zip'):
+              z = zipfile.ZipFile('r_tower.zip'); man.write('ASR files: ' + ' '.join(z.namelist()) + '\n')
+              files = {n: z.read(n).decode('latin-1') for n in z.namelist() if n.lower().endswith('.dat')}
+              for n, d in files.items(): sample(n, d)
+              keep = set()
+              ra = files.get('RA.dat', '')
+              for ln in ra.split('\n'):
+                  f = ln.split('|')
+                  if len(f) > 30 and any(x.strip() in ST for x in f[20:40]): keep.add(f[4])
+              man.write(f'ASR kept {len(keep)} structures\n')
+              with zipfile.ZipFile('../out/asr-5state.zip', 'w', zipfile.ZIP_DEFLATED) as o:
+                  for n, d in files.items():
+                      o.writestr(n, '\n'.join(ln for ln in d.split('\n') if len(ln.split('|')) > 4 and ln.split('|')[4] in keep))
+          # ULS: keep licenses with any location (LO) in the five states.
+          for s in ['LMpriv', 'LMcomm', 'micro', 'paging']:
+              p = f'l_{s}.zip'
+              if not os.path.exists(p): continue
+              z = zipfile.ZipFile(p); man.write(f'ULS {s} files: ' + ' '.join(z.namelist()) + '\n')
+              lo = z.read('LO.dat').decode('latin-1'); sample(f'{s}/LO.dat', lo)
+              keep = set()
+              for ln in lo.split('\n'):
+                  f = ln.split('|')
+                  if len(f) > 16 and (f[14].strip() in ST or any(x.strip() in ST for x in f[11:17])): keep.add(f[1])
+              man.write(f'ULS {s} kept {len(keep)} licenses\n')
+              with zipfile.ZipFile(f'../out/uls-{s}-5state.zip', 'w', zipfile.ZIP_DEFLATED) as o:
+                  for n in ['HD.dat', 'EN.dat', 'LO.dat', 'FR.dat', 'AN.dat', 'EM.dat']:
+                      if n not in z.namelist(): continue
+                      d = lo if n == 'LO.dat' else z.read(n).decode('latin-1')
+                      if n != 'LO.dat': sample(f'{s}/{n}', d)
+                      o.writestr(n, '\n'.join(ln for ln in d.split('\n') if len(ln.split('|')) > 1 and ln.split('|')[1] in keep))
+                      del d
+              del lo
+          man.close()
+          PY
+          ls -la ../out; head -c 20000 ../out/manifest.txt
+      - name: Publish as a pre-release asset (never "latest")
+        env: { GH_TOKEN: '${{ github.token }}' }
+        run: |
+          cd out
+          gh release view fccdata -R "$GITHUB_REPOSITORY" >/dev/null 2>&1 || gh release create fccdata -R "$GITHUB_REPOSITORY" --prerelease --latest=false --title "FCC and FAA source data (not an app release)" --notes "Public FCC ASR/ULS and FAA airport files for NC, SC, GA, TN and VA, used to build the app's offline data. Not an app update."
+          gh release upload fccdata * --clobber -R "$GITHUB_REPOSITORY"
