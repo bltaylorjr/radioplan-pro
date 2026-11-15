@@ -72,7 +72,7 @@ export async function refreshPacks(): Promise<{ updated: string[]; needApp: stri
     if (!p.restartOnly) useNow(p, s, b);
     updated.push(p.label); if (p.notice) notices.push(p.label);
   }
-  if (notices.length) notify(`📚 Updated from the LvPlan Pro website: ${notices.join(', ')}. Code findings use the new information now.`);
+  if (notices.length) notify(`📚 Updated from the LvPlan Pro website: ${notices.join(', ')}. These are in use now.`);
   return { updated, needApp };
 }
 

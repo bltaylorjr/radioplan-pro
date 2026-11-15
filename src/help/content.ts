@@ -1,15 +1,45 @@
 // Interactive help manual content. Each topic is searchable; `page` links a topic to a workflow page,
 // and `tour` lists guided-walkthrough steps that highlight elements marked with data-tour="...".
-export interface TourStep { target: string; title: string; text: string }
-export interface HelpTopic { id: string; title: string; page?: string; keywords: string; summary: string; body: string; tour?: TourStep[] }
+import { MENU_GROUPS, MENU_PAGES, MENU_ORDER, groupHeading } from '../data/menu';
+import { FEATURES_BY_VERSION } from './features';
+import { PAGE_TOURS, PAGE_TOUR_EXTRAS } from './tours';
+
+export interface TourStep { target: string; title: string; text: string;
+  /** Press the target when Next is tapped (to open a view before the next step). */
+  click?: boolean }
+export interface HelpTopic { id: string; title: string; page?: string; keywords: string; summary: string; body: string; tour?: TourStep[];
+  /** Feature cards (from features.ts) shown under the topic, each with ▶ Show me. */
+  features?: string[] }
+
+/** Help pages built from the menu list and the feature list, so new pages and tools show up by themselves. */
+const GUIDE_TOPICS: HelpTopic[] = [
+  { id: 'whats-new', title: "What's new", keywords: 'whats new new features latest update changes release version show me walkthrough',
+    summary: 'The newest tools, newest first. Tap ▶ Show me on any of them to go to the page and see where the button is.',
+    body: 'Each card says where the tool is and how to use it in a few steps. **▶ Show me** opens the page and points at the buttons one at a time. **Read more** opens the full help topic.',
+    features: FEATURES_BY_VERSION.map((f) => f.id) },
+  { id: 'menu-guide', title: 'Using the menu', keywords: 'menu navigation sidebar find a tool search sections steps where is how do i fold collapse next previous skip',
+    summary: 'The menu on the left follows the job from setup to closeout. Type in 🔎 Find a tool to jump straight to a page or tool.',
+    body: [
+      '**🔎 Find a tool** at the top of the menu searches every page, tool and help topic. Type a word such as “azimuth”, “battery”, “relay” or “clear”, then tap a result. Results marked ▶ open the page and show you the button.',
+      '**Sections**: tap a section heading to fold it up or open it again. The section with the page you are on always stays open.',
+      '**Steps**: the numbered sections are the job in order. Use **→** at the bottom of a page to go to the next step, or **Skip this step** if the job does not need it. The last two sections are tools you can open any time. Tools you turn off in **User Settings** are left out of the menu (Find a tool skips them too).',
+      MENU_GROUPS.map((g) => `**${groupHeading(g)}**: ${g.hint}\n` + MENU_PAGES.filter((p) => p.group === g.id).map((p) => `- ${p.label}`).join('\n')).join('\n\n'),
+      'On a phone or small tablet, tap **☰** at the top left to open the menu.',
+    ].join('\n\n'),
+    features: ['find-tool'] },
+];
 
 export const HELP: HelpTopic[] = [
-  { id: 'getting-started', title: 'Getting started', keywords: 'start clear reset erase undo intro video tour overview workflow usb android install save open project', summary: 'The left sidebar is your workflow: work top to bottom from Company & Project to Testing.',
-    body: `LvPlan Pro walks a project from first site visit to commissioning. Press **▶ Video** at the top of the screen for a narrated, captioned tour of every page and tool (it plays offline). Press **⛶ Full page** above any map, 3D view or diagram to show it on its own full screen; **✕ Close** (or Esc) brings you back. The tour opens and plays by itself the first time the app is opened; if it starts without sound, tap **🔊 Tap to turn on the sound**. Press **⌫ Clear all fields** at the top of a page to start that page over: it asks first, clears only that page (other pages, saved projects, the RadioReference login and downloads, the specifications library and contacts stay), and **↶ Undo** puts it back; a copy from before is also kept in Projects → History of this project. To start the whole project over, press **↺ Reset project** at the top of Company & Project; **🗑 Delete project** next to it removes the project (both ask first and can be undone right after). Press **Skip this step** at the bottom of any step you don't need on this job: it is greyed out in the menu and Next / Previous pass over it (open it from the menu and press **Don't skip it** to bring it back). Each page in the left sidebar is one **task**, in the order engineers normally perform them. Pages where work gets checked off (site survey, permits, installation, testing, closeout) have a **checklist** at the bottom; the sidebar shows ✓ when a checklist is finished.
+  ...GUIDE_TOPICS,
+  { id: 'getting-started', title: 'Getting started', keywords: 'start clear reset erase undo intro video tour overview workflow usb android install save open project menu find a tool whats new show me guide me walkthrough', summary: 'The menu on the left follows the job from setup to closeout. Type in 🔎 Find a tool to jump to any page or tool.',
+    body: `**The menu** (left side; tap **☰** on a phone) is in the order of a job: **Project setup**, **Site survey**, **Design: low-voltage systems**, **Design: radio & antennas**, **Codes, permits & drawings**, **Equipment & materials**, **Installation**, **Testing & commissioning**, **Service, troubleshooting & repair**, and **Reports & closeout**. **Tools & reference** and **Projects & settings** are at the bottom and can be opened any time; tools turned off in **User Settings** are left out of the menu. Tap a section heading to fold it up. Type in **🔎 Find a tool** at the top of the menu to jump straight to a page or tool, for example “azimuth”, “relay”, “battery” or “clear”. **★ What's new** lists the newest tools with a **▶ Show me** walkthrough for each. See **Using the menu** for the full list.
+
+LvPlan Pro walks a project from first site visit to commissioning. Press **▶ Video** at the top of the screen for a narrated, captioned tour of every page and tool (it plays offline). Press **⛶ Full page** above any map, 3D view or diagram to show it on its own full screen; **✕ Close** (or Esc) brings you back. The tour opens and plays by itself the first time the app is opened; if it starts without sound, tap **🔊 Tap to turn on the sound**. Press **⌫ Clear all fields** at the top of a page to start that page over: it asks first, clears only that page (other pages, saved projects, the RadioReference login and downloads, the specifications library and contacts stay), and **↶ Undo** puts it back; a copy from before is also kept in Projects → History of this project. To start the whole project over, press **↺ Reset project** at the top of Company & Project; **🗑 Delete project** next to it removes the project (both ask first and can be undone right after). Press **Skip this step** at the bottom of any step you don't need on this job: it is greyed out in the menu and Next / Previous pass over it (open it from the menu and press **Don't skip it** to bring it back). Each page in the left sidebar is one **task**, in the order engineers normally perform them. Pages where work gets checked off (site survey, permits, installation, testing, closeout) have a **checklist** at the bottom; the sidebar shows ✓ when a checklist is finished.
 
 - Your work saves automatically in this computer's browser storage.
-- Use **Save project** (top bar) to write a .radioplan.json file you can keep on the USB drive, email, or open on the Android app.
-- Press **F1** or the **?** button on any page for help on that page, or **Guide me** for a step-by-step walkthrough.
+- Use **Export** (top bar) to write a .radioplan.json file you can keep on the USB drive, email, or open on the Android app.
+- Press **F1** or **? Page help** on any page for help on that page. The help lists the **Tools on this page**; tap **▶ Show me** and the app points at each button in turn. **▶ Guide me** walks through the whole page.
+- Every **Delete** asks **Are you sure?** first and names what will be deleted.
 - Small **?** bubbles next to fields explain what to enter.
 
 **Important:** code citations and calculations are planning aids. A licensed professional engineer and the Authority Having Jurisdiction must verify the design.` },
@@ -24,7 +54,7 @@ export const HELP: HelpTopic[] = [
 **Build a plan** downloads terrain for the area, then tests a grid of candidate tower spots within the search radius. Each candidate is scored by how much of the service area it can see over the terrain (near line-of-sight) at your antenna height. The best spot becomes Site A, the location becomes the facility (Site B), and the band, antenna, azimuth, downtilt, feeder length, jurisdiction, coverage run, path profile, materials list, code checks and commissioning test plan are all filled in. Review and adjust every page afterwards.
 
 Not considered: zoning, land ownership, FAA airspace, existing towers and leasing. Verify on site.`,
-    tour: [ { target: 'plan', title: 'Auto-plan', text: 'Choose the band, service radius and tower height, then build the plan.' } ] },
+    tour: [ { target: 'text:Find a location', title: 'Find a location', text: 'Type an address or GPS coordinates and tap 🔎 Search.' }, { target: 'plan', title: 'Auto-plan', text: 'After a search, choose the band, service radius and tower height, then build the plan.' } ] },
 
   { id: 'offline', title: 'Working offline', keywords: 'offline no internet cache download area tiles usb android field', summary: 'Download an area ahead of time; maps, terrain, 3D, calculations, reports and help then work without a connection.',
     body: `Everything except map downloads, address search and the USGS point-elevation service runs on the device: all calculations, code checks, materials, reports, the help manual and the 3D viewer.
@@ -229,6 +259,42 @@ Required C/I depends on modulation and delivered audio quality; take it from TSB
 Pick a baseline (A) and a comparison (B) to see: which inputs changed, how each criterion's area changed, the area gained and lost at each threshold, and a B − A difference map. **Restore inputs** puts a scenario's radio settings back into the project. Export the comparison as CSV for the report.`,
     tour: [ { target: 'scenarios', title: 'Scenarios', text: 'Saved runs with their results. Show, restore or delete.' } ] },
 
+  { id: 'signal', title: 'Live signal readings', page: 'signal', keywords: 'live signal readings meter bluetooth usb com wifi phone cell rssi rsrp dbm walk test grid test erces bda compare prediction heat map g-nettrack network cell info wigle import', summary: 'Take real signal readings with a meter or the phone, or import them, and compare them with the prediction.',
+    body: `**Take a reading:** connect a signal meter with **🔵 Bluetooth** or **🔌 USB / COM meter** (Chrome or Edge on a computer or Android), use **📱 Phone cell signal** or **📱 Phone Wi-Fi signal** (LvPlan Pro Android app), or connect a Wi-Fi meter on **Bluetooth & Wi-Fi Devices**. The big number is the live reading. Press **📍 Save this reading**, or tick **Save automatically every … s** and walk. Each reading saves with the GPS position and time. No meter? Type what your meter shows and press **📍 Save reading**.
+
+**Indoors:** tick **Indoors (grid test)** and type the floor and room or grid cell. Tick **Critical area** in stairs, fire command rooms and pump rooms.
+
+**Import:** files from G-NetTrack, Network Cell Info, WiGLE, cell-logger apps and meter software (CSV / TSV with latitude, longitude and a dBm, RSSI, RSRP or Level column), GeoJSON, KML or GPX. dBµV readings are changed to dBm (50 Ω).
+
+**Compare:** each reading with GPS is compared with the coverage prediction at the same spot. The page says in plain words whether the design matches. **🎯 Calibrate the model** sends the readings to Drive Test & Calibration.
+
+**Map:** colour by measured signal, by difference from the prediction, or a heat map that fills in between readings.
+
+**ERCES / BDA grid test:** share of readings at or above −95 dBm per floor (90% general areas, 99% critical areas, NFPA 1225 / IFC 510). **Use these results on the ERCES / BDA page** fills in the measured coverage there. Delivered audio quality (DAQ) must still be checked by ear. The AHJ has the final say.`,
+    tour: [ { target: 'signal-read', title: 'Take a reading', text: 'Connect a meter or the phone, or type a reading, then save it with GPS.' }, { target: 'signal-import', title: 'Import', text: 'Load a file from a phone app or meter.' }, { target: 'signal-compare', title: 'Compare', text: 'See how real readings compare with the prediction.' }, { target: 'signal-map', title: 'Map', text: 'Measured signal, difference, or heat map.' }, { target: 'signal-grid', title: 'Grid test', text: 'ERCES / BDA pass or fail per floor.' } ] },
+
+  { id: 'assets', title: 'Equipment & asset tags', page: 'assets', keywords: 'asset tag barcode qr scan camera serial model install date warranty pm preventive maintenance service contract history label print register equipment list inventory', summary: 'Scan a device’s barcode or QR code to find it or add it, with PM dates, service history, photos, reports and labels.',
+    body: `**Scan:** press **📷 Scan tag** and hold the barcode or QR code in the box; it reads by itself and beeps. If the camera can't start, use **🖼 Photo of the tag**. A handheld scanner works too: tap the tag box and scan, or connect a Bluetooth / Wi-Fi scanner on Bluetooth & Wi-Fi Devices.
+
+- A tag that is already listed opens that device. A new tag starts a new device: fill in what it is, the system, make, model, serial, location and floor, then **Save device**.
+- **Scan the device label** fills in the serial and model from the maker's label.
+- **+ Add a device with no tag** gives it the next LV- number; **🏷 Print labels** prints QR labels for it.
+
+**Maintenance:** set **PM every** and the **Last PM** date; the list shows PM overdue or due soon. **✔ PM** marks PM done today; **⚠** marks a device as needing service and **🛠 Fixed** puts it back in service. Every action goes in the device's history.
+
+**At a glance** groups devices by system, for service and PM contracts. **Export CSV / Excel**, **🖨 Print list**, and **📂 Import list** (an owner's spreadsheet) are on the device list. The equipment list prints in the Closeout package on Reports.`,
+    tour: [ { target: 'asset-scan', title: 'Scan', text: 'Scan a tag with the camera, a photo or a handheld scanner.' }, { target: 'asset-list', title: 'Devices', text: 'Search, PM status, quick actions, labels and exports.' } ] },
+
+  { id: 'devices', title: 'Bluetooth & Wi-Fi devices', page: 'devices', keywords: 'bluetooth wifi wi-fi usb com port serial pair connect device gps receiver gnss rtk nmea laser distance meter disto glm barcode scanner signal meter printer camera tester', summary: 'Connect signal meters, GPS receivers, laser distance meters and barcode scanners once; every page uses them.',
+    body: `Each card connects one kind of device by **🔵 Bluetooth**, **🔌 USB / COM port**, or **📶 Wi-Fi** (type the device's local address, like http://192.168.4.1/ or tcp://192.168.1.20:10110).
+
+- **Signal meter:** live readings on Live Signal Readings; can also fill the box you tap.
+- **GPS receiver:** every 📍 GPS button and the live map position use it instead of the built-in GPS (NMEA GGA / RMC; RTK accuracy is shown when the receiver reports it).
+- **Laser distance meter:** tap any length box, measure, and the number goes in (feet or meters as set in the app).
+- **Barcode scanner:** on Equipment & Asset Tags each scan finds or adds the device.
+
+Where it works: Bluetooth and USB / COM need Chrome or Edge (computer or Android), including the flash-drive copy, offline. Wi-Fi devices work in the installed Windows and Android apps. The Android app also reads the phone's own cell and Wi-Fi signal. Printers, keyboard-style scanners and lasers, cameras and testers connect through the phone or computer settings; the table at the bottom says how. Devices are not saved with the project.` },
+
   { id: 'survey', title: 'Field survey & calibration', page: 'survey', keywords: 'drive test field survey measurement calibration tune model rssi measured predicted error rms', summary: 'Import drive-test data, compare it with the prediction and calibrate the model.',
     body: `Import a CSV (latitude, longitude and a signal column in dBm such as rssi, signal, level or rsrp) or GeoJSON points, or record readings one at a time with the device GPS.
 
@@ -401,13 +467,15 @@ Enter measured values and mark pass/fail; the results print in the Commissioning
 
 Distances and lengths follow **Measurements** on Company & Project: Imperial (ft, in, mi, the default) or Metric (m, mm, km).` },
 
-  { id: 'settings', title: 'User settings and data check', page: 'settings', keywords: 'user settings preferences turn off tools hide pages menu checkbox show all tools only what i need project type turned on notice check my data verify validate errors wrong entry invalid blank empty null zero range typo unit mistake',
+  { id: 'settings', title: 'User settings and data check', page: 'settings', keywords: 'info icon i hover explain value meaning default industry standard use default typical range source user settings preferences turn off tools hide pages menu checkbox show all tools only what i need project type turned on notice check my data verify validate errors wrong entry invalid blank empty null zero range typo unit mistake',
     summary: 'Turn tools on or off in the menu, and check the whole project for empty, out-of-range or mismatched entries with the fix for each.',
     body: `**Tools shown in the menu**: untick any tool you do not use. It leaves the menu, the step numbers and Next / Previous; nothing is deleted and you can tick it again any time. **Show every tool** brings them all back; **Only what this project needs** keeps just the tools for the project's systems. The choice is for you on this device and applies to every project. Company & Project, Project Systems, Projects and User Settings always show.
 
 **Automatic turn-on**: when you pick a project type or add a sub-project, any tool that job needs is turned back on and a notice lists what was turned on. On a custom project the needed tools are also added to your page pick.
 
 **Wrong or blank entries**: every number box checks what you type. If it is outside the normal range (for example a negative length, or 2,500 % fill) the box turns red, a message says what is wrong, and a **Use …** button offers the likely value (a slipped decimal point or the wrong unit). The last good value is kept until you fix it. A blank box is never counted as zero: calculators ask you to fill it in, and optional boxes are skipped.
+
+**ⓘ beside each value**: point at it (or tap it) to see what the value means, its unit, the typical and allowed range, and the industry-standard default with its source. **Use default** puts that value in the box.
 
 **Cross-checks**: calculators also compare related values, for example a cable wider than the conduit, a device minimum voltage above the supply, alarm current below standby current, or an ear height above the ceiling.
 
@@ -423,12 +491,18 @@ Distances and lengths follow **Measurements** on Company & Project: Imperial (ft
 
 No LvPlan server or account is involved; data moves only between your devices or through your own cloud drive.` },
 
-  { id: 'library', title: 'Specifications library', page: 'library', keywords: 'nfpa bicsi tia ul nicet esa icc ahj licensing board training certification rcdd specifications specs datasheet manual service manual technician programming repair parts library equipment catalog low voltage antenna coax cable connector bda das fire alarm battery solar wifi poe cat6 fiber conductor compare import csv', summary: 'Search, compare and add equipment specifications, plus codes, training and licensing references for NFPA, BICSI, TIA, UL, NICET, ESA and the state boards.',
+  { id: 'library', title: 'Specifications library', page: 'library', keywords: 'nfpa bicsi tia ul nicet esa icc ahj licensing board training certification rcdd specifications specs datasheet manual service manual technician programming repair parts library equipment catalog legacy discontinued obsolete older replacement recall cpsc service bulletin tsb access control reader maglock strike controller credential low voltage antenna coax cable connector bda das fire alarm battery solar wifi poe cat6 fiber conductor compare import csv', summary: 'Search, compare and add equipment specifications, plus codes, training and licensing references for NFPA, BICSI, TIA, UL, NICET, ESA and the state boards.',
     body: `**Codes, training & licensing** (a category in the library): one entry for each body that matters in low-voltage work: NFPA (NEC and NFPA 72), BICSI (TDMM, RCDD and installer credentials), TIA (568, 569, 606, 607), UL (listings and Product iQ), NICET (fire alarm levels), ESA (National Training School), ICC, the AHJ, the licensing boards for NC, SC, GA, TN and VA, and others such as the FOA, ETA, AVIXA, ASIS, SIA, IEEE and ANSI. Each entry lists what the body does, its key documents, training and credentials, the systems it covers, and its official web pages. The text reads offline; the links need internet.
 
 **Manuals:** pick an item, then under *Service, technician and installation manuals* choose the type and use **Attach file** (PDF, picture, video), **Add link** or **Find … online**. The **Service & technician resources** card holds manuals that aren't tied to one item. All of them open offline and are in backups.
 
 **Manufacturer recommendations:** each item shows the installation, wiring, environment and maintenance points manufacturers in that category commonly state, and your own items can carry the model's exact recommendations (Edit → one per line, from the installation manual).
+
+**Low-voltage equipment:** current products for each system, with access control in depth (door controllers, card readers, credentials, maglocks, electric strikes, latch retraction, power supplies, request-to-exit and door position switches), plus fire alarm panels and devices, CCTV, intercom, nurse call, paging and sound, mass notification, call boxes, DAS and cabling.
+
+**⚠ Legacy equipment:** press the **⚠ Legacy equipment** button to list older and discontinued models still found on service calls (for example Notifier AFP-200, Simplex 4020, Ademco Vista-10P, DSC PowerSeries, Pelco Spectra III, HID prox readers, Rauland Responder IV, Motorola MSF5000, OM1 fiber and Cat 5). Each one is filed under its system and shows its status, suggested current replacements, service and repair notes, and links to the manufacturer's documentation pages. Legacy models also appear, marked ⚠ Legacy, in the radio, antenna and cable lists, the materials picker and the troubleshooting wizard.
+
+**Recalls and service bulletins:** official CPSC recalls for fire alarm, security and related equipment are built in, and new ones download about once a week when online. A model with a recall shows **⚠ Recall / bulletin**; open it to see the affected models, date codes, problem and remedy, with a link to the official notice. When equipment in a project matches a notice, a banner appears on every page of that project until you mark it **Checked for this project**. Add a manufacturer service bulletin to any model with **+ Add a service bulletin**; projects using that model get the alert too.
 
 The library holds three kinds of entries:
 
@@ -523,6 +597,18 @@ Export: Reports page (PDF, Word, Excel, HTML, CSV, KML), Blueprints (PDF, DXF, S
 
 Photos are reduced to 1280 pixels so projects stay small enough to sync. Notes sync between devices like the rest of the project, export to CSV, and print in **Reports → Field Notes & Photos**.` },
 
+  { id: 'photosurvey', title: 'Photo site survey', page: 'photosurvey', keywords: 'photo site survey panorama pictures camera compass heading gps exif horizon skyline terrain towers obstructions line of sight heat map view cone 3d', summary: 'Phone photos or a panorama placed where and in the direction they were taken, matched to the terrain, with the horizon, towers, sites, what blocks the view and the signal drawn on them.',
+    body: `Stand where an antenna or tower might go and press **📷 Take photos here**. Take photos all the way around you (let each one overlap the last a little), or one panorama. **🖼 Add photos or a panorama** brings in photos you already took; photos taken at the same spot (within 100 ft) go together.
+
+**Where and which way:** the app reads the GPS position, height and compass direction saved in each photo (and the tilt from drones). If a photo has no compass direction, the app uses the phone's compass while you take photos in the app, or lines the photos up side by side. Press **⛰ Line up with the terrain**: the app finds the skyline in each photo and turns it until it sits on the terrain horizon. You can always nudge a photo with **◀ ▶**, type its direction in degrees true, or type a reading from a hand compass (°M). If a photo has no position, use **◎ My GPS** at the spot, type coordinates, or tap the map.
+
+**Layers** (tick on or off): Photos, Terrain horizon (yellow), Azimuth & compass (°T and °M across the top), Project sites, Existing towers, RadioReference sites (only while logged in, never in reports), What blocks the view (red ✕ on the ridge that hides a site), Drawn lines, Signal heat map (predicted signal from the transmit site on the ground you can see) and Photo edges. Hover or tap the picture to read the direction and up / down angle.
+
+**What is in view from here** lists every site and nearby tower with distance, azimuth, up / down angle and whether the terrain hides it.
+
+The spots and each photo's view cone show on every flat map (layer **📷 Photo survey spots**) and in the **⛰ 3D tilt view** over the satellite pictures. Press **📄 Save picture for reports** to put the panorama with its overlays and the in-view list in **Reports → Photo site survey** (part of the Site survey report).
+
+**Limits:** the horizon uses terrain heights and the earth's curve; trees and buildings are not in the terrain, so the real skyline can be higher. The app does not build a 3D model of buildings from photos. Satellite pictures are only as new as the last download. Some phones remove the location from photos when they are shared; take them in the app or set the spot by hand. Always confirm on site.` },
   { id: 'directions', title: 'Map & directions', page: 'directions', keywords: 'map directions route drive navigate google apple waze gps address location office', summary: 'The project site on a map, with one-tap driving directions from where you are or from your office.',
     body: `Shows the **project site address** from Company & Project at Site A's position, with the client contact for the crew.
 
@@ -554,3 +640,22 @@ Maps and terrain download automatically when online and are cached for offline u
   { id: 'disclaimer', title: 'Professional responsibility', keywords: 'disclaimer liability pe engineer verify', summary: 'Results must be verified by a licensed professional.',
     body: `LvPlan Pro is a planning tool for qualified users. Propagation models are statistical; code citations may not reflect the edition or local amendments adopted by your AHJ. A licensed professional engineer must review and seal designs where required, and installations must be permitted and inspected by the AHJ.` },
 ];
+
+// Walkthroughs kept in tours.ts: fill in pages without a tour, and add steps for newer tools.
+for (const h of HELP) {
+  if (!h.page) continue;
+  if (!h.tour?.length && PAGE_TOURS[h.page]) h.tour = PAGE_TOURS[h.page];
+  if (PAGE_TOUR_EXTRAS[h.page]) h.tour = [...(h.tour ?? []), ...PAGE_TOUR_EXTRAS[h.page]];
+}
+
+// The manual lists topics in the same order as the menu: first the intro topics, then each page's
+// topic in menu order (general topics sit next to the page they belong with), then the rest.
+const INTRO = ['getting-started', 'whats-new', 'menu-guide', 'offline'];
+const NEAR: Record<string, string> = { azimuth: 'optimize', checklists: 'testing', import: 'reports', selfrepair: 'projects' };
+const rank = (h: HelpTopic) => {
+  if (INTRO.includes(h.id)) return INTRO.indexOf(h.id) - 100;
+  const pg = h.page ?? NEAR[h.id];
+  const i = pg ? MENU_ORDER.findIndex((p) => p.id === pg) : -1;
+  return i < 0 ? 1000 : i + (h.page ? 0 : 0.5);
+};
+HELP.sort((a, b) => rank(a) - rank(b));

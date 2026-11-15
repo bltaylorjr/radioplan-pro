@@ -1,10 +1,63 @@
-# LvPlan Pro 1.5.54
+# LvPlan Pro 1.5.57
 
 - **Everything updates itself when online.** Besides the app itself, LvPlan Pro now downloads newer **code editions and state rules, city and county code lists, contacts and web links, the equipment catalog, manufacturer recommendations, the help manual and the magnetic model** from the LvPlan Pro website as soon as they are published, with no app update needed (this matters most on Android and the flash drive). Each download is checked (SHA-256, and that it is laid out the way this version of the app understands) before it is used, and a spare copy is kept. A short notice says when code information changed.
 - **Maps around every project stay fresh.** The topo map the app saves around your sites is now kept complete and downloaded fresh twice a year, like areas you save yourself.
 - **Saved datasheets stay current.** Datasheets saved from a manufacturer link are downloaded again twice a year; a download that is not a real document never replaces the saved one. An empty or unreadable one is downloaded again by itself.
 - **Safe start.** If the app did not finish starting last time, it starts once with only its built-in data.
 - **Introduction video**: the Automatic care part now covers online updates for codes and other data.
+# LvPlan Pro 1.5.56
+
+- **Low-voltage equipment for every system** in the Specifications Library, with **access control** in depth: door controllers (Mercury, Software House iSTAR Ultra, LenelS2), interface boards, card readers (HID Signo), credentials (Seos, DESFire), maglocks, electric strikes, latch retraction, wireless locks, access power controllers (Altronix), request-to-exit and door position switches. Also fire alarm panels and devices, CCTV, intercom, nurse call, paging and sound, a new **Mass notification** category, emergency call boxes, DAS and cabling and fiber.
+- **⚠ Legacy equipment section**: 60+ older and discontinued models still found on service calls, each filed under its system (fire alarm, intrusion, CCTV, access control, intercom, nurse call, paging, mass notification, call boxes, ERCES / DAS, radios, coax, cabling, fiber, network and Wi-Fi). Each shows its status, the years it was common, suggested current replacements, service and repair notes, and links to the manufacturer's documentation pages (each opened on the maker's site). Attach the manual or datasheet to keep it on the device.
+- **Legacy models in the selection lists**, marked ⚠ Legacy: radios (Equipment and link budget), antennas, feeders (including RG-213 and air-dielectric HELIAX), the coax calculator, the materials picker and the troubleshooting wizard, which also shows the legacy service notes.
+- **Recalls and service bulletins**: official CPSC recalls for fire alarm, security and related equipment are built in (affected models, date codes, problem, remedy and a link to the official notice), and new ones download automatically about once a week when online (Automatic care). Add a manufacturer service bulletin to any model. **When equipment in a project matches a recall or bulletin, an alert shows on every page of that project** until it is marked checked for that project.
+- **Introduction video**: a new part shows the access control equipment, the Legacy equipment section and recall alerts.
+
+# LvPlan Pro 1.5.55
+
+- **ⓘ beside every value.** Point at it on a computer, or tap it on a phone or tablet, to see what the value means in plain words, its unit, the typical range, the allowed range, and the industry-standard default with its source (for example NFPA 72 10.6.7.2.1 for 24 h fire alarm standby, NEC 250.52 for an 8 ft ground rod, IFC 510 for −95 dBm and 12 h ERCES battery, TIA TSB-88 for 8 dB shadow fading).
+- **Use default** puts the industry default straight into the box. If the box already has it, you see ✓.
+- About 140 project fields and calculator inputs have their own explanation; every calculator input offers that calculator's standard value as its default.
+- **Introduction video**: a new part shows the ⓘ info and Use default.
+
+# LvPlan Pro 1.5.54
+
+- **Menu in project order.** Every tool and step now follows the project lifecycle: **1 Project setup**, **2 Site survey**, **3 Design: low-voltage systems**, **4 Design: radio & antennas** (RadioReference frequencies first, then equipment, path, coverage and aiming), **5 Codes, permits & drawings**, **6 Equipment & materials** (Specifications Library, Materials List), **7 Installation**, **8 Testing & commissioning**, **9 Service, troubleshooting & repair**, and **10 Reports & closeout**. **Tools & reference** (Calculators, Low-Voltage Principles, Contacts, Map & Directions) and **Projects & settings** (Projects, Sync Devices, User Settings) are at the bottom and open any time. Next / Previous, step numbers, the custom-project page picker and User Settings all follow the same order, and tools turned off in User Settings stay out of the menu and Find a tool.
+- **Folding sections**: tap a section heading to fold it up; the section you are in always stays open, and the menu keeps the page you are on in view.
+- **The help manual lists its topics in the same order as the menu.**
+- **🔎 Find a tool** at the top of the menu. Type a word, like “azimuth”, “relay”, “battery”, “clear” or “log in”, and tap a result to open the page, the help topic, or a tool. Tools marked ▶ open their page and point at the button.
+- **★ What's new** (under Help manual in the menu): every newer tool with where to find it, a few steps, and **▶ Show me**, which opens the page and points at each button in turn. It covers RadioReference log in, downloads and progress, the 3D tilt view and relay points, azimuth everywhere and the map measure tool, donor antenna aiming, drawing lines, Clear all fields, Delete with “Are you sure?”, the true-scale side view and 3D beam, the azimuth calculator, calculator Reset / Use project values / Apply to fields, Automatic care, and Full page view.
+- **Page help lists the tools on that page**, each with **▶ Show me**. The help manual search also finds tools.
+- **▶ Guide me on every page.** Pages that had no walkthrough now have one, and Map & Terrain and Path Profile walk through the newer buttons (the walkthrough can open the 3D tilt view for you). Walkthroughs find buttons by their words and wait for the page to finish loading, and the bubble always stays on screen.
+- **Using the menu**: a new help page lists every section and page.
+- Newer pages have their place in the order: Photo Site Survey and Live Signal Readings under Site survey, FCC Towers & Licenses under Design: radio & antennas, FAA Height Check under Codes, permits & drawings, Equipment & Asset Tags under Service, troubleshooting & repair, and Offline Map Packs and Bluetooth & Wi-Fi Devices under Tools & reference.
+- Help text lists and paragraphs now show correctly when they are mixed in one section.
+- **Introduction video**: the old "How it is organized" card is replaced by a part that shows the new menu order, Find a tool, What's new with Show me, and Page help and Guide me.
+
+# LvPlan Pro 1.5.53
+
+- **📶 Live Signal Readings** (new page, after Drive Test). Read a signal meter over **Bluetooth**, a **USB / COM** cable, or **Wi-Fi**, or use the phone's own **cell or Wi-Fi signal** (Android app), or just type what your meter shows. A big live number, **📍 Save this reading** or save automatically every few seconds as you walk. Each reading keeps its GPS position and time.
+- **Import readings** from G-NetTrack, Network Cell Info, WiGLE, cell-logger and Wi-Fi survey apps and meter software (CSV / TSV, GeoJSON, KML, GPX; dBµV changed to dBm).
+- **Compare with the prediction**: measured minus predicted at each spot, in plain words ("readings match the prediction well"), with average, spread and the share within ±6 dB. One tap sends the readings to calibration. Map coloured by measured signal, by difference, or a **heat map** of the readings.
+- **ERCES / BDA grid test**: indoor readings by floor and room, critical areas ticked, pass or fail at −95 dBm (90% general, 99% critical) per floor, and one tap puts the results on the ERCES / BDA page.
+- **🏷 Equipment & Asset Tags** (new page in Tools). **📷 Scan** any barcode or QR code with the camera (or a photo, or a handheld scanner). A known tag opens the device; a new one starts it. Keep what it is, system, make, model, serial, location, floor, GPS, photos, install date, warranty, PM interval and the full service history. PM overdue / due soon, ✔ PM and 🛠 Fixed buttons, a summary per system for service and PM contracts, print QR labels and the equipment list, export CSV / Excel, import an owner's list. The list prints in the Closeout package.
+- **🔵 Bluetooth & Wi-Fi Devices** (new page in Tools). Connect once, used on every page: **signal meters**, **GPS receivers** (every GPS button and the map then use it, RTK accuracy included), **laser distance meters** (the measurement goes into the box you tap, in feet or meters) and **barcode scanners**. A chip at the top shows what is connected. Printers, cameras, cable and fiber testers: how to use them with the app.
+- Reports: new **Live Signal Readings** and **Equipment list** sections (Closeout, Site survey and Engineering packages).
+- Introduction video: a new part shows live readings, asset tags and connecting devices.
+
+# LvPlan Pro 1.5.52
+
+- **📷 Photo Site Survey (new page under 2 · Planning: site survey).** Stand where an antenna or tower might go and tap **📷 Take photos here** (several views all the way around, or one panorama), or **🖼 Add photos or a panorama** you already took. Photos taken at the same spot (within 100 ft) go together.
+- **Placed by the photo's GPS and compass.** The app reads the GPS position, height and compass direction saved in each photo (magnetic directions are turned to degrees true), the lens width, phone panorama tags and drone gimbal tags. Taking photos in the app also uses the phone's own GPS and compass when the photo has none. Missing position: **◎ My GPS**, type coordinates, or tap the map.
+- **⛰ Line up with the terrain.** The app finds the skyline in each photo and turns the photo until it sits on the terrain horizon worked out from the terrain heights, so photos with no compass direction are placed too (tested on sample photos near Asheville: within 1°). Nudge any photo with **◀ ▶**, type its direction or a hand-compass reading, or change its tilt and width of view.
+- **Panorama with layers you tick on or off:** Photos, Terrain horizon (yellow), Azimuth & compass (°T and °M across the top), Project sites, Existing towers, RadioReference sites (only while logged in; never in reports), What blocks the view (red ✕ on the ridge that hides a site), Drawn lines, Signal heat map (predicted signal on the ground you can see) and Photo edges. Hover or tap to read direction and up / down angle. **Fit more / Normal / Close up** zoom.
+- **What is in view from here:** every site and nearby tower with distance, azimuth, up / down angle and whether the terrain hides it.
+- **On every map and in 3D:** survey spots show with a 📷 pin and a see-through view cone per photo on the flat maps (layer **📷 Photo survey spots**) and as camera posts with view fans in the **⛰ 3D tilt view** over the satellite pictures.
+- **Reports:** **📄 Save picture for reports** puts the panorama with its overlays and the in-view list in the new **Photo site survey** section (in the Site survey report and the Engineering report).
+- Works offline with saved terrain. Trees and buildings are not in the terrain, so the real skyline can be higher; the app does not build 3D models of buildings from photos. **Clear all fields** on the page removes the survey spots (with Undo).
+- **Introduction video:** a new part shows the photo site survey.
+
+
 # LvPlan Pro 1.5.51
 
 - **🗼 FCC Towers & Licenses** (new page, works offline). Pick a project site, an address or your GPS and see every FCC-registered tower and licensed transmitter nearby: owner, height above ground, distance and azimuth, and **who is on each tower and on what frequencies** (licensee and phone, radio service, station class, power, analog or digital). Narrow it by band (VHF, UHF, 700, 800, 900, microwave), by kind of user (public safety, business, commercial, microwave, paging) or by name, call sign or frequency. A county tab lists county-wide mobile licenses. **+ Add as site**, **Use as donor** (ERCES) and **FAA check** on every tower, **⬇ CSV** to save the list. The FCC public data for NC, SC, GA, TN and VA (22,710 registered towers, 48,841 active licenses) is built into the app and updates with each app update. A new **🗼 FCC registered towers** map layer shows them on every map, and Site Data & GPS lists them under Existing towers nearby.

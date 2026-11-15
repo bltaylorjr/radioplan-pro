@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { HELP } from '../help/content';
 import { checkValue, defaultRange, issueText, suggestFix } from '../engine/validate';
+import { FIELD_INFO, FieldInfo } from '../data/fieldInfo';
 
 /** Small "?" bubble with an on-hover/on-tap explanation. Pass text or a help topic id. */
 export function Tip({ text, topic }: { text?: string; topic?: string }) {
@@ -49,7 +50,7 @@ export const useShown = (value: string | number, unit?: string) => shownIn(value
 
 /** The label of the field around a number box, so its messages can name it. */
 export const FieldLabel = React.createContext<string | undefined>(undefined);
-export function Num({ value, onChange, step = 'any', min, max, unit, nullable, required, integer, label }: { value: number | null; onChange: (v: number | null) => void; step?: number | 'any'; min?: number; max?: number; unit?: string; nullable?: boolean; required?: boolean; integer?: boolean; label?: string }) {
+export function Num({ value, onChange, step = 'any', min, max, unit, nullable, required, integer, label, info }: { value: number | null; onChange: (v: number | null) => void; step?: number | 'any'; min?: number; max?: number; unit?: string; nullable?: boolean; required?: boolean; integer?: boolean; label?: string; info?: FieldInfo | null }) {
   const [txt, setTxt] = useState<string | null>(null);
   const ctxLabel = React.useContext(FieldLabel); label = label ?? ctxLabel;
   const m = useMeasure(unit), k = m.k;
@@ -71,12 +72,47 @@ export function Num({ value, onChange, step = 'any', min, max, unit, nullable, r
         onChange={(e) => { setTxt(e.target.value); const v = e.target.value === '' ? null : parseFloat(e.target.value); if (v == null ? nullable : !Number.isNaN(v) && ok(v)) put(v); }}
         onBlur={() => { if (!issue && !blank) setTxt(null); }} />
       {m.unit && <span className="unit">{m.unit}</span>}
+      {info !== null && <ValueInfo info={info ?? fieldInfoFor(label, unit)} label={label} unit={m.unit} range={range} current={value == null ? null : +shown(value)} def={(() => { const x = (info ?? fieldInfoFor(label, unit))?.def; return x == null ? null : +shown(x); })()} onDefault={(x) => { put(x); setTxt(null); }} />}
     </span>
     {(issue || blank) && <span className="num-msg" role="alert">⚠ {blank ? `${label ? label + ' is empty' : 'This box is empty'}. The last value (${shown(value!)}${m.unit ? ' ' + m.unit.trim() : ''}) is still used. Type a number.` : issueText(issue!)}{issue && txt != null && typed != null && value != null && !nullable && ' Until it is fixed, the last good value (' + shown(value) + ') is used.'}
       {fix != null && <button type="button" className="num-fix" onClick={(e) => { e.preventDefault(); put(fix); setTxt(null); }}>Use {fix}</button>}
       {(blank || (issue && txt != null && value != null && !nullable)) && <button type="button" className="num-fix ghost" onClick={(e) => { e.preventDefault(); setTxt(null); }}>Undo</button>}
     </span>}
     </>
+  );
+}
+/** Explanation of a value, its unit, normal range and the industry default (shown in the units on screen). */
+export function fieldInfoFor(label?: string, unit?: string): FieldInfo | undefined {
+  if (!label) return undefined;
+  return FIELD_INFO[`${label}|${(unit ?? '').trim()}`] ?? FIELD_INFO[label];
+}
+const fmtN = (x: number) => (Math.abs(x) >= 1000 ? x.toLocaleString('en-US') : String(+x.toPrecision(6)));
+/** ⓘ beside a value: hover on a computer, tap on a phone. "Use default" puts the industry default in the box. */
+export function ValueInfo({ info, label, unit, range, current, def, onDefault }: { info?: FieldInfo; label?: string; unit?: string; range: { min?: number; max?: number }; current: number | null; def: number | null; onDefault: (v: number) => void }) {
+  const [open, setOpen] = useState(false);
+  const [pinned, setPinned] = useState(false);
+  const [side, setSide] = useState<'left' | 'right'>('right');
+  const ref = React.useRef<HTMLSpanElement>(null);
+  const place = () => { const r = ref.current?.getBoundingClientRect(); if (r) setSide(r.right < 320 ? 'left' : 'right'); };
+  if (!info && !label) return null;
+  const u = unit && unit.trim() ? ' ' + unit.trim() : '';
+  const allowed = range.min != null && range.max != null ? `${fmtN(range.min)} to ${fmtN(range.max)}${u}` : range.min != null ? `${fmtN(range.min)}${u} or more` : range.max != null ? `up to ${fmtN(range.max)}${u}` : '';
+  const show = open || pinned;
+  return (
+    <span className="vinfo" ref={ref} onMouseEnter={() => { place(); setOpen(true); }} onMouseLeave={() => setOpen(false)}>
+      <button type="button" className="vinfo-btn" aria-label={`About ${label ?? 'this value'}`} aria-expanded={show} onClick={(e) => { e.preventDefault(); e.stopPropagation(); place(); setPinned(!pinned); }}>i</button>
+      {show && <span className={'vinfo-pop ' + side} role="tooltip" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
+        {label && <b>{label}</b>}
+        <span>{info?.what ?? `Type the ${label!.toLowerCase()}${u ? ' in' + u : ''}.`}</span>
+        {u && <span><i>Unit:</i>{u}</span>}
+        {info?.typical && <span><i>Typical:</i> {info.typical}</span>}
+        {allowed && <span><i>Allowed:</i> {allowed}</span>}
+        {def != null ? <span><i>Industry default:</i> {fmtN(def)}{u}{info?.src ? ` (${info.src})` : ''}</span> : info?.src ? <span><i>Source:</i> {info.src}</span> : null}
+        {def != null && current !== def && <button type="button" className="num-fix" onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDefault(def); setPinned(false); setOpen(false); }}>Use default ({fmtN(def)}{u})</button>}
+        {def != null && current === def && <span className="small">✓ The box already has the default.</span>}
+        <span className="small">Planning value: the adopted code, the manufacturer and the AHJ come first.</span>
+      </span>}
+    </span>
   );
 }
 export function Txt({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder?: string }) {

@@ -13,6 +13,8 @@ import { JURISDICTIONS } from '../compliance/jurisdictions';
 import { CONTACTS, RESOURCES } from '../data/contacts';
 import { ANTENNAS, FEEDERS, RADIOS, PV_MODULES, BAND_PRESETS } from '../data/catalog';
 import { MFR_RECS } from '../data/mfrrecs';
+import { LV_CATALOG, LEGACY } from '../data/lvequipment';
+import { BUILTIN_NOTICES } from '../data/recalls';
 import { HELP } from '../help/content';
 import { getMagModel, setMagModel } from './azimuth';
 
@@ -36,6 +38,8 @@ export const PACKS: PackDef[] = [
   { name: 'localcodes', label: 'City and county code lists', notice: true, ...bundle({ LOCAL_CODES }) },
   { name: 'contacts', label: 'Contacts and web resources', ...bundle({ CONTACTS, RESOURCES }) },
   { name: 'catalog', label: 'Equipment catalog', restartOnly: true, ...bundle({ ANTENNAS, FEEDERS, RADIOS, PV_MODULES, BAND_PRESETS }) },
+  { name: 'lvequipment', label: 'Low-voltage and legacy equipment', restartOnly: true, ...bundle({ LV_CATALOG, LEGACY }) },
+  { name: 'recalls', label: 'Recall and service bulletin notices', notice: true, ...bundle({ BUILTIN_NOTICES }) },
   { name: 'mfrrecs', label: 'Manufacturer recommendations', ...bundle({ MFR_RECS }) },
   { name: 'help', label: 'Help and manual', ...bundle({ HELP }) },
   { name: 'magnetic', label: 'Magnetic model (compass bearings)', get: getMagModel, apply: (d) => setMagModel(d as ReturnType<typeof getMagModel>) },

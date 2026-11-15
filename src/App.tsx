@@ -23,6 +23,7 @@ import { APP_VERSION } from './engine/update';
 import { MeasureCtx } from './components/ui';
 import { missingRequired } from './engine/required';
 import { AutoTerrain } from './components/AutoTerrain';
+import { ProjectNoticeBanner } from './components/Notices';
 import { ScenariosPage } from './pages/Scenarios';
 import { NetworkPage } from './pages/Network';
 import { SurveyPage } from './pages/Survey';
@@ -34,6 +35,7 @@ import { ProjectsPage } from './pages/Projects';
 import { SpecLibraryPage } from './pages/SpecLibrary';
 import { InstallPage } from './pages/Install';
 import { FieldNotesPage } from './pages/FieldNotes';
+import { PhotoSurveyPage } from './pages/PhotoSurvey';
 import { ContactsPage } from './pages/Contacts';
 import { RadioReferencePage, RrJobBadge } from './pages/RadioReference';
 import { BlueprintsPage } from './pages/Blueprints';
@@ -53,6 +55,14 @@ import type { Project } from './types';
 import { SettingsPage } from './pages/Settings';
 import { ToolNotice, useAutoTools } from './components/ToolNotice';
 import { useHiddenTools, setToolOn } from './engine/toolPrefs';
+import { MENU_GROUPS, MENU_ORDER, groupHeading } from './data/menu';
+import { FEATURES } from './help/features';
+import type { TourStep } from './help/content';
+import { NavFind } from './components/NavFind';
+import { SignalReadingsPage } from './pages/SignalReadings';
+import { AssetsPage } from './pages/Assets';
+import { DevicesPage, useDevices } from './pages/Devices';
+import { setDistanceUnit, ROLE_LABEL } from './engine/devices';
 const TerrainPage = lazy(() => import('./pages/Terrain'));
 const CoveragePage = lazy(() => import('./pages/Coverage'));
 const View3DPage = lazy(() => import('./pages/View3D'));
@@ -61,50 +71,62 @@ const FaaPage = lazy(() => import('./pages/Faa'));
 import { OfflineArea } from './components/OfflineArea';
 import { MapPackBadge } from './components/MapPacks';
 
-export const WORKFLOW: { id: string; label: string; group: string; el: React.ReactNode }[] = [
-  { id: 'company', label: 'Company & Project', group: '1 · Project setup', el: <CompanyPage /> },
-  { id: 'systems', label: 'Project Systems & Toolkits', group: '1 · Project setup', el: <SystemsPage /> },
-  { id: 'locate', label: 'Find Location & Auto-Plan', group: '1 · Project setup', el: <LocatePage /> },
-  { id: 'sites', label: 'Site Data & GPS', group: '1 · Project setup', el: <SitesPage /> },
-  { id: 'fieldnotes', label: 'Field Notes & Photos', group: '2 · Planning: site survey', el: <FieldNotesPage /> },
-  { id: 'terrain', label: 'Map & Terrain', group: '2 · Planning: site survey', el: <TerrainPage /> },
-  { id: 'wifi', label: 'Wi-Fi & Network Survey', group: '2 · Planning: site survey', el: <WifiSurveyPage /> },
-  { id: 'survey', label: 'Drive Test & Calibration', group: '2 · Planning: site survey', el: <SurveyPage /> },
-  { id: 'autodesign', label: 'Auto-Design & 3D Model', group: '3 · Planning: low-voltage design', el: <AutoDesignPage /> },
-  { id: 'alarm', label: 'Fire Alarm & Batteries', group: '3 · Planning: low-voltage design', el: <AlarmPage /> },
-  { id: 'erces', label: 'Emergency Radio (ERCES / BDA)', group: '3 · Planning: low-voltage design', el: <ErcesPage /> },
-  { id: 'indoor', label: 'Indoor Coverage & DAS', group: '3 · Planning: low-voltage design', el: <IndoorPage /> },
-  { id: 'solar', label: 'Solar & DC Power', group: '3 · Planning: low-voltage design', el: <SolarPage /> },
-  { id: 'grounding', label: 'Grounding & Structure', group: '3 · Planning: low-voltage design', el: <GroundingPage /> },
-  { id: 'equipment', label: 'Equipment & Link Budget', group: '4 · Planning: radio & RF', el: <EquipmentPage /> },
-  { id: 'path', label: 'Path Profile / LOS / Fresnel', group: '4 · Planning: radio & RF', el: <PathPage /> },
-  { id: 'coverage', label: 'Coverage Prediction', group: '4 · Planning: radio & RF', el: <CoveragePage /> },
-  { id: 'optimize', label: 'Tilt, Azimuth & Power', group: '4 · Planning: radio & RF', el: <OptimizePage /> },
-  { id: 'network', label: 'Multi-site & Interference', group: '4 · Planning: radio & RF', el: <NetworkPage /> },
-  { id: 'scenarios', label: 'Scenarios & Compare', group: '4 · Planning: radio & RF', el: <ScenariosPage /> },
-  { id: 'view3d', label: '3D Model', group: '4 · Planning: radio & RF', el: <View3DPage /> },
-  { id: 'radioref', label: 'RadioReference Frequencies', group: '4 · Planning: radio & RF', el: <RadioReferencePage /> },
-  { id: 'fcc', label: 'FCC Towers & Licenses', group: '4 · Planning: radio & RF', el: <FccPage /> },
-  { id: 'lfhf', label: 'LF / HF Systems', group: '4 · Planning: radio & RF', el: <LfHfPage /> },
-  { id: 'compliance', label: 'Code Compliance', group: '5 · Planning: codes & materials', el: <CompliancePage /> },
-  { id: 'faa', label: 'FAA Height Check', group: '5 · Planning: codes & materials', el: <FaaPage /> },
-  { id: 'materials', label: 'Materials List', group: '5 · Planning: codes & materials', el: <MaterialsPage /> },
-  { id: 'blueprints', label: 'Blueprints & Drawing Sets', group: '5 · Planning: codes & materials', el: <BlueprintsPage /> },
-  { id: 'testing', label: 'Final Testing', group: '6 · Testing & closeout', el: <TestingPage /> },
-  { id: 'reports', label: 'Reports, Proposals & Closeout', group: '6 · Testing & closeout', el: <ReportsPage /> },
-  { id: 'troubleshoot', label: 'Troubleshooting Wizard', group: '7 · Troubleshooting & repair', el: <TroubleshootPage /> },
-  { id: 'directions', label: 'Map & Directions', group: 'Tools', el: <DirectionsPage /> },
-  { id: 'service', label: 'Service & Maintenance Resources', group: 'Tools', el: <ServicePage /> },
-  { id: 'install', label: 'Installation Guides', group: 'Tools', el: <InstallPage /> },
-  { id: 'theory', label: 'Low-Voltage Principles', group: 'Tools', el: <TheoryPage /> },
-  { id: 'library', label: 'Specifications Library', group: 'Tools', el: <SpecLibraryPage /> },
-  { id: 'contacts', label: 'Contacts & Web Resources', group: 'Tools', el: <ContactsPage /> },
-  { id: 'calculators', label: 'Calculators', group: 'Tools', el: <CalculatorsPage /> },
-  { id: 'mappacks', label: 'Offline Map Packs', group: 'Tools', el: <OfflineArea /> },
-  { id: 'projects', label: 'Projects & Storage', group: 'Tools', el: <ProjectsPage /> },
-  { id: 'sync', label: 'Sync Devices', group: 'Tools', el: <SyncPage /> },
-  { id: 'settings', label: 'User Settings', group: 'Tools', el: <SettingsPage /> },
-];
+/** Page components by menu id. The menu order, labels and sections live in src/data/menu.ts. */
+export const PAGE_ELEMENTS: Record<string, React.ReactNode> = {
+  company: <CompanyPage />,
+  systems: <SystemsPage />,
+  locate: <LocatePage />,
+  sites: <SitesPage />,
+  fieldnotes: <FieldNotesPage />,
+  photosurvey: <PhotoSurveyPage />,
+  terrain: <TerrainPage />,
+  wifi: <WifiSurveyPage />,
+  survey: <SurveyPage />,
+  signal: <SignalReadingsPage />,
+  autodesign: <AutoDesignPage />,
+  alarm: <AlarmPage />,
+  erces: <ErcesPage />,
+  indoor: <IndoorPage />,
+  solar: <SolarPage />,
+  grounding: <GroundingPage />,
+  equipment: <EquipmentPage />,
+  path: <PathPage />,
+  coverage: <CoveragePage />,
+  optimize: <OptimizePage />,
+  network: <NetworkPage />,
+  scenarios: <ScenariosPage />,
+  view3d: <View3DPage />,
+  radioref: <RadioReferencePage />,
+  fcc: <FccPage />,
+  lfhf: <LfHfPage />,
+  compliance: <CompliancePage />,
+  faa: <FaaPage />,
+  materials: <MaterialsPage />,
+  blueprints: <BlueprintsPage />,
+  testing: <TestingPage />,
+  reports: <ReportsPage />,
+  troubleshoot: <TroubleshootPage />,
+  directions: <DirectionsPage />,
+  service: <ServicePage />,
+  assets: <AssetsPage />,
+  devices: <DevicesPage />,
+  install: <InstallPage />,
+  theory: <TheoryPage />,
+  library: <SpecLibraryPage />,
+  contacts: <ContactsPage />,
+  calculators: <CalculatorsPage />,
+  mappacks: <OfflineArea />,
+  projects: <ProjectsPage />,
+  sync: <SyncPage />,
+  settings: <SettingsPage />,
+};
+
+export interface WorkflowPage { id: string; label: string; group: string; groupId: string; steps: boolean; el: React.ReactNode }
+/** The menu, in order, with each page's component. */
+export const WORKFLOW: WorkflowPage[] = MENU_ORDER.filter((p) => PAGE_ELEMENTS[p.id]).map((p) => {
+  const g = MENU_GROUPS.find((x) => x.id === p.group)!;
+  return { id: p.id, label: p.label, group: groupHeading(g), groupId: g.id, steps: g.steps, el: PAGE_ELEMENTS[p.id] };
+});
 
 
 export default function App() {
@@ -112,12 +134,12 @@ export default function App() {
   const [online, setOnline] = useState(typeof navigator === 'undefined' ? true : navigator.onLine);
   useEffect(() => { const on = () => setOnline(true), off = () => setOnline(false); window.addEventListener('online', on); window.addEventListener('offline', off); return () => { window.removeEventListener('online', on); window.removeEventListener('offline', off); }; }, []);
   const [helpOpen, setHelpOpen] = useState(false);
-  const [tour, setTour] = useState(false);
+  const [tour, setTour] = useState<TourStep[] | null>(null);
   const [video, setVideo] = useState<false | 'first' | true>(false);
   const [navOpen, setNavOpen] = useState(false);
   const isHelp = page.startsWith('help');
   const current = WORKFLOW.find((w) => w.id === page) ?? (isHelp ? null : WORKFLOW[0]);
-  const topic = HELP.find((h) => h.page === current?.id) ?? HELP[0];
+  const topic = HELP.find((h) => h.page === current?.id) ?? HELP.find((h) => h.id === 'getting-started') ?? HELP[0];
   const [lastTopic, setLastTopic] = useState('');
   useEffect(() => { if (!isHelp && current) setLastTopic(topic.id); }, [isHelp, current, topic.id]);
   const [showAll, setShowAll] = useState(false);
@@ -129,11 +151,11 @@ export default function App() {
   /** The pages in the menu: all of them, or only the custom pick, less the tools turned off in User Settings. */
   const VIS = (custom && !showAll ? WORKFLOW.filter((w) => ALWAYS_PAGES.includes(w.id) || project.meta.customPages!.includes(w.id)) : WORKFLOW).filter((w) => !off.has(w.id));
   /** Step number in the workflow; the Tools pages are not steps and have none. */
-  const STEPS = VIS.filter((w) => w.group !== 'Tools');
+  const STEPS = VIS.filter((w) => w.steps);
   const stepNo = (w: { id: string }) => { const i = STEPS.findIndex((x) => x.id === w.id); return i < 0 ? null : i + 1; };
   const idx = current ? VIS.indexOf(current) : -1;
   const skipped = new Set(project.meta.skipped ?? []);
-  const canSkip = (id: string) => id !== 'company' && WORKFLOW.find((w) => w.id === id)?.group !== 'Tools';
+  const canSkip = (id: string) => id !== 'company' && !!WORKFLOW.find((w) => w.id === id)?.steps;
   /** Previous / next page, passing over skipped steps. */
   const near = (dir: 1 | -1) => { for (let i = idx + dir; i >= 0 && i < VIS.length; i += dir) if (!skipped.has(VIS[i].id)) return VIS[i]; return undefined; };
   const prevW = near(-1), nextW = near(1);
@@ -146,13 +168,32 @@ export default function App() {
     const k = (e: KeyboardEvent) => { if (e.key === 'F1') { e.preventDefault(); setHelpOpen((x) => !x); } };
     window.addEventListener('keydown', k); return () => window.removeEventListener('keydown', k);
   }, []);
-  useEffect(() => { setHelpOpen(false); setTour(false); setNavOpen(false); }, [page]);
+  /** "▶ Show me" on a feature: open its page, then run its walkthrough once the page is there. */
+  const pendingTour = React.useRef(false);
+  useEffect(() => { setHelpOpen(false); setNavOpen(false); if (!pendingTour.current) setTour(null); }, [page]);
+  /** Keep the open page in view in the menu. */
+  useEffect(() => { const t = setTimeout(() => document.querySelector('.sidebar a.active')?.scrollIntoView({ block: 'nearest' }), 50); return () => clearTimeout(t); }, [page, navOpen]);
+  useEffect(() => {
+    const on = (e: Event) => {
+      const f = FEATURES.find((x) => x.id === (e as CustomEvent<string>).detail); if (!f) return;
+      const steps = f.tour?.length ? f.tour : [{ target: 'text:' + f.title, title: f.title, text: f.summary }];
+      pendingTour.current = true; setHelpOpen(false); setNavOpen(false); setTour(null);
+      go(f.page);
+      setTimeout(() => { pendingTour.current = false; setTour(steps); }, 400);
+    };
+    window.addEventListener('lvplan:feature', on); return () => window.removeEventListener('lvplan:feature', on);
+  }, [go]);
+  /** Folded menu sections (remembered on this device). */
+  const [folded, setFolded] = useState<string[]>(() => { try { return JSON.parse(localStorage.getItem('lvplan.menuFolded') || '[]'); } catch { return []; } });
+  const toggleFold = (id: string) => setFolded((f) => { const n = f.includes(id) ? f.filter((x) => x !== id) : [...f, id]; try { localStorage.setItem('lvplan.menuFolded', JSON.stringify(n)); } catch { /* ignore */ } return n; });
   const [welcome, setWelcome] = useState(false);
   /** After "Clear all fields": the page's entries before clearing (for Undo) and a counter that resets typed-in boxes. */
   const [cleared, setCleared] = useState<{ page: string; before: Project } | null>(null);
   const [resetN, setResetN] = useState(0);
   useEffect(() => { setCleared((c) => (c && c.page !== page ? null : c)); }, [page]);
   const endClear = React.useCallback((undone: boolean) => { setCleared(null); if (undone) setResetN((n) => n + 1); }, []);
+  const devs = useDevices();
+  useEffect(() => setDistanceUnit(project.settings.units === 'km' ? 'm' : 'ft'), [project.settings.units]);
   useEffect(() => { if (firstVisitVideo()) setVideo('first'); }, []);
   useEffect(() => { try { if (!localStorage.getItem('radioplan.seenIntro')) { localStorage.setItem('radioplan.seenIntro', '1'); setWelcome(true); } } catch { /* ignore */ } }, []);
 
@@ -163,6 +204,7 @@ export default function App() {
     i.click();
   };
   const groups = [...new Set(VIS.map((w) => w.group))];
+  const numbered = !(custom && !showAll);
   return (
     <MeasureCtx.Provider value={project.settings.units === 'km' ? 'metric' : 'imperial'}>
     <div className={'app' + (navOpen ? ' nav-open' : '')}>
@@ -178,6 +220,7 @@ export default function App() {
         <MapPackBadge onOpen={() => go('mappacks')} />
         {rt.terrainStatus && <span className="chip terr" title="Automatic terrain">{rt.terrainStatus}</span>}
         {rt.mapStatus && <span className="chip terr" title="Automatic offline maps">{rt.mapStatus}</span>}
+        {devs.roles.length > 0 && <a href="#devices" className="chip on" title={devs.roles.map((r) => `${ROLE_LABEL[r]}: ${devs.state(r)?.name}`).join('\n')} onClick={(e) => { e.preventDefault(); go('devices'); }}>🔵 {devs.roles.length} device{devs.roles.length > 1 ? 's' : ''}</a>}
         <div className="proj">{project.company.name && <span className="muted">{project.company.name} · </span>}{project.meta.name} <span className="muted">({project.meta.state})</span></div>
         <div className="top-actions">
           <span className={'chip save ' + lib.saveState} title={lib.saveError || 'Projects save automatically in the app'}>{{ loading: '… Opening', saving: '● Saving', saved: '✓ Saved', error: '⚠ Not saved', unavailable: 'File only' }[lib.saveState]}</span>
@@ -190,10 +233,16 @@ export default function App() {
         </div>
       </header>
       <nav className="sidebar">
-        {groups.map((g) => (
-          <div key={g} className="nav-group">
-            <div className="nav-group-title">{custom && !showAll ? g.replace(/^\d+ · /, '') : g}</div>
-            {VIS.filter((w) => w.group === g).map((w) => (
+        <NavFind pages={VIS} onGo={(id) => go(id)} />
+        <div data-tour="nav-groups">
+        {MENU_GROUPS.filter((g) => VIS.some((w) => w.groupId === g.id)).map((g) => {
+          const open = !folded.includes(g.id) || current?.groupId === g.id;
+          return (
+          <div key={g.id} className={'nav-group' + (open ? '' : ' folded')}>
+            <button type="button" className="nav-group-title" aria-expanded={open} title={g.hint + (open ? ' (tap to fold up)' : ' (tap to open)')} onClick={() => toggleFold(g.id)}>
+              <span className="fold">{open ? '▾' : '▸'}</span>{groupHeading(g, numbered)}
+            </button>
+            {open && VIS.filter((w) => w.groupId === g.id).map((w) => (
               <a key={w.id} href={`#${w.id}`} className={(w.id === current?.id ? 'active' : '') + (skipped.has(w.id) ? ' skipped' : '')} title={skipped.has(w.id) ? 'Skipped on this project' : undefined} onClick={(e) => { e.preventDefault(); go(w.id); }}>
                 {(() => { const cl = checklistFor(w.id), pr = cl && progressOf(cl, project), full = !!pr && pr.total > 0 && pr.done === pr.total; return <span className={'step-dot' + (full ? ' done' : '') + (stepNo(w) ? '' : ' tool')} title={pr ? `${pr.done} of ${pr.total} checklist items done` : undefined}>{skipped.has(w.id) ? '–' : full ? '✓' : stepNo(w) ?? '•'}</span>; })()}
                 {w.label}
@@ -202,10 +251,14 @@ export default function App() {
               </a>
             ))}
           </div>
-        ))}
+          );
+        })}
+        </div>
         {project.meta.projectType === 'custom' && custom && <div className="nav-custom small">{showAll ? 'Showing every page.' : `Custom project: ${VIS.length} of ${WORKFLOW.length} pages.`} <a href="#" onClick={(e) => { e.preventDefault(); setShowAll(!showAll); }}>{showAll ? 'Show my pick' : 'Show all'}</a> · <a href="#systems" onClick={(e) => { e.preventDefault(); go('systems'); }}>Change</a></div>}
         {off.size > 0 && <div className="nav-custom small">{off.size} tool{off.size > 1 ? 's' : ''} turned off. <a href="#settings" onClick={(e) => { e.preventDefault(); go('settings'); }}>User Settings</a></div>}
-        <div className="nav-group"><a href={lastTopic ? `#help/${lastTopic}` : '#help'} className={isHelp ? 'active' : ''}><span className="step-dot">?</span>Help manual</a></div>
+        <div className="nav-group nav-help"><a href={lastTopic ? `#help/${lastTopic}` : '#help'} className={isHelp && !/^help\/(whats-new|menu-guide)$/.test(page) ? 'active' : ''}><span className="step-dot">?</span>Help manual</a>
+          <a href="#help/whats-new" data-tour="nav-whatsnew" className={page === 'help/whats-new' ? 'active' : ''}><span className="step-dot">★</span>What's new</a>
+          <a href="#help/menu-guide" className={page === 'help/menu-guide' ? 'active' : ''}><span className="step-dot">☰</span>Using the menu</a></div>
         <div className="nav-group mobile-only"><div className="nav-group-title">Project file</div>
           <div className="row wrap" style={{ padding: '0 8px' }}><button onClick={() => go('projects')}>Projects</button><button onClick={open}>Open file</button><button onClick={save}>Export</button></div></div>
         <div className="progress">{(() => { const t = CHECKLISTS.filter((c) => VIS.some((w) => w.id === c.page) && !skipped.has(c.page)).map((c) => progressOf(c, project)).reduce((a, b) => ({ done: a.done + b.done, total: a.total + b.total }), { done: 0, total: 0 }); return `Checklists: ${t.done} of ${t.total} items done`; })()}</div>
@@ -222,11 +275,12 @@ export default function App() {
                   {groups.map((g) => <optgroup key={g} label={g}>{VIS.filter((w) => w.group === g).map((w) => <option key={w.id} value={w.id}>{stepNo(w) ? `${stepNo(w)}. ` : ''}{w.label}</option>)}</optgroup>)}
                 </select>
                 <button disabled={!nextW} onClick={() => nextW && go(nextW.id)} aria-label="Next page" title={nextW?.label}>→</button>
-                {topic.tour && <button onClick={() => setTour(true)} data-tour-btn>▶ Guide me</button>}
+                {topic.tour && <button onClick={() => setTour(topic.tour!)} data-tour-btn>▶ Guide me</button>}
                 <button onClick={() => setHelpOpen(true)}>? Page help</button>
                 <ClearPageButton page={current.id} label={current.label} onCleared={(before) => { setCleared({ page: current.id, before }); setResetN((n) => n + 1); }} />
               </div>
             </div>
+            <ProjectNoticeBanner />
             {cleared && cleared.page === current.id && <UndoClearBar key={resetN} page={current.id} label={current.label} before={cleared.before} onDone={endClear} />}
             {off.has(current.id) && <p className="note no-print">This tool is turned off in User Settings, so it is not in the menu. <button onClick={() => setToolOn(current.id, true)}>Turn it back on</button></p>}
             {skipped.has(current.id) && <p className="note no-print">This step is skipped on this project. <button onClick={() => setSkip(current.id, false)}>Don't skip it</button></p>}
@@ -243,8 +297,8 @@ export default function App() {
       </main>
       <ToolNotice />
       {video && <IntroVideo first={video === 'first'} onClose={() => setVideo(false)} />}
-      {helpOpen && !isHelp && <HelpPanel topic={topic} onClose={() => setHelpOpen(false)} onTour={topic.tour ? () => { setHelpOpen(false); setTour(true); } : undefined} />}
-      {tour && topic.tour && <Tour steps={topic.tour} onClose={() => setTour(false)} />}
+      {helpOpen && !isHelp && <HelpPanel topic={topic} onClose={() => setHelpOpen(false)} onTour={topic.tour ? () => { setHelpOpen(false); setTour(topic.tour!); } : undefined} />}
+      {tour && <Tour key={tour.map((t) => t.target).join('|')} steps={tour} onClose={() => setTour(null)} />}
     </div>
     </MeasureCtx.Provider>
   );

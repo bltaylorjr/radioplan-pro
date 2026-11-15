@@ -62,6 +62,7 @@ export default function TiltView({ view, sites, txId, rxId, dem: projectDem, hei
   const [showView, setShowView] = useState(false);
   const [showF, setShowF] = useState(true);
   const [showT, setShowT] = useState(false);
+  const [showPh, setShowPh] = useState(true);
   const [placing, setPlacing] = useState<number | null>(null);
   const tx = sites.find((s) => s.id === txId) ?? sites[0], rx = sites.find((s) => s.id === rxId && s.id !== tx?.id);
   const [pts, setPtsS] = useState<Pt[]>(() => {
@@ -168,6 +169,7 @@ export default function TiltView({ view, sites, txId, rxId, dem: projectDem, hei
     return () => window.clearTimeout(t);
   }, [showHeat, dem, la.cov]);
   const obstructions = useMemo(() => (showLos ? hops.flatMap((h) => h.obs) : []), [hops, showLos]);
+  const photos = useMemo(() => (showPh ? (p.photoSpots ?? []).map((s) => ({ lat: s.lat, lon: s.lon, name: s.name, views: s.photos.filter((q) => !q.hidden && q.headingDeg != null).map((q) => ({ headingDeg: q.headingDeg!, hfovDeg: Math.min(360, q.hfovDeg) })) })) : undefined), [showPh, p.photoSpots]);
   const path = useMemo(() => (pts.length ? { points: pts, hops: hops.map((h) => ({ ok: h.an.meets60, los: h.an.los })) } : null), [pts, hops]);
 
   const setPoint = (i: number, q: LatLon, text?: string) => setPts((x) => x.map((o, j) => (j === i ? { ...o, lat: q.lat, lon: q.lon, text: text ?? fmtLL(q) } : o)));
@@ -238,13 +240,14 @@ export default function TiltView({ view, sites, txId, rxId, dem: projectDem, hei
         <label><input type="checkbox" checked={showF} onChange={(e) => setShowF(e.target.checked)} /> Fresnel zone</label>
         <label><input type="checkbox" checked={showView} onChange={(e) => setShowView(e.target.checked)} /> What point A can see (red = hidden)</label>
         <label><input type="checkbox" checked={showT} onChange={(e) => setShowT(e.target.checked)} /> Existing towers</label>
+        {(p.photoSpots?.length ?? 0) > 0 && <label><input type="checkbox" checked={showPh} onChange={(e) => setShowPh(e.target.checked)} /> Photo survey spots</label>}
         {lines.length > 0 && <label><input type="checkbox" checked={showLines} onChange={(e) => setShowLines(e.target.checked)} /> Drawn lines</label>}
         <label title={la.cov ? '' : 'Set a transmit site and radio first'}><input type="checkbox" checked={showHeat} disabled={!la.cov} onChange={(e) => setShowHeat(e.target.checked)} /> Signal heat map</label>
       </div>
       {placing != null && <p className="note">👆 Tap the ground in the 3D view to place <b>{pts[placing]?.name}</b>. <button onClick={() => setPlacing(null)}>Cancel</button></p>}
       {dem ? <Terrain3D dem={dem} sites={path ? [] : sites} txId={txId} rxId={rxId} fMHz={p.radio.fMHz} kFactor={p.radio.kFactor} clutterM={p.radio.clutterM}
         exag={exag} showFresnel={showF} drape={drape} tilt={tilt} onTilt={setTilt} viewshed={vs} obstructions={obstructions} path={path} onPick={onPick}
-        comm={showT ? comm : undefined} routes={routes} heat={heat} height={height} fmtLen={(m) => u.len(m, 0)} fmtDist={(km) => u.f(km)} />
+        comm={showT ? comm : undefined} routes={routes} heat={heat} photos={photos} height={height} fmtLen={(m) => u.len(m, 0)} fmtDist={(km) => u.f(km)} />
         : <div className="three empty" style={{ height }}>{msg || 'Loading terrain…'}</div>}
       {msg && dem && <p className="note">{msg}</p>}
 

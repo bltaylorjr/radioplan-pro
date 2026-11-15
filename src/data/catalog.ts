@@ -1,8 +1,12 @@
 // Equipment catalog. Specifications are TYPICAL values transcribed for planning; always confirm against the
 // current manufacturer datasheet before procurement. Add your own items in the Equipment page (stored in project).
-export interface Antenna { id: string; brand: string; model: string; type: string; bandMHz: [number, number]; gainDbi: number; hBwDeg: number; vBwDeg: number; connector: string; weightLb: number; windAreaSqft: number; mount: string }
-export interface Feeder { id: string; brand: string; model: string; size: string; points: [number, number][]; minBendIn: number; connector: string; hangerSpacingFt: number; groundKit: string; hanger: string }
-export interface Radio { id: string; brand: string; model: string; type: string; bandMHz: [number, number]; maxPowerW: number; sensitivityDbm: number; dcInputV: number; drawTxA: number; drawRxA: number }
+// Items with `legacy` are older or discontinued models kept for service and repair work (see lvequipment.ts).
+import type { LegacyInfo } from './lvequipment';
+type Docs = [string, string][];
+const MOT: [string, string] = ['Motorola Solutions', 'https://www.motorolasolutions.com/'];
+export interface Antenna { id: string; brand: string; model: string; type: string; bandMHz: [number, number]; gainDbi: number; hBwDeg: number; vBwDeg: number; connector: string; weightLb: number; windAreaSqft: number; mount: string; legacy?: LegacyInfo; docs?: Docs }
+export interface Feeder { id: string; brand: string; model: string; size: string; points: [number, number][]; minBendIn: number; connector: string; hangerSpacingFt: number; groundKit: string; hanger: string; legacy?: LegacyInfo; docs?: Docs }
+export interface Radio { id: string; brand: string; model: string; type: string; bandMHz: [number, number]; maxPowerW: number; sensitivityDbm: number; dcInputV: number; drawTxA: number; drawRxA: number; legacy?: LegacyInfo; docs?: Docs }
 export interface PvModule { id: string; brand: string; model: string; pmaxW: number; vocV: number; vmpV: number; iscA: number; impA: number; tempCoeffVocPctPerC: number }
 
 export const ANTENNAS: Antenna[] = [
@@ -26,6 +30,11 @@ export const FEEDERS: Feeder[] = [
   { id: 'ldf5', brand: 'CommScope', model: 'LDF5-50A (7/8" HELIAX)', size: '7/8"', points: [[150, 0.46], [450, 0.82], [900, 1.2], [1800, 1.76], [2400, 2.1]], minBendIn: 10, connector: 'L5TNM-PSA N-male', hangerSpacingFt: 3, groundKit: 'CommScope SG78-12B2U', hanger: 'SNAP-IN 7/8"' },
   { id: 'avaf5', brand: 'CommScope', model: 'AVA5-50 (7/8" AL low-loss)', size: '7/8"', points: [[150, 0.41], [450, 0.73], [900, 1.06], [1800, 1.55], [2400, 1.83]], minBendIn: 9, connector: 'AL5NM-PSA N-male', hangerSpacingFt: 3, groundKit: 'CommScope SG78-12B2U', hanger: 'SNAP-IN 7/8"' },
   { id: 'ldf6', brand: 'CommScope', model: 'LDF6-50 (1-1/4" HELIAX)', size: '1-1/4"', points: [[150, 0.34], [450, 0.6], [900, 0.88], [1800, 1.3], [2400, 1.55]], minBendIn: 15, connector: 'L6TNM-PS N-male', hangerSpacingFt: 3, groundKit: 'CommScope SG114-12B2U', hanger: 'SNAP-IN 1-1/4"' },
+  // Legacy (still found on older sites). Typical loss; confirm with the cable datasheet.
+  { id: 'legacy-rg213', brand: 'Typical', model: 'RG-213/U (RG-8 type) solid PE coax', size: '0.405"', points: [[150, 2.8], [450, 5.2], [900, 7.8], [1500, 10.5]], minBendIn: 4, connector: 'N-male / PL-259 (UHF)', hangerSpacingFt: 3, groundKit: 'Generic 0.405" ground kit', hanger: 'Snap-in hanger 3/8"',
+    legacy: { status: 'Legacy (still sold)', era: '1960s–present', replacedBy: ['LMR-400 (about half the loss)', '1/2" HELIAX for runs over 100 ft'], service: ['PL-259 (UHF) connectors are not weatherproof or constant-impedance above about 300 MHz; replace with N on rebuilds.', 'Water in old RG-8/213 raises loss and VSWR: sweep it before reuse.'] } },
+  { id: 'legacy-hj5', brand: 'Andrew (CommScope)', model: 'HJ5-50 7/8" air-dielectric HELIAX', size: '7/8"', points: [[150, 0.38], [450, 0.69], [900, 1.0], [1800, 1.5]], minBendIn: 10, connector: 'Air HELIAX N / 7-16 (pressurized)', hangerSpacingFt: 3, groundKit: 'CommScope 7/8" ground kit', hanger: 'SNAP-IN 7/8"', docs: [['CommScope (Andrew)', 'https://www.commscope.com/']],
+    legacy: { status: 'Discontinued', era: '1970s–2000s', replacedBy: ['LDF5-50A or AVA5-50 foam HELIAX'], service: ['Air line must stay pressurized with dry air or nitrogen; a leak lets moisture in and VSWR climbs.', 'Check the dehydrator and pressure gauge on every site visit.'] } },
 ];
 
 export const RADIOS: Radio[] = [
@@ -37,6 +46,20 @@ export const RADIOS: Radio[] = [
   { id: 'ericsson-radio', brand: 'Ericsson', model: 'Radio 4449 B5/B12', type: 'LTE RRU', bandMHz: [698, 894], maxPowerW: 160, sensitivityDbm: -103, dcInputV: 48, drawTxA: 18, drawRxA: 4 },
   { id: 'honeywell-bda', brand: 'Honeywell / Fiplex', model: 'BDA-DH7-8-33 Class A', type: 'ERCES BDA', bandMHz: [764, 869], maxPowerW: 2, sensitivityDbm: -110, dcInputV: 24, drawTxA: 4, drawRxA: 2 },
   { id: 'icom-hf', brand: 'Icom', model: 'IC-F8101 HF transceiver', type: 'HF', bandMHz: [1.6, 30], maxPowerW: 125, sensitivityDbm: -120, dcInputV: 13.6, drawTxA: 23, drawRxA: 1.2 },
+  // Legacy / discontinued (service and repair work). Values typical; confirm with the station manual.
+  { id: 'legacy-mot-msf5000', brand: 'Motorola', model: 'MSF5000 base station / repeater (UHF)', type: 'LMR repeater (analog)', bandMHz: [403, 512], maxPowerW: 100, sensitivityDbm: -116, dcInputV: 24, drawTxA: 0, drawRxA: 0, docs: [MOT],
+    legacy: { status: 'No longer supported', era: '1980s–2000s', replacedBy: ['Motorola MTR3000', 'MOTOTRBO SLR 8000'], service: ['AC powered; check it was narrowbanded to 12.5 kHz (FCC mandate, 2013) — many MSF5000s were wideband only.', 'Also made for VHF and 800 MHz; pick the closest band entry.'] } },
+  { id: 'legacy-mot-quantar', brand: 'Motorola', model: 'Quantar station (UHF)', type: 'LMR repeater (analog / P25)', bandMHz: [403, 470], maxPowerW: 110, sensitivityDbm: -117, dcInputV: 24, drawTxA: 0, drawRxA: 0, docs: [MOT],
+    legacy: { status: 'No longer supported', era: '1990s–2010s', replacedBy: ['Motorola GTR 8000 base radio'], service: ['Program with RSS and a serial cable; keep a copy of the codeplug.', 'Also made for VHF and 800 MHz.'] } },
+  { id: 'legacy-mot-mtr2000', brand: 'Motorola', model: 'MTR2000 repeater (UHF)', type: 'LMR repeater (analog)', bandMHz: [403, 470], maxPowerW: 100, sensitivityDbm: -117, dcInputV: 24, drawTxA: 0, drawRxA: 0, docs: [MOT],
+    legacy: { status: 'Discontinued', era: '2000s–2010s', replacedBy: ['Motorola MTR3000', 'MOTOTRBO SLR 5700 / SLR 8000'], service: ['Check the station alarm log and the power supply / PA first.'] } },
+  { id: 'legacy-ge-mastr3', brand: 'GE / Ericsson / M/A-COM', model: 'MASTR III station (800 MHz)', type: 'LMR repeater (analog / EDACS)', bandMHz: [806, 870], maxPowerW: 100, sensitivityDbm: -116, dcInputV: 24, drawTxA: 0, drawRxA: 0, docs: [['L3Harris', 'https://www.l3harris.com/']],
+    legacy: { status: 'No longer supported', era: '1990s–2000s', replacedBy: ['L3Harris MASTR V'], service: ['Common in older county and utility systems; check deviation and frequency against the license.', 'MASTR II (older) and VHF/UHF versions were also made.'] } },
+  { id: 'legacy-kenwood-tkr850', brand: 'Kenwood', model: 'TKR-850 repeater (UHF)', type: 'LMR repeater (analog)', bandMHz: [450, 490], maxPowerW: 40, sensitivityDbm: -119, dcInputV: 13.6, drawTxA: 10, drawRxA: 0.8, docs: [['Kenwood two-way radio support', 'https://www.kenwood.com/usa/com/support/']],
+    legacy: { status: 'Discontinued', era: '1990s–2010s', replacedBy: ['Kenwood NXR-810 or NXR-1800'], service: ['Program with Kenwood KPG software; keep the data file with the job.'] } },
+  { id: 'legacy-kenwood-tkr750', brand: 'Kenwood', model: 'TKR-750 repeater (VHF)', type: 'LMR repeater (analog)', bandMHz: [146, 174], maxPowerW: 50, sensitivityDbm: -119, dcInputV: 13.6, drawTxA: 11, drawRxA: 0.8, docs: [['Kenwood two-way radio support', 'https://www.kenwood.com/usa/com/support/']],
+    legacy: { status: 'Discontinued', era: '1990s–2010s', replacedBy: ['Kenwood NXR-710 or NXR-1700'], service: ['Program with Kenwood KPG software.'] } },
+
 ];
 
 export const PV_MODULES: PvModule[] = [
