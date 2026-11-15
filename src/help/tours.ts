@@ -29,6 +29,7 @@ export const PAGE_TOURS: Record<string, TourStep[]> = {
     { target: 'text:Downlink budget', title: 'Downlink budget', text: 'Signal from the donor tower through the BDA to the far antennas.' },
     { target: 'text:Donor antenna aiming', title: 'Donor antenna aiming', text: 'Type the tower’s GPS or address to get the azimuth and tilt for the roof antenna.' },
     { target: 'text:Public-safety channels here', title: 'Public-safety channels', text: 'The county’s channels from RadioReference, after you download them.' },
+    { target: 'text:FCC Class B booster registration', title: 'Booster registration', text: 'Registration details, the 5 W ERP check and consent letters to the licensees.' },
   ],
   solar: [
     { target: 'text:Add load', title: 'Loads', text: 'Add everything the solar system must power, with watts and hours per day.' },
@@ -124,6 +125,22 @@ export const PAGE_TOURS: Record<string, TourStep[]> = {
     { target: 'text:Direct sync over Wi-Fi', title: 'Wi-Fi sync', text: 'Show a code on one device and scan it with the other. No internet needed.' },
     { target: 'text:Share by Bluetooth', title: 'Share', text: 'Send a sync file by Bluetooth, Nearby Share or email.' },
     { target: 'text:Automatic sync through a cloud-drive folder', title: 'Cloud folder', text: 'Pick a cloud-drive folder to keep devices in step over cellular.' },
+  ],
+  photosurvey: [
+    { target: 'text:Photo site survey', title: 'Photo site survey', text: 'Photos all the way around a spot, lined up with the terrain horizon.' },
+    { target: 'text:New spot', title: '＋ New spot', text: 'Start a survey spot where an antenna might go, then take or add photos.' },
+  ],
+  fcc: [
+    { target: 'text:Find towers and licenses', title: 'Pick the spot', text: 'A project site, an address or your GPS. Narrow it by band if you like.' },
+    { target: 'text:Results', title: 'Towers and licenses', text: 'Who is on each tower, on what frequencies, with distance and azimuth.' },
+  ],
+  faa: [
+    { target: 'text:Structure', title: 'Structure height', text: 'Type the overall height; the ground height fills in.' },
+    { target: 'text:Airports nearby', title: 'Airports nearby', text: 'Each airport’s distance, the rule that applies and your margin.' },
+  ],
+  mappacks: [
+    { target: 'text:Around my project sites', title: 'Choose the area', text: 'Around your sites, or around an address or GPS point.' },
+    { target: 'text:Download map pack', title: '⬇ Download map pack', text: 'Shows the size first, then downloads with the percent and time left.' },
   ],
   settings: [
     { target: 'text:Tools shown in the menu', title: 'Tools in the menu', text: 'Untick the tools you do not use. They leave the menu and the step numbers; nothing is deleted.' },
