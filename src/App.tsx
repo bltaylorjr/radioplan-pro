@@ -170,6 +170,8 @@ export default function App() {
   /** "▶ Show me" on a feature: open its page, then run its walkthrough once the page is there. */
   const pendingTour = React.useRef(false);
   useEffect(() => { setHelpOpen(false); setNavOpen(false); if (!pendingTour.current) setTour(null); }, [page]);
+  /** Keep the open page in view in the menu. */
+  useEffect(() => { const t = setTimeout(() => document.querySelector('.sidebar a.active')?.scrollIntoView({ block: 'nearest' }), 50); return () => clearTimeout(t); }, [page, navOpen]);
   useEffect(() => {
     const on = (e: Event) => {
       const f = FEATURES.find((x) => x.id === (e as CustomEvent<string>).detail); if (!f) return;

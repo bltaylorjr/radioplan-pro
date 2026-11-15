@@ -2,7 +2,6 @@ import { HelpMedia } from './HelpMedia';
 import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { HELP, HelpTopic, TourStep } from './content';
 import { FEATURES, Feature, featuresFor, showFeature } from './features';
-import { WORKFLOW_LABELS } from '../data/pageLabels';
 
 /** Find a walkthrough target: a data-tour="name" element, or (with "text:") the visible button,
  *  link, label or heading whose words match best. Falls back to a heading that matches the step title. */
@@ -38,7 +37,7 @@ export function FeatureCards({ ids, list, compact, heading }: { ids?: string[]; 
       {fs.map((f) => (
         <details key={f.id} className="feature-card" open={!compact}>
           <summary><b>{f.title}</b> <span className="pill">{f.version}</span></summary>
-          <p className="small muted">📍 {f.where}{WORKFLOW_LABELS[f.page] && !f.where.includes(WORKFLOW_LABELS[f.page]) ? ` (${WORKFLOW_LABELS[f.page]})` : ''}</p>
+          <p className="small muted">📍 {f.where}</p>
           <p>{f.summary}</p>
           <ol>{f.steps.map((s, i) => <li key={i}>{s}</li>)}</ol>
           <div className="row wrap">
@@ -55,12 +54,18 @@ export function FeatureCards({ ids, list, compact, heading }: { ids?: string[]; 
 export function Md({ text }: { text: string }) {
   const blocks = text.trim().split(/\n\s*\n/);
   const inline = (s: string) => s.split(/(\*\*[^*]+\*\*)/g).map((p, i) => (p.startsWith('**') ? <b key={i}>{p.slice(2, -2)}</b> : <React.Fragment key={i}>{p}</React.Fragment>));
+  // Each block: runs of "- " lines become bullet lists, numbered lines a numbered list, other lines paragraphs.
   return <>{blocks.map((b, i) => {
-    const lines = b.split('\n');
-    if (lines.every((l) => /^\s*- /.test(l))) return <ul key={i}>{lines.map((l, k) => <li key={k}>{inline(l.replace(/^\s*- /, ''))}</li>)}</ul>;
-    if (lines.every((l) => /^\s*\d+\. /.test(l))) return <ol key={i}>{lines.map((l, k) => <li key={k}>{inline(l.replace(/^\s*\d+\. /, ''))}</li>)}</ol>;
-    if (lines.length > 1 && lines.slice(1).every((l) => /^\s*- /.test(l))) return <div key={i}><p>{inline(lines[0])}</p><ul>{lines.slice(1).map((l, k) => <li key={k}>{inline(l.replace(/^\s*- /, ''))}</li>)}</ul></div>;
-    return <p key={i}>{inline(b)}</p>;
+    const runs: { kind: 'ul' | 'ol' | 'p'; lines: string[] }[] = [];
+    for (const l of b.split('\n')) {
+      const kind = /^\s*- /.test(l) ? 'ul' : /^\s*\d+\. /.test(l) ? 'ol' : 'p';
+      const last = runs[runs.length - 1];
+      if (last && last.kind === kind && kind !== 'p') last.lines.push(l); else runs.push({ kind, lines: [l] });
+    }
+    const out = runs.map((r, k) => r.kind === 'ul' ? <ul key={k}>{r.lines.map((l, j) => <li key={j}>{inline(l.replace(/^\s*- /, ''))}</li>)}</ul>
+      : r.kind === 'ol' ? <ol key={k}>{r.lines.map((l, j) => <li key={j}>{inline(l.replace(/^\s*\d+\. /, ''))}</li>)}</ol>
+      : <p key={k}>{inline(r.lines[0])}</p>);
+    return out.length === 1 ? <React.Fragment key={i}>{out[0]}</React.Fragment> : <div key={i}>{out}</div>;
   })}</>;
 }
 
@@ -150,8 +155,8 @@ export function HelpPanel({ topic, onClose, onTour }: { topic: HelpTopic; onClos
     <div className="help-panel" role="complementary">
       <header><h3>Help: {topic.title}</h3><button className="ghost" onClick={onClose} aria-label="Close help">✕</button></header>
       <p className="lead">{topic.summary}</p>
-      <Md text={topic.body} />
       {topic.page && <FeatureCards list={featuresFor(topic.page, true)} compact heading="Tools on this page" />}
+      <Md text={topic.body} />
       <HelpMedia topic={topic} compact />
       <div className="row">
         {onTour && topic.tour && <button className="primary" onClick={onTour}>▶ Guide me through this page</button>}

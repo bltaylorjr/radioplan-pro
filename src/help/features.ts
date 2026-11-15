@@ -139,6 +139,11 @@ export const FEATURES: Feature[] = [
       { target: 'text:Apply to fields', title: '➜ Apply to fields…', text: 'Sends the result to the matching fields on other pages, after you check each one.' },
     ] },
 
+  { id: 'auto-care', version: '1.5.48', title: 'Automatic care', page: 'projects', where: 'Projects & Storage → Automatic care',
+    summary: 'The app checks and repairs its own saved data, keeps downloads current when online, makes daily backups, and goes back to the last good version if an update will not start. Nothing to set up.',
+    steps: ['Open Projects & Storage.', 'The Automatic care card shows what it keeps checked and when.', 'Tap Check everything now to run the checks right away.', 'A short notice tells you when something was fixed.'],
+    keywords: 'automatic care self repair fix damaged backup refresh check everything update rollback broken', topic: 'selfrepair',
+    tour: [ { target: 'text:Automatic care', title: 'Automatic care', text: 'What the app keeps checked and repaired by itself.' }, { target: 'text:Check everything now', title: 'Check everything now', text: 'Runs every check right away.' } ] },
   { id: 'full-page', version: '1.5.33', title: 'Full page view', page: 'terrain', alsoOn: ['coverage', 'view3d', 'path', 'autodesign', 'blueprints', 'indoor'], where: 'Above any map, 3D view or diagram: ⛶ Full page',
     summary: 'Shows the map, 3D view or diagram on the whole screen. ✕ Close goes back.',
     steps: ['Tap ⛶ Full page above a map or diagram.', 'Tap ✕ Close when you are done.'],
