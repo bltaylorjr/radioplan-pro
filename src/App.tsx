@@ -35,7 +35,7 @@ import { SpecLibraryPage } from './pages/SpecLibrary';
 import { InstallPage } from './pages/Install';
 import { FieldNotesPage } from './pages/FieldNotes';
 import { ContactsPage } from './pages/Contacts';
-import { RadioReferencePage } from './pages/RadioReference';
+import { RadioReferencePage, RrJobBadge } from './pages/RadioReference';
 import { BlueprintsPage } from './pages/Blueprints';
 import { SelfRepair } from './components/SelfRepair';
 import { Checklist } from './components/Checklist';
@@ -150,6 +150,7 @@ export default function App() {
         <button className="ghost menu" onClick={() => setNavOpen(!navOpen)} aria-label="Menu">☰</button>
         <div className="brand" title="Low-voltage system planning"><span className="logo">◉</span> LvPlan <b>Pro</b></div>
         <span className={'chip ' + (online ? 'on' : 'off')} title={online ? 'Online: maps and terrain download automatically and are cached' : 'Offline: using cached maps and terrain'}>{online ? '● Online' : '○ Offline'}</span>
+        <RrJobBadge onOpen={() => go('radioref')} />
         {rt.terrainStatus && <span className="chip terr" title="Automatic terrain">{rt.terrainStatus}</span>}
         {rt.mapStatus && <span className="chip terr" title="Automatic offline maps">{rt.mapStatus}</span>}
         <div className="proj">{project.company.name && <span className="muted">{project.company.name} · </span>}{project.meta.name} <span className="muted">({project.meta.state})</span></div>

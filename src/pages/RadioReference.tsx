@@ -13,6 +13,7 @@ import {
 } from '../engine/radioref';
 import type { StateCode } from '../types';
 import { uid } from '../defaults';
+import { useRrJob, startJob, stopJob, clearJob, timeLeft, elapsed, STAGES, summary, RrJob } from '../engine/rrjob';
 import { bandsInUse, worstCaseMHz, bdaAdvice, donorSites, freqChoices, DonorSite } from '../engine/rrdesign';
 
 const STATES: StateCode[] = ['NC', 'SC', 'GA', 'TN', 'VA'];
@@ -40,8 +41,9 @@ export function RadioReferencePage() {
   const [stay, setStay] = useState(true);
   useEffect(() => { const read = () => loadLogin().then((l) => { if (l) { setLogin(l); setStay(l.stay); setHasLogin(true); } else { setHasLogin(false); setLogin({ username: '', password: '', appKey: '' }); } }); read(); return onLoginChange(read); }, []);
   const [msg, setMsg] = useState<{ text: string; tone?: 'ok' | 'bad' } | null>(null);
-  const [busy, setBusy] = useState<{ text: string; frac: number } | null>(null);
-  const [stopper] = useState({ cancelled: false });
+  const job = useRrJob();
+  const busy = !!job?.running;
+  useEffect(() => { if (job?.result) setTick((t) => t + 1); }, [job?.result]);
   const [trunked, setTrunked] = useState(true);
   const [statewide, setStatewide] = useState(false);
   const [tick, setTick] = useState(0);
@@ -65,12 +67,10 @@ export function RadioReferencePage() {
     setMsg({ text: 'Removed from this device.', tone: 'ok' });
   };
   const download = async () => {
-    stopper.cancelled = false; setMsg(null); setBusy({ text: 'Connecting to RadioReference…', frac: 0 });
-    try {
-      const got = await downloadCounty(st, county, login, { trunked, statewide, signal: stopper, progress: (text, frac) => setBusy({ text, frac }) });
-      setMsg({ text: `✓ Saved ${countFreqs(got)} frequencies and ${got.systems.reduce((a, s) => a + s.talkgroups.length, 0)} talkgroups for ${county} on this device. They work offline from now on.${got.warnings.length ? ` (${got.warnings.length} parts could not be read.)` : ''}`, tone: 'ok' });
-    } catch (e) { setMsg({ text: explain(e), tone: 'bad' }); }
-    setBusy(null); setTick((t) => t + 1);
+    setMsg(null); clearJob();
+    const j = await startJob(st, county, login, { trunked, statewide });
+    if (j.error) setMsg({ text: explain(j.error), tone: 'bad' });
+    setTick((t) => t + 1);
   };
   const importFile = () => {
     const i = document.createElement('input'); i.type = 'file'; i.accept = '.csv,text/csv,text/plain';
@@ -105,8 +105,8 @@ export function RadioReferencePage() {
           <label className="check"><input type="checkbox" checked={trunked} onChange={(e) => setTrunked(e.target.checked)} /> Trunked radio systems, tower sites and talkgroups</label>
           <label className="check"><input type="checkbox" checked={statewide} onChange={(e) => setStatewide(e.target.checked)} /> Also statewide agencies and systems (State Highway Patrol, statewide radio network sites in this county). Takes longer.</label>
         </div>
-        {busy ? <div className="stack-tight"><progress value={busy.frac} max={1} style={{ width: '100%' }} /><div className="row"><span className="small">{busy.text}</span><button className="ghost" onClick={() => { stopper.cancelled = true; }}>Stop</button></div></div>
-          : <div className="row wrap">
+        {job && (job.running || job.result || job.error) ? <RrProgress job={job} explain={explain} onClose={() => { clearJob(); setTick((t) => t + 1); }} /> : null}
+        {busy ? null : <div className="row wrap">
             <button className="primary" disabled={!county || !hasLogin || !online || !appOk} onClick={download}>{d?.source === 'api' ? '⟳ Download again (update)' : '⬇ Download frequencies for this county'}</button>
             <button onClick={importFile} disabled={!county}>Import a CSV saved from RadioReference.com</button>
           </div>}
@@ -121,6 +121,46 @@ export function RadioReferencePage() {
       {county && <RrBrowser d={d} county={county} state={st} />}
       </>}
       <p className="small muted">Data © RadioReference.com, for your own use with your Premium subscription. Always confirm frequencies and get the licensee’s and AHJ’s approval before you retransmit them (FCC 90.219).</p>
+    </div>
+  );
+}
+
+/** Top-bar badge while a RadioReference download runs (and briefly after): tap to open the page. */
+export function RrJobBadge({ onOpen }: { onOpen: () => void }) {
+  const job = useRrJob();
+  if (!job) return null;
+  const pct = Math.round(job.frac * 100);
+  const label = job.running ? `⬇ RadioRef ${pct}%` : job.result ? '✓ RadioRef saved' : '⚠ RadioRef stopped';
+  return <button className={'chip rr-chip' + (job.running ? ' running' : job.result ? ' on' : ' off')} onClick={onOpen} title={job.running ? `${job.text} (tap to see the download)` : 'Open RadioReference Frequencies'}
+    style={job.running ? { background: `linear-gradient(90deg, rgba(80,160,255,.35) ${pct}%, transparent ${pct}%)` } : undefined}>{label}</button>;
+}
+
+/** The download progress panel: bar with percent, the stages, what is being read now, counts so far and time left. */
+function RrProgress({ job, explain, onClose }: { job: RrJob; explain: (e: unknown) => string; onClose: () => void }) {
+  const [, tick] = useState(0);
+  useEffect(() => { if (!job.running) return; const t = setInterval(() => tick((n) => n + 1), 1000); return () => clearInterval(t); }, [job.running]);
+  const p = job.p, pct = Math.round(job.frac * 100);
+  const stageIdx = p ? Math.max(0, STAGES.findIndex(([s]) => s === (p.stage === 'county' ? 'start' : p.stage === 'done' ? 'saving' : p.stage))) : 0;
+  const left = timeLeft(job);
+  const stopped = job.error instanceof RrError && /stopped/i.test((job.error as Error).message);
+  return (
+    <div className="rr-progress" role="status" aria-live="polite">
+      <div className="row wrap" style={{ justifyContent: 'space-between' }}>
+        <b>{job.running ? `Downloading ${job.county}, ${job.state}…` : job.result ? `✓ ${job.county}, ${job.state} downloaded` : stopped ? `Download of ${job.county} stopped` : `Download of ${job.county} did not finish`}</b>
+        <span className="small muted">{pct}% · {elapsed(job)}{left ? ` · ${left}` : ''}</span>
+      </div>
+      <div className="rr-bar" aria-label={`${pct} percent`}><div className={job.error ? 'bad' : job.result ? 'ok' : ''} style={{ width: `${Math.max(2, pct)}%` }} /></div>
+      <ol className="rr-stages">{STAGES.map(([id, label], k) => <li key={id} className={job.result || k < stageIdx ? 'done' : k === stageIdx && job.running ? 'now' : ''}>{job.result || k < stageIdx ? '✓ ' : ''}{label}</li>)}</ol>
+      {job.running && <div className="small">{job.text}{p && p.of > 1 ? <span className="muted"> ({p.step} of {p.of})</span> : null}</div>}
+      {p && <div className="rr-counts small">
+        <span><b>{p.freqs}</b> frequencies</span><span><b>{p.lists}</b> lists</span>{p.agencies > 0 && <span><b>{p.agencies}</b> agencies</span>}
+        <span><b>{p.systems}</b> trunked systems</span><span><b>{p.sites}</b> sites</span><span><b>{p.talkgroups}</b> talkgroups</span>
+        {p.problems > 0 && <span className="warn-text">{p.problems} part{p.problems > 1 ? 's' : ''} could not be read</span>}
+      </div>}
+      {job.result && <p className="ok-text small">Saved on this device (encrypted): {summary(job.result)}. They work offline from now on.</p>}
+      {job.error != null && !stopped && <p className="bad-text small">{explain(job.error)}</p>}
+      <div className="row">{job.running ? <button className="ghost" onClick={stopJob}>Stop download</button> : <button className="ghost" onClick={onClose}>Close</button>}</div>
+      {job.running && <p className="small muted">You can open other pages while this runs. The ⬇ badge at the top shows how far along it is.</p>}
     </div>
   );
 }

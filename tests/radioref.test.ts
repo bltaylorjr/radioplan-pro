@@ -75,3 +75,16 @@ describe('RadioReference in design', () => {
   });
   it('lists picker choices', () => { expect(freqChoices(dl)).toHaveLength(4); });
 });
+
+import { timeLeft, elapsed } from '../src/engine/rrjob';
+describe('RadioReference download progress', () => {
+  const j = (frac: number, secs: number) => ({ state: 'NC', county: 'Buncombe', startedAt: 0, running: true, text: '', frac, p: null });
+  it('estimates time left once there is enough to go on', () => {
+    expect(timeLeft(j(0.05, 10), 10000)).toBeNull();
+    expect(timeLeft(j(0.25, 60), 60000)).toBe('about 3 min left');
+    expect(timeLeft(j(0.5, 20), 20000)).toBe('about 20 s left');
+    expect(timeLeft(j(0.95, 60), 60000)).toBe('a few seconds left');
+    expect(timeLeft({ ...j(1, 5), running: false }, 5000)).toBeNull();
+  });
+  it('formats elapsed time', () => { expect(elapsed(j(0.5, 0), 75000)).toBe('1 min 15 s'); expect(elapsed(j(0.5, 0), 9000)).toBe('9 s'); });
+});
