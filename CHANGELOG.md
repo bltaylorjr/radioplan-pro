@@ -1,3 +1,10 @@
+# LvPlan Pro 1.5.57
+
+- **Everything updates itself when online.** Besides the app itself, LvPlan Pro now downloads newer **code editions and state rules, city and county code lists, contacts and web links, the equipment catalog, manufacturer recommendations, the help manual and the magnetic model** from the LvPlan Pro website as soon as they are published, with no app update needed (this matters most on Android and the flash drive). Each download is checked (SHA-256, and that it is laid out the way this version of the app understands) before it is used, and a spare copy is kept. A short notice says when code information changed.
+- **Maps around every project stay fresh.** The topo map the app saves around your sites is now kept complete and downloaded fresh twice a year, like areas you save yourself.
+- **Saved datasheets stay current.** Datasheets saved from a manufacturer link are downloaded again twice a year; a download that is not a real document never replaces the saved one. An empty or unreadable one is downloaded again by itself.
+- **Safe start.** If the app did not finish starting last time, it starts once with only its built-in data.
+- **Introduction video**: the Automatic care part now covers online updates for codes and other data.
 # LvPlan Pro 1.5.56
 
 - **Low-voltage equipment for every system** in the Specifications Library, with **access control** in depth: door controllers (Mercury, Software House iSTAR Ultra, LenelS2), interface boards, card readers (HID Signo), credentials (Seos, DESFire), maglocks, electric strikes, latch retraction, wireless locks, access power controllers (Altronix), request-to-exit and door position switches. Also fire alarm panels and devices, CCTV, intercom, nurse call, paging and sound, a new **Mass notification** category, emergency call boxes, DAS and cabling and fiber.

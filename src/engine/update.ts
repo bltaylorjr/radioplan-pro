@@ -48,7 +48,7 @@ export async function installWindowsUpdate(url: string, sha256?: string, to?: st
 }
 
 // ---------------------------------------------------------------- update safety: notice a bad update, go back
-// Each start counts up; 30 s of normal running counts it back to zero and marks this version good.
+// Each start counts up; 8 s of the app running normally (its pages open) counts it back to zero and marks this version good.
 // If a freshly updated version fails to start 3 times in a row, the Windows app reinstalls the last good one,
 // and skips the bad version until a newer one is published.
 const BOOTS = 'radioplan.bootFails', GOOD = 'radioplan.lastGoodVersion', PENDING = 'radioplan.pendingUpdate', SKIP = 'radioplan.skipVersion';
@@ -57,14 +57,14 @@ export const skippedVersion = () => ls.get(SKIP);
 export const lastGoodVersion = () => ls.get(GOOD);
 export function markPending(to: string, from = APP_VERSION) { ls.set(PENDING, JSON.stringify({ from, to, at: Date.now() })); }
 export function pendingUpdate(): { from: string; to: string; at: number } | null { try { return JSON.parse(ls.get(PENDING) || 'null'); } catch { return null; } }
-export const BOOT_FAILS_TO_ROLL_BACK = 3, HEALTHY_AFTER_MS = 30000;
+export const BOOT_FAILS_TO_ROLL_BACK = 3, HEALTHY_AFTER_MS = 8000;
 /** Called first thing at start. Returns the version to go back to, when this one keeps failing. */
-export function bootStart(version = APP_VERSION): { rollbackTo: string | null; justUpdated: { from: string; to: string } | null } {
+export function bootStart(version = APP_VERSION): { rollbackTo: string | null; justUpdated: { from: string; to: string } | null; fails: number } {
   const fails = (parseInt(ls.get(BOOTS) || '0', 10) || 0) + 1; ls.set(BOOTS, String(fails));
   const good = lastGoodVersion(); const p = pendingUpdate();
   const justUpdated = p && p.to === version && p.from !== version ? { from: p.from, to: p.to } : null;
   const rollbackTo = fails >= BOOT_FAILS_TO_ROLL_BACK && good && cmpVersion(version, good) > 0 ? good : null;
-  return { rollbackTo, justUpdated };
+  return { rollbackTo, justUpdated, fails };
 }
 /** Called once the app has run normally for a while. */
 export function bootHealthy(version = APP_VERSION) {

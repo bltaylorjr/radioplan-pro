@@ -67,6 +67,8 @@ export function AutoTerrain() {
     let zMax = 14; while (zMax > 10 && countTiles(b, 8, zMax) > 2500) zMax--;
     const res = await prefetchTiles([url], b, 8, zMax, (d, n) => { if (d % 50 === 0 || d === n) setRt((r) => ({ ...r, mapStatus: `Saving maps for offline ${d}/${n}` })); }).catch(() => null);
     setRt((r) => ({ ...r, mapStatus: res ? `Maps saved for offline (${res.total - res.failed} tiles)` : undefined }));
+    // Keep this area complete and fresh from now on (Projects → Automatic care).
+    if (res) import('../engine/datasets').then((m) => m.rememberTileArea({ templates: [url], b, zMin: 8, zMax })).catch(() => undefined);
   };
   useEffect(() => () => cancelRetry(), []); // eslint-disable-line react-hooks/exhaustive-deps
   return null;

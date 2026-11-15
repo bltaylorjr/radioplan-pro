@@ -7,6 +7,7 @@ import { StoreProvider } from './store';
 import { installChunkRecovery } from './components/SelfRepair';
 import { bootStart, platform, rollBackTo } from './engine/update';
 import { logRepair, notify } from './engine/carelog';
+import { applyStoredPacks } from './engine/contentupdate';
 
 // Update safety: if a newly installed version keeps failing to start, put the last good one back (Windows app).
 const boot = bootStart();
@@ -33,4 +34,8 @@ class RootBoundary extends React.Component<{ children: React.ReactNode }, { err:
 installChunkRecovery();
 import('./components/chooseOne').then((m) => m.installChooseOne());
 
-createRoot(document.getElementById('root')!).render(<React.StrictMode><RootBoundary><StoreProvider><App /></StoreProvider></RootBoundary></React.StrictMode>);
+const render = () => createRoot(document.getElementById('root')!).render(<React.StrictMode><RootBoundary><StoreProvider><App /></StoreProvider></RootBoundary></React.StrictMode>);
+// Newer codes, contacts, catalog, help and magnetic model downloaded from the website go in before any page opens.
+// After a start that went wrong, start once with only the built-in data (safe mode).
+if (boot.fails >= 2) { logRepair('Started with the built-in data only, after a start that did not finish'); render(); }
+else Promise.race([applyStoredPacks().catch(() => []), new Promise((r) => setTimeout(r, 1500))]).finally(render);
