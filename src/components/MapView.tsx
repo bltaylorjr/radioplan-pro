@@ -14,6 +14,7 @@ import { AZ_TIP } from './Azimuth';
 import { Tip } from './ui';
 
 const TiltView = lazy(() => import('./TiltView'));
+import { RouteTools } from './RouteTools';
 
 const towerIcon = L.divIcon({ className: 'tower-pin', html: '<div>📡</div>', iconSize: [22, 22], iconAnchor: [11, 20] });
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
@@ -120,6 +121,10 @@ export function MapView({ sites, txId, rxId, coverage, floor = -110, dem, onClic
   const [measuring, setMeasuring] = useState(false);
   const [mpts, setMpts] = useState<LatLon[]>([]);
   const measRef = useRef(false); measRef.current = measuring;
+  const [drawing, setDrawing] = useState(false);
+  const [resEl, setResEl] = useState<HTMLDivElement | null>(null);
+  const drawRef = useRef(false); drawRef.current = drawing;
+  const [mapObj, setMapObj] = useState<L.Map | null>(null);
   const mlayer = useRef<L.LayerGroup>();
   const [view, setView] = useState<{ north: number; south: number; east: number; west: number } | null>(null);
   const baseName = useRef<string>(base ?? DEFAULT_BASE);
@@ -142,10 +147,10 @@ export function MapView({ sites, txId, rxId, coverage, floor = -110, dem, onClic
     try { if (localStorage.getItem('radioplan.towers') === '1') towers.addTo(m); } catch { /* ignore */ }
     L.control.scale({ imperial: true, metric: true }).addTo(m);
     addLocateControl(m);
-    m.on('click', (e: L.LeafletMouseEvent) => { if (measRef.current) setMpts((x) => [...x, { lat: e.latlng.lat, lon: e.latlng.lng }]); else clickRef.current?.(e.latlng.lat, e.latlng.lng); });
+    m.on('click', (e: L.LeafletMouseEvent) => { if (drawRef.current) return; if (measRef.current) setMpts((x) => [...x, { lat: e.latlng.lat, lon: e.latlng.lng }]); else clickRef.current?.(e.latlng.lat, e.latlng.lng); });
     layer.current = L.layerGroup().addTo(m);
     mlayer.current = L.layerGroup().addTo(m);
-    map.current = m;
+    map.current = m; setMapObj(m);
     if (!center && sites.length > 1) m.fitBounds(L.latLngBounds(sites.map((s) => [s.lat, s.lon])), { padding: [40, 40] });
     onMap?.(m);
     return () => { (m as unknown as { _lvClosing?: boolean })._lvClosing = true; m.remove(); map.current = undefined; };
@@ -191,7 +196,8 @@ export function MapView({ sites, txId, rxId, coverage, floor = -110, dem, onClic
       <div className="row map-modes" role="group" aria-label="Map view">
         <button className={!mode3d ? 'primary' : ''} onClick={close3d} aria-pressed={!mode3d}>🗺 Flat map</button>
         <button className={mode3d ? 'primary' : ''} onClick={open3d} aria-pressed={mode3d} title="Tilt the map in 3D with satellite pictures and line of sight">⛰ 3D tilt view</button>
-        {!mode3d && <button className={measuring ? 'primary' : ''} aria-pressed={measuring} onClick={() => { setMeasuring(!measuring); if (measuring) setMpts([]); }} title="Tap points on the map to measure distance and azimuth">📏 {measuring ? 'Stop measuring' : 'Measure distance & azimuth'}</button>}
+        {!mode3d && <button className={drawing ? 'primary' : ''} aria-pressed={drawing} onClick={() => { setDrawing(!drawing); setMeasuring(false); setMpts([]); }} title="Draw lines by hand or point to point and see signal and obstacles along them">✏️ {drawing ? 'Close drawing' : 'Draw lines'}</button>}
+        {!mode3d && <button className={measuring ? 'primary' : ''} aria-pressed={measuring} onClick={() => { setMeasuring(!measuring); setDrawing(false); if (measuring) setMpts([]); }} title="Tap points on the map to measure distance and azimuth">📏 {measuring ? 'Stop measuring' : 'Measure distance & azimuth'}</button>}
       </div>
       {measuring && !mode3d && <div className="note measure-panel">
         {mpts.length < 2 ? <span>Tap the map to drop point {mpts.length + 1}. Each leg shows its distance and the azimuth to aim. <Tip text={AZ_TIP} /></span>
@@ -199,7 +205,9 @@ export function MapView({ sites, txId, rxId, coverage, floor = -110, dem, onClic
             <span className="small">Total {u.f(legs.reduce((t, z) => t + z.km, 0))}. Magnetic declination here {fmtDecl(legs[0].decA)} (WMM2025). <Tip text={AZ_TIP} /></span></>}
         {mpts.length > 0 && <span className="row" style={{ gap: 6, marginTop: 4 }}><button onClick={() => setMpts((x) => x.slice(0, -1))}>↶ Undo point</button><button onClick={() => setMpts([])}>Clear</button></span>}
       </div>}
+      {!mode3d && <RouteTools map={mapObj} projectDem={dem} active={drawing} onClose={() => setDrawing(false)} resultsEl={resEl} />}
       <div ref={el} className="map" style={{ height, display: mode3d ? 'none' : undefined }} data-tour="map" />
+      {!mode3d && <div ref={setResEl} />}
       {mode3d && <Suspense fallback={<div className="three empty" style={{ height }}>Loading 3D view…</div>}>
         <TiltView view={view} sites={sites} txId={txId} rxId={rxId} dem={dem} base={baseName.current} height={height} />
       </Suspense>}

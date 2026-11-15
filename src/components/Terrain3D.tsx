@@ -9,6 +9,7 @@ import type { Site } from '../types';
 import { siteLabel, type CommSite } from '../engine/towers';
 import { drapeUv, type Drape } from '../engine/drape';
 import type { Obstruction } from '../engine/los';
+import { rssiColor } from '../engine/coverage';
 
 export interface PathPoint { name: string; lat: number; lon: number; aglM: number }
 
@@ -46,6 +47,10 @@ export interface Terrain3DProps {
   /** Points along the path where terrain blocks the line of sight or crowds the Fresnel zone. */
   obstructions?: (Obstruction & { from?: string })[];
   /** A radio path you plotted: point A, any relay (bounce) points, point B. Replaces the TX→RX line when given. */
+  /** Lines drawn on the map, laid on the ground; one CSS color per point (e.g. by predicted signal). */
+  routes?: { pts: LatLon[]; colors: string[] }[];
+  /** Predicted signal (dBm) per mesh vertex, (meshN+1)² values, painted over the ground as a heat map. */
+  heat?: Float32Array | null;
   /** Tap / click on the ground: gives the spot's latitude and longitude (used to plot path points). */
   onPick?: (p: LatLon) => void;
   path?: { points: PathPoint[]; hops: { ok: boolean; los: boolean }[] } | null;
@@ -65,7 +70,7 @@ function setTilt(camera: THREE.PerspectiveCamera, ctl: OrbitControls, deg: numbe
 /** Interactive three.js terrain model with towers, the radio path and the first Fresnel zone. */
 export function Terrain3D(props: Terrain3DProps) {
   const mount = useRef<HTMLDivElement>(null);
-  const { dem, sites, fMHz, exag, marker, comm, drape, viewshed, obstructions } = props;
+  const { dem, sites, fMHz, exag, marker, comm, drape, viewshed, obstructions, routes, heat } = props;
   const cam = useRef<{ camera: THREE.PerspectiveCamera; ctl: OrbitControls } | null>(null);
   const saved = useRef<{ dem: DemGrid; pos: THREE.Vector3; target: THREE.Vector3 } | null>(null);
   const tiltRef = useRef(props.tilt); tiltRef.current = props.tilt;
@@ -108,6 +113,7 @@ export function Terrain3D(props: Terrain3DProps) {
     for (let i = 0; i < pos.count; i++) {
       pos.setY(i, (zs[i] - zmin) * exag);
       const c = drape ? new THREE.Color(1, 1, 1) : colorFor((zs[i] - zmin) / Math.max(1, zmax - zmin));
+      if (heat && heat.length === pos.count) { const h = rssiColor(heat[i], -125); if (h[3]) c.lerp(new THREE.Color(h[0] / 255, h[1] / 255, h[2] / 255), 0.65); }
       if (vsOk && !viewshed![i]) c.multiply(new THREE.Color(1, 0.38, 0.38)); // hidden from the transmitter: red shade
       c.toArray(cols, i * 3);
       if (uvs) { const r = Math.floor(i / (N + 1)), cc = i % (N + 1); uvs.set(drapeUv(drape!, b.north - ((b.north - b.south) * r) / N, b.west + ((b.east - b.west) * cc) / N), i * 2); }
@@ -206,6 +212,16 @@ export function Terrain3D(props: Terrain3DProps) {
         }
       });
     }
+    routes?.forEach((rt) => { // drawn lines: a colored tube just above the ground
+      const pts: THREE.Vector3[] = [], cs: THREE.Color[] = [];
+      rt.pts.forEach((q, i) => { const g = sampleDem(dem, q); if (g == null) return; pts.push(new THREE.Vector3(mx(q.lon), (g - zmin) * exag + widthM / 250, mz(q.lat))); cs.push(new THREE.Color(rt.colors[i] ?? '#7b1fa2')); });
+      if (pts.length < 2) return;
+      const R = 6, tube = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, false, 'catmullrom', 0), pts.length - 1, widthM / 500, R, false);
+      const col = new Float32Array(tube.attributes.position.count * 3);
+      for (let ring = 0; ring < pts.length; ring++) for (let j = 0; j <= R; j++) { const k = ring * (R + 1) + j; if (k * 3 < col.length) cs[ring].toArray(col, k * 3); }
+      tube.setAttribute('color', new THREE.BufferAttribute(col, 3));
+      scene.add(new THREE.Mesh(tube, new THREE.MeshBasicMaterial({ vertexColors: true })));
+    });
     if (comm?.length) {
       // existing towers: purple masts; the 15 nearest the middle (named ones first) get labels so the view stays readable
       const inside = comm.filter((c) => c.lat <= b.north && c.lat >= b.south && c.lon >= b.west && c.lon <= b.east);
@@ -248,7 +264,7 @@ export function Terrain3D(props: Terrain3DProps) {
     window.addEventListener('resize', onR);
     return () => { saved.current = { dem, pos: camera.position.clone(), target: ctl.target.clone() }; cam.current = null; cancelAnimationFrame(raf); window.removeEventListener('resize', onR); ctl.dispose(); renderer.dispose(); geo.dispose(); tex?.dispose(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dem, props.profile, exag, showF, sites, fMHz, props.txId, props.rxId, marker?.lat, marker?.lon, comm, drape, viewshed, obstructions, props.path]);
+  }, [dem, props.profile, exag, showF, sites, fMHz, props.txId, props.rxId, marker?.lat, marker?.lon, comm, drape, viewshed, obstructions, props.path, routes, heat]);
   useEffect(() => { // tilt slider: swing the camera up or down around the same point, keeping direction and distance
     const c = cam.current; if (!c || props.tilt == null) return;
     if (Math.abs((c.ctl.getPolarAngle() * 180) / Math.PI - props.tilt) < 0.5) return;

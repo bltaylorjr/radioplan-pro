@@ -103,6 +103,8 @@ export interface Project {
   serviceLog?: ServiceCall[];
   /** Materials you added by hand. */
   bomExtra?: BomExtra[];
+  /** Lines drawn on the map (by hand or point to point) to check signal and obstacles along them. */
+  drawnLines?: import('./engine/routes').DrawnLine[];
   /** Cable and conduit runs between sites, measured on the map and over the terrain. */
   siteRuns?: import('./engine/siteruns').SiteRun[];
   /** Auto-design inputs; when applied, its equipment and materials join the Materials list. */
