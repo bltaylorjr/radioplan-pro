@@ -381,3 +381,15 @@ body { font-size: clamp(15px, 0.6vw + 12.5px, 17px); }
 .beam-svg .beam-tick { font-size: 11px; fill: #37474f; }
 .seg { display: inline-flex; gap: 0; } .seg > button { border-radius: 0; } .seg > button:first-child { border-radius: 6px 0 0 6px; } .seg > button:last-child { border-radius: 0 6px 6px 0; }
 .clear-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+/* Calculator controls (1.5.44): per-calculator Reset, Use project values, Apply to fields */
+.card.calc > header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; flex-wrap: nowrap; }
+.calc > header h3 { margin: 0; }
+.calc-reset { flex: none; white-space: nowrap; }
+.calc-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; padding-top: 6px; border-top: 1px solid var(--line); }
+.calc-actions .apply-done { flex-basis: 100%; margin: 4px 0 0; }
+.apply-list { display: grid; gap: 6px; margin: 8px 0; max-height: 50vh; overflow: auto; }
+.apply-row { display: flex; gap: 8px; align-items: flex-start; padding: 6px; border: 1px solid var(--line); border-radius: 6px; }
+.apply-row input[type=checkbox] { margin-top: 3px; width: 18px; height: 18px; flex: none; padding: 0; accent-color: var(--accent, #0b5cad); }
+.az-calc .az-point { display: grid; gap: 4px; margin: 6px 0; }
+.az-calc .calc-out.big b { font-size: 1.05rem; }
+.calc-grid .calc[data-calc="azimuth"] { grid-column: 1 / -1; }

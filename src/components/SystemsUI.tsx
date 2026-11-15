@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { ResetBtn, CalcActions } from './CalcKit';
+import { getPath } from '../engine/calcApply';
 import { useStore } from '../store';
 import { SYSTEMS, ENABLES, SystemId, projectSystems } from '../data/systems';
 import { PAGE_GROUPS, ALWAYS_PAGES, suggestPages } from '../data/customPages';
@@ -78,8 +80,9 @@ function CustomPicker({ compact }: { compact?: boolean }) {
 export function LvCalcCard({ c }: { c: LvCalc }) {
   const [v, setV] = useState<Record<string, number>>({});
   const out = runCalc(c, v); const sys = React.useContext(MeasureCtx);
+  const full = () => Object.fromEntries(c.inputs.map((i) => [i.k, v[i.k] ?? i.v]));
   return (
-    <section className="card calc"><header><h3>{c.title}</h3></header>
+    <section className="card calc" data-calc={c.id}><header><h3>{c.title}</h3><ResetBtn onReset={() => setV({})} /></header>
       <div className="form">{c.inputs.map((i) => (
         <label key={i.k} className="field"><span className="field-label">{i.label}</span>
           {i.options ? <select value={v[i.k] ?? i.v} onChange={(e) => setV({ ...v, [i.k]: parseFloat(e.target.value) })}>{i.options.map(([n, l]) => <option key={n} value={n}>{l}</option>)}</select>
@@ -87,6 +90,9 @@ export function LvCalcCard({ c }: { c: LvCalc }) {
         </label>))}</div>
       {out.map((o) => { const [val, un] = shownIn(o.value, o.unit, sys); return <div key={o.label} className={'calc-out' + (o.tone ? ' ' + o.tone : '')}><span>{o.label}</span><b>{val}{un && <small> {un}</small>}</b></div>; })}
       {c.note && <p className="small muted">{c.note}</p>}
+      <CalcActions applyWhat={`“${c.title}”`}
+        apply={c.apply ? () => c.apply!(full()).map((t) => ({ id: t.id, label: t.label, page: t.page, sets: [[t.path, t.value]], to: t.to, on: t.on, now: (p) => { const x = getPath(p, t.path); return x == null ? '' : t.show ? t.show(x) : String(x); } })) : undefined}
+        fromProject={c.fromProject ? (p) => setV({ ...v, ...c.fromProject!(p) }) : undefined} />
     </section>
   );
 }
