@@ -4,8 +4,10 @@ export interface BatteryCalcInputs { devices: AlarmDevice[]; standbyHours: numbe
 
 /** Secondary power capacity: (standby I x standby h) + (alarm I x alarm h), then derating/safety factor. */
 export function alarmBatteryAh(i: BatteryCalcInputs) {
-  const standbyA = i.devices.reduce((s, d) => s + d.qty * d.standbyMa, 0) / 1000;
-  const alarmA = i.devices.reduce((s, d) => s + d.qty * d.alarmMa, 0) / 1000;
+  // A row with a blank quantity or current is skipped (it adds nothing) instead of breaking the total; the data check flags it.
+  const f = (x: number) => (Number.isFinite(x) ? x : 0);
+  const standbyA = i.devices.reduce((s, d) => s + f(d.qty) * f(d.standbyMa), 0) / 1000;
+  const alarmA = i.devices.reduce((s, d) => s + f(d.qty) * f(d.alarmMa), 0) / 1000;
   const raw = standbyA * i.standbyHours + alarmA * (i.alarmMinutes / 60);
   const req = raw * i.safetyFactor;
   const std = [7, 12, 18, 26, 33, 40, 55, 75, 100].find((x) => x >= req) ?? Math.ceil(req);

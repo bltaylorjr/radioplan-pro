@@ -41,4 +41,5 @@ export const WORKFLOW_LABELS: Record<string, string> = {
   calculators: 'Calculators',
   projects: 'Projects & Storage',
   sync: 'Sync Devices',
+  settings: 'User Settings',
 };

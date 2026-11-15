@@ -16,9 +16,12 @@ import { SiteRunsCard } from '../components/SiteRuns';
 import { NearbyTowers } from '../components/NearbyTowers';
 import { faaCheck, FT_PER_M } from '../engine/faa';
 import { AzStats } from '../components/Azimuth';
+import { usesRadioFields } from '../data/systems';
 
 export function SitesPage() {
   const { project: p, update, rt, go } = useStore();
+  const radioJob = usesRadioFields(p.meta);
+  const [showTower, setShowTower] = useState(false);
   const u = useUnits();
   const [selId, setSel] = useState(p.sites[0]?.id);
   const s = p.sites.find((x) => x.id === selId) ?? p.sites[0];
@@ -86,7 +89,7 @@ export function SitesPage() {
         {other && <div className="stats">
           <Stat label={`Distance to ${other.name}`} value={fmt(u.d(haversineKm(s, other)), 2)} unit={` ${u.unit}`} />
           <AzStats a={s} b={other} aName={s.name} bName={other.name} />
-          <Stat label="Radio horizon (4/3 earth)" value={fmt(u.d(radioHorizonKm(s.antennaAglM)), 1)} unit={` ${u.unit}`} tip="d = √(2·k·Re·h) ≈ 4.12·√h(m)" />
+          {radioJob && <Stat label="Radio horizon (4/3 earth)" value={fmt(u.d(radioHorizonKm(s.antennaAglM)), 1)} unit={` ${u.unit}`} tip="d = √(2·k·Re·h) ≈ 4.12·√h(m)" />}
         </div>}
       </Card>
       <Card title={`Edit: ${s.name}`} tour="site-gps">
@@ -104,11 +107,12 @@ export function SitesPage() {
           {live.length ? <button onClick={stopSerial}>■ Stop & average ({live.length})</button> : <button onClick={serial} title="USB GNSS receiver via Web Serial">🔌 Live GNSS (USB serial)</button>}
         </div>
         {msg && <p className="note">{msg}</p>}
+        {radioJob || showTower ? <>
         <h4 data-tour="site-structure">Structure</h4>
         <div className="form">
           <Field label="Structure type"><Sel<StructureType> value={s.structure} onChange={(v) => set('structure', v)} options={['monopole', 'self-support lattice', 'guyed lattice', 'rooftop', 'water tank', 'wood pole']} /></Field>
-          <Field label="Structure height AGL" tip="Overall height including appurtenances (for FAA Part 77)."><Num value={s.structureHeightM} onChange={(v) => set('structureHeightM', v!)} unit={`m (${mToFt(s.structureHeightM).toFixed(0)} ft)`} /></Field>
-          <Field label="Antenna centerline AGL"><Num value={s.antennaAglM} onChange={(v) => set('antennaAglM', v!)} unit={`m (${mToFt(s.antennaAglM).toFixed(0)} ft)`} /></Field>
+          <Field label="Structure height AGL" tip="Overall height including appurtenances (for FAA Part 77)."><Num min={0} max={610} value={s.structureHeightM} onChange={(v) => set('structureHeightM', v!)} unit={`m (${mToFt(s.structureHeightM).toFixed(0)} ft)`} /></Field>
+          <Field label="Antenna centerline AGL"><Num min={0} max={610} value={s.antennaAglM} onChange={(v) => set('antennaAglM', v!)} unit={`m (${mToFt(s.antennaAglM).toFixed(0)} ft)`} /></Field>
           <Field label="On / in a building"><Check value={s.onBuilding} onChange={(v) => set('onBuilding', v)} label="Yes" /></Field>
           <Field label="Nearest public-use airport" tip="Distance to nearest runway for 14 CFR 77.9(b)."><DistNum km={s.nearestAirportKm} nullable onChange={(v) => set('nearestAirportKm', v)} /></Field>
           <Field label="Longest runway"><Num value={s.nearestRunwayFt} nullable onChange={(v) => set('nearestRunwayFt', v)} unit="ft" /></Field>
@@ -119,6 +123,8 @@ export function SitesPage() {
           }}>✈ Fill from FAA data</button><button className="small ghost" onClick={() => go('faa')}>FAA Height Check →</button></span></Field>
         </div>
         <NearbyTowers site={s} />
+        {!radioJob && <p className="small"><button className="ghost" onClick={() => setShowTower(false)}>Hide tower and antenna fields</button></p>}
+        </> : <p className="small muted">Tower, antenna and airport fields are hidden because this project type does not use them (nothing is deleted). <button className="ghost" onClick={() => setShowTower(true)}>Show them</button></p>}
       </Card>
       <SiteRunsCard />
       <SiteDatabase />
