@@ -12,8 +12,9 @@ import { loadAreaDem, boundsOf } from '../engine/areaTerrain';
 import { haversineKm, bearingDeg } from '../engine/geo';
 import { signalColor } from './RouteTools';
 import type { DemGrid } from '../engine/terrain';
+import { loadChunk } from '../engine/chunkload';
 
-const BeamView3D = lazy(() => import('./BeamView3D'));
+const BeamView3D = lazy(() => loadChunk(() => import('./BeamView3D')));
 const LS = 'radioplan.beamview';
 const load = () => { try { return JSON.parse(localStorage.getItem(LS) || '{}') as { mode?: '2d' | '3d'; ex?: number; km?: number }; } catch { return {}; } };
 
