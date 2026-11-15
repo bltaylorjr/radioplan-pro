@@ -1,3 +1,4 @@
+import { BoosterRegistrationCard } from '../components/BoosterRegistration';
 import { DonorAimCard } from '../components/DonorAim';
 import React from 'react';
 import { useStore } from '../store';
@@ -202,7 +203,7 @@ export function ErcesPage() {
   const set = <K extends keyof typeof e>(k: K, v: (typeof e)[K]) => update((d) => { d.erces[k] = v; });
   const f = useArea('Emergency Radio (ERCES)');
   return (
-    <div className="grid2">
+    <div className="stack"><div className="grid2">
       <Card title="Emergency responder radio coverage (ERCES)" actions={<Check value={e.enabled} onChange={(x) => set('enabled', x)} label="Include in project" />}>
         <div className="form">
           <Field label="Floors"><Num value={e.floors} step={1} onChange={(x) => set('floors', Math.max(1, Math.round(x!)))} /></Field>
@@ -238,6 +239,8 @@ export function ErcesPage() {
         <DonorAimCard />
         <RrErcesCard />
       </div>
+    </div>
+    <BoosterRegistrationCard />
     </div>
   );
 }

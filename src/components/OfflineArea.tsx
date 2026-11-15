@@ -1,63 +1,36 @@
-import { DistNum } from '../units';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useStore } from '../store';
-import { Card, Field, Num, Check, Badge } from './ui';
-import { BASEMAPS } from './MapView';
-import { boundsAround, downloadTerrain, Bounds } from '../engine/autoterrain';
-import { countTiles, prefetchTiles } from '../engine/offline';
+import { Card, Field, Check, Badge } from './ui';
+import type { Bounds } from '../engine/autoterrain';
 import { cacheStats, cacheClear } from '../engine/tilecache';
-import { askDelete } from './askConfirm';
+import { kvSet } from '../engine/projectdb';
+import { askConfirm } from './askConfirm';
+import { MapPacks } from './MapPacks';
 
-/** Pre-download maps + terrain for the project area so everything works with no connection. */
+/** Automatic offline settings, the map cache, and offline map packs for whole job areas. */
 export function OfflineArea({ viewBounds }: { viewBounds?: Bounds | null }) {
-  const { project: p, update, setRt } = useStore();
-  const bulk = Object.entries(BASEMAPS).filter(([, v]) => v.bulk);
-  const [layers, setLayers] = useState<Record<string, boolean>>({ 'USGS Topo': true, 'Satellite + Topo (USGS)': true });
-  const [margin, setMargin] = useState(Math.max(5, p.radio.coverageRadiusKm));
-  const [zMax, setZMax] = useState(15);
-  const [useView, setUseView] = useState(false);
-  const [prog, setProg] = useState<{ d: number; n: number; f: number } | null>(null);
+  const { project: p, update } = useStore();
   const [stats, setStats] = useState<{ count: number; bytes: number } | null>(null);
-  const [msg, setMsg] = useState('');
-  const abort = useRef<AbortController>();
   const refresh = () => cacheStats().then(setStats).catch(() => setStats(null));
   useEffect(() => { refresh(); }, []);
-  const b = useView && viewBounds ? viewBounds : boundsAround(p.sites, margin);
-  const zMin = 8;
-  const tpls = bulk.filter(([k]) => layers[k]).map(([, v]) => v.url);
-  const n = tpls.length * countTiles(b, zMin, zMax);
-  const limit = 20000;
-  const run = async () => {
-    abort.current = new AbortController(); setMsg('');
-    try {
-      setMsg('Downloading terrain…');
-      const t = await downloadTerrain(b, { maxTiles: 120 });
-      setRt((r) => ({ ...r, dem: t.dem, demAuto: true, terrainStatus: `Terrain ✓ ~${t.resolutionM.toFixed(0)} m` }));
-      const res = await prefetchTiles(tpls, b, zMin, zMax, (d, total, f) => setProg({ d, n: total, f }), abort.current.signal);
-      // Remember the area: the app keeps it complete and fresh by itself (Projects → Automatic care).
-      import('../engine/datasets').then((m) => m.rememberTileArea({ templates: tpls, b, zMin, zMax })).catch(() => undefined);
-      setMsg(abort.current.signal.aborted ? 'Stopped. Tiles downloaded so far are kept.' : `Done: ${res.total - res.failed} map tiles and terrain saved for offline use${res.failed ? ` (${res.failed} unavailable)` : ''}.`);
-    } catch (e) { setMsg(`Download failed: ${(e as Error).message}`); }
-    setProg(null); refresh();
+  const clear = async () => {
+    if (!(await askConfirm({ title: 'Clear the map cache?', message: 'Delete every saved map, satellite and terrain tile on this device, including all offline map packs? Maps download again when you are online.', ok: 'Delete all', danger: true }))) return;
+    await cacheClear(); await kvSet('mappacks', []); refresh();
   };
   return (
-    <Card title="Offline maps & terrain" tip="Download an area while online; maps, terrain, 3D, coverage and every calculation then work with no connection (USB, PC and Android).">
-      <div className="form">
-        <Field label="Automatic terrain"><Check value={p.settings?.autoTerrain ?? true} onChange={(v) => update((d) => { d.settings = { ...(d.settings ?? { terrainMarginKm: 5 }), autoTerrain: v }; })} label="Download terrain for my sites automatically" /></Field>
-        <Field label="Automatic maps"><Check value={p.settings?.autoMaps ?? true} onChange={(v) => update((d) => { d.settings = { ...d.settings, autoMaps: v }; })} label="Save the topo map around my sites for offline use" /></Field>
-        <Field label="Area"><span className="stack-tight"><Check value={useView} onChange={setUseView} label="Current map view" />{!useView && <DistNum km={margin} onChange={(v) => setMargin(Math.max(1, Math.min(50, v ?? 5)))} suffix=" around sites" />}</span></Field>
-        <Field label="Detail (max zoom)" tip="15 ≈ street level; each extra level ×4 tiles."><Num value={zMax} step={1} onChange={(v) => setZMax(Math.max(10, Math.min(16, Math.round(v!))))} /></Field>
-        <Field label="Map layers" wide><span className="row wrap">{bulk.map(([k]) => <Check key={k} value={!!layers[k]} onChange={(v) => setLayers({ ...layers, [k]: v })} label={k} />)}</span></Field>
-      </div>
-      <p className="small">{n.toLocaleString()} map tiles (≈ {(n * 0.025).toFixed(0)} MB) + terrain. {n > limit && <b className="bad-text">Too large: reduce the area or zoom (limit {limit.toLocaleString()}).</b>}</p>
-      <div className="row wrap">
-        {prog ? <button onClick={() => abort.current?.abort()}>■ Stop</button> : <button className="primary" disabled={n > limit || !navigator.onLine} onClick={run}>⬇ Save area for offline</button>}
-        <button onClick={async () => { if (await askDelete('Delete all saved map and terrain tiles?', 'They download again the next time you are online.')) { await cacheClear(); refresh(); } }}>Clear cache</button>
-        {stats && <span className="muted small">Cache: {stats.count.toLocaleString()} tiles, {(stats.bytes / 1e6).toFixed(1)} MB</span>}
-      </div>
-      {prog && <div className="progressbar"><div style={{ width: `${(prog.d / prog.n) * 100}%` }} /></div>}
-      {msg && <p className="note">{msg}</p>}
-      <p className="small muted">Bulk download is offered only for public-domain USGS maps. OpenStreetMap, OpenTopoMap and Esri satellite tiles are cached as you view them, per their usage terms. <Badge kind="real">Terrain: USGS 3DEP via AWS Open Data</Badge></p>
-    </Card>
+    <div className="stack">
+      <MapPacks viewBounds={viewBounds} />
+      <Card title="Automatic offline maps & terrain" tip="While online, the app saves terrain and the topo map around your sites by itself, and keeps every map tile you look at.">
+        <div className="form">
+          <Field label="Automatic terrain"><Check value={p.settings?.autoTerrain ?? true} onChange={(v) => update((d) => { d.settings = { ...(d.settings ?? { terrainMarginKm: 5 }), autoTerrain: v }; })} label="Download terrain for my sites automatically" /></Field>
+          <Field label="Automatic maps"><Check value={p.settings?.autoMaps ?? true} onChange={(v) => update((d) => { d.settings = { ...d.settings, autoMaps: v }; })} label="Save the topo map around my sites for offline use" /></Field>
+        </div>
+        <div className="row wrap">
+          {stats && <span className="muted small">Saved on this device: {stats.count.toLocaleString()} tiles, {(stats.bytes / 1e6).toFixed(1)} MB</span>}
+          <button onClick={clear}>Clear map cache</button>
+        </div>
+        <p className="small muted"><Badge kind="real">Terrain: USGS 3DEP via AWS Open Data</Badge></p>
+      </Card>
+    </div>
   );
 }

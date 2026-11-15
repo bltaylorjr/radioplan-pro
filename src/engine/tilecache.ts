@@ -61,3 +61,5 @@ export async function scanDamaged(limit = 5000): Promise<string[]> {
   });
 }
 export async function cacheDelete(keys: string[]) { for (const k of keys) await tx('readwrite', (s) => s.delete(k)).catch(() => undefined); }
+/** Size of a cached tile in bytes, or 0 when it is not cached. */
+export const cacheSize = (url: string) => cacheGet(url).then((b) => b?.size ?? 0);

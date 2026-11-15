@@ -77,6 +77,20 @@ export interface ErcesDesign {
   annunciator: boolean;
   /** Public-safety (donor) tower the roof donor antenna is aimed at. */
   donorName?: string; donorLat?: number | null; donorLon?: number | null;
+  /** FCC Class B signal booster registration (47 CFR 90.219(d)(5)) and licensee consent. */
+  booster?: BoosterReg;
+}
+export interface BoosterConsent { call: string; licensee: string; phone: string; freqs: string; requested: string; received: string; note: string }
+export interface BoosterReg {
+  make: string; model: string; fccId: string; units: number; serial: string;
+  /** Passbands, e.g. "806-824, 851-869" (MHz). */
+  passbands: string;
+  /** Where in the building the booster is (room / floor). */
+  locationDetail: string;
+  operatorName: string; operatorContact: string; operatorPhone: string; operatorEmail: string; operatorAddress: string;
+  donorErpDbm: number | null; maxChannelErpDbm: number | null;
+  registeredOn: string; confirmation: string;
+  consents: BoosterConsent[];
 }
 export interface LfHfDesign { mode: 'LF/MF' | 'HF'; fMHz: number; powerKw: number; antennaHeightM: number; groundLossOhm: number; radials: number; soilSigma: number; distanceKm: number; foF2: number; hopKm: number }
 export interface IndoorAntenna { id: string; x: number; y: number; eirpDbm: number; label: string; model: string }
