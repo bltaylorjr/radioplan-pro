@@ -1,10 +1,17 @@
-# LvPlan Pro 1.5.50
+# LvPlan Pro 1.5.51
 
 - **🗼 FCC Towers & Licenses** (new page, works offline). Pick a project site, an address or your GPS and see every FCC-registered tower and licensed transmitter nearby: owner, height above ground, distance and azimuth, and **who is on each tower and on what frequencies** (licensee and phone, radio service, station class, power, analog or digital). Narrow it by band (VHF, UHF, 700, 800, 900, microwave), by kind of user (public safety, business, commercial, microwave, paging) or by name, call sign or frequency. A county tab lists county-wide mobile licenses. **+ Add as site**, **Use as donor** (ERCES) and **FAA check** on every tower, **⬇ CSV** to save the list. The FCC public data for NC, SC, GA, TN and VA (22,710 registered towers, 48,841 active licenses) is built into the app and updates with each app update. A new **🗼 FCC registered towers** map layer shows them on every map, and Site Data & GPS lists them under Existing towers nearby.
 - **✈ FAA Height Check** (new page, works offline). Type the overall height; the ground height fills in. The app applies 14 CFR 77.9 to every airport and heliport nearby (FAA airport data built in) and shows **Needed / Not needed / Check**, the **tallest structure without notice** at that spot, and each airport's distance, rule and your margin. Links to the FAA Notice Criteria Tool, OE/AAA and TOWAIR. **✈ Fill from FAA data** on Site Data & GPS fills the nearest public airport for the code checks.
 - **FCC Class B booster registration** (Emergency Radio page). Fills in the registration from the project (operator from the client, location, booster make, model and FCC ID, passbands), checks the **5 W ERP per channel** limit, finds the **public-safety licensees** whose channels are in the passbands, writes each **consent request letter**, tracks when consent comes back, and copies everything ready to paste into the FCC site.
 - **⬇ Offline map packs** (new Tools page, also on Map & Terrain). Choose an area around your sites or an address or GPS point, pick the detail and what to save (satellite pictures, topo, shaded relief, terrain), see the size and free space first, then download with percent, MB and time left. It keeps going on other pages (a badge at the top shows progress). Saved packs can be finished, updated, verified or deleted, and Automatic care keeps them filled in and fresh. With no signal, terrain now uses the most detailed saved level.
 - **Introduction video**: a new part shows the FCC towers and licenses, the FAA height check, booster registration and map packs.
+# LvPlan Pro 1.5.50
+
+- **↺ Reset project** and **🗑 Delete project** at the top of the main page (Company & Project).
+- **Reset project** clears every entry on every page of the open project (project and client information, sites, designs, field notes and photos, tests, materials, checklists, drawings, pricing) and keeps it as a blank project. Your measurement setting and saved company default stay.
+- **Delete project** removes the open project from this device with its history and terrain, and its copy in the data folder (flash drive); the most recent other project opens, or a new blank one.
+- Both ask **Are you sure?** first (Reset / Delete and Cancel), and **↶ Undo** right after puts the project back. A copy from before a reset is also kept in Projects → History.
+- **Introduction video**: a new part shows Reset project, Delete project and Undo.
 
 # LvPlan Pro 1.5.49
 
