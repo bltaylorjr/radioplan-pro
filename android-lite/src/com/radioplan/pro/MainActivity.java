@@ -243,7 +243,7 @@ public class MainActivity extends Activity {
         new Thread(new Runnable() { public void run() {
             boolean ok = false; byte[] out;
             try {
-                if (!url.startsWith("https://api.radioreference.com/") || url.contains("..") || url.contains("@")) throw new IOException("Address refused");
+                if (!(url.startsWith("https://api.radioreference.com/") || url.startsWith("https://www.saferproducts.gov/RestWebServices/Recall?")) || url.contains("..") || url.contains("@")) throw new IOException("Address refused");
                 HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
                 c.setConnectTimeout(30000); c.setReadTimeout(60000);
                 c.setRequestProperty("User-Agent", "LvPlanPro");

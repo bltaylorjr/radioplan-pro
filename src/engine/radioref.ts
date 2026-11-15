@@ -88,10 +88,14 @@ if (typeof window !== 'undefined') (window as unknown as { __rrHttpDone: unknown
   let text = ''; try { text = new TextDecoder().decode(Uint8Array.from(atob(b64), (c) => c.charCodeAt(0))); } catch { text = ''; }
   f?.(ok, text);
 };
+/** Official CPSC recalls API (also allowed through the app's own web requests). */
+export const CPSC_API = 'https://www.saferproducts.gov/RestWebServices/Recall?';
+/** GET an allowed address through the app (Windows / Android), or the browser as a fallback. */
+export const appGet = (url: string) => http(url, null);
 export const canReachApi = () => !!tauri() || !!android()?.httpPost;
 
 async function http(url: string, body: string | null, soapAction = ''): Promise<string> {
-  if (!url.startsWith('https://api.radioreference.com/')) throw new Error('Address refused');
+  if (!url.startsWith('https://api.radioreference.com/') && !url.startsWith(CPSC_API)) throw new Error('Address refused');
   const t = tauri();
   if (t) return (await t.invoke('rr_http', { url, body: body ?? '', soapAction, post: body !== null })) as string;
   const a = android();

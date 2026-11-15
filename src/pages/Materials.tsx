@@ -5,6 +5,7 @@ import { tablePdf } from '../engine/pdf';
 import { Card } from '../components/ui';
 import { buildBom, bomToCsv } from '../engine/materials';
 import { builtInSpecs, SpecItem } from '../data/speclib';
+import { legacyTag } from '../data/lvequipment';
 import { loadMyItems } from '../data/projectEquipment';
 import { uid } from '../defaults';
 import type { BomExtra } from '../types';
@@ -42,7 +43,7 @@ export function MaterialsPage() {
       actions={<span className="row wrap"><button className="primary" onClick={() => setAdd(blank())}>+ Add item</button><button onClick={() => update((d) => { d.bomOverrides = {}; })}>Reset overrides</button><button onClick={() => downloadText(`${p.meta.name || 'project'}-materials.csv`, bomToCsv(lines), 'text/csv')}>⬇ Export CSV</button><button onClick={() => downloadBytes(`${safeName(p.meta.name || 'project')}-materials.pdf`, materialsPdf(), 'application/pdf')}>⬇ Export PDF</button></span>}>
       {add && <div className="add-mat">
         <div className="form">
-          <label className="field wide"><span>Pick from the specifications library (optional)</span><select value="" onChange={(e) => fromLib(e.target.value)} aria-label="Pick from library"><option value="">— or type below —</option>{lib.map((i) => <option key={i.id} value={i.id}>{i.category}: {i.brand} {i.model}</option>)}</select></label>
+          <label className="field wide"><span>Pick from the specifications library (optional)</span><select value="" onChange={(e) => fromLib(e.target.value)} aria-label="Pick from library"><option value="">— or type below —</option>{lib.map((i) => <option key={i.id} value={i.id}>{i.category}: {i.brand} {i.model}{legacyTag(i)}</option>)}</select></label>
           <label className="field"><span>Category</span><input value={add.category} onChange={(e) => setAdd({ ...add, category: e.target.value })} /></label>
           <label className="field"><span>Item</span><input value={add.item} autoFocus placeholder="e.g. Cat 6 plenum cable" onChange={(e) => setAdd({ ...add, item: e.target.value })} /></label>
           <label className="field"><span>Brand / model</span><input value={add.brandModel} onChange={(e) => setAdd({ ...add, brandModel: e.target.value })} /></label>

@@ -9,6 +9,7 @@ import { refCounts } from './refdata';
 import { declinationDeg } from './azimuth';
 import { canReachApi, checkDownload, countFreqs, downloadCounty, downloadKeys, keepSpare, loadDownloadByKey, loadLogin, restoreSpare, putDownloadRaw } from './radioref';
 import { currentJob } from './rrjob';
+import './recallsData'; // equipment recalls (registers itself)
 
 const H = 3600e3, DAY = 24 * H;
 export const STATE_KEY = 'maint.state.v1';

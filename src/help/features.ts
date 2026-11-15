@@ -208,6 +208,17 @@ export const FEATURES: Feature[] = [
     steps: ['Tap ▶ Video at the top of the screen.', 'Close it any time; it is always there to watch again.'],
     keywords: 'video intro tour watch learn', topic: 'getting-started',
     tour: [ { target: 'text:▶ Video', title: '▶ Video', text: 'Watch the narrated tour of the app.' } ] },
+  { id: 'legacy-equipment', version: '1.5.56', title: 'Legacy equipment and access control in the library', page: 'library', alsoOn: ['troubleshoot', 'equipment', 'materials'], where: 'Equipment & materials → Specifications Library → ⚠ Legacy equipment',
+    summary: 'Current equipment for every low-voltage system (access control in depth), and older or discontinued models still found on service calls, each with suggested replacements, repair notes and the maker\'s documentation pages.',
+    steps: ['Open the Specifications Library.', 'Tap ⚠ Legacy equipment, or a system such as Security & access control.', 'Tap a model to see its status, replacements, service notes and documentation links.', 'Attach the manual under the model to keep it on this device.'],
+    keywords: 'legacy discontinued obsolete older replacement access control reader maglock strike controller credential manual datasheet',
+    topic: 'library',
+    tour: [ { target: 'text:Legacy equipment', title: 'Legacy equipment', text: 'Older and discontinued models, filed under their systems, with replacements and repair notes.' } ] },
+  { id: 'recall-alerts', version: '1.5.56', title: 'Recall and service bulletin alerts', page: 'library', where: 'Specifications Library (each model) and a banner on every page of a matching project',
+    summary: 'Official CPSC recalls are built in and update by themselves when online. When equipment in a project matches a recall or a bulletin you added, a warning shows on every page of that project until you mark it checked.',
+    steps: ['Open a model in the Specifications Library to see its recalls and bulletins.', 'Tap + Add a service bulletin to add one from the maker.', 'On a project with a match, tap Show on the warning, check the label, then tap Checked for this project.'],
+    keywords: 'recall cpsc safety notice service bulletin tsb alert warning date code',
+    topic: 'library' },
 ];
 
 /** Features that live on, or also show on, a page. Features marked for every page ('*') are left out unless `all`. */

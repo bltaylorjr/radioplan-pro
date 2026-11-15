@@ -23,6 +23,7 @@ import { APP_VERSION } from './engine/update';
 import { MeasureCtx } from './components/ui';
 import { missingRequired } from './engine/required';
 import { AutoTerrain } from './components/AutoTerrain';
+import { ProjectNoticeBanner } from './components/Notices';
 import { ScenariosPage } from './pages/Scenarios';
 import { NetworkPage } from './pages/Network';
 import { SurveyPage } from './pages/Survey';
@@ -279,6 +280,7 @@ export default function App() {
                 <ClearPageButton page={current.id} label={current.label} onCleared={(before) => { setCleared({ page: current.id, before }); setResetN((n) => n + 1); }} />
               </div>
             </div>
+            <ProjectNoticeBanner />
             {cleared && cleared.page === current.id && <UndoClearBar key={resetN} page={current.id} label={current.label} before={cleared.before} onDone={endClear} />}
             {off.has(current.id) && <p className="note no-print">This tool is turned off in User Settings, so it is not in the menu. <button onClick={() => setToolOn(current.id, true)}>Turn it back on</button></p>}
             {skipped.has(current.id) && <p className="note no-print">This step is skipped on this project. <button onClick={() => setSkip(current.id, false)}>Don't skip it</button></p>}

@@ -11,6 +11,7 @@ import { fmtDecl, declinationDeg, trueToMag, magToTrue, fmtDeg, compassPoint } f
 import { parseLatLon } from '../engine/locparse';
 import { AWG_SIZES, Awg, AMPACITY_75C_CU, sizeConductor } from '../engine/electrical';
 import { FEEDERS } from '../data/catalog';
+import { legacyTag } from '../data/lvequipment';
 import { LV_CALCS } from '../data/lvcalcs';
 import { LvCalcCard } from '../components/SystemsUI';
 import { SoundTools, soundToolsMatch } from '../components/SoundTools';
@@ -207,7 +208,7 @@ export function CalculatorsPage() {
           <Out label="Reflection coefficient Γ" v={fmt(vs.gamma, 3)} /><Out label="Mismatch loss" v={fmt(vs.mismatchLossDb, 3)} u="dB" /><Out label="Reflected power" v={vs.reflectedPct} u="%" />
         </Calc>
         <Calc id="coax" q={q} title="Coax / feeder loss" apply={() => [tgt('feeder', 'Feeder cable', EQ, ['radio', 'feederId'], cbId, `${cb.brand} ${cb.model}`, (p) => { const x = FEEDERS.find((y) => y.id === p.radio.feederId); return x ? `${x.brand} ${x.model}` : p.radio.feederId; }), ...(ok(cbL) ? [tgt('len', 'Feeder length', EQ, ['radio', 'feederLenM'], r1(r(cbL) * 0.3048), `${r(cbL)} ft (${r1(r(cbL) * 0.3048)} m)`, (p) => `${r1(p.radio.feederLenM / 0.3048)} ft (${p.radio.feederLenM} m)`)] : [])]} applyWhat="the feeder" fromProject={(p) => { if (FEEDERS.some((x) => x.id === p.radio.feederId)) setCbId(p.radio.feederId); setCbF(p.radio.fMHz); setCbL(r1(p.radio.feederLenM / 0.3048)); }} k="cable attenuation heliax ldf lmr">
-          <div className="form"><In label="Cable"><select value={cbId} onChange={(e) => setCbId(e.target.value)}>{FEEDERS.map((x) => <option key={x.id} value={x.id}>{x.brand} {x.model}</option>)}</select></In><In label="Frequency"><Num nullable required value={cbF} onChange={setCbF} unit="MHz" /></In><In label="Length"><Num nullable required value={cbL} onChange={setCbL} unit="ft" /></In></div>
+          <div className="form"><In label="Cable"><select value={cbId} onChange={(e) => setCbId(e.target.value)}>{FEEDERS.map((x) => <option key={x.id} value={x.id}>{x.brand} {x.model}{legacyTag(x)}</option>)}</select></In><In label="Frequency"><Num nullable required value={cbF} onChange={setCbF} unit="MHz" /></In><In label="Length"><Num nullable required value={cbL} onChange={setCbL} unit="ft" /></In></div>
           <Out label="Loss per 100 ft" v={cableLossPer100ft(cb.points, r(cbF))} u="dB" /><Out label="Total loss" v={`${fmt(cbLoss, 2)} dB (${fmt(r(cbL) * 0.3048, 1)} m run)`} /><Out label="Power delivered" v={Math.pow(10, -cbLoss / 10) * 100} u="%" />
         </Calc>
       </Group>

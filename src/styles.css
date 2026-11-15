@@ -404,6 +404,10 @@ body { font-size: clamp(15px, 0.6vw + 12.5px, 17px); }
 .check-row { display: flex; gap: 8px; align-items: flex-start; padding: 6px 0; border-bottom: 1px dashed var(--line); }
 .check-row.bad b { color: var(--bad); } .check-row.warn b { color: var(--warn); }
 .project-actions { padding: 8px 14px; margin-bottom: 12px; }
+/* Recalls and service bulletins */
+.notice { border-left: 3px solid var(--bad); padding: 4px 10px; margin: 6px 0; }
+.notice-banner { margin-bottom: 12px; } .notice-banner .notice { background: var(--card, transparent); }
+.item-notices, .mfr-docs { margin-top: 10px; }
 /* Photo site survey */
 .photo-pin div { font-size: 18px; line-height: 24px; text-align: center; background: #fff; border-radius: 50%; border: 2px solid #1565c0; width: 24px; height: 24px; box-sizing: border-box; }
 .ps-view { border: 1px solid var(--line); border-radius: 6px; background: #dfe9f3; cursor: crosshair; }
