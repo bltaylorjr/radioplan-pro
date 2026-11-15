@@ -4,6 +4,7 @@
 import type { Project } from '../types';
 import { defaultProject } from '../defaults';
 import { checklistFor } from '../data/checklists';
+import { applyCompanyDefault } from './companyDefault';
 
 export interface PageClear {
   /** What gets cleared, in plain words (shown in the Yes / No box). */
@@ -117,4 +118,15 @@ export function pageHasEntries(page: string, p: Project): boolean {
   const c = PAGE_CLEAR[page]; if (!c) return false;
   if (c.local) return true;
   return JSON.stringify(clearPage(page, p)) !== JSON.stringify(p);
+}
+
+/** The whole project cleared on every page (Reset project). Keeps only settings (units, automatic terrain / maps)
+ *  and sync bookkeeping, and fills your saved company default back in. */
+export function resetProject(p: Project, companyDefault?: Parameters<typeof applyCompanyDefault>[1]): Project {
+  const d = defaultProject();
+  d.settings = structuredClone(p.settings);
+  if (p.sync) d.sync = structuredClone(p.sync);
+  applyCompanyDefault(d, companyDefault);
+  d.alarm.devices = []; d.solar.loads = [];
+  return d;
 }
