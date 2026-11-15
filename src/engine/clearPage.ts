@@ -36,6 +36,8 @@ export const PAGE_CLEAR: Record<string, PageClear> = {
   photosurvey: { what: 'every photo survey spot with its photos, directions and saved report pictures', keeps: 'Field notes, sites and the other pages.', remove: ['photoSpots'], local: true },
   terrain: { what: 'the lines drawn on the map', keeps: 'Sites, downloaded terrain and offline maps.', remove: ['drawnLines'], local: true },
   wifi: { what: 'every Wi-Fi reading, the SSID filter, target signal and radius', paths: ['wifi'], local: true },
+  signal: { what: 'every live signal reading (typed, from meters and imported) and this page’s boxes', keeps: 'Drive-test points, model tuning and connected devices.', remove: ['signalReadings'], local: true },
+  assets: { what: 'every device on the equipment list, with its photos and history', keeps: 'Service resources and the other pages.', remove: ['assets'], local: true },
   survey: { what: 'the imported drive-test points', keeps: 'Model tuning already applied (clear it on Coverage Prediction).', paths: ['survey'], local: true },
   autodesign: { what: 'the auto-design answers and the equipment it added to the Materials list', keeps: 'Project type and the other pages.', remove: ['autoDesign'], local: true },
   alarm: { what: 'the fire alarm devices, battery and circuit entries', paths: ['alarm'], custom: { clear: (d) => { d.alarm.devices = []; }, restore: () => undefined } },

@@ -1,3 +1,14 @@
+# LvPlan Pro 1.5.53
+
+- **📶 Live Signal Readings** (new page, after Drive Test). Read a signal meter over **Bluetooth**, a **USB / COM** cable, or **Wi-Fi**, or use the phone's own **cell or Wi-Fi signal** (Android app), or just type what your meter shows. A big live number, **📍 Save this reading** or save automatically every few seconds as you walk. Each reading keeps its GPS position and time.
+- **Import readings** from G-NetTrack, Network Cell Info, WiGLE, cell-logger and Wi-Fi survey apps and meter software (CSV / TSV, GeoJSON, KML, GPX; dBµV changed to dBm).
+- **Compare with the prediction**: measured minus predicted at each spot, in plain words ("readings match the prediction well"), with average, spread and the share within ±6 dB. One tap sends the readings to calibration. Map coloured by measured signal, by difference, or a **heat map** of the readings.
+- **ERCES / BDA grid test**: indoor readings by floor and room, critical areas ticked, pass or fail at −95 dBm (90% general, 99% critical) per floor, and one tap puts the results on the ERCES / BDA page.
+- **🏷 Equipment & Asset Tags** (new page in Tools). **📷 Scan** any barcode or QR code with the camera (or a photo, or a handheld scanner). A known tag opens the device; a new one starts it. Keep what it is, system, make, model, serial, location, floor, GPS, photos, install date, warranty, PM interval and the full service history. PM overdue / due soon, ✔ PM and 🛠 Fixed buttons, a summary per system for service and PM contracts, print QR labels and the equipment list, export CSV / Excel, import an owner's list. The list prints in the Closeout package.
+- **🔵 Bluetooth & Wi-Fi Devices** (new page in Tools). Connect once, used on every page: **signal meters**, **GPS receivers** (every GPS button and the map then use it, RTK accuracy included), **laser distance meters** (the measurement goes into the box you tap, in feet or meters) and **barcode scanners**. A chip at the top shows what is connected. Printers, cameras, cable and fiber testers: how to use them with the app.
+- Reports: new **Live Signal Readings** and **Equipment list** sections (Closeout, Site survey and Engineering packages).
+- Introduction video: a new part shows live readings, asset tags and connecting devices.
+
 # LvPlan Pro 1.5.52
 
 - **📷 Photo Site Survey (new page under 2 · Planning: site survey).** Stand where an antenna or tower might go and tap **📷 Take photos here** (several views all the way around, or one panorama), or **🖼 Add photos or a panorama** you already took. Photos taken at the same spot (within 100 ft) go together.

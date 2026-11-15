@@ -229,6 +229,42 @@ Required C/I depends on modulation and delivered audio quality; take it from TSB
 Pick a baseline (A) and a comparison (B) to see: which inputs changed, how each criterion's area changed, the area gained and lost at each threshold, and a B − A difference map. **Restore inputs** puts a scenario's radio settings back into the project. Export the comparison as CSV for the report.`,
     tour: [ { target: 'scenarios', title: 'Scenarios', text: 'Saved runs with their results. Show, restore or delete.' } ] },
 
+  { id: 'signal', title: 'Live signal readings', page: 'signal', keywords: 'live signal readings meter bluetooth usb com wifi phone cell rssi rsrp dbm walk test grid test erces bda compare prediction heat map g-nettrack network cell info wigle import', summary: 'Take real signal readings with a meter or the phone, or import them, and compare them with the prediction.',
+    body: `**Take a reading:** connect a signal meter with **🔵 Bluetooth** or **🔌 USB / COM meter** (Chrome or Edge on a computer or Android), use **📱 Phone cell signal** or **📱 Phone Wi-Fi signal** (LvPlan Pro Android app), or connect a Wi-Fi meter on **Bluetooth & Wi-Fi Devices**. The big number is the live reading. Press **📍 Save this reading**, or tick **Save automatically every … s** and walk. Each reading saves with the GPS position and time. No meter? Type what your meter shows and press **📍 Save reading**.
+
+**Indoors:** tick **Indoors (grid test)** and type the floor and room or grid cell. Tick **Critical area** in stairs, fire command rooms and pump rooms.
+
+**Import:** files from G-NetTrack, Network Cell Info, WiGLE, cell-logger apps and meter software (CSV / TSV with latitude, longitude and a dBm, RSSI, RSRP or Level column), GeoJSON, KML or GPX. dBµV readings are changed to dBm (50 Ω).
+
+**Compare:** each reading with GPS is compared with the coverage prediction at the same spot. The page says in plain words whether the design matches. **🎯 Calibrate the model** sends the readings to Drive Test & Calibration.
+
+**Map:** colour by measured signal, by difference from the prediction, or a heat map that fills in between readings.
+
+**ERCES / BDA grid test:** share of readings at or above −95 dBm per floor (90% general areas, 99% critical areas, NFPA 1225 / IFC 510). **Use these results on the ERCES / BDA page** fills in the measured coverage there. Delivered audio quality (DAQ) must still be checked by ear. The AHJ has the final say.`,
+    tour: [ { target: 'signal-read', title: 'Take a reading', text: 'Connect a meter or the phone, or type a reading, then save it with GPS.' }, { target: 'signal-import', title: 'Import', text: 'Load a file from a phone app or meter.' }, { target: 'signal-compare', title: 'Compare', text: 'See how real readings compare with the prediction.' }, { target: 'signal-map', title: 'Map', text: 'Measured signal, difference, or heat map.' }, { target: 'signal-grid', title: 'Grid test', text: 'ERCES / BDA pass or fail per floor.' } ] },
+
+  { id: 'assets', title: 'Equipment & asset tags', page: 'assets', keywords: 'asset tag barcode qr scan camera serial model install date warranty pm preventive maintenance service contract history label print register equipment list inventory', summary: 'Scan a device’s barcode or QR code to find it or add it, with PM dates, service history, photos, reports and labels.',
+    body: `**Scan:** press **📷 Scan tag** and hold the barcode or QR code in the box; it reads by itself and beeps. If the camera can't start, use **🖼 Photo of the tag**. A handheld scanner works too: tap the tag box and scan, or connect a Bluetooth / Wi-Fi scanner on Bluetooth & Wi-Fi Devices.
+
+- A tag that is already listed opens that device. A new tag starts a new device: fill in what it is, the system, make, model, serial, location and floor, then **Save device**.
+- **Scan the device label** fills in the serial and model from the maker's label.
+- **+ Add a device with no tag** gives it the next LV- number; **🏷 Print labels** prints QR labels for it.
+
+**Maintenance:** set **PM every** and the **Last PM** date; the list shows PM overdue or due soon. **✔ PM** marks PM done today; **⚠** marks a device as needing service and **🛠 Fixed** puts it back in service. Every action goes in the device's history.
+
+**At a glance** groups devices by system, for service and PM contracts. **Export CSV / Excel**, **🖨 Print list**, and **📂 Import list** (an owner's spreadsheet) are on the device list. The equipment list prints in the Closeout package on Reports.`,
+    tour: [ { target: 'asset-scan', title: 'Scan', text: 'Scan a tag with the camera, a photo or a handheld scanner.' }, { target: 'asset-list', title: 'Devices', text: 'Search, PM status, quick actions, labels and exports.' } ] },
+
+  { id: 'devices', title: 'Bluetooth & Wi-Fi devices', page: 'devices', keywords: 'bluetooth wifi wi-fi usb com port serial pair connect device gps receiver gnss rtk nmea laser distance meter disto glm barcode scanner signal meter printer camera tester', summary: 'Connect signal meters, GPS receivers, laser distance meters and barcode scanners once; every page uses them.',
+    body: `Each card connects one kind of device by **🔵 Bluetooth**, **🔌 USB / COM port**, or **📶 Wi-Fi** (type the device's local address, like http://192.168.4.1/ or tcp://192.168.1.20:10110).
+
+- **Signal meter:** live readings on Live Signal Readings; can also fill the box you tap.
+- **GPS receiver:** every 📍 GPS button and the live map position use it instead of the built-in GPS (NMEA GGA / RMC; RTK accuracy is shown when the receiver reports it).
+- **Laser distance meter:** tap any length box, measure, and the number goes in (feet or meters as set in the app).
+- **Barcode scanner:** on Equipment & Asset Tags each scan finds or adds the device.
+
+Where it works: Bluetooth and USB / COM need Chrome or Edge (computer or Android), including the flash-drive copy, offline. Wi-Fi devices work in the installed Windows and Android apps. The Android app also reads the phone's own cell and Wi-Fi signal. Printers, keyboard-style scanners and lasers, cameras and testers connect through the phone or computer settings; the table at the bottom says how. Devices are not saved with the project.` },
+
   { id: 'survey', title: 'Field survey & calibration', page: 'survey', keywords: 'drive test field survey measurement calibration tune model rssi measured predicted error rms', summary: 'Import drive-test data, compare it with the prediction and calibrate the model.',
     body: `Import a CSV (latitude, longitude and a signal column in dBm such as rssi, signal, level or rsrp) or GeoJSON points, or record readings one at a time with the device GPS.
 
