@@ -458,3 +458,13 @@ button.nav-group-title:hover { color: #fff; }
 .vinfo-pop .small { color: #b9c6d3; }
 .vinfo-pop .num-fix { justify-self: start; margin: 2px 0; }
 .vinfo-pop.left { right: auto; left: 0; }
+/* layered 2D / 3D models */
+.layered-body { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 12px; align-items: start; }
+@media (max-width: 900px) { .layered-body { grid-template-columns: minmax(0, 1fr); } }
+.layer-panel { border: 1px solid var(--line); border-radius: 8px; padding: 8px; max-height: 640px; overflow: auto; font-size: .9rem; }
+.layer-group { border: none; border-top: 1px solid var(--line); margin: 0; padding: 6px 0; }
+.layer-group legend { display: flex; align-items: center; gap: 6px; justify-content: space-between; width: 100%; padding: 0; }
+.layer-group legend label { gap: 6px; cursor: pointer; }
+.layer-group .legend-chip input { margin: 0 2px 0 0; }
+.swatch { width: 12px; height: 12px; border-radius: 3px; display: inline-block; border: 1px solid #0003; }
+.tone-ok { color: var(--ok, #2e7d32); font-weight: 600; } .tone-warn { color: var(--warn, #b26a00); font-weight: 600; } .tone-bad { color: var(--bad, #c62828); font-weight: 600; }

@@ -46,6 +46,7 @@ import { TroubleshootPage } from './pages/Troubleshoot';
 import { SystemsPage } from './pages/Systems';
 import { ServicePage } from './pages/Service';
 import { AutoDesignPage } from './pages/AutoDesign';
+import { ModelsPage } from './pages/Models';
 import { readBackup } from './engine/projectdb';
 import { Updater } from './components/Updater';
 import { Maintainer } from './components/Maintainer';
@@ -84,6 +85,7 @@ export const PAGE_ELEMENTS: Record<string, React.ReactNode> = {
   survey: <SurveyPage />,
   signal: <SignalReadingsPage />,
   autodesign: <AutoDesignPage />,
+  models: <ModelsPage />,
   alarm: <AlarmPage />,
   erces: <ErcesPage />,
   indoor: <IndoorPage />,

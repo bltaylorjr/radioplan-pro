@@ -13,9 +13,9 @@ export const PAGE_GROUPS: [string, string[]][] = MENU_GROUPS.map((g) => [groupHe
 const COMMON = ['locate', 'sites', 'fieldnotes', 'compliance', 'materials', 'blueprints', 'testing', 'reports', 'troubleshoot', 'directions', 'service', 'assets', 'devices', 'install', 'theory', 'library', 'contacts', 'calculators'];
 /** Extra pages for systems that need radio or design pages. */
 const EXTRA: Record<string, string[]> = {
-  firealarm: ['alarm', 'autodesign'], massnotif: ['alarm', 'autodesign'], security: ['autodesign'], access: ['autodesign'], cctv: ['autodesign'],
-  cabling: ['autodesign'], nursecall: ['autodesign'], paging: ['autodesign'], sound: ['autodesign'], intercom: ['autodesign'],
-  erces: ['photosurvey', 'erces', 'indoor', 'survey', 'signal', 'grounding', 'fcc'], das: ['photosurvey', 'indoor', 'erces', 'survey', 'signal', 'grounding', 'fcc'], wifi: ['wifi', 'indoor', 'signal'],
+  firealarm: ['alarm', 'autodesign', 'models'], massnotif: ['alarm', 'autodesign', 'models'], security: ['autodesign', 'models'], access: ['autodesign', 'models'], cctv: ['autodesign', 'models'],
+  cabling: ['autodesign', 'models'], nursecall: ['autodesign', 'models'], paging: ['autodesign', 'models'], sound: ['autodesign', 'models'], intercom: ['autodesign', 'models'],
+  erces: ['photosurvey', 'erces', 'indoor', 'models', 'survey', 'signal', 'grounding', 'fcc'], das: ['photosurvey', 'indoor', 'erces', 'models', 'survey', 'signal', 'grounding', 'fcc'], wifi: ['wifi', 'indoor', 'models', 'signal'],
   radio: ['photosurvey', 'terrain', 'equipment', 'path', 'coverage', 'optimize', 'network', 'scenarios', 'view3d', 'grounding', 'survey', 'signal', 'lfhf', 'fcc', 'faa', 'mappacks'],
   callbox: ['photosurvey', 'solar', 'terrain', 'coverage', 'equipment', 'faa', 'mappacks', 'signal'], solar: ['solar', 'grounding'],
 };

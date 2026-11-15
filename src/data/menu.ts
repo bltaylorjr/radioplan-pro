@@ -54,6 +54,7 @@ export const MENU_PAGES: MenuPage[] = [
   { id: 'signal', label: 'Live Signal Readings', group: 'survey', keywords: 'live signal meter reading bluetooth dbm grid test erces walk test import g-nettrack' },
 
   { id: 'autodesign', label: 'Auto-Design & 3D Model', group: 'lv', keywords: 'recommend equipment layout floor plan 3d' },
+  { id: 'models', label: '2D & 3D Models with Layers', group: 'lv', keywords: 'layers 2d 3d plan model building materials walls floors glass concrete block brick rf loss echo fire rating firestop camera view heat map scenario dxf' },
   { id: 'alarm', label: 'Fire Alarm & Batteries', group: 'lv', keywords: 'nfpa 72 battery standby nac voltage drop mass notification' },
   { id: 'erces', label: 'Emergency Radio (ERCES / BDA)', group: 'lv', keywords: 'bda das public safety donor antenna aim' },
   { id: 'indoor', label: 'Indoor Coverage & DAS', group: 'lv', keywords: 'indoor walls floor plan das antennas' },

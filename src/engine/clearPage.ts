@@ -40,6 +40,7 @@ export const PAGE_CLEAR: Record<string, PageClear> = {
   assets: { what: 'every device on the equipment list, with its photos and history', keeps: 'Service resources and the other pages.', remove: ['assets'], local: true },
   survey: { what: 'the imported drive-test points', keeps: 'Model tuning already applied (clear it on Coverage Prediction).', paths: ['survey'], local: true },
   autodesign: { what: 'the auto-design answers and the equipment it added to the Materials list', keeps: 'Project type and the other pages.', remove: ['autoDesign'], local: true },
+  models: { what: 'the building materials picked on this page (they go back to typical for the building type)', keeps: 'The building size and systems (shared with Auto-Design) and every other page.', remove: ['buildingMaterials'], local: true },
   alarm: { what: 'the fire alarm devices, battery and circuit entries', paths: ['alarm'], custom: { clear: (d) => { d.alarm.devices = []; }, restore: () => undefined } },
   erces: { what: 'the ERCES / BDA entries and the donor tower', paths: ['erces'], local: true },
   indoor: { what: 'the floor plan, walls, indoor antennas and settings', paths: ['indoor'], local: true },
