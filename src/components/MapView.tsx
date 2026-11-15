@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { Suspense, lazy, useEffect, useRef, useState } from 'react';
 import { FullView } from './FullView';
 import L from 'leaflet';
 import type { Site } from '../types';
@@ -8,6 +8,8 @@ import { DemGrid, demBounds } from '../engine/terrain';
 import { CachedTileLayer } from './cachedTiles';
 import type { LatLon } from '../engine/geo';
 import { loadCommSites, siteLabel, CommSite } from '../engine/towers';
+
+const TiltView = lazy(() => import('./TiltView'));
 
 const towerIcon = L.divIcon({ className: 'tower-pin', html: '<div>📡</div>', iconSize: [22, 22], iconAnchor: [11, 20] });
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
@@ -108,6 +110,14 @@ export function MapView({ sites, txId, rxId, coverage, floor = -110, dem, onClic
   const bases = useRef<Record<string, L.TileLayer>>({});
   const clickRef = useRef(onClick); clickRef.current = onClick;
   const extraRef = useRef(extra); extraRef.current = extra;
+  const [mode3d, setMode3d] = useState(false);
+  const [view, setView] = useState<{ north: number; south: number; east: number; west: number } | null>(null);
+  const baseName = useRef<string>(base ?? DEFAULT_BASE);
+  const open3d = () => {
+    const m = map.current; if (m) { const b = m.getBounds(); setView({ north: b.getNorth(), south: b.getSouth(), east: b.getEast(), west: b.getWest() }); }
+    setMode3d(true);
+  };
+  const close3d = () => { setMode3d(false); window.setTimeout(() => map.current?.invalidateSize(), 50); };
   useEffect(() => {
     if (!el.current || map.current) return;
     const start = center ?? sites[0] ?? { lat: 35.2, lon: -80.8 };
@@ -115,8 +125,8 @@ export function MapView({ sites, txId, rxId, coverage, floor = -110, dem, onClic
     for (const [k, v] of Object.entries(BASEMAPS)) bases.current[k] = new CachedTileLayer(v.url, { attribution: v.attr, maxZoom: v.max, maxNativeZoom: v.max } as L.TileLayerOptions);
     let chosen = base ?? DEFAULT_BASE;
     try { chosen = base ?? localStorage.getItem('radioplan.basemap') ?? DEFAULT_BASE; } catch { /* ignore */ }
-    (bases.current[chosen] ?? bases.current[DEFAULT_BASE]).addTo(m);
-    m.on('baselayerchange', (e: L.LayersControlEvent) => { try { localStorage.setItem('radioplan.basemap', e.name); } catch { /* ignore */ } });
+    (bases.current[chosen] ?? bases.current[DEFAULT_BASE]).addTo(m); baseName.current = bases.current[chosen] ? chosen : DEFAULT_BASE;
+    m.on('baselayerchange', (e: L.LayersControlEvent) => { baseName.current = e.name; try { localStorage.setItem('radioplan.basemap', e.name); } catch { /* ignore */ } });
     const towers = towersOverlay(m);
     L.control.layers(bases.current, { '📡 Existing towers & comm sites': towers }, { position: 'topright' }).addTo(m);
     try { if (localStorage.getItem('radioplan.towers') === '1') towers.addTo(m); } catch { /* ignore */ }
@@ -150,5 +160,16 @@ export function MapView({ sites, txId, rxId, coverage, floor = -110, dem, onClic
     if (marker) L.marker([marker.lat, marker.lon], { icon: icon('★', '#ef6c00') }).bindPopup(marker.label ?? 'Search location').addTo(g);
     extraRef.current?.(g);
   }, [sites, txId, rxId, coverage, floor, dem, selectedId, marker, extraKey]);
-  return <FullView title="Map"><div ref={el} className="map" style={{ height }} data-tour="map" /></FullView>;
+  return (
+    <FullView title="Map">
+      <div className="row map-modes" role="group" aria-label="Map view">
+        <button className={!mode3d ? 'primary' : ''} onClick={close3d} aria-pressed={!mode3d}>🗺 Flat map</button>
+        <button className={mode3d ? 'primary' : ''} onClick={open3d} aria-pressed={mode3d} title="Tilt the map in 3D with satellite pictures and line of sight">⛰ 3D tilt view</button>
+      </div>
+      <div ref={el} className="map" style={{ height, display: mode3d ? 'none' : undefined }} data-tour="map" />
+      {mode3d && <Suspense fallback={<div className="three empty" style={{ height }}>Loading 3D view…</div>}>
+        <TiltView view={view} sites={sites} txId={txId} rxId={rxId} dem={dem} base={baseName.current} height={height} />
+      </Suspense>}
+    </FullView>
+  );
 }

@@ -1,3 +1,9 @@
+# LvPlan Pro 1.5.37
+
+- **3D tilt view on every map.** Tap **⛰ 3D tilt view** above any map to see the area as a 3D model with satellite pictures on top (or the topo map, or height colors). A **Tilt** slider and **Straight down / Tilted / Low angle** buttons, plus a height boost slider. **🗺 Flat map** goes back.
+- **Line of sight and obstructions.** Plot **point A**, **point B** and any **relay points** to bounce the signal around hills. Each point can be GPS coordinates, an address, your device's GPS, or a tap on the 3D view. Each hop shows green (clear), orange (Fresnel zone crowded) or red (blocked), with red posts on the ground that blocks it and how far it rises above the beam. **Suggest a relay spot** finds a spot that sees both ends. **What point A can see** shades hidden ground red.
+- **Works offline.** Terrain for the Asheville area is built into the app. Elsewhere, terrain and pictures saved while online keep working offline; any missing picture tiles show height colors instead.
+
 # LvPlan Pro 1.5.36
 
 - **RadioReference login page.** Log in with your RadioReference username and password (the app key is entered once and remembered). Tick **Stay logged in** to stay logged in on this device until you tap **Log out**. Untick it to be logged out when the app closes.

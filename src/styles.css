@@ -338,3 +338,14 @@ body { font-size: clamp(15px, 0.6vw + 12.5px, 17px); }
 .rr-login .field { display: flex; flex-direction: column; gap: 4px; }
 .rr-login .field input { width: 100%; }
 .rr-login button[type="submit"] { width: 100%; padding: 10px; font-size: 1.05em; }
+/* 3D tilt view on maps */
+.map-modes { gap: 6px; margin-bottom: 6px; }
+.fullview-on .fullview-body > .map-modes { flex: 0 0 auto; }
+.fullview-on .tiltview .three { height: 72vh !important; flex: none; }
+.tilt-controls { gap: 8px; align-items: center; }
+.tiltview input[type=range] { accent-color: var(--accent, #1565c0); min-width: 120px; }
+.tilt-hops { margin: 6px 0; padding-left: 18px; }
+.tilt-hops li { margin: 3px 0; }
+.tilt-point .addr-wrap, .tilt-point input[type=text] { width: 100%; }
+@media (max-width: 640px) { .tilt-controls > label { min-width: 100% !important; } }
+.tilt-agl input { width: 80px; }
