@@ -1,3 +1,17 @@
+# LvPlan Pro 1.5.54
+
+- **Menu in project order.** Every tool and step now follows the project lifecycle: **1 Project setup**, **2 Site survey**, **3 Design: low-voltage systems**, **4 Design: radio & antennas** (RadioReference frequencies first, then equipment, path, coverage and aiming), **5 Codes, permits & drawings**, **6 Equipment & materials** (Specifications Library, Materials List), **7 Installation**, **8 Testing & commissioning**, **9 Service, troubleshooting & repair**, and **10 Reports & closeout**. **Tools & reference** (Calculators, Low-Voltage Principles, Contacts, Map & Directions) and **Projects & settings** (Projects, Sync Devices, User Settings) are at the bottom and open any time. Next / Previous, step numbers, the custom-project page picker and User Settings all follow the same order, and tools turned off in User Settings stay out of the menu and Find a tool.
+- **Folding sections**: tap a section heading to fold it up; the section you are in always stays open, and the menu keeps the page you are on in view.
+- **The help manual lists its topics in the same order as the menu.**
+- **🔎 Find a tool** at the top of the menu. Type a word, like “azimuth”, “relay”, “battery”, “clear” or “log in”, and tap a result to open the page, the help topic, or a tool. Tools marked ▶ open their page and point at the button.
+- **★ What's new** (under Help manual in the menu): every newer tool with where to find it, a few steps, and **▶ Show me**, which opens the page and points at each button in turn. It covers RadioReference log in, downloads and progress, the 3D tilt view and relay points, azimuth everywhere and the map measure tool, donor antenna aiming, drawing lines, Clear all fields, Delete with “Are you sure?”, the true-scale side view and 3D beam, the azimuth calculator, calculator Reset / Use project values / Apply to fields, Automatic care, and Full page view.
+- **Page help lists the tools on that page**, each with **▶ Show me**. The help manual search also finds tools.
+- **▶ Guide me on every page.** Pages that had no walkthrough now have one, and Map & Terrain and Path Profile walk through the newer buttons (the walkthrough can open the 3D tilt view for you). Walkthroughs find buttons by their words and wait for the page to finish loading, and the bubble always stays on screen.
+- **Using the menu**: a new help page lists every section and page.
+- Newer pages have their place in the order: Photo Site Survey and Live Signal Readings under Site survey, FCC Towers & Licenses under Design: radio & antennas, FAA Height Check under Codes, permits & drawings, Equipment & Asset Tags under Service, troubleshooting & repair, and Offline Map Packs and Bluetooth & Wi-Fi Devices under Tools & reference.
+- Help text lists and paragraphs now show correctly when they are mixed in one section.
+- **Introduction video**: the old "How it is organized" card is replaced by a part that shows the new menu order, Find a tool, What's new with Show me, and Page help and Guide me.
+
 # LvPlan Pro 1.5.53
 
 - **📶 Live Signal Readings** (new page, after Drive Test). Read a signal meter over **Bluetooth**, a **USB / COM** cable, or **Wi-Fi**, or use the phone's own **cell or Wi-Fi signal** (Android app), or just type what your meter shows. A big live number, **📍 Save this reading** or save automatically every few seconds as you walk. Each reading keeps its GPS position and time.

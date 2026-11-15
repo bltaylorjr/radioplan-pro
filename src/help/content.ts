@@ -1,15 +1,45 @@
 // Interactive help manual content. Each topic is searchable; `page` links a topic to a workflow page,
 // and `tour` lists guided-walkthrough steps that highlight elements marked with data-tour="...".
-export interface TourStep { target: string; title: string; text: string }
-export interface HelpTopic { id: string; title: string; page?: string; keywords: string; summary: string; body: string; tour?: TourStep[] }
+import { MENU_GROUPS, MENU_PAGES, MENU_ORDER, groupHeading } from '../data/menu';
+import { FEATURES_BY_VERSION } from './features';
+import { PAGE_TOURS, PAGE_TOUR_EXTRAS } from './tours';
+
+export interface TourStep { target: string; title: string; text: string;
+  /** Press the target when Next is tapped (to open a view before the next step). */
+  click?: boolean }
+export interface HelpTopic { id: string; title: string; page?: string; keywords: string; summary: string; body: string; tour?: TourStep[];
+  /** Feature cards (from features.ts) shown under the topic, each with ▶ Show me. */
+  features?: string[] }
+
+/** Help pages built from the menu list and the feature list, so new pages and tools show up by themselves. */
+const GUIDE_TOPICS: HelpTopic[] = [
+  { id: 'whats-new', title: "What's new", keywords: 'whats new new features latest update changes release version show me walkthrough',
+    summary: 'The newest tools, newest first. Tap ▶ Show me on any of them to go to the page and see where the button is.',
+    body: 'Each card says where the tool is and how to use it in a few steps. **▶ Show me** opens the page and points at the buttons one at a time. **Read more** opens the full help topic.',
+    features: FEATURES_BY_VERSION.map((f) => f.id) },
+  { id: 'menu-guide', title: 'Using the menu', keywords: 'menu navigation sidebar find a tool search sections steps where is how do i fold collapse next previous skip',
+    summary: 'The menu on the left follows the job from setup to closeout. Type in 🔎 Find a tool to jump straight to a page or tool.',
+    body: [
+      '**🔎 Find a tool** at the top of the menu searches every page, tool and help topic. Type a word such as “azimuth”, “battery”, “relay” or “clear”, then tap a result. Results marked ▶ open the page and show you the button.',
+      '**Sections**: tap a section heading to fold it up or open it again. The section with the page you are on always stays open.',
+      '**Steps**: the numbered sections are the job in order. Use **→** at the bottom of a page to go to the next step, or **Skip this step** if the job does not need it. The last two sections are tools you can open any time. Tools you turn off in **User Settings** are left out of the menu (Find a tool skips them too).',
+      MENU_GROUPS.map((g) => `**${groupHeading(g)}**: ${g.hint}\n` + MENU_PAGES.filter((p) => p.group === g.id).map((p) => `- ${p.label}`).join('\n')).join('\n\n'),
+      'On a phone or small tablet, tap **☰** at the top left to open the menu.',
+    ].join('\n\n'),
+    features: ['find-tool'] },
+];
 
 export const HELP: HelpTopic[] = [
-  { id: 'getting-started', title: 'Getting started', keywords: 'start clear reset erase undo intro video tour overview workflow usb android install save open project', summary: 'The left sidebar is your workflow: work top to bottom from Company & Project to Testing.',
-    body: `LvPlan Pro walks a project from first site visit to commissioning. Press **▶ Video** at the top of the screen for a narrated, captioned tour of every page and tool (it plays offline). Press **⛶ Full page** above any map, 3D view or diagram to show it on its own full screen; **✕ Close** (or Esc) brings you back. The tour opens and plays by itself the first time the app is opened; if it starts without sound, tap **🔊 Tap to turn on the sound**. Press **⌫ Clear all fields** at the top of a page to start that page over: it asks first, clears only that page (other pages, saved projects, the RadioReference login and downloads, the specifications library and contacts stay), and **↶ Undo** puts it back; a copy from before is also kept in Projects → History of this project. To start the whole project over, press **↺ Reset project** at the top of Company & Project; **🗑 Delete project** next to it removes the project (both ask first and can be undone right after). Press **Skip this step** at the bottom of any step you don't need on this job: it is greyed out in the menu and Next / Previous pass over it (open it from the menu and press **Don't skip it** to bring it back). Each page in the left sidebar is one **task**, in the order engineers normally perform them. Pages where work gets checked off (site survey, permits, installation, testing, closeout) have a **checklist** at the bottom; the sidebar shows ✓ when a checklist is finished.
+  ...GUIDE_TOPICS,
+  { id: 'getting-started', title: 'Getting started', keywords: 'start clear reset erase undo intro video tour overview workflow usb android install save open project menu find a tool whats new show me guide me walkthrough', summary: 'The menu on the left follows the job from setup to closeout. Type in 🔎 Find a tool to jump to any page or tool.',
+    body: `**The menu** (left side; tap **☰** on a phone) is in the order of a job: **Project setup**, **Site survey**, **Design: low-voltage systems**, **Design: radio & antennas**, **Codes, permits & drawings**, **Equipment & materials**, **Installation**, **Testing & commissioning**, **Service, troubleshooting & repair**, and **Reports & closeout**. **Tools & reference** and **Projects & settings** are at the bottom and can be opened any time; tools turned off in **User Settings** are left out of the menu. Tap a section heading to fold it up. Type in **🔎 Find a tool** at the top of the menu to jump straight to a page or tool, for example “azimuth”, “relay”, “battery” or “clear”. **★ What's new** lists the newest tools with a **▶ Show me** walkthrough for each. See **Using the menu** for the full list.
+
+LvPlan Pro walks a project from first site visit to commissioning. Press **▶ Video** at the top of the screen for a narrated, captioned tour of every page and tool (it plays offline). Press **⛶ Full page** above any map, 3D view or diagram to show it on its own full screen; **✕ Close** (or Esc) brings you back. The tour opens and plays by itself the first time the app is opened; if it starts without sound, tap **🔊 Tap to turn on the sound**. Press **⌫ Clear all fields** at the top of a page to start that page over: it asks first, clears only that page (other pages, saved projects, the RadioReference login and downloads, the specifications library and contacts stay), and **↶ Undo** puts it back; a copy from before is also kept in Projects → History of this project. To start the whole project over, press **↺ Reset project** at the top of Company & Project; **🗑 Delete project** next to it removes the project (both ask first and can be undone right after). Press **Skip this step** at the bottom of any step you don't need on this job: it is greyed out in the menu and Next / Previous pass over it (open it from the menu and press **Don't skip it** to bring it back). Each page in the left sidebar is one **task**, in the order engineers normally perform them. Pages where work gets checked off (site survey, permits, installation, testing, closeout) have a **checklist** at the bottom; the sidebar shows ✓ when a checklist is finished.
 
 - Your work saves automatically in this computer's browser storage.
-- Use **Save project** (top bar) to write a .radioplan.json file you can keep on the USB drive, email, or open on the Android app.
-- Press **F1** or the **?** button on any page for help on that page, or **Guide me** for a step-by-step walkthrough.
+- Use **Export** (top bar) to write a .radioplan.json file you can keep on the USB drive, email, or open on the Android app.
+- Press **F1** or **? Page help** on any page for help on that page. The help lists the **Tools on this page**; tap **▶ Show me** and the app points at each button in turn. **▶ Guide me** walks through the whole page.
+- Every **Delete** asks **Are you sure?** first and names what will be deleted.
 - Small **?** bubbles next to fields explain what to enter.
 
 **Important:** code citations and calculations are planning aids. A licensed professional engineer and the Authority Having Jurisdiction must verify the design.` },
@@ -24,7 +54,7 @@ export const HELP: HelpTopic[] = [
 **Build a plan** downloads terrain for the area, then tests a grid of candidate tower spots within the search radius. Each candidate is scored by how much of the service area it can see over the terrain (near line-of-sight) at your antenna height. The best spot becomes Site A, the location becomes the facility (Site B), and the band, antenna, azimuth, downtilt, feeder length, jurisdiction, coverage run, path profile, materials list, code checks and commissioning test plan are all filled in. Review and adjust every page afterwards.
 
 Not considered: zoning, land ownership, FAA airspace, existing towers and leasing. Verify on site.`,
-    tour: [ { target: 'plan', title: 'Auto-plan', text: 'Choose the band, service radius and tower height, then build the plan.' } ] },
+    tour: [ { target: 'text:Find a location', title: 'Find a location', text: 'Type an address or GPS coordinates and tap 🔎 Search.' }, { target: 'plan', title: 'Auto-plan', text: 'After a search, choose the band, service radius and tower height, then build the plan.' } ] },
 
   { id: 'offline', title: 'Working offline', keywords: 'offline no internet cache download area tiles usb android field', summary: 'Download an area ahead of time; maps, terrain, 3D, calculations, reports and help then work without a connection.',
     body: `Everything except map downloads, address search and the USGS point-elevation service runs on the device: all calculations, code checks, materials, reports, the help manual and the 3D viewer.
@@ -602,3 +632,22 @@ Maps and terrain download automatically when online and are cached for offline u
   { id: 'disclaimer', title: 'Professional responsibility', keywords: 'disclaimer liability pe engineer verify', summary: 'Results must be verified by a licensed professional.',
     body: `LvPlan Pro is a planning tool for qualified users. Propagation models are statistical; code citations may not reflect the edition or local amendments adopted by your AHJ. A licensed professional engineer must review and seal designs where required, and installations must be permitted and inspected by the AHJ.` },
 ];
+
+// Walkthroughs kept in tours.ts: fill in pages without a tour, and add steps for newer tools.
+for (const h of HELP) {
+  if (!h.page) continue;
+  if (!h.tour?.length && PAGE_TOURS[h.page]) h.tour = PAGE_TOURS[h.page];
+  if (PAGE_TOUR_EXTRAS[h.page]) h.tour = [...(h.tour ?? []), ...PAGE_TOUR_EXTRAS[h.page]];
+}
+
+// The manual lists topics in the same order as the menu: first the intro topics, then each page's
+// topic in menu order (general topics sit next to the page they belong with), then the rest.
+const INTRO = ['getting-started', 'whats-new', 'menu-guide', 'offline'];
+const NEAR: Record<string, string> = { azimuth: 'optimize', checklists: 'testing', import: 'reports', selfrepair: 'projects' };
+const rank = (h: HelpTopic) => {
+  if (INTRO.includes(h.id)) return INTRO.indexOf(h.id) - 100;
+  const pg = h.page ?? NEAR[h.id];
+  const i = pg ? MENU_ORDER.findIndex((p) => p.id === pg) : -1;
+  return i < 0 ? 1000 : i + (h.page ? 0 : 0.5);
+};
+HELP.sort((a, b) => rank(a) - rank(b));

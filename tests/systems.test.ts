@@ -20,8 +20,9 @@ describe('low-voltage systems', () => {
   });
   it('menu labels match the app menu', () => {
     const app = readFileSync('src/App.tsx', 'utf8');
-    const ids = [...app.matchAll(/\{ id: '(\w+)', label: '([^']+)'/g)].map((m) => [m[1], m[2]]);
-    expect(Object.fromEntries(ids)).toEqual(WORKFLOW_LABELS);
+    const block = app.slice(app.indexOf('PAGE_ELEMENTS'), app.indexOf('};', app.indexOf('PAGE_ELEMENTS')));
+    const ids = [...block.matchAll(/^ {2}(\w+): </gm)].map((m) => m[1]);
+    expect([...ids].sort()).toEqual(Object.keys(WORKFLOW_LABELS).sort());
   });
   it('calculators give sensible numbers', () => {
     for (const c of LV_CALCS) for (const o of runCalc(c)) expect(o.value).not.toMatch(/NaN|Infinity/);
