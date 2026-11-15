@@ -1,21 +1,13 @@
 // "Custom" project type: the user picks only the systems and pages/tools they need,
 // and the menu, steps and Next/Previous follow that pick.
 import type { LvSystem } from './systems';
+import { MENU_GROUPS, MENU_PAGES, groupHeading } from './menu';
 
 /** Pages that always show, so the custom pick can always be changed. */
 export const ALWAYS_PAGES = ['company', 'systems', 'projects', 'settings'];
 
-/** Menu groups and their pages, in menu order (kept in step with WORKFLOW in App.tsx by a test). */
-export const PAGE_GROUPS: [string, string[]][] = [
-  ['1 · Project setup', ['company', 'systems', 'locate', 'sites']],
-  ['2 · Planning: site survey', ['fieldnotes', 'photosurvey', 'terrain', 'wifi', 'survey', 'signal']],
-  ['3 · Planning: low-voltage design', ['autodesign', 'alarm', 'erces', 'indoor', 'solar', 'grounding']],
-  ['4 · Planning: radio & RF', ['equipment', 'path', 'coverage', 'optimize', 'network', 'scenarios', 'view3d', 'radioref', 'fcc', 'lfhf']],
-  ['5 · Planning: codes & materials', ['compliance', 'faa', 'materials', 'blueprints']],
-  ['6 · Testing & closeout', ['testing', 'reports']],
-  ['7 · Troubleshooting & repair', ['troubleshoot']],
-  ['Tools', ['directions', 'service', 'assets', 'devices', 'install', 'theory', 'library', 'contacts', 'calculators', 'mappacks', 'projects', 'sync', 'settings']],
-];
+/** Menu groups and their pages, in menu order (from the menu list in menu.ts). */
+export const PAGE_GROUPS: [string, string[]][] = MENU_GROUPS.map((g) => [groupHeading(g), MENU_PAGES.filter((p) => p.group === g.id).map((p) => p.id)]);
 
 /** Pages most low-voltage jobs use, whatever the systems. */
 const COMMON = ['locate', 'sites', 'fieldnotes', 'compliance', 'materials', 'blueprints', 'testing', 'reports', 'troubleshoot', 'directions', 'service', 'assets', 'devices', 'install', 'theory', 'library', 'contacts', 'calculators'];

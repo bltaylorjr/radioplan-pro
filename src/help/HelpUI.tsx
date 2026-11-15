@@ -1,6 +1,55 @@
 import { HelpMedia } from './HelpMedia';
 import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { HELP, HelpTopic, TourStep } from './content';
+import { FEATURES, Feature, featuresFor, showFeature } from './features';
+import { WORKFLOW_LABELS } from '../data/pageLabels';
+
+/** Find a walkthrough target: a data-tour="name" element, or (with "text:") the visible button,
+ *  link, label or heading whose words match best. Falls back to a heading that matches the step title. */
+export function findTourTarget(target: string, title?: string): HTMLElement | null {
+  const visible = (el: Element) => { const r = (el as HTMLElement).getBoundingClientRect?.(); return !!r && r.width > 0 && r.height > 0 && !el.closest('.tour, .help-panel'); };
+  const byText = (words: string, sel: string) => {
+    const w = words.toLowerCase().replace(/\s+/g, ' ').trim(); if (!w) return null;
+    let best: HTMLElement | null = null, bestScore = 0;
+    document.querySelectorAll(sel).forEach((el) => {
+      if (!visible(el)) return;
+      const t = (el.textContent || (el as HTMLElement).title || '').toLowerCase().replace(/\s+/g, ' ').trim();
+      if (!t.includes(w)) return;
+      const score = (t === w ? 3 : t.replace(/^[^a-z0-9]+/, '').startsWith(w) ? 2 : 1) + 1 / (1 + t.length / 50);
+      if (score > bestScore) { bestScore = score; best = el as HTMLElement; }
+    });
+    return best;
+  };
+  if (target.startsWith('text:')) {
+    const w = target.slice(5);
+    return byText(w, 'button, a, label, summary, [role=tab]') ?? byText(w, 'h1, h2, h3, h4, legend, .card-title, th');
+  }
+  const el = [...document.querySelectorAll(`[data-tour="${target}"]`)].find(visible) as HTMLElement | undefined;
+  return el ?? (title ? byText(title, 'h2, h3, h4, legend, .card-title') : null);
+}
+
+/** Cards for tools: where to find them, a few steps, and ▶ Show me. */
+export function FeatureCards({ ids, list, compact, heading }: { ids?: string[]; list?: Feature[]; compact?: boolean; heading?: string }) {
+  const fs = list ?? (ids ?? []).map((id) => FEATURES.find((f) => f.id === id)).filter((f): f is Feature => !!f);
+  if (!fs.length) return null;
+  return (
+    <div className="feature-cards">
+      {heading && <h3>{heading}</h3>}
+      {fs.map((f) => (
+        <details key={f.id} className="feature-card" open={!compact}>
+          <summary><b>{f.title}</b> <span className="pill">{f.version}</span></summary>
+          <p className="small muted">📍 {f.where}{WORKFLOW_LABELS[f.page] && !f.where.includes(WORKFLOW_LABELS[f.page]) ? ` (${WORKFLOW_LABELS[f.page]})` : ''}</p>
+          <p>{f.summary}</p>
+          <ol>{f.steps.map((s, i) => <li key={i}>{s}</li>)}</ol>
+          <div className="row wrap">
+            <button className="primary" onClick={() => showFeature(f.id)}>▶ Show me</button>
+            {f.topic && <a className="btn" href={`#help/${f.topic}`}>Read more</a>}
+          </div>
+        </details>
+      ))}
+    </div>
+  );
+}
 
 /** Minimal markdown: paragraphs, "- " lists, numbered lists, **bold**. */
 export function Md({ text }: { text: string }) {
@@ -23,7 +72,7 @@ export function HelpManual({ initial }: { initial?: string }) {
     const terms = q.toLowerCase().split(/\s+/).filter(Boolean);
     if (!terms.length) return HELP;
     return HELP.map((h) => {
-      const hay = `${h.title} ${h.keywords} ${h.summary} ${h.body}`.toLowerCase();
+      const hay = `${h.title} ${h.keywords} ${h.summary} ${h.body} ${(h.features ?? []).concat(h.page ? featuresFor(h.page).map((f) => f.id) : []).map((id) => { const f = FEATURES.find((x) => x.id === id); return f ? `${f.title} ${f.keywords} ${f.summary}` : ''; }).join(' ')}`.toLowerCase();
       const score = terms.reduce((s, t) => s + (hay.includes(t) ? 1 + (h.title.toLowerCase().includes(t) ? 2 : 0) + (h.keywords.includes(t) ? 1 : 0) : -100), 0);
       return { h, score };
     }).filter((x) => x.score > 0).sort((a, b) => b.score - a.score).map((x) => x.h);
@@ -40,6 +89,8 @@ export function HelpManual({ initial }: { initial?: string }) {
         <h2>{topic.title}</h2>
         <p className="lead">{topic.summary}</p>
         <Md text={topic.body} />
+        <FeatureCards ids={topic.features} />
+        {topic.page && <FeatureCards list={featuresFor(topic.page)} compact heading="Tools on this page" />}
         <HelpMedia topic={topic} />
         {topic.page && <p><a className="btn" href={`#${topic.page}`}>Go to this page →</a></p>}
       </article>
@@ -47,24 +98,32 @@ export function HelpManual({ initial }: { initial?: string }) {
   );
 }
 
-/** Guided walkthrough: highlights each [data-tour] target in turn with an explanation bubble. */
+/** Guided walkthrough: highlights each target (data-tour name or "text:" words) in turn with an explanation bubble. */
 export function Tour({ steps, onClose }: { steps: TourStep[]; onClose: () => void }) {
   const [i, setI] = useState(0);
   const [rect, setRect] = useState<DOMRect | null>(null);
   const step = steps[i];
   useLayoutEffect(() => {
-    const el = document.querySelector(`[data-tour="${step.target}"]`) as HTMLElement | null;
-    if (!el) { setRect(null); return; }
-    el.scrollIntoView({ block: 'center', behavior: 'smooth' });
-    const upd = () => setRect(el.getBoundingClientRect());
-    const t = setTimeout(upd, 350); upd();
+    let el: HTMLElement | null = null, tries = 0, stop = false;
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    const upd = () => { if (el) setRect(el.getBoundingClientRect()); };
+    // Pages and maps can take a moment to appear, so look again for up to about 3 seconds.
+    const look = () => {
+      if (stop) return;
+      el = findTourTarget(step.target, step.title);
+      if (!el) { setRect(null); if (++tries < 10) timers.push(setTimeout(look, 300)); return; }
+      el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      upd(); timers.push(setTimeout(upd, 350), setTimeout(upd, 800));
+    };
+    look();
     window.addEventListener('resize', upd); window.addEventListener('scroll', upd, true);
-    return () => { clearTimeout(t); window.removeEventListener('resize', upd); window.removeEventListener('scroll', upd, true); };
+    return () => { stop = true; timers.forEach(clearTimeout); window.removeEventListener('resize', upd); window.removeEventListener('scroll', upd, true); };
   }, [step]);
   useEffect(() => { const k = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); if (e.key === 'ArrowRight') setI((x) => Math.min(x + 1, steps.length - 1)); if (e.key === 'ArrowLeft') setI((x) => Math.max(0, x - 1)); }; window.addEventListener('keydown', k); return () => window.removeEventListener('keydown', k); }, [onClose, steps.length]);
   const pad = 6;
   const below = rect ? rect.bottom + 170 < window.innerHeight : true;
-  const bubbleTop = rect ? (below ? rect.bottom + 12 : Math.max(8, rect.top - 170)) : window.innerHeight / 2 - 80;
+  // Keep the bubble on screen even while the page is still scrolling to the target.
+  const bubbleTop = Math.max(8, Math.min(window.innerHeight - 230, rect ? (below ? rect.bottom + 12 : rect.top - 170) : window.innerHeight / 2 - 80));
   const bubbleLeft = rect ? Math.min(Math.max(8, rect.left), window.innerWidth - 340) : window.innerWidth / 2 - 160;
   return (
     <div className="tour">
@@ -77,7 +136,7 @@ export function Tour({ steps, onClose }: { steps: TourStep[]; onClose: () => voi
           <button onClick={onClose} className="ghost">Close</button>
           <span>
             <button disabled={i === 0} onClick={() => setI(i - 1)}>Back</button>{' '}
-            {i < steps.length - 1 ? <button className="primary" onClick={() => setI(i + 1)}>Next</button> : <button className="primary" onClick={onClose}>Done</button>}
+            {i < steps.length - 1 ? <button className="primary" onClick={() => { if (step.click) findTourTarget(step.target)?.click(); setI(i + 1); }}>Next</button> : <button className="primary" onClick={onClose}>Done</button>}
           </span>
         </div>
       </div>
@@ -92,6 +151,7 @@ export function HelpPanel({ topic, onClose, onTour }: { topic: HelpTopic; onClos
       <header><h3>Help: {topic.title}</h3><button className="ghost" onClick={onClose} aria-label="Close help">✕</button></header>
       <p className="lead">{topic.summary}</p>
       <Md text={topic.body} />
+      {topic.page && <FeatureCards list={featuresFor(topic.page, true)} compact heading="Tools on this page" />}
       <HelpMedia topic={topic} compact />
       <div className="row">
         {onTour && topic.tour && <button className="primary" onClick={onTour}>▶ Guide me through this page</button>}

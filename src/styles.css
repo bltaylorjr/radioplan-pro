@@ -426,3 +426,22 @@ body { font-size: clamp(15px, 0.6vw + 12.5px, 17px); }
 .print-only { display: none; }
 @media print { .print-only { display: block !important; } .label-sheet { display: grid !important; grid-template-columns: repeat(3, 1fr); gap: 6mm; } .asset-label { display: flex; gap: 3mm; align-items: center; border: 1px dashed #999; padding: 3mm; break-inside: avoid; font-size: 9pt; } .asset-label > div:first-child { width: 22mm; flex: none; } .asset-label svg { width: 100%; height: auto; } }
 .pill.ok { background: var(--ok); color: #fff; }
+
+/* 1.5.50: menu sections fold, Find a tool, feature cards */
+button.nav-group-title { display: flex; white-space: normal; align-items: center; gap: 4px; width: calc(100% - 8px); background: none; border: 0; padding: 4px 0; cursor: pointer; text-align: left; font: inherit; font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: #9fb3c8; margin: 12px 4px 2px; }
+button.nav-group-title:hover { color: #fff; }
+.nav-group-title .fold { width: 14px; display: inline-block; }
+.nav-find { padding: 6px 4px 2px; position: relative; }
+.nav-find input { width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 8px; border: 1px solid #4a6280; background: #0f2236; color: var(--side-ink); font-size: .92rem; }
+.nav-find input::placeholder { color: #9fb3c8; }
+.nav-find-hits { margin-top: 4px; background: #13283f; border: 1px solid #2c4560; border-radius: 8px; padding: 4px; }
+.nav-find-hits button { display: flex; white-space: normal; gap: 8px; align-items: flex-start; width: 100%; text-align: left; background: none; border: 0; color: var(--side-ink); padding: 6px; border-radius: 6px; cursor: pointer; font: inherit; }
+.nav-find-hits button:hover, .nav-find-hits button:focus { background: #1d3550; }
+.nav-find-hits b { display: block; font-size: .88rem; font-weight: 600; }
+.nav-find-hits small { display: block; color: #9fb3c8; font-size: .75rem; }
+.nav-find-hits p { color: #9fb3c8; margin: 6px; } .nav-find-hits a { color: #8cc4ff; }
+.feature-cards { margin: 12px 0; } .feature-cards h3 { margin: 16px 0 8px; }
+.feature-card { border: 1px solid var(--line, #d5dde6); border-radius: 10px; padding: 8px 12px; margin: 8px 0; background: var(--panel); }
+.feature-card summary { cursor: pointer; padding: 2px 0; } .feature-card .pill { font-size: .7rem; margin-left: 6px; opacity: .75; }
+.feature-card ol { margin: 6px 0 8px 18px; padding: 0; } .feature-card p { margin: 6px 0; }
+.help-panel .feature-card { padding: 6px 10px; }
