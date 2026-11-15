@@ -359,7 +359,7 @@ This checker is a planning aid only. A licensed professional must verify complia
 
 Enter measured values and mark pass/fail; the results print in the Commissioning report.` },
 
-  { id: 'calculators', title: 'Calculators', page: 'calculators', keywords: 'calculator dbm watts microvolt field strength eirp erp wavelength dipole isolation tilt fspl fresnel horizon diffraction hata link budget vswr return loss coax noise floor intermod mpe erlang ohm voltage drop conductor battery solar ground rod guy wire distance bearing conversion awg', summary: 'Calculators for cabling, power, fire alarm, sound and audio (with a sound level meter and test tones), RF, antennas, grounding and units.',
+  { id: 'calculators', title: 'Calculators', page: 'calculators', keywords: 'calculator dbm watts microvolt field strength eirp erp wavelength dipole isolation tilt fspl fresnel horizon diffraction hata link budget vswr return loss coax noise floor intermod mpe erlang ohm voltage drop conductor battery solar ground rod guy wire distance bearing azimuth back azimuth magnetic compass tilt reset apply to fields use project values conversion awg', summary: 'Calculators for cabling, power, fire alarm, sound and audio (with a sound level meter and test tones), RF, antennas, grounding and units.',
     body: `Type in the search box to filter (for example "vswr", "voltage drop", "erlang").
 
 - **RF levels**: dBm ↔ W ↔ dBW, dBm ↔ µV / dBµV (50 Ω), field strength ↔ received power, EIRP / ERP.
@@ -370,7 +370,12 @@ Enter measured values and mark pass/fail; the results print in the Commissioning
 - **Traffic**: Erlang B channels for trunked systems.
 - **Electrical**: Ohm's law, voltage drop (DC, single- and three-phase), conductor sizing, battery bank, solar array.
 - **Grounding & structure**: ground rod resistance (Dwight), guy wire length.
-- **Location & units**: distance and bearing, DMS, unit and AWG conversions.
+- **Location & units**: the **azimuth calculator** (two GPS points or addresses → true and compass azimuth, back azimuth, distance in miles, and the up / down tilt from the antenna heights), magnetic declination, DMS, unit and AWG conversions.
+
+**Each calculator stands on its own.** It starts from an example and keeps its own numbers: changing the project does not change a calculator, and a calculator never changes the project by itself.
+- **↺ Reset** (top right of each calculator) puts just that calculator back to its example.
+- **⇣ Use project values** copies the matching numbers from this project into the calculator (the project is not changed).
+- **➜ Apply to fields…** puts the result into the matching fields on the other pages, for example the azimuth and downtilt on Tilt, Azimuth & Power, the donor tower for ERCES / BDA aiming, or the battery and circuit values on Fire Alarm & Batteries. A box lists every field with its value now → the new value; untick any you don't want. Press **Undo** right after if you change your mind, and a copy from before is kept in Projects → History.
 
 Distances and lengths follow **Measurements** on Company & Project: Imperial (ft, in, mi, the default) or Metric (m, mm, km).` },
 

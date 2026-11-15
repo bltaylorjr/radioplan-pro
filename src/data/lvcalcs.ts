@@ -2,7 +2,13 @@
 // system's toolkit. Results are planning values; follow the manufacturer, the adopted code and the AHJ.
 export interface CalcInput { k: string; label: string; v: number; unit?: string; step?: number; options?: [number, string][] }
 export interface CalcOut { label: string; value: string; unit?: string; tone?: 'ok' | 'warn' | 'bad' }
-export interface LvCalc { id: string; title: string; group: string; keywords: string; inputs: CalcInput[]; run: (x: Record<string, number>) => CalcOut[]; note?: string }
+/** A project field a calculator result can be written into ("Apply to fields"; always asks first). */
+export interface LvApply { id: string; label: string; page: string; path: (string | number)[]; value: unknown; to: string; on?: boolean; /** How the current value reads (default: as stored). */ show?: (v: unknown) => string }
+export interface LvCalc { id: string; title: string; group: string; keywords: string; inputs: CalcInput[]; run: (x: Record<string, number>) => CalcOut[]; note?: string;
+  /** Optional: the project fields this result can fill in. */
+  apply?: (x: Record<string, number>) => LvApply[];
+  /** Optional: numbers this calculator can copy from the project when the user presses "Use project values". */
+  fromProject?: (p: import('../types').Project) => Record<string, number> }
 
 const r = (x: number, d = 1) => (Number.isFinite(x) ? (Math.round(x * 10 ** d) / 10 ** d).toLocaleString() : '—');
 /** Copper DC resistance, ohms per 1000 ft (NEC Ch. 9 Table 8, uncoated). */
@@ -34,11 +40,25 @@ export const LV_CALCS: LvCalc[] = [
   { id: 'fa-battery', title: 'Standby battery (fire alarm, security, nurse call)', group: 'Power', keywords: 'battery ah standby alarm 24 hour nfpa 72 ul secondary power',
     inputs: [{ k: 'sb', label: 'Total standby current', v: 0.45, unit: 'A', step: 0.01 }, { k: 'al', label: 'Total alarm current', v: 2.2, unit: 'A', step: 0.01 }, { k: 'h', label: 'Standby time', v: 24, unit: 'h' }, { k: 'm', label: 'Alarm time', v: 5, unit: 'min' }, { k: 'sf', label: 'Safety factor', v: 20, unit: '%' }],
     run: (x) => { const ah = (x.sb * x.h + (x.al * x.m) / 60) * (1 + x.sf / 100); const std = [7, 12, 18, 26, 33, 40, 55, 75, 100].find((s) => s >= ah) ?? Math.ceil(ah); return [{ label: 'Required capacity', value: r(ah, 1), unit: 'Ah' }, { label: 'Next standard size', value: String(std), unit: 'Ah' }]; },
-    note: 'Fire alarm: 24 h standby + 5 min alarm (15 min for emergency voice/alarm communications), NFPA 72. Intrusion and other systems follow their UL standard or the spec.' },
+    note: 'Fire alarm: 24 h standby + 5 min alarm (15 min for emergency voice/alarm communications), NFPA 72. Intrusion and other systems follow their UL standard or the spec.',
+    apply: (x) => { const ah = (x.sb * x.h + (x.al * x.m) / 60) * (1 + x.sf / 100), std = [7, 12, 18, 26, 33, 40, 55, 75, 100].find((v) => v >= ah) ?? Math.ceil(ah); return [
+      { id: 'fa-h', label: 'Standby time', page: 'Fire Alarm & Batteries', path: ['alarm', 'standbyHours'], value: x.h, to: `${x.h} h`, show: (v) => `${v} h` },
+      { id: 'fa-m', label: 'Alarm time', page: 'Fire Alarm & Batteries', path: ['alarm', 'alarmMinutes'], value: x.m, to: `${x.m} min`, show: (v) => `${v} min` },
+      { id: 'fa-sf', label: 'Safety factor', page: 'Fire Alarm & Batteries', path: ['alarm', 'safetyFactor'], value: 1 + x.sf / 100, to: `${x.sf} %`, show: (v) => `${Math.round((Number(v) - 1) * 100)} %` },
+      { id: 'fa-ah', label: 'Installed battery', page: 'Fire Alarm & Batteries', path: ['alarm', 'installedBatteryAh'], value: std, to: `${std} Ah (next standard size)`, on: false, show: (v) => `${v} Ah` },
+    ]; },
+    fromProject: (p) => ({ sb: Math.round(p.alarm.devices.reduce((t, d) => t + d.qty * d.standbyMa, 0)) / 1000, al: Math.round(p.alarm.devices.reduce((t, d) => t + d.qty * d.alarmMa, 0)) / 1000, h: p.alarm.standbyHours, m: p.alarm.alarmMinutes, sf: Math.round((p.alarm.safetyFactor - 1) * 100) }) },
   { id: 'lv-drop', title: 'Low-voltage wire drop (locks, NAC, cameras, call stations)', group: 'Power', keywords: 'voltage drop 12v 24v lock strike maglock nac wire gauge',
     inputs: [{ k: 'v', label: 'Supply voltage', v: 24, unit: 'V' }, { k: 'a', label: 'Load current', v: 1.5, unit: 'A', step: 0.01 }, { k: 'ft', label: 'One-way length', v: 200, unit: 'ft' }, { k: 'awg', label: 'Wire size', v: 18, options: AWG_OPTS }, { k: 'min', label: 'Device minimum voltage', v: 16, unit: 'V' }],
     run: (x) => { const d = drop(x.a, x.ft, x.awg), end = x.v - d; return [{ label: 'Voltage drop', value: r(d, 2), unit: 'V' }, { label: 'Voltage at device', value: r(end, 2), unit: 'V', tone: end >= x.min ? 'ok' : 'bad' }, { label: 'Drop', value: r((d / x.v) * 100, 1), unit: '%' }]; },
-    note: 'Copper DC resistance from NEC Chapter 9 Table 8 at 75 °C, both conductors counted. Use the panel\'s starting voltage (often 20.4 V for battery end-of-life on a 24 V system).' },
+    note: 'Copper DC resistance from NEC Chapter 9 Table 8 at 75 °C, both conductors counted. Use the panel\'s starting voltage (often 20.4 V for battery end-of-life on a 24 V system).',
+    apply: (x) => [
+      { id: 'nac-a', label: 'NAC load current', page: 'Fire Alarm & Batteries', path: ['alarm', 'nacLoadA'], value: x.a, to: `${x.a} A`, show: (v) => `${v} A` },
+      { id: 'nac-ft', label: 'NAC one-way length', page: 'Fire Alarm & Batteries', path: ['alarm', 'nacOneWayFt'], value: x.ft, to: `${x.ft} ft`, show: (v) => `${v} ft` },
+      { id: 'nac-awg', label: 'NAC wire size', page: 'Fire Alarm & Batteries', path: ['alarm', 'nacAwg'], value: String(x.awg), to: `#${x.awg} AWG`, show: (v) => `#${v} AWG` },
+      { id: 'nac-min', label: 'Device minimum voltage', page: 'Fire Alarm & Batteries', path: ['alarm', 'minDeviceV'], value: x.min, to: `${x.min} V`, show: (v) => `${v} V` },
+    ],
+    fromProject: (p) => ({ a: p.alarm.nacLoadA, ft: p.alarm.nacOneWayFt, awg: Number(p.alarm.nacAwg) || 14, min: p.alarm.minDeviceV }) },
   { id: 'psu', title: 'Power supply sizing', group: 'Power', keywords: 'power supply amps locks cameras headroom',
     inputs: [{ k: 'n', label: 'Devices', v: 8 }, { k: 'ma', label: 'Current per device', v: 450, unit: 'mA' }, { k: 'head', label: 'Headroom', v: 25, unit: '%' }],
     run: (x) => { const a = (x.n * x.ma) / 1000; return [{ label: 'Load', value: r(a, 2), unit: 'A' }, { label: 'Supply rating at least', value: r(a * (1 + x.head / 100), 2), unit: 'A' }]; },
