@@ -1,3 +1,4 @@
+import { DonorAimCard } from '../components/DonorAim';
 import React from 'react';
 import { useStore } from '../store';
 import { Card, Field, Num, Sel, Check, Stat, Txt, Badge, fmt } from '../components/ui';
@@ -234,6 +235,7 @@ export function ErcesPage() {
           </div>
         </Card>
         <Card title="Code check: IFC 510 / NFPA 1225 / FCC 90.219"><FindingList findings={f} empty={e.enabled ? undefined : 'Enable “Include in project” to run ERCES checks.'} /></Card>
+        <DonorAimCard />
         <RrErcesCard />
       </div>
     </div>

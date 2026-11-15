@@ -4,6 +4,8 @@ import { Card, Field, Num, Stat, fmt } from '../components/ui';
 import { tiltFootprintKm, recommendedTiltDeg, dbmToWatts } from '../engine/rf';
 import { designLink } from '../engine/design';
 import { useUnits, DistNum } from '../units';
+import { MagNote } from '../components/Azimuth';
+import { bearingDeg } from '../engine/geo';
 
 export function OptimizePage() {
   const { project: p, update, go } = useStore();
@@ -22,7 +24,9 @@ export function OptimizePage() {
     <div className="grid2">
       <Card title="Antenna orientation & power">
         <div className="form">
-          <Field label="Azimuth" tip="Direction of the main lobe, degrees true."><Num value={r.azimuthDeg} onChange={(v) => update((d) => { d.radio.azimuthDeg = ((v! % 360) + 360) % 360; })} unit="°T" /></Field>
+          <Field label="Azimuth" tip="Direction of the main lobe, degrees true (°T). The compass (magnetic) reading is shown below it."><span className="stack-tight"><span className="row"><Num value={r.azimuthDeg} onChange={(v) => update((d) => { d.radio.azimuthDeg = ((v! % 360) + 360) % 360; })} unit="°T" />
+            {L.tx && L.rx && L.tx !== L.rx && <button onClick={() => update((d) => { d.radio.azimuthDeg = Math.round(bearingDeg(L.tx!, L.rx!) * 10) / 10; })} title="Point the main lobe at the far-end (RX) site">🎯 Aim at {L.rx.name}</button>}</span>
+            <MagNote trueDeg={r.azimuthDeg} at={L.tx} /></span></Field>
           <Field label="Mechanical downtilt"><Num value={r.mechTiltDeg} onChange={(v) => update((d) => { d.radio.mechTiltDeg = v!; })} unit="°" /></Field>
           <Field label="Electrical downtilt (RET)"><Num value={r.elecTiltDeg} onChange={(v) => update((d) => { d.radio.elecTiltDeg = v!; })} unit="°" /></Field>
           <Field label="TX power"><Num value={r.txPowerDbm} onChange={(v) => update((d) => { d.radio.txPowerDbm = v!; })} unit={`dBm (${dbmToWatts(r.txPowerDbm).toFixed(1)} W)`} /></Field>

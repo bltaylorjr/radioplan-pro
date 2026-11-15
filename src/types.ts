@@ -75,6 +75,8 @@ export interface ErcesDesign {
   splitterLossDb: number; indoorAntGainDbi: number; antennasPerFloor: number; avgPathLossToEdgeDb: number; standbyHours: number;
   nema4Enclosure: boolean; survivabilityRated: boolean; ahjFreqApproval: boolean; fccClassB: boolean; measuredGeneralPct: number | null; measuredCriticalPct: number | null;
   annunciator: boolean;
+  /** Public-safety (donor) tower the roof donor antenna is aimed at. */
+  donorName?: string; donorLat?: number | null; donorLon?: number | null;
 }
 export interface LfHfDesign { mode: 'LF/MF' | 'HF'; fMHz: number; powerKw: number; antennaHeightM: number; groundLossOhm: number; radials: number; soilSigma: number; distanceKm: number; foF2: number; hopKm: number }
 export interface IndoorAntenna { id: string; x: number; y: number; eirpDbm: number; label: string; model: string }
@@ -118,7 +120,9 @@ export interface Project {
   /** PM tasks done: key = system id + task, value = last date done (YYYY-MM-DD). */
   pmDone?: Record<string, string>;
 }
-export interface Blueprint { size: string; scale: string; drawnBy: string; checkedBy: string; revisions: { rev: string; date: string; desc: string }[]; off: string[] }
+export interface Blueprint { size: string; scale: string; drawnBy: string; checkedBy: string; revisions: { rev: string; date: string; desc: string }[]; off: string[];
+  /** Azimuth (degrees true) that the top of the plan faces; turns the north arrow. 0 = plan north is true north. */
+  planNorthDeg?: number }
 export interface Proposal { laborRate: number; laborHours: number; materialsCost: number; markupPct: number; taxPct: number; startDate: string; weeks: number; validDays: number; paymentTerms: string; exclusions: string; notes: string }
 export interface ProjectDoc { id: string; name: string; type: string; size: number; dataUrl: string; addedAt: string; note: string }
 export interface BomExtra { id: string; category: string; item: string; brandModel: string; qty: number; unit: string; notes: string }

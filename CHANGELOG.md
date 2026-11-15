@@ -1,3 +1,13 @@
+# LvPlan Pro 1.5.39
+
+- **Azimuth everywhere a direction matters.** Every azimuth is shown in degrees **true (°T)**, as on maps, GPS and FCC filings, and as a **compass (°M)** reading, with the compass point (NE, SSW…). Magnetic declination comes from the World Magnetic Model WMM2025, built in, so it works offline (about 7° west around Asheville).
+- **📏 Measure distance & azimuth** on every map: tap points to see each leg's distance, azimuth and back azimuth. The TX → RX line and each site's popup show the azimuth from the transmitter.
+- **3D tilt view**: each hop A → relay → B shows the azimuth to aim at each end, both ways, plus the up / down tilt.
+- **Path Profile** and **Equipment & Link Budget**: azimuth and back azimuth TX ↔ RX and the declination. **🎯 Aim at** points the TX antenna at the far end (also on Tilt, Azimuth & Power). Antenna azimuths show the compass reading; Multi-site shows it per transmitter.
+- **ERCES / BDA and Indoor & DAS**: new **Donor antenna aiming** card (type the tower's GPS or address, pick a site, or tap **Aim donor here** in the RadioReference donor list).
+- **Drive Test**: each reading shows its distance and azimuth from the transmitter, plus a **Readings by direction** table to spot a mis-aimed or blocked sector.
+- **Blueprints**: set the plan orientation; the north arrow turns to true north and shows magnetic north. **Calculators**: distance & azimuth with back azimuth, and a true ↔ compass converter. **Reports** print the azimuths. Help has a new **Azimuth, back azimuth & compass** topic.
+
 # LvPlan Pro 1.5.37
 
 - **3D tilt view on every map.** Tap **⛰ 3D tilt view** above any map to see the area as a 3D model with satellite pictures on top (or the topo map, or height colors). A **Tilt** slider and **Straight down / Tilted / Low angle** buttons, plus a height boost slider. **🗺 Flat map** goes back.

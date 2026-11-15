@@ -7,6 +7,7 @@ import { WALL_MATERIALS, multiWallLossDb, p1238LossDb, wallLossDb } from '../eng
 import { rssiColor, RSSI_SCALE } from '../engine/coverage';
 import { uid } from '../defaults';
 import type { IndoorDesign } from '../types';
+import { DonorAimCard } from '../components/DonorAim';
 import { Indoor3D, WALL_HEIGHT_M as WALL_H } from '../components/Indoor3D';
 
 type Tool = 'wall' | 'antenna' | 'erase';
@@ -111,6 +112,7 @@ export function IndoorPage() {
         {d.antennas.length > 0 && <table className="tbl"><thead><tr><th>Label</th><th>Model</th><th>X (m)</th><th>Y (m)</th><th>EIRP (dBm)</th></tr></thead>
           <tbody>{d.antennas.map((a, i) => <tr key={a.id}><td><input value={a.label} onChange={(e) => update((q) => { q.indoor.antennas[i].label = e.target.value; })} /></td><td>{a.model}</td><td>{a.x.toFixed(1)}</td><td>{a.y.toFixed(1)}</td><td><Num value={a.eirpDbm} onChange={(v) => update((q) => { q.indoor.antennas[i].eirpDbm = v!; })} /></td></tr>)}</tbody></table>}
       </Card>
+      <DonorAimCard title="DAS / BDA donor antenna aiming (azimuth)" />
     </div>
   );
 }

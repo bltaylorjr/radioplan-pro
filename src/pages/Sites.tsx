@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { useStore } from '../store';
 import { Card, Field, Txt, Num, Sel, Check, Stat, fmt } from '../components/ui';
-import { parseNmeaGga, averageFixes, NmeaFix, haversineKm, bearingDeg } from '../engine/geo';
+import { parseNmeaGga, averageFixes, NmeaFix, haversineKm } from '../engine/geo';
 import { fetchElevations, sampleDem } from '../engine/terrain';
 import { geocodeAddress } from '../engine/geocode';
 import { usgsPointElevation } from '../engine/autoterrain';
@@ -14,6 +14,7 @@ import { useUnits, DistNum } from '../units';
 import { AddressInput } from '../components/AddressInput';
 import { SiteRunsCard } from '../components/SiteRuns';
 import { NearbyTowers } from '../components/NearbyTowers';
+import { AzStats } from '../components/Azimuth';
 
 export function SitesPage() {
   const { project: p, update, rt } = useStore();
@@ -83,7 +84,7 @@ export function SitesPage() {
         </div>
         {other && <div className="stats">
           <Stat label={`Distance to ${other.name}`} value={fmt(u.d(haversineKm(s, other)), 2)} unit={` ${u.unit}`} />
-          <Stat label="Bearing" value={fmt(bearingDeg(s, other), 1)} unit="°T" />
+          <AzStats a={s} b={other} aName={s.name} bName={other.name} />
           <Stat label="Radio horizon (4/3 earth)" value={fmt(u.d(radioHorizonKm(s.antennaAglM)), 1)} unit={` ${u.unit}`} tip="d = √(2·k·Re·h) ≈ 4.12·√h(m)" />
         </div>}
       </Card>

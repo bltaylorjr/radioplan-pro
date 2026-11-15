@@ -228,6 +228,24 @@ Browsers and Android web apps cannot scan Wi-Fi themselves, so readings always c
 
 Adjust power to balance uplink and downlink and to avoid interference into neighbouring cells. Re-run coverage after changes.` },
 
+  { id: 'azimuth', title: 'Azimuth, back azimuth & compass', keywords: 'azimuth bearing back azimuth reciprocal magnetic declination variation compass true north aim antenna donor yagi measure wmm', summary: 'Azimuth is the direction to aim, in degrees clockwise from north. The app shows true (°T) and compass (°M) values everywhere a direction matters.',
+    body: `**Azimuth** is the direction from one point to another, in degrees clockwise from north: 000° north, 090° east, 180° south, 270° west. The **back azimuth** is the direction from the far end back to you, which is how the far-end antenna is aimed.
+
+**°T (true)** is measured from true (geographic) north, like maps, GPS and FCC filings. **°M (magnetic)** is what a hand compass reads. The difference is the **magnetic declination**, from the World Magnetic Model WMM2025 built into the app (works offline, valid to 2030). In western North Carolina it is about 7° west, so a compass reads about 7° more than the true azimuth. Compass = true − declination (east positive, west negative).
+
+Where you see it:
+- **Every map**: tap **📏 Measure distance & azimuth** and tap points; each leg shows its distance and azimuth. The TX → RX line and each site's popup show the azimuth from the transmitter.
+- **⛰ 3D tilt view**: each hop A → relay → B shows the azimuth to aim at each end, both ways, and the up / down tilt.
+- **Path Profile** and **Equipment & Link Budget**: azimuth and back azimuth TX ↔ RX, the declination, and **🎯 Aim at** to point the TX antenna at the far end.
+- **Tilt, Azimuth & Power** and **Multi-site**: each antenna azimuth with its compass reading.
+- **Emergency Radio (ERCES / BDA)** and **Indoor Coverage & DAS**: donor antenna aiming from the roof to the public-safety tower (also **Aim donor here** in the RadioReference donor list).
+- **Drive Test**: each reading's distance and azimuth from the transmitter, and readings grouped by direction to spot a mis-aimed or blocked sector.
+- **Blueprints**: set the plan orientation; the north arrow turns and shows magnetic north.
+- **Calculators**: distance & azimuth between two points, and true ↔ compass conversion.
+- **Reports**: link, coverage, site and ERCES reports print the azimuths.
+
+Tips: use a GPS antenna alignment tool where you can. With a compass, stand well away from vehicles, roof steel, HVAC units and power lines, and check it against a known landmark. Always peak the antenna on measured signal.` },
+
   { id: 'view3d', title: '3D terrain model', page: 'view3d', keywords: '3d model view terrain mesh tower fresnel ellipsoid existing towers comm sites labels openstreetmap co-locate', summary: 'Interactive 3D terrain with your towers, labeled existing towers, the radio path and the first Fresnel zone.',
     body: `Drag to orbit, right-drag to pan, scroll to zoom. Vertical exaggeration makes terrain easier to read. The red/green line is the path (green = 60% F1 clear). The translucent ellipsoid is the first Fresnel zone.
 

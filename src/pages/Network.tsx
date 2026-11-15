@@ -1,3 +1,4 @@
+import { fmtDeg, trueToMag, declinationDeg } from '../engine/azimuth';
 import React, { useState } from 'react';
 import L from 'leaflet';
 import { useStore } from '../store';
@@ -46,7 +47,7 @@ export function NetworkPage() {
               <td><Num value={t.fMHz} onChange={(v) => setTx(s.id, (x) => { x.fMHz = v ?? x.fMHz; })} /></td>
               <td><Num value={t.txPowerDbm} onChange={(v) => setTx(s.id, (x) => { x.txPowerDbm = v ?? x.txPowerDbm; })} /></td>
               <td><select value={t.antennaId} onChange={(e) => setTx(s.id, (x) => { x.antennaId = e.target.value; })}>{ANTENNAS.map((a) => <option key={a.id} value={a.id}>{a.brand} {a.model}</option>)}</select></td>
-              <td><Num value={t.azimuthDeg} onChange={(v) => setTx(s.id, (x) => { x.azimuthDeg = v ?? 0; })} /></td>
+              <td><Num value={t.azimuthDeg} onChange={(v) => setTx(s.id, (x) => { x.azimuthDeg = (((v ?? 0) % 360) + 360) % 360; })} /><div className="small muted nowrap" title="Compass (magnetic) reading for this azimuth">{fmtDeg(trueToMag(t.azimuthDeg, declinationDeg(s)), 0)}°M</div></td>
               <td><Num value={t.tiltDeg} onChange={(v) => setTx(s.id, (x) => { x.tiltDeg = v ?? 0; })} /></td>
               <td><Num value={t.lossDb} onChange={(v) => setTx(s.id, (x) => { x.lossDb = v ?? 0; })} /></td>
               <td><input type="text" value={t.channel} onChange={(e) => setTx(s.id, (x) => { x.channel = e.target.value; })} /></td>

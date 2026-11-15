@@ -8,6 +8,10 @@ import { DemGrid, demBounds } from '../engine/terrain';
 import { CachedTileLayer } from './cachedTiles';
 import type { LatLon } from '../engine/geo';
 import { loadCommSites, siteLabel, CommSite } from '../engine/towers';
+import { azimuthPair, fmtAz, fmtDecl } from '../engine/azimuth';
+import { useUnits } from '../units';
+import { AZ_TIP } from './Azimuth';
+import { Tip } from './ui';
 
 const TiltView = lazy(() => import('./TiltView'));
 
@@ -111,6 +115,12 @@ export function MapView({ sites, txId, rxId, coverage, floor = -110, dem, onClic
   const clickRef = useRef(onClick); clickRef.current = onClick;
   const extraRef = useRef(extra); extraRef.current = extra;
   const [mode3d, setMode3d] = useState(false);
+  const u = useUnits();
+  // Measure tool: tap points on the map for distance and azimuth (true and magnetic) of each leg.
+  const [measuring, setMeasuring] = useState(false);
+  const [mpts, setMpts] = useState<LatLon[]>([]);
+  const measRef = useRef(false); measRef.current = measuring;
+  const mlayer = useRef<L.LayerGroup>();
   const [view, setView] = useState<{ north: number; south: number; east: number; west: number } | null>(null);
   const baseName = useRef<string>(base ?? DEFAULT_BASE);
   const open3d = () => {
@@ -132,8 +142,9 @@ export function MapView({ sites, txId, rxId, coverage, floor = -110, dem, onClic
     try { if (localStorage.getItem('radioplan.towers') === '1') towers.addTo(m); } catch { /* ignore */ }
     L.control.scale({ imperial: true, metric: true }).addTo(m);
     addLocateControl(m);
-    m.on('click', (e: L.LeafletMouseEvent) => clickRef.current?.(e.latlng.lat, e.latlng.lng));
+    m.on('click', (e: L.LeafletMouseEvent) => { if (measRef.current) setMpts((x) => [...x, { lat: e.latlng.lat, lon: e.latlng.lng }]); else clickRef.current?.(e.latlng.lat, e.latlng.lng); });
     layer.current = L.layerGroup().addTo(m);
+    mlayer.current = L.layerGroup().addTo(m);
     map.current = m;
     if (!center && sites.length > 1) m.fitBounds(L.latLngBounds(sites.map((s) => [s.lat, s.lon])), { padding: [40, 40] });
     onMap?.(m);
@@ -151,21 +162,43 @@ export function MapView({ sites, txId, rxId, coverage, floor = -110, dem, onClic
     if (dem) { const b = demBounds(dem); L.rectangle([[b.south, b.west], [b.north, b.east]], { color: '#8a5a2b', weight: 1, dashArray: '4 4', fill: false, interactive: false }).addTo(g); }
     if (coverage) L.imageOverlay(coverageCanvas(coverage, floor), [[coverage.south, coverage.west], [coverage.north, coverage.east]], { opacity: 0.75, interactive: false }).addTo(g);
     const tx = sites.find((s) => s.id === txId), rx = sites.find((s) => s.id === rxId);
-    if (tx && rx && tx !== rx) L.polyline([[tx.lat, tx.lon], [rx.lat, rx.lon]], { color: '#1565c0', weight: 3 }).addTo(g);
+    if (tx && rx && tx !== rx) {
+      const z = azimuthPair(tx, rx);
+      L.polyline([[tx.lat, tx.lon], [rx.lat, rx.lon]], { color: '#1565c0', weight: 3 })
+        .bindTooltip(`${esc(tx.name)} → ${esc(rx.name)}: ${u.f(z.km)}<br>Azimuth ${fmtAz(z.fwd, z.decA)}<br>Back azimuth ${fmtAz(z.back, z.decB)}`, { sticky: true }).addTo(g);
+    }
     sites.forEach((s, i) => {
       const color = s.id === txId ? '#c62828' : s.id === rxId ? '#1565c0' : '#555';
+      const z = tx && s.id !== tx.id ? azimuthPair(tx, s) : null;
       L.marker([s.lat, s.lon], { icon: icon(i < 26 ? String.fromCharCode(65 + i) : String(i + 1), s.id === selectedId ? '#ef6c00' : color) })
-        .bindPopup(`<b>${s.name}</b><br>${s.lat.toFixed(6)}, ${s.lon.toFixed(6)}<br>Ground ${s.groundElevM ?? '?'} m, antenna ${s.antennaAglM} m AGL`).addTo(g);
+        .bindPopup(`<b>${esc(s.name)}</b><br>${s.lat.toFixed(6)}, ${s.lon.toFixed(6)}<br>Ground ${s.groundElevM ?? '?'} m, antenna ${s.antennaAglM} m AGL`
+          + (z ? `<br>From ${esc(tx!.name)}: ${u.f(z.km)} at ${fmtAz(z.fwd, z.decA)}<br>Aim back at ${fmtAz(z.back, z.decB)}` : '')).addTo(g);
     });
     if (marker) L.marker([marker.lat, marker.lon], { icon: icon('★', '#ef6c00') }).bindPopup(marker.label ?? 'Search location').addTo(g);
     extraRef.current?.(g);
-  }, [sites, txId, rxId, coverage, floor, dem, selectedId, marker, extraKey]);
+  }, [sites, txId, rxId, coverage, floor, dem, selectedId, marker, extraKey, u.unit]); // eslint-disable-line react-hooks/exhaustive-deps
+  const legs = mpts.slice(1).map((b, i) => azimuthPair(mpts[i], b));
+  useEffect(() => {
+    const g = mlayer.current; if (!g) return; g.clearLayers();
+    if (!mpts.length) return;
+    L.polyline(mpts.map((q) => [q.lat, q.lon] as [number, number]), { color: '#ef6c00', weight: 3, dashArray: '6 4', interactive: false }).addTo(g);
+    mpts.forEach((q, i) => L.circleMarker([q.lat, q.lon], { radius: 5, color: '#fff', weight: 2, fillColor: '#ef6c00', fillOpacity: 1 }).bindTooltip(String(i + 1), { permanent: true, direction: 'top', className: 'measure-label' }).addTo(g));
+    legs.forEach((z, i) => { const a = mpts[i], b = mpts[i + 1];
+      L.tooltip({ permanent: true, direction: 'center', className: 'measure-label' }).setLatLng([(a.lat + b.lat) / 2, (a.lon + b.lon) / 2]).setContent(`${u.f(z.km)} · ${fmtAz(z.fwd, z.decA, 0)}`).addTo(g); });
+  }, [mpts, u.unit]); // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <FullView title="Map">
       <div className="row map-modes" role="group" aria-label="Map view">
         <button className={!mode3d ? 'primary' : ''} onClick={close3d} aria-pressed={!mode3d}>🗺 Flat map</button>
         <button className={mode3d ? 'primary' : ''} onClick={open3d} aria-pressed={mode3d} title="Tilt the map in 3D with satellite pictures and line of sight">⛰ 3D tilt view</button>
+        {!mode3d && <button className={measuring ? 'primary' : ''} aria-pressed={measuring} onClick={() => { setMeasuring(!measuring); if (measuring) setMpts([]); }} title="Tap points on the map to measure distance and azimuth">📏 {measuring ? 'Stop measuring' : 'Measure distance & azimuth'}</button>}
       </div>
+      {measuring && !mode3d && <div className="note measure-panel">
+        {mpts.length < 2 ? <span>Tap the map to drop point {mpts.length + 1}. Each leg shows its distance and the azimuth to aim. <Tip text={AZ_TIP} /></span>
+          : <><ol className="small" style={{ margin: '2px 0 4px', paddingLeft: 20 }}>{legs.map((z, i) => <li key={i}><b>{i + 1} → {i + 2}</b>: {u.f(z.km)}, azimuth <b>{fmtAz(z.fwd, z.decA)}</b>, back azimuth {fmtAz(z.back, z.decB)}</li>)}</ol>
+            <span className="small">Total {u.f(legs.reduce((t, z) => t + z.km, 0))}. Magnetic declination here {fmtDecl(legs[0].decA)} (WMM2025). <Tip text={AZ_TIP} /></span></>}
+        {mpts.length > 0 && <span className="row" style={{ gap: 6, marginTop: 4 }}><button onClick={() => setMpts((x) => x.slice(0, -1))}>↶ Undo point</button><button onClick={() => setMpts([])}>Clear</button></span>}
+      </div>}
       <div ref={el} className="map" style={{ height, display: mode3d ? 'none' : undefined }} data-tour="map" />
       {mode3d && <Suspense fallback={<div className="three empty" style={{ height }}>Loading 3D view…</div>}>
         <TiltView view={view} sites={sites} txId={txId} rxId={rxId} dem={dem} base={baseName.current} height={height} />

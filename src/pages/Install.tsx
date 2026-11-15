@@ -48,7 +48,7 @@ export const GUIDES: Guide[] = [
     tools: ['Torque wrench and connector tools for the cable type', 'Cable cutter / prep tool', 'Weatherproofing kit (butyl + cold shrink or tape)', 'Grounding kits (top, bottom, entry)', 'Cable/antenna analyzer'],
     safety: ['Climbing only by trained, certified climbers with 100 % tie-off.', 'Check RF exposure: power down or lock out nearby transmitters before working near antennas.', 'Never work on towers or rooftops during lightning or high wind.'],
     steps: [
-      'Assemble and mount the antenna at the height and azimuth on the plan. Check plumb (omni) or azimuth and downtilt (panel) with a compass / inclinometer.',
+      'Assemble and mount the antenna at the height and azimuth on the plan. Check plumb (omni) or azimuth and downtilt (panel) with an alignment tool or compass and an inclinometer. The plan gives azimuth in °T (true); a compass reads °M (magnetic, about 7° more in western NC). The app shows both.',
       'Connect a short jumper from the antenna to the main feedline. Torque connectors to the manufacturer value.',
       'Weatherproof every outdoor connection: tape or butyl, then cold shrink, sealed upward so water runs off.',
       'Run the feedline down the tower with a hanger every 3 ft (or per datasheet). Keep the minimum bend radius.',

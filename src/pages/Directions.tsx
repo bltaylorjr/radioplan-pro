@@ -1,5 +1,6 @@
 // Map and directions to the project site: map of the location, one-tap directions in Google Maps,
 // Apple Maps or Waze, from your office or where you are now, and the details a crew needs.
+import { fmtAz, declinationDeg } from '../engine/azimuth';
 import React, { useState } from 'react';
 import { useStore } from '../store';
 import { Card } from '../components/ui';
@@ -73,7 +74,7 @@ export function DirectionsPage() {
           <a className="button" href={waze} target="_blank" rel="noreferrer">🚗 Waze</a>
           <button onClick={locate}>📡 Show me on the map</button>
         </div>
-        {here && hasPos && <p className="small">You are {u.f(hav(here, s))} {compass(bearing(here, s))} of here in a straight line (±{Math.round(here.acc)} m).</p>}
+        {here && hasPos && <p className="small">You are {u.f(hav(here, s))} {compass(bearing(here, s))} of here in a straight line, azimuth {fmtAz(bearing(here, s), declinationDeg(here), 0)} (±{Math.round(here.acc)} m).</p>}
         {office && <><h4>From your office</h4>
           <p className="small muted">{office}</p>
           <div className="row wrap">
