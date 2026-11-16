@@ -1,4 +1,4 @@
-# LvPlan Pro 1.5.62
+# LvPlan Pro 1.5.63
 
 - **💲 Prices on the Materials list** (now called Materials List & Estimate): type a unit cost on any line and the line total, the category totals and the materials subtotal fill in. Prices you type are saved to your price list on this device and fill in the same item on your next project. Lines without a price are counted so nothing is missed.
 - **Change, add and remove any line**: ✎ changes the item, brand / model, part number, unit, vendor or price of any line, including calculated ones (Put back the design values undoes it). ✕ removes a line; calculated lines go under Removed lines and can be put back. ✕ Remove selected removes several at once.
@@ -9,6 +9,11 @@
 - **Estimate and budget**: sales tax, shipping, contingency, overhead and profit, and materials, labor and project budgets. **Anything over budget shows in red** with how much it is over; under budget shows what is left. The PDF and CSV exports include part numbers, vendors, prices and the estimate, and the proposal on Reports uses these totals when its own boxes are blank.
 - **Introduction video**: a new part shows prices, vendors, online search, labor and the budget.
 
+# LvPlan Pro 1.5.62
+
+- **Fixed: "This page could not open – Importing a module script failed"** (seen on iPhone on Map & Terrain). It happened when a new version was published while the app was open: the open copy asked for page files that no longer exist on the website. Now the app tries again, and if the files have changed it reloads itself once into the new version and opens the page. The offline copy also keeps the previous version's files, so an open app keeps working during an update.
+- A page that cannot download no longer starts the project-repair steps (the project was never the problem). Offline, it says to connect once to save that page.
+
 # LvPlan Pro 1.5.61
 
 - **🏫 Multi-Building Site & Campus** (new page after 2D & 3D Models): plan a whole site with more than one building. The main building comes from Auto-Design; add outbuildings, a gym, a guard house or a parking deck, each with its own type, size, floors and outside walls.
@@ -17,6 +22,7 @@
 - **Outdoor signal heat map** for the whole site, using each building's outside walls.
 - **Cable schedule** and **site materials list** (cable, conduit, handholes, poles, fiber enclosures, entrance protectors, wireless radios), with CSV download and **Add to Materials list**. **CAD drawing (DXF)** of the whole site.
 - **Introduction video**: a new part shows the site and campus package.
+
 # LvPlan Pro 1.5.60
 
 - **Starts about twice as fast.** Each page now loads the first time you open it instead of all at start, so the app downloads 427 KB instead of 922 KB before it is ready (online version, slow phone connection: about 2.7 s instead of 5.6 s) and uses a third less memory.

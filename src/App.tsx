@@ -1,4 +1,5 @@
 import React, { Suspense, lazy, useEffect, useState } from 'react';
+import { loadChunk } from './engine/chunkload';
 import { useStore, downloadText } from './store';
 import { HELP } from './help/content';
 import { HelpManual, HelpPanel, Tour } from './help/HelpUI';
@@ -32,7 +33,7 @@ import { DevicesPage, useDevices } from './pages/Devices';
 import { setDistanceUnit, ROLE_LABEL } from './engine/devices';
 /** Each page loads the first time it is opened, so the app starts quickly. */
 function page<M extends Record<string, unknown>>(load: () => Promise<M>, name: keyof M & string) {
-  return lazy(() => load().then((m) => ({ default: m[name] as React.ComponentType })));
+  return lazy(() => loadChunk(load).then((m) => ({ default: m[name] as React.ComponentType })));
 }
 const DirectionsPage = page(() => import('./pages/Directions'), 'DirectionsPage');
 const SitesPage = page(() => import('./pages/Sites'), 'SitesPage');
@@ -74,11 +75,11 @@ const CampusPage = page(() => import('./pages/Campus'), 'CampusPage');
 const SettingsPage = page(() => import('./pages/Settings'), 'SettingsPage');
 const SignalReadingsPage = page(() => import('./pages/SignalReadings'), 'SignalReadingsPage');
 const AssetsPage = page(() => import('./pages/Assets'), 'AssetsPage');
-const TerrainPage = lazy(() => import('./pages/Terrain'));
-const CoveragePage = lazy(() => import('./pages/Coverage'));
-const View3DPage = lazy(() => import('./pages/View3D'));
-const FccPage = lazy(() => import('./pages/Fcc'));
-const FaaPage = lazy(() => import('./pages/Faa'));
+const TerrainPage = lazy(() => loadChunk(() => import('./pages/Terrain')));
+const CoveragePage = lazy(() => loadChunk(() => import('./pages/Coverage')));
+const View3DPage = lazy(() => loadChunk(() => import('./pages/View3D')));
+const FccPage = lazy(() => loadChunk(() => import('./pages/Fcc')));
+const FaaPage = lazy(() => loadChunk(() => import('./pages/Faa')));
 const OfflineArea = page(() => import('./components/OfflineArea'), 'OfflineArea');
 import { MapPackBadge } from './components/MapPacks';
 

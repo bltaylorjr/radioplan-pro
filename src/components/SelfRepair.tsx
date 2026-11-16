@@ -3,20 +3,15 @@ import { useStore } from '../store';
 import { repairProject } from '../engine/repair';
 import { listVersions } from '../engine/projectdb';
 import { logRepair } from '../engine/carelog';
+import { isChunkError, reloadForUpdate } from '../engine/chunkload';
 
-const RELOADED = 'radioplan.chunkReload';
 export { logRepair, repairLog } from '../engine/carelog';
 
 /** After an update, an old page can ask for program files that no longer exist. Reload once to pick up the new ones. */
 export function installChunkRecovery() {
-  const fix = (msg: string) => {
-    if (!/Failed to fetch dynamically imported module|Importing a module script failed|ChunkLoadError|Loading chunk/i.test(msg)) return;
-    try { if (sessionStorage.getItem(RELOADED)) return; sessionStorage.setItem(RELOADED, '1'); } catch { return; }
-    logRepair('Reloaded to pick up updated program files'); location.reload();
-  };
-  window.addEventListener('error', (e) => fix(String(e.message)));
-  window.addEventListener('unhandledrejection', (e) => fix(String((e.reason as Error)?.message ?? e.reason)));
-  setTimeout(() => { try { sessionStorage.removeItem(RELOADED); } catch { /* ignore */ } }, 30000);
+  const fix = (e: unknown) => { if (isChunkError(e)) reloadForUpdate(); };
+  window.addEventListener('error', (e) => fix(e.error ?? e.message));
+  window.addEventListener('unhandledrejection', (e) => fix(e.reason));
 }
 
 type Props = { page: string; children: React.ReactNode; onRepair: () => string[]; onRestore: () => Promise<boolean>; onHome: () => void };
@@ -28,6 +23,11 @@ class Boundary extends React.Component<Props, State> {
   componentDidUpdate(prev: Props) { if (prev.page !== this.props.page && this.state.err) this.setState({ err: null, tries: 0, note: '' }); }
   async componentDidCatch(err: Error) {
     logRepair(`Page "${this.props.page}" stopped: ${err.message}`);
+    if (isChunkError(err)) {
+      // The page's program file did not load: nothing is wrong with the project, so never touch the data.
+      if (!reloadForUpdate()) this.setState({ tries: 2 });
+      return;
+    }
     if (this.state.tries === 0) {
       // First try: repair the project data and show the page again.
       const fixes = this.props.onRepair(); logRepair(fixes.length ? `Repaired: ${fixes.join('; ')}` : 'Checked project data: nothing damaged');
@@ -41,6 +41,13 @@ class Boundary extends React.Component<Props, State> {
     }
   }
   render() {
+    if (this.state.err && this.state.tries >= 2 && isChunkError(this.state.err)) return (
+      <div className="card"><h3>This page could not load</h3>
+        <p>{navigator.onLine === false
+          ? 'This page has not been saved on this device yet, and there is no internet right now. Connect once and open it again; after that it works offline.'
+          : 'The app could not download this page. Your work is saved. Press Try again.'}</p>
+        <p className="small muted">{this.state.err.message}</p>
+        <div className="row"><button className="primary" onClick={() => location.reload()}>Try again</button><button onClick={this.props.onHome}>Go to the first page</button></div></div>);
     if (this.state.err && this.state.tries >= 2) return (
       <div className="card"><h3>This page could not open</h3>
         <p>The app tried to repair it automatically. Your work is saved. Pick another page, or go back to the start.</p>

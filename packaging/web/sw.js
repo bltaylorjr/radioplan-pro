@@ -16,7 +16,9 @@ self.addEventListener('install', (e) => {
 
 self.addEventListener('activate', (e) => {
   e.waitUntil((async () => {
-    for (const k of await caches.keys()) if (k.startsWith('lvplan-') && k !== CACHE) await caches.delete(k);
+    // Keep the previous version's files too: a page that was already open keeps working until it reloads.
+    const old = (await caches.keys()).filter((k) => k.startsWith('lvplan-') && k !== CACHE);
+    for (const k of old.slice(0, -1)) await caches.delete(k);
     await self.clients.claim();
     // Save the large data files in the background, one at a time so the phone stays responsive.
     const c = await caches.open(CACHE);
@@ -48,7 +50,7 @@ self.addEventListener('fetch', (e) => {
   // Program files have a fingerprint in their name, so a saved copy is always right.
   e.respondWith((async () => {
     const c = await caches.open(CACHE);
-    const hit = await c.match(req, { ignoreSearch: true });
+    const hit = (await c.match(req, { ignoreSearch: true })) || (await caches.match(req, { ignoreSearch: true }));
     if (hit) return hit;
     const r = await fetch(req);
     if (r.ok && r.type === 'basic') c.put(req, r.clone());
