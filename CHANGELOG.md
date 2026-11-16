@@ -1,8 +1,19 @@
-# LvPlan Pro 1.5.65
+# LvPlan Pro 1.5.66
 
 - **Sharper maps on iPhone and other high-resolution screens.** The flat map now builds each map square from the four more-detailed squares under it, so roads, contour lines, labels and satellite pictures are crisp instead of soft. If those aren't saved (offline), it shows the normal map as before.
 - **Zoom in closer**: every map picture can now zoom to level 20. Past a picture's most detailed level it enlarges the last one instead of stopping.
 - **Sharper 3D tilt view**: the satellite picture over the 3D ground uses up to 4 times more detail (high-res satellite up to level 18, up to 4096 × 4096 pixels), and the ground uses more terrain detail. Offline, any square not saved at full detail is filled from a saved less-detailed one, not left as plain height colors.
+
+# LvPlan Pro 1.5.65
+
+- **Terrain and towers download by themselves.** The 🌐 Download terrain button on 3D Model is gone because there is nothing to download by hand any more. Whenever the app is online it fetches, in the background:
+  - the terrain for the whole area around your sites (as before),
+  - **extra-detailed terrain along the radio link** (down to about 8 m, what the old button gave you), and
+  - the **existing towers and comm sites** (OpenStreetMap) for the area.
+  All of it is saved on the device, so it is there offline too. A failed download tries again by itself (15 s, 30 s, 1 min… then every 5 min) and right away when the device comes back online.
+- **3D Model** shows the sharpest terrain it has. When both are ready, **Link detail** and **Whole area** switch between the detailed path and everything around your sites.
+- **Path profile, ground elevation on Site Data and the FAA height check** also use the detailed link terrain when the point is inside it.
+- A terrain file you import yourself is never replaced. Turn it all off under Offline maps → Automatic terrain.
 
 # LvPlan Pro 1.5.64
 

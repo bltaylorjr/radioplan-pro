@@ -225,7 +225,7 @@ export function autoDesign(p: Project, x: AutoInputs, terrain?: TerrainInfo): Au
   if (terrain) {
     notes.push(`Site ground elevation ${Math.round(terrain.elevM)} m; terrain varies ${Math.round(terrain.reliefM)} m within 2 km.`);
     if (has('das', 'erces', 'callbox', 'radio')) notes.push(terrain.lowerByM > 30 ? `The site sits about ${Math.round(terrain.lowerByM)} m below the surrounding high ground: expect weaker outdoor signal. Put the donor antenna on the highest roof corner and survey before setting BDA gain; check cellular signal at each call box spot.` : 'The site is not in a low spot: outdoor signal should not be blocked by nearby terrain. Still survey the donor signal before setting gain.');
-  } else if (has('das', 'erces', 'callbox')) notes.push('Download terrain (Map & Terrain) to include the site\'s elevation and surrounding hills in the donor and call box advice.');
+  } else if (has('das', 'erces', 'callbox')) notes.push('Terrain for this site downloads by itself the next time the app is online; the site\'s elevation and surrounding hills are then added to the donor and call box advice.');
   if (!sys.size) notes.push('Pick the project type and sub-projects first (Project Systems).');
   return { devices: dev, trs, equipment: eq, materials: mat, notes, areaSqft: area };
 }

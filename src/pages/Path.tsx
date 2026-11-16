@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useStore } from '../store';
 import { Card, Field, Num, Sel, Stat, fmt, Tip } from '../components/ui';
 import { ProfileChart } from '../components/ProfileChart';
-import { buildProfile, analyzeProfile, sampleDem, fetchElevations, ProfilePoint } from '../engine/terrain';
+import { buildProfile, analyzeProfile, sampleDem, finestDem, fetchElevations, ProfilePoint } from '../engine/terrain';
 import { designLink } from '../engine/design';
 import { fsplDb, receivedPowerDbm, radioHorizonKm, losDistanceKm, fresnelRadiusM } from '../engine/rf';
 import { interpolate, haversineKm } from '../engine/geo';
@@ -23,7 +23,8 @@ export function PathPage() {
     try {
       const n = 120;
       let pts: ProfilePoint[];
-      if (rt.dem && sampleDem(rt.dem, tx) != null && sampleDem(rt.dem, rx) != null) { pts = buildProfile(tx, rx, n, (q) => sampleDem(rt.dem!, q)); setMsg(`Profile from ${rt.dem.source}.`); }
+      const g = finestDem([rt.demPath, rt.dem], [tx, rx]);
+      if (g) { pts = buildProfile(tx, rx, n, (q) => sampleDem(g, q)); setMsg(`Profile from ${g.source}.`); }
       else {
         const ll = Array.from({ length: n + 1 }, (_, i) => interpolate(tx, rx, i / n));
         const z = await fetchElevations(ll);

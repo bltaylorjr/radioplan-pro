@@ -47,7 +47,7 @@ export const PAGE_TOURS: Record<string, TourStep[]> = {
     { target: 'text:Side view', title: 'Side view of the beam', text: 'The beam over the real ground, so you can see where it lands.' },
   ],
   view3d: [
-    { target: 'text:Download terrain', title: 'Terrain', text: 'Downloads the ground heights around the sites (needs internet once).' },
+    { target: 'text:Vertical exaggeration', title: 'Terrain', text: 'Ground heights download by themselves in the background when you are online and are saved for offline use. Link detail shows the sharper terrain along the radio path; Whole area shows everything around your sites.' },
     { target: 'text:3D terrain model', title: '3D model', text: 'Drag to turn, scroll or pinch to zoom. Towers and the Fresnel zone are drawn to height.' },
   ],
   radioref: [

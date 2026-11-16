@@ -2,7 +2,7 @@ import React, { useRef, useState } from 'react';
 import { useStore } from '../store';
 import { Card, Field, Txt, Num, Sel, Check, Stat, fmt } from '../components/ui';
 import { parseNmeaGga, averageFixes, NmeaFix, haversineKm } from '../engine/geo';
-import { fetchElevations, sampleDem } from '../engine/terrain';
+import { fetchElevations, sampleDem, finestDem } from '../engine/terrain';
 import { geocodeAddress } from '../engine/geocode';
 import { usgsPointElevation } from '../engine/autoterrain';
 import { parseLatLon } from '../engine/locparse';
@@ -61,8 +61,8 @@ export function SitesPage() {
   };
   const stopSerial = () => { serialStop.current?.(); const a = averageFixes(live); if (a) { setPos(a.lat, a.lon, `Live GNSS (${a.quality}, ${a.count} fixes)`, a.stdDev2dM, null); setMsg(`Averaged ${a.count} live fixes, σ2D ${a.stdDev2dM.toFixed(2)} m.`); } setLive([]); };
   const elev = async () => {
-    const fromDem = rt.dem ? sampleDem(rt.dem, s) : null;
-    if (fromDem != null) { set('groundElevM', Math.round(fromDem * 10) / 10); setMsg(`Ground elevation from ${rt.dem!.source}: ${fromDem.toFixed(1)} m.`); return; }
+    const g = finestDem([rt.demPath, rt.dem], [s]), fromDem = g ? sampleDem(g, s) : null;
+    if (fromDem != null) { set('groundElevM', Math.round(fromDem * 10) / 10); setMsg(`Ground elevation from ${g!.source}: ${fromDem.toFixed(1)} m.`); return; }
     try { const z = await usgsPointElevation(s); set('groundElevM', Math.round(z * 100) / 100); setMsg(`Ground elevation (USGS 3DEP point query): ${z.toFixed(2)} m NAVD88.`); return; } catch { /* outside US / offline */ }
     try { const [z] = await fetchElevations([s]); set('groundElevM', z); setMsg(`Ground elevation (Copernicus 90 m DEM): ${z} m.`); } catch (e) { setMsg(`Elevation lookup failed (offline?): ${(e as Error).message}. Terrain cached for this area is used automatically when available.`); }
   };
