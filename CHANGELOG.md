@@ -1,3 +1,14 @@
+# LvPlan Pro 1.5.65
+
+- **Terrain and towers download by themselves.** The 🌐 Download terrain button on 3D Model is gone because there is nothing to download by hand any more. Whenever the app is online it fetches, in the background:
+  - the terrain for the whole area around your sites (as before),
+  - **extra-detailed terrain along the radio link** (down to about 8 m, what the old button gave you), and
+  - the **existing towers and comm sites** (OpenStreetMap) for the area.
+  All of it is saved on the device, so it is there offline too. A failed download tries again by itself (15 s, 30 s, 1 min… then every 5 min) and right away when the device comes back online.
+- **3D Model** shows the sharpest terrain it has. When both are ready, **Link detail** and **Whole area** switch between the detailed path and everything around your sites.
+- **Path profile, ground elevation on Site Data and the FAA height check** also use the detailed link terrain when the point is inside it.
+- A terrain file you import yourself is never replaced. Turn it all off under Offline maps → Automatic terrain.
+
 # LvPlan Pro 1.5.64
 
 - **Layers, zoom and tilt on full page maps.** Open any map or 3D view with ⛶ Full page and you get big buttons made for fingers:

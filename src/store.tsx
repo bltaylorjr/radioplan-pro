@@ -19,7 +19,9 @@ const CUR = 'radioplan.currentId';
 export interface LocateTarget { lat: number; lon: number; label: string; state?: string; county?: string }
 export interface Runtime {
   dem: DemGrid | null; demAuto?: boolean; profile: ProfileAnalysis | null; coverage: CoverageResult | null;
-  terrainStatus?: string; mapStatus?: string; locate?: LocateTarget | null; query?: string;
+  /** Detailed terrain (up to ~8 m) around the TX–RX link, downloaded in the background; never saved in the project. */
+  demPath?: DemGrid | null;
+  terrainStatus?: string; mapStatus?: string; towerStatus?: string; locate?: LocateTarget | null; query?: string;
   /** Set after Save or an export with required fields empty: only then are they highlighted. */
   showRequired?: boolean;
   /** A point handed from one tool to another (FCC towers → FAA height check, etc.). */

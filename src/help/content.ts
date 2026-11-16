@@ -354,7 +354,7 @@ Tips: use a GPS antenna alignment tool where you can. With a compass, stand well
 
 **Existing towers (labeled)** stands up the towers, masts and comm sites already mapped in OpenStreetMap as purple masts with their name and height, so you can plan around them or look for a co-location spot. Areas you have viewed stay saved for offline use. Heights and owners may be missing or out of date: check the FCC Antenna Structure Registration (ASR) database and the owner before relying on one.
 
-The 3D model uses the loaded DEM; if none is loaded click **Fetch online terrain**.` },
+**Terrain downloads by itself.** Whenever you are online the app fetches the ground heights around your sites in the background, then extra detail (down to about 8 m) along the radio link, plus the existing towers for the area, and saves them all for offline use. There is nothing to download by hand. **Link detail** shows the sharper terrain along the path; **Whole area** shows everything around your sites. If you import your own terrain file it is never replaced.` },
 
   { id: 'grounding', title: 'Grounding, bonding & structure', page: 'grounding', keywords: 'grounding bonding ground rod ring surge protector lightning nec 810 250 tia-222 r56 tia-607 resistance', summary: 'Grounding electrode system, bonding conductors, surge protection and structural class for code checks.',
     body: `Key requirements checked (NEC 2020/2023):

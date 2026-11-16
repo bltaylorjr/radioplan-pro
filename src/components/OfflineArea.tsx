@@ -22,7 +22,7 @@ export function OfflineArea({ viewBounds }: { viewBounds?: Bounds | null }) {
       <MapPacks viewBounds={viewBounds} />
       <Card title="Automatic offline maps & terrain" tip="While online, the app saves terrain and the topo map around your sites by itself, and keeps every map tile you look at.">
         <div className="form">
-          <Field label="Automatic terrain"><Check value={p.settings?.autoTerrain ?? true} onChange={(v) => update((d) => { d.settings = { ...(d.settings ?? { terrainMarginKm: 5 }), autoTerrain: v }; })} label="Download terrain for my sites automatically" /></Field>
+          <Field label="Automatic terrain"><Check value={p.settings?.autoTerrain ?? true} onChange={(v) => update((d) => { d.settings = { ...(d.settings ?? { terrainMarginKm: 5 }), autoTerrain: v }; })} label="Download terrain (with extra detail along the radio link) and existing towers for my sites automatically" /></Field>
           <Field label="Automatic maps"><Check value={p.settings?.autoMaps ?? true} onChange={(v) => update((d) => { d.settings = { ...d.settings, autoMaps: v }; })} label="Save the topo map around my sites for offline use" /></Field>
         </div>
         <div className="row wrap">
