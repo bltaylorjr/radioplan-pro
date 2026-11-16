@@ -36,3 +36,35 @@ export async function loadChunk<T>(load: () => Promise<T>): Promise<T> {
   if (navigator.onLine !== false && reloadForUpdate()) return new Promise<T>(() => undefined); // the page is reloading
   throw err;
 }
+
+// ---- Pages are downloaded quietly in the background after start ----
+// The app opens with only the first page; the rest follow one by one while the app is idle, so by the
+// time a page is picked it is already on the device and opens at once (no "Loading…" on a phone).
+const LOADERS: (() => Promise<unknown>)[] = [];
+
+/** Register a page's loader for the background download, and return it for React.lazy. */
+export function track<T>(load: () => Promise<T>): () => Promise<T> {
+  LOADERS.push(load); // background: a plain try, never a reload (that could interrupt the user)
+  return () => loadChunk(load); // opening the page: retries and the update reload
+}
+
+const idle = () => new Promise<void>((r) => {
+  const w = window as Window & { requestIdleCallback?: (f: () => void, o?: { timeout: number }) => void };
+  if (w.requestIdleCallback) w.requestIdleCallback(() => r(), { timeout: 1500 }); else setTimeout(r, 50);
+});
+
+let started = false;
+/** Start the background page downloads (once). Skipped when the phone is set to save data. */
+export function preloadPages(delayMs = 1500) {
+  if (started || typeof window === 'undefined') return;
+  started = true;
+  const conn = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
+  if (conn?.saveData) return;
+  setTimeout(async () => {
+    for (const f of LOADERS) {
+      await idle();
+      if (navigator.onLine === false) break;
+      await f().catch(() => undefined);
+    }
+  }, delayMs);
+}
