@@ -1,6 +1,7 @@
 import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { HELP, HelpTopic, TourStep } from './content';
 import { FEATURES, Feature, featuresFor, showFeature } from './features';
+import { loadChunk } from '../engine/chunkload';
 
 /** Find a walkthrough target: a data-tour="name" element, or (with "text:") the visible button,
  *  link, label or heading whose words match best. Falls back to a heading that matches the step title. */
@@ -50,7 +51,7 @@ export function FeatureCards({ ids, list, compact, heading }: { ids?: string[]; 
 }
 
 // Diagrams and guides in help load only when help is opened.
-const HelpMediaLazy = React.lazy(() => import('./HelpMedia').then((m) => ({ default: m.HelpMedia })));
+const HelpMediaLazy = React.lazy(() => loadChunk(() => import('./HelpMedia')).then((m) => ({ default: m.HelpMedia })));
 const HelpMedia = (p: { topic: HelpTopic; compact?: boolean }) => <React.Suspense fallback={null}><HelpMediaLazy {...p} /></React.Suspense>;
 
 /** Minimal markdown: paragraphs, "- " lists, numbered lists, **bold**. */

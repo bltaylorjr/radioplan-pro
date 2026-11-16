@@ -1,3 +1,8 @@
+# LvPlan Pro 1.5.62
+
+- **Fixed: "This page could not open – Importing a module script failed"** (seen on iPhone on Map & Terrain). It happened when a new version was published while the app was open: the open copy asked for page files that no longer exist on the website. Now the app tries again, and if the files have changed it reloads itself once into the new version and opens the page. The offline copy also keeps the previous version's files, so an open app keeps working during an update.
+- A page that cannot download no longer starts the project-repair steps (the project was never the problem). Offline, it says to connect once to save that page.
+
 # LvPlan Pro 1.5.61
 
 - **🏫 Multi-Building Site & Campus** (new page after 2D & 3D Models): plan a whole site with more than one building. The main building comes from Auto-Design; add outbuildings, a gym, a guard house or a parking deck, each with its own type, size, floors and outside walls.
@@ -6,6 +11,7 @@
 - **Outdoor signal heat map** for the whole site, using each building's outside walls.
 - **Cable schedule** and **site materials list** (cable, conduit, handholes, poles, fiber enclosures, entrance protectors, wireless radios), with CSV download and **Add to Materials list**. **CAD drawing (DXF)** of the whole site.
 - **Introduction video**: a new part shows the site and campus package.
+
 # LvPlan Pro 1.5.60
 
 - **Starts about twice as fast.** Each page now loads the first time you open it instead of all at start, so the app downloads 427 KB instead of 922 KB before it is ready (online version, slow phone connection: about 2.7 s instead of 5.6 s) and uses a third less memory.

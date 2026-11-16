@@ -13,7 +13,7 @@ import { useUnits } from '../units';
 import { AZ_TIP } from './Azimuth';
 import { Tip } from './ui';
 
-const TiltView = lazy(() => import('./TiltView'));
+const TiltView = lazy(() => loadChunk(() => import('./TiltView')));
 import { RouteTools } from './RouteTools';
 import { useStore } from '../store';
 import { destination } from '../engine/geo';
@@ -96,6 +96,7 @@ function fccOverlay(m: L.Map): L.LayerGroup {
 }
 
 import { BASEMAPS, DEFAULT_BASE } from './basemaps';
+import { loadChunk } from '../engine/chunkload';
 export { BASEMAPS, DEFAULT_BASE };
 
 const icon = (label: string, color: string) => L.divIcon({ className: 'site-pin', html: `<div style="background:${color}">${label}</div>`, iconSize: [28, 28], iconAnchor: [14, 28] });
