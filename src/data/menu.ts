@@ -78,7 +78,8 @@ export const MENU_PAGES: MenuPage[] = [
   { id: 'blueprints', label: 'Blueprints & Drawing Sets', group: 'codes', keywords: 'drawings sheets permit submittal north arrow' },
 
   { id: 'library', label: 'Specifications Library', group: 'equip', keywords: 'specs standards datasheets manuals equipment selection models' },
-  { id: 'materials', label: 'Materials List', group: 'equip', keywords: 'bill of materials bom parts quantity order' },
+  { id: 'materials', label: 'Materials List & Estimate', group: 'equip', keywords: 'bill of materials bom parts quantity order cost costing estimate estimating price pricing unit cost labor budget over budget total search online parts stock inventory availability' },
+  { id: 'vendors', label: 'Vendors', group: 'equip', keywords: 'vendor vendors supplier distributor dealer supply house contact account terms sales rep phone email add field stock inventory availability search' },
 
   { id: 'install', label: 'Installation Guides', group: 'install', keywords: 'install wiring diagram how to step by step' },
 

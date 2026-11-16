@@ -9,14 +9,16 @@ import { alarmBatteryAh } from './alarm';
 import { halfWaveDipoleFt } from './lfhf';
 import { projectRuns } from './siteruns';
 
-export interface BomLine { key: string; category: string; item: string; brandModel: string; qty: number; unit: string; basis: string; extraId?: string }
+export interface BomLine { key: string; category: string; item: string; brandModel: string; qty: number; unit: string; basis: string; extraId?: string; removed?: boolean; edited?: boolean }
 
-export function buildBom(p: Project): BomLine[] {
+/** The Materials list. Lines taken off the list are left out unless `withRemoved` (then marked `removed`). */
+export function buildBom(p: Project, opts: { withRemoved?: boolean } = {}): BomLine[] {
   const L: BomLine[] = [];
   const add = (category: string, key: string, item: string, brandModel: string, qty: number, unit: string, basis: string) => {
     if (qty <= 0) return;
-    const q = p.bomOverrides[key] ?? qty;
-    L.push({ key, category, item, brandModel, qty: Math.ceil(q * 100) / 100, unit, basis: p.bomOverrides[key] != null ? `${basis} (overridden)` : basis });
+    const q = p.bomOverrides[key] ?? qty, e = p.bomCost?.[key];
+    const edited = !!(e && (e.item != null || e.brandModel != null || e.unit != null));
+    L.push({ key, category, item: e?.item ?? item, brandModel: e?.brandModel ?? brandModel, qty: Math.ceil(q * 100) / 100, unit: e?.unit ?? unit, basis: p.bomOverrides[key] != null ? `${basis} (overridden)` : edited ? `${basis} (changed)` : basis, ...(e?.removed ? { removed: true } : {}), ...(edited ? { edited: true } : {}) });
   };
   const r = p.radio;
   const tx = p.sites.find((s) => s.id === r.txSiteId) ?? p.sites[0];
@@ -103,10 +105,14 @@ export function buildBom(p: Project): BomLine[] {
   // Runs between sites, measured on the map and over the ground (Sites page).
   for (const { run, t } of projectRuns(p)) for (const i of t.items) add(`Site runs: ${run.name}`, `run-${run.id}-${i.key}`, i.item, i.spec, i.qty, i.unit, i.basis);
   for (const x of p.bomExtra ?? []) L.push({ key: `x-${x.id}`, category: x.category || 'Added items', item: x.item, brandModel: x.brandModel, qty: x.qty, unit: x.unit, basis: x.notes || 'Added by you', extraId: x.id });
-  return L;
+  return opts.withRemoved ? L : L.filter((l) => !l.removed);
 }
 
-export function bomToCsv(lines: BomLine[]): string {
+/** CSV for Excel. With costs, adds part number, vendor, unit cost and extended cost columns. */
+export function bomToCsv(lines: (BomLine & { unitCost?: number; ext?: number; partNo?: string; vendor?: string })[], withCost = lines.some((l) => (l.unitCost ?? 0) > 0)): string {
   const esc = (s: string | number) => `"${String(s).replace(/"/g, '""')}"`;
-  return ['Category,Item,Brand/Model,Qty,Unit,Basis', ...lines.map((l) => [l.category, l.item, l.brandModel, l.qty, l.unit, l.basis].map(esc).join(','))].join('\r\n');
+  const head = withCost ? 'Category,Item,Brand/Model,Part number,Vendor,Qty,Unit,Unit cost,Extended cost,Basis' : 'Category,Item,Brand/Model,Qty,Unit,Basis';
+  return [head, ...lines.map((l) => (withCost
+    ? [l.category, l.item, l.brandModel, l.partNo ?? '', l.vendor ?? '', l.qty, l.unit, (l.unitCost ?? 0).toFixed(2), (l.ext ?? 0).toFixed(2), l.basis]
+    : [l.category, l.item, l.brandModel, l.qty, l.unit, l.basis]).map(esc).join(','))].join('\r\n');
 }

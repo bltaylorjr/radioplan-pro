@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useStore, downloadText } from '../store';
 import { ImportFiles } from '../components/ImportFiles';
 import { GUIDES, GUIDES_FOR, guideCtx } from './Install';
@@ -6,6 +6,7 @@ import { Card, Check, fmt } from '../components/ui';
 import { designLink } from '../engine/design';
 import { evaluateCompliance, severityOrder } from '../compliance/rules';
 import { buildBom } from '../engine/materials';
+import { PriceBook, loadPriceBook, totals } from '../engine/estimate';
 import { ProfileChart } from '../components/ProfileChart';
 import { sizeSolar } from '../engine/solar';
 import { alarmBatteryAh, ercesDownlink } from '../engine/alarm';
@@ -59,8 +60,10 @@ export const defaultProposal = (): Proposal => ({ laborRate: 85, laborHours: 0, 
 const money = (n: number) => n.toLocaleString(undefined, { style: 'currency', currency: 'USD' });
 /** Labor hours from the device count when none is typed: about 1.25 h per device plus 16 h for setup, programming and testing. */
 export function laborEstimate(devices: number, systems: number) { return Math.round(devices * 1.25 + 16 * Math.max(1, systems)); }
-export function priceOf(q: Proposal, autoHours: number) {
-  const hours = q.laborHours || autoHours, labor = hours * q.laborRate, mat = q.materialsCost, markup = mat * q.markupPct / 100, tax = (mat + markup) * q.taxPct / 100;
+/** Proposal price. Blank materials cost and labor hours fall back to the Materials list estimate (`fromList`) when it has them. */
+export function priceOf(q: Proposal, autoHours: number, fromList?: { materials: number; hours: number; labor: number }) {
+  const useLabor = !q.laborHours && !!fromList && fromList.hours > 0;
+  const hours = q.laborHours || (useLabor ? fromList!.hours : autoHours), labor = useLabor ? fromList!.labor : hours * q.laborRate, mat = q.materialsCost || fromList?.materials || 0, markup = mat * q.markupPct / 100, tax = (mat + markup) * q.taxPct / 100;
   return { hours, labor, mat, markup, tax, total: labor + mat + markup + tax };
 }
 const PHASES: [string, number][] = [['Submittals, drawings and permit', 0.2], ['Rough-in: pathways and cable', 0.3], ['Trim-out: devices and head-end', 0.2], ['Programming and owner input', 0.1], ['Testing and AHJ inspection', 0.12], ['Training and closeout', 0.08]];
@@ -114,8 +117,11 @@ export function ReportsPage() {
   const systems = projectSystems(m0(p));
   const devCount = ad.devices.length;
   const runH = siteRunHours(p), autoH = laborEstimate(devCount, systems.length) + runH;
-  const pr = priceOf(q, autoH);
   const bom = buildBom(p);
+  const [book, setBook] = useState<PriceBook>({});
+  useEffect(() => { loadPriceBook().then(setBook); }, []);
+  const et = totals(p, bom, book);
+  const pr = priceOf(q, autoH, { materials: et.materialsTotal, hours: et.laborHours, labor: et.labor });
   const place = projectPlace(p);
   const [msg, setMsg] = useState('');
   const L = designLink(p), c = p.company, m = p.meta;
@@ -147,8 +153,8 @@ export function ReportsPage() {
     scope: () => !systems.length ? <p>Pick the project type on Company & Project to fill in the scope.</p> : <>{systems.map((x) => <div key={x.id}><h4>{x.icon} {x.label}</h4><p>{x.summary}</p><ul>{x.install.slice(0, 4).map((t) => <li key={t}>{t}</li>)}</ul><p className="small">Standards: {x.standards.join('; ')}</p></div>)}</>,
     autoequip: () => !ad.equipment.length ? <p>Pick the project type to fill this in; adjust the building on Auto-Design & 3D Model.</p> : <table className="rpt-tbl"><thead><tr><th>System</th><th>Equipment</th><th>Recommended spec</th><th>Qty</th></tr></thead><tbody>{ad.equipment.map((e) => <tr key={e.system + e.key}><td>{e.system}</td><td>{e.item}</td><td>{e.spec}</td><td>{e.qty} {e.unit}</td></tr>)}</tbody></table>,
     price: () => <table className="rpt-tbl"><tbody>
-      <tr><th>Labor</th><td>{pr.hours.toLocaleString()} h × {money(q.laborRate)}/h{!q.laborHours && <span className="small"> (estimated from {devCount} devices{runH ? ` and ${runH} h of site-to-site runs` : ''})</span>}</td><td style={{ textAlign: 'right' }}>{money(pr.labor)}</td></tr>
-      <tr><th>Materials and equipment</th><td>{q.materialsCost ? 'per the materials list' : 'enter the materials cost in the price options'}</td><td style={{ textAlign: 'right' }}>{money(pr.mat)}</td></tr>
+      <tr><th>Labor</th><td>{!q.laborHours && et.laborHours > 0 ? <>{pr.hours.toLocaleString()} h per the labor estimate</> : <>{pr.hours.toLocaleString()} h × {money(q.laborRate)}/h{!q.laborHours && <span className="small"> (estimated from {devCount} devices{runH ? ` and ${runH} h of site-to-site runs` : ''})</span>}</>}</td><td style={{ textAlign: 'right' }}>{money(pr.labor)}</td></tr>
+      <tr><th>Materials and equipment</th><td>{q.materialsCost || pr.mat ? 'per the materials list' : 'enter prices on the Materials list, or the materials cost in the price options'}</td><td style={{ textAlign: 'right' }}>{money(pr.mat)}</td></tr>
       {q.markupPct > 0 && <tr><th>Overhead and profit</th><td>{q.markupPct}% of materials</td><td style={{ textAlign: 'right' }}>{money(pr.markup)}</td></tr>}
       {q.taxPct > 0 && <tr><th>Sales tax</th><td>{q.taxPct}%</td><td style={{ textAlign: 'right' }}>{money(pr.tax)}</td></tr>}
       <tr><th>Total</th><td></td><td style={{ textAlign: 'right' }}><b>{money(pr.total)}</b></td></tr></tbody></table>,
@@ -257,8 +263,8 @@ export function ReportsPage() {
       {(on('price') || on('schedule') || on('terms') || on('cover')) && <Card title="Proposal options" className="no-print" tip="Used by the Price, Schedule and Terms sections. Saved with the project.">
         <div className="form">
           <label className="field"><span>Labor rate ($/h)</span><input type="number" min={0} value={q.laborRate} onChange={(e) => setQ('laborRate', +e.target.value || 0)} /></label>
-          <label className="field"><span>Labor hours</span><input type="number" min={0} value={q.laborHours || ''} placeholder={`auto: ${autoH}`} onChange={(e) => setQ('laborHours', +e.target.value || 0)} /></label>
-          <label className="field"><span>Materials cost ($)</span><input type="number" min={0} value={q.materialsCost || ''} onChange={(e) => setQ('materialsCost', +e.target.value || 0)} /></label>
+          <label className="field"><span>Labor hours</span><input type="number" min={0} value={q.laborHours || ''} placeholder={`auto: ${et.laborHours || autoH}`} onChange={(e) => setQ('laborHours', +e.target.value || 0)} /></label>
+          <label className="field"><span>Materials cost ($)</span><input type="number" min={0} value={q.materialsCost || ''} placeholder={et.materialsTotal ? `from list: ${Math.round(et.materialsTotal)}` : ''} onChange={(e) => setQ('materialsCost', +e.target.value || 0)} /></label>
           <label className="field"><span>Markup on materials (%)</span><input type="number" min={0} value={q.markupPct} onChange={(e) => setQ('markupPct', +e.target.value || 0)} /></label>
           <label className="field"><span>Sales tax (%)</span><input type="number" min={0} step={0.25} value={q.taxPct} onChange={(e) => setQ('taxPct', +e.target.value || 0)} /></label>
           <label className="field"><span>Start date</span><input type="date" value={q.startDate} onChange={(e) => setQ('startDate', e.target.value)} /></label>
