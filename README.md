@@ -5,6 +5,9 @@ solar / DC power, grounding) and the **radio and RF design** behind them (topogr
 Includes a specifications library, color installation guides, field notes, code-compliance warnings for NC / SC / GA / TN,
 materials lists, reports and commissioning tests.
 
+> **Copyright (c) 2025-2026 Bobby Taylor. All rights reserved.** This is proprietary software. The code is public only so
+> installed copies can update themselves; no permission is given to copy, change or share it. See [LICENSE](LICENSE).
+
 ## Downloads
 
 Get everything from the [latest release](https://github.com/bltaylorjr/radioplan-pro/releases/latest), or use it online at
