@@ -5,6 +5,7 @@ import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { FullView } from './FullView';
+import { ViewPad, LayersButton, orbitApi } from './ViewControls';
 import { KIND_COLOR } from './Building3D';
 import { MeasureCtx } from './ui';
 import { SYMBOL } from '../engine/blueprint';
@@ -142,6 +143,8 @@ export function Model3D({ scene, visible, floor, explode, heatOpacity = 0.7, nor
   const mount = useRef<HTMLDivElement>(null);
   const byLayer = useRef<Map<string, THREE.Object3D[]>>(new Map());
   const camState = useRef<{ pos: THREE.Vector3; target: THREE.Vector3 } | null>(null);
+  const orb = useRef<{ camera: THREE.Camera; ctl: OrbitControls } | null>(null);
+  const api = useMemo(() => orbitApi(() => orb.current), []);
   const pickRef = useRef(onPick); pickRef.current = onPick;
   const visRef = useRef(visible); visRef.current = visible;
   const [err, setErr] = useState('');
@@ -239,7 +242,7 @@ export function Model3D({ scene, visible, floor, explode, heatOpacity = 0.7, nor
     const ctl = new OrbitControls(cam, renderer.domElement);
     if (camState.current) { cam.position.copy(camState.current.pos); ctl.target.copy(camState.current.target); }
     else { cam.position.set(L * 0.7, F * (FH + gap) + span * 0.75, W * 1.5); ctl.target.set(0, (F * (FH + gap)) / 3, 0); }
-    ctl.maxPolarAngle = Math.PI * 0.49; ctl.update();
+    ctl.maxPolarAngle = Math.PI * 0.49; ctl.update(); orb.current = { camera: cam, ctl };
     // tap to identify
     const ray = new THREE.Raycaster(); let downAt = { x: 0, y: 0 };
     const onDown = (e: PointerEvent) => { downAt = { x: e.clientX, y: e.clientY }; };
@@ -254,7 +257,7 @@ export function Model3D({ scene, visible, floor, explode, heatOpacity = 0.7, nor
     const onResize = () => { const nw = el.clientWidth; const nh = el.closest('.fullview-on') ? Math.max(300, el.clientHeight) : Math.max(380, Math.min(640, nw * 0.62)); cam.aspect = nw / nh; cam.updateProjectionMatrix(); renderer.setSize(nw, nh); };
     window.addEventListener('resize', onResize);
     return () => {
-      camState.current = { pos: cam.position.clone(), target: ctl.target.clone() };
+      camState.current = { pos: cam.position.clone(), target: ctl.target.clone() }; orb.current = null;
       cancelAnimationFrame(raf); window.removeEventListener('resize', onResize); renderer.domElement.removeEventListener('pointerdown', onDown); renderer.domElement.removeEventListener('pointerup', onUp);
       ctl.dispose(); textures.forEach((t) => t.dispose());
       scene3.traverse((o) => { const m = o as THREE.Mesh; m.geometry?.dispose?.(); const sm = (o as THREE.Sprite).material as THREE.SpriteMaterial | undefined; if ((o as THREE.Sprite).isSprite) { sm?.map?.dispose(); sm?.dispose(); } });
@@ -263,7 +266,7 @@ export function Model3D({ scene, visible, floor, explode, heatOpacity = 0.7, nor
   }, [scene, floor, explode, heatOpacity, northDeg, parking]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { applyVis(); }, [visible]); // eslint-disable-line react-hooks/exhaustive-deps
   if (err) return <p className="warn-text">{err}</p>;
-  return <div ref={mount} className="bldg3d" aria-label="3D model of the building with layers" />;
+  return <div className="vc-host"><div ref={mount} className="bldg3d" aria-label="3D model of the building with layers" /><ViewPad api={api} /></div>;
 }
 
 /** The whole viewer: 2D/3D switch, floor picker, pull-apart slider, layer panel, legend and tap-to-identify. */
@@ -294,6 +297,7 @@ export function LayeredModel({ scene, northDeg = 0, planImage, parking = 0, titl
       <div className="layered-body">
         <div className="layered-view" ref={svgWrap}>
           <FullView title={title}>
+            <LayersButton><LayerPanel scene={scene} visible={visible} set={set} reset={reset} /></LayersButton>
             {view === '2d' ? <Plan2D scene={scene} visible={visible} floor={fl} northDeg={northDeg} heatOpacity={heatOp} planImage={planImage} onPick={setPicked} parking={parking} onMoveBuilding={onMoveBuilding} /> : <Model3D scene={scene} visible={visible} floor={fl} explode={explode} heatOpacity={heatOp} northDeg={northDeg} onPick={setPicked} parking={parking} />}
           </FullView>
           <p className="small" role="status" aria-live="polite">{picked ? <><b>Selected:</b> {picked} <button className="ghost small-btn" onClick={() => setPicked('')}>✕</button></> : <span className="muted">{view === '3d' ? 'Drag to turn, scroll or pinch to zoom, tap anything to see what it is.' : 'Tap any device, wall or cable to see what it is.'} Turn layers on and off on the right (below on a phone).</span>}</p>

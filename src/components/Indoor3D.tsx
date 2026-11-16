@@ -1,5 +1,6 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { FullView } from './FullView';
+import { ViewPad, orbitApi } from './ViewControls';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { WALL_MATERIALS } from '../engine/indoor';
@@ -11,6 +12,8 @@ export const WALL_HEIGHT_M = 3;
 /** 3-D view of the room: the walls you drew stand up 3 m tall in their material colour, the coverage heat map lies on the floor, antennas hang from the ceiling. Drag to turn, scroll to zoom. */
 export function Indoor3D({ d, grid }: { d: IndoorDesign; grid: { nx: number; ny: number; v: Float32Array } }) {
   const mount = useRef<HTMLDivElement>(null);
+  const orb = useRef<{ camera: THREE.Camera; ctl: OrbitControls } | null>(null);
+  const api = useMemo(() => orbitApi(() => orb.current), []);
   useEffect(() => {
     const el = mount.current; if (!el) return;
     const w = el.clientWidth || 800, h = Math.max(340, Math.min(560, w * 0.6));
@@ -52,11 +55,11 @@ export function Indoor3D({ d, grid }: { d: IndoorDesign; grid: { nx: number; ny:
       const ln = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(a.x, H - 0.1, a.y), new THREE.Vector3(a.x, 0.02, a.y)]), new THREE.LineDashedMaterial({ color: 0xc62828, dashSize: 0.2, gapSize: 0.15 }));
       ln.computeLineDistances(); g.add(ln);
     }
-    const ctl = new OrbitControls(cam, renderer.domElement); ctl.target.set(0, 0, 0); ctl.maxPolarAngle = Math.PI / 2.05; ctl.update();
+    const ctl = new OrbitControls(cam, renderer.domElement); ctl.target.set(0, 0, 0); ctl.maxPolarAngle = Math.PI / 2.05; ctl.update(); orb.current = { camera: cam, ctl };
     let raf = 0; const loop = () => { raf = requestAnimationFrame(loop); ctl.update(); renderer.render(scene, cam); }; loop();
     const onResize = () => { const nw = el.clientWidth; const nh = el.closest('.fullview-on') ? Math.max(300, el.clientHeight) : Math.max(340, Math.min(560, nw * 0.6)); cam.aspect = nw / nh; cam.updateProjectionMatrix(); renderer.setSize(nw, nh); };
     window.addEventListener('resize', onResize);
-    return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', onResize); ctl.dispose(); tex.dispose(); renderer.dispose(); scene.traverse((o) => { (o as THREE.Mesh).geometry?.dispose?.(); }); };
+    return () => { orb.current = null; cancelAnimationFrame(raf); window.removeEventListener('resize', onResize); ctl.dispose(); tex.dispose(); renderer.dispose(); scene.traverse((o) => { (o as THREE.Mesh).geometry?.dispose?.(); }); };
   }, [d.walls, d.antennas, d.widthM, d.heightM, grid]);
-  return <FullView title="3D walls and coverage"><div ref={mount} className="bldg3d indoor3d" aria-label="3D view of the walls and coverage" /></FullView>;
+  return <FullView title="3D walls and coverage"><div className="vc-host"><div ref={mount} className="bldg3d indoor3d" aria-label="3D view of the walls and coverage" /><ViewPad api={api} /></div></FullView>;
 }

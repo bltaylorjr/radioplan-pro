@@ -1,3 +1,12 @@
+# LvPlan Pro 1.5.64
+
+- **Layers, zoom and tilt on full page maps.** Open any map or 3D view with ⛶ Full page and you get big buttons made for fingers:
+  - **🗂 Layers** (top right): pick the map picture (USGS topo, satellite, streets and more) and switch each layer on or off: sites and radio path, coverage heat map (with a strength slider), the page's own drawings, terrain area, existing towers, FCC registered towers and photo survey spots. On the 3D tilt view it lists line of sight, Fresnel zone, what point A can see, towers, drawn lines, signal heat map and height boost. On 2D & 3D Models and the campus site plan it holds the full layer list for every system.
+  - **＋ / −** zoom, **⤢** shows everything. On the flat map **⛰ Tilt** opens the 3D tilt view of the same area.
+  - In every 3D view (terrain, building, indoor walls, layered models): **⤒ ⤓** tilt, **⟲ ⟳** turn, **N** puts north at the top looking straight down. Hold a button to keep zooming, tilting or turning.
+- Works offline like the rest of the app; nothing new to download.
+- **Introduction video**: a new part shows Layers, zoom and tilt on full page maps.
+
 # LvPlan Pro 1.5.63
 
 - **💲 Prices on the Materials list** (now called Materials List & Estimate): type a unit cost on any line and the line total, the category totals and the materials subtotal fill in. Prices you type are saved to your price list on this device and fill in the same item on your next project. Lines without a price are counted so nothing is missed.
