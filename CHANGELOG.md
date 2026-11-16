@@ -6,6 +6,9 @@
 
 # LvPlan Pro 1.5.65
 
+- **RadioReference app key moved to User Settings.** The login page now asks only for your username and password. The app key has its own card in **User Settings → RadioReference app key**, with a warning not to change it: **Change…** asks first, and the key is shown hidden (last 4 characters) unless you tap Show.
+- A key you already saved is moved there automatically the first time the app opens; nothing to type again. Log out and Log out and delete downloads both keep the key.
+- If no key is set yet, the login page and the RadioReference page have a button that opens User Settings.
 - **Terrain and towers download by themselves.** The 🌐 Download terrain button on 3D Model is gone because there is nothing to download by hand any more. Whenever the app is online it fetches, in the background:
   - the terrain for the whole area around your sites (as before),
   - **extra-detailed terrain along the radio link** (down to about 8 m, what the old button gave you), and

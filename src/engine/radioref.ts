@@ -41,9 +41,11 @@ async function kvGet<T>(k: string): Promise<T | undefined> {
 const kvSet = async (k: string, v: unknown) => kvSetPlain(k, v === undefined ? undefined : await seal(v));
 /** Removes the sign-in, every download and the device key (the saved data can't be read again). */
 export async function wipeAll() {
+  const appKey = await loadAppKey(); // the app key is a setting, not a download: keep it
   sessionLogin = null;
   for (const k of await kvKeys('radioref.')) await kvSetPlain(k, undefined);
   devKey = null;
+  if (appKey) await kvSet(APPKEY_KEY, appKey);
   notify();
 }
 
@@ -65,6 +67,8 @@ export interface RrDownload {
   opts?: { trunked: boolean; statewide: boolean };
 }
 export const LOGIN_KEY = 'radioref.login.v1';
+/** The app key lives on its own (User Settings), apart from the username/password. */
+export const APPKEY_KEY = 'radioref.appkey.v1';
 const DL_PREFIX = 'radioref.dl.v1:';
 export const dlKey = (state: string, county: string) => `${DL_PREFIX}${state}|${normCounty(county)}`;
 
@@ -226,12 +230,28 @@ const notify = () => { try { window.dispatchEvent(new Event(LOGOUT_EVENT)); } ca
 export const onLoginChange = (f: () => void) => { window.addEventListener(LOGOUT_EVENT, f); return () => window.removeEventListener(LOGOUT_EVENT, f); };
 /** The signed-in user (memory first, then the encrypted saved copy), or null when logged out. */
 export async function loadLogin(): Promise<(RrLogin & { stay: boolean }) | null> {
-  if (sessionLogin) return { ...sessionLogin, stay: false };
+  const appKey = await loadAppKey();
+  if (sessionLogin) return { ...sessionLogin, appKey, stay: false };
   const v = await kvGet<SavedLogin>(LOGIN_KEY);
-  return v && v.username && v.password ? { username: v.username, password: v.password, appKey: v.appKey ?? '', stay: true } : null;
+  return v && v.username && v.password ? { username: v.username, password: v.password, appKey, stay: true } : null;
 }
-/** The app key stays saved after logging out, so the next login only needs username and password. */
-export const loadAppKey = async () => sessionLogin?.appKey ?? (await kvGet<SavedLogin>(LOGIN_KEY))?.appKey ?? '';
+/** The app key, kept in User Settings. Keys saved by older versions inside the login are moved there the first time. */
+export async function loadAppKey(): Promise<string> {
+  const k = await kvGet<string>(APPKEY_KEY);
+  if (typeof k === 'string') return k;
+  const old = ((await kvGet<SavedLogin>(LOGIN_KEY))?.appKey ?? '').trim();
+  if (old) await kvSet(APPKEY_KEY, old);
+  return old;
+}
+/** Saves (or with '' removes) the app key from User Settings. */
+export async function saveAppKey(key: string) {
+  await loadAppKey(); // finish any move from the old place first
+  const k = key.trim();
+  await kvSet(APPKEY_KEY, k || undefined);
+  const v = await kvGet<SavedLogin>(LOGIN_KEY);
+  if (v?.appKey) await kvSet(LOGIN_KEY, v.username && v.password ? { ...v, appKey: '' } : undefined);
+  notify();
+}
 const VERIFIER_KEY = 'radioref.verifier.v1';
 async function pbkdf2(user: string, pass: string, salt: Uint8Array) {
   const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(user.toLowerCase() + '\n' + pass), 'PBKDF2', false, ['deriveBits']);
@@ -249,16 +269,19 @@ async function remember(user: string, pass: string) {
   await kvSet(VERIFIER_KEY, { salt: [...salt], hash: [...new Uint8Array(await pbkdf2(user, pass, salt))] });
 }
 export async function logIn(l: RrLogin, stay: boolean) {
-  if (stay) { sessionLogin = null; await kvSet(LOGIN_KEY, { ...l, stay: true, at: new Date().toISOString() }); }
-  else { sessionLogin = { ...l }; await kvSet(LOGIN_KEY, { username: '', password: '', appKey: l.appKey, stay: false }); }
+  const had = await loadAppKey(); // moves an old saved key to its own place before the login is rewritten
+  if (!had && l.appKey?.trim()) await kvSet(APPKEY_KEY, l.appKey.trim());
+  const user = { username: l.username, password: l.password, appKey: '' };
+  if (stay) { sessionLogin = null; await kvSet(LOGIN_KEY, { ...user, stay: true, at: new Date().toISOString() }); }
+  else { sessionLogin = user; await kvSet(LOGIN_KEY, undefined); }
   await remember(l.username, l.password).catch(() => undefined);
   notify();
 }
-/** Log out: forget username and password everywhere (memory and device). Downloads stay, encrypted. */
+/** Log out: forget username and password everywhere (memory and device). The app key and downloads stay, encrypted. */
 export async function logOut() {
+  await loadAppKey();
   sessionLogin = null;
-  const key = (await kvGet<SavedLogin>(LOGIN_KEY))?.appKey ?? '';
-  await kvSet(LOGIN_KEY, key ? { username: '', password: '', appKey: key, stay: false } : undefined);
+  await kvSet(LOGIN_KEY, undefined);
   notify();
 }
 /** @deprecated kept for older callers: saves with "stay logged in". */
@@ -293,8 +316,8 @@ export interface DlProgress {
 }
 export interface DlOptions { trunked: boolean; statewide: boolean; signal?: { cancelled: boolean }; progress?: (msg: string, frac: number, p: DlProgress) => void }
 export async function downloadCounty(state: string, county: string, login0: RrLogin, o: DlOptions): Promise<RrDownload> {
-  const login = { ...login0, appKey: effectiveKey(login0) };
-  if (!login.appKey) throw new RrError('No app key entered yet', 'key');
+  const login = { ...login0, appKey: effectiveKey(login0) || await loadAppKey() };
+  if (!login.appKey) throw new RrError('No app key entered yet (User Settings → RadioReference app key)', 'key');
   const pr: DlProgress = { stage: 'start', step: 0, of: 0, freqs: 0, lists: 0, agencies: 0, systems: 0, sites: 0, talkgroups: 0, requests: 0, problems: 0 };
   const say = (msg: string, frac: number, stage: DlProgress['stage'] = pr.stage, step = pr.step, of = pr.of) => { Object.assign(pr, { stage, step, of, problems: warnings.length }); o.progress?.(msg, frac, { ...pr }); };
   const call = (m: string, a: Arg[], l: RrLogin) => { pr.requests++; return callApi(m, a, l); };

@@ -19,7 +19,6 @@ import { askConfirm, askDelete } from '../components/askConfirm';
 
 const STATES: StateCode[] = ['NC', 'SC', 'GA', 'TN', 'VA'];
 const MHZ = (f: number | null) => (f == null ? '' : f.toFixed(5).replace(/0{1,2}$/, ''));
-const APPLY_URL = 'https://www.radioreference.com/account/api/apply';
 const day = (iso: string) => { try { return new Date(iso).toLocaleDateString(); } catch { return iso; } };
 
 /** Hook: the saved download for a place (re-read when `tick` changes). */
@@ -30,7 +29,7 @@ export function useRrDownload(state: string, county: string, tick = 0) {
 }
 
 export function RadioReferencePage() {
-  const { project: p } = useStore();
+  const { project: p, go } = useStore();
   const here = projectPlace(p);
   const [st, setSt] = useState<StateCode>(here.state);
   const [county, setCounty] = useState(here.county ?? '');
@@ -57,7 +56,7 @@ export function RadioReferencePage() {
 
   const explain = (e: unknown) => {
     const m = (e as Error).message || String(e);
-    if (e instanceof RrError && e.kind === 'key') return `RadioReference did not accept the app key: ${m}. Check the key you were sent, or apply for one (step 1 below).`;
+    if (e instanceof RrError && e.kind === 'key') return `RadioReference did not accept the app key: ${m}. Check the key in User Settings → RadioReference app key.`;
     if (e instanceof RrError && e.kind === 'login') return `RadioReference did not accept the sign-in: ${m}. Check the username and password, and that your Premium subscription is active.`;
     return m;
   };
@@ -90,7 +89,7 @@ export function RadioReferencePage() {
       {!hasLogin ? <RrLoginPage msg={msg} onDone={(l, m) => { setLogin(l); setHasLogin(true); setMsg(m); }} />
         : <Card title="RadioReference" className="rr-status">
           <div className="row wrap">
-            <span>🔓 Logged in as <b>{login.username}</b>{stay ? <span className="pill">stays logged in on this device</span> : <span className="pill">until the app is closed</span>}{login.appKey ? '' : <span className="pill">no app key yet</span>}</span>
+            <span>🔓 Logged in as <b>{login.username}</b>{stay ? <span className="pill">stays logged in on this device</span> : <span className="pill">until the app is closed</span>}{login.appKey ? '' : <button className="ghost pill" onClick={() => go('settings')}>no app key yet: add it in User Settings</button>}</span>
             <button className="primary" onClick={doLogout}>Log out</button>
             <button className="ghost" onClick={forget}>Log out and delete downloads</button>
           </div>
@@ -159,12 +158,12 @@ function RrProgress({ job, explain, onClose }: { job: RrJob; explain: (e: unknow
   );
 }
 
-/** The RadioReference login page: username, password, app key, "Stay logged in". */
+/** The RadioReference login page: username, password, "Stay logged in". The app key is in User Settings. */
 export function RrLoginPage({ msg: msg0, onDone }: { msg?: { text: string; tone?: 'ok' | 'bad' } | null; onDone: (l: RrLogin, m: { text: string; tone?: 'ok' | 'bad' }) => void }) {
+  const { go } = useStore();
   const [u, setU] = useState(''), [pw, setPw] = useState(''), [key, setKey] = useState(''), [stay, setStay] = useState(true), [show, setShow] = useState(false);
-  const [hasKey, setHasKey] = useState(false), [editKey, setEditKey] = useState(false);
   const [msg, setMsg] = useState(msg0 ?? null), [busy, setBusy] = useState(false);
-  useEffect(() => { loadAppKey().then((k) => { setKey(k); setHasKey(!!k); }); }, []);
+  useEffect(() => { const read = () => loadAppKey().then(setKey); read(); return onLoginChange(read); }, []);
   useEffect(() => { if (msg0) setMsg(msg0); }, [msg0]);
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -177,7 +176,7 @@ export function RrLoginPage({ msg: msg0, onDone }: { msg?: { text: string; tone?
       catch (err) {
         setBusy(false);
         const m = (err as Error).message;
-        if (err instanceof RrError && err.kind === 'key') { setMsg({ text: `RadioReference did not accept the app key: ${m}`, tone: 'bad' }); setEditKey(true); return; }
+        if (err instanceof RrError && err.kind === 'key') { setMsg({ text: `RadioReference did not accept the app key: ${m}. Check it in User Settings → RadioReference app key.`, tone: 'bad' }); return; }
         if (err instanceof RrError && err.kind === 'login') { setMsg({ text: `Wrong username or password, or the Premium subscription is not active (${m}).`, tone: 'bad' }); return; }
         note = `Could not reach RadioReference to check (${m}); you are logged in on this device.`;
       }
@@ -196,18 +195,11 @@ export function RrLoginPage({ msg: msg0, onDone }: { msg?: { text: string; tone?
           <p className="small muted">Use your RadioReference.com Premium account. Your login is only sent to RadioReference.com.</p>
           <label className="field"><span>Username</span><input autoFocus autoComplete="off" autoCapitalize="none" spellCheck={false} value={u} onChange={(e) => setU(e.target.value)} aria-label="RadioReference username" /></label>
           <label className="field"><span>Password</span><span className="row"><input type={show ? 'text' : 'password'} autoComplete="off" value={pw} onChange={(e) => setPw(e.target.value)} aria-label="RadioReference password" style={{ flex: 1 }} /><button type="button" className="ghost" onClick={() => setShow(!show)}>{show ? 'Hide' : 'Show'}</button></span></label>
-          {hasKey && !editKey ? <p className="small muted">App key saved ✓ <button type="button" className="ghost" onClick={() => setEditKey(true)}>Change</button></p>
-            : <label className="field"><span>App key (from RadioReference, one time)</span><input autoComplete="off" spellCheck={false} value={key} onChange={(e) => setKey(e.target.value)} aria-label="RadioReference app key" placeholder="paste the key RadioReference emailed you" /></label>}
           <label className="check"><input type="checkbox" checked={stay} onChange={(e) => setStay(e.target.checked)} /> <b>Stay logged in</b> on this device</label>
-          <p className="small muted" style={{ marginTop: 0 }}>{stay ? 'Your login is kept encrypted on this device until you tap Log out.' : 'You are logged out when the app is closed. Nothing but the app key is kept.'}</p>
+          <p className="small muted" style={{ marginTop: 0 }}>{stay ? 'Your login is kept encrypted on this device until you tap Log out.' : 'You are logged out when the app is closed.'}</p>
           <button className="primary" type="submit" disabled={busy || !u.trim() || !pw}>{busy ? 'Logging in…' : 'Log in'}</button>
           {msg && <p className={msg.tone === 'bad' ? 'bad-text' : msg.tone === 'ok' ? 'ok-text' : 'muted'} role="status">{msg.text}</p>}
-          {(!hasKey || editKey) && <details className="small"><summary>How to get the app key (one time)</summary><ol>
-            <li>Sign in at RadioReference.com with your Premium account.</li>
-            <li>Open <a href={APPLY_URL} target="_blank" rel="noreferrer">the API key application page ↗</a>.</li>
-            <li>Describe the app: “LvPlan Pro, an internal, single-user tool for my low-voltage company. It looks up public-safety frequencies, trunked sites and talkgroups for the county of a job, to design and test in-building emergency radio (ERCES / BDA / DAS) and program radios. Only I use it, with my own Premium login. Data stays on my device and is not shared or published.”</li>
-            <li>When RadioReference emails the key, paste it in the box above.</li>
-          </ol></details>}
+          {!key && <p className="note small" data-testid="rr-nokey">The RadioReference app key is not set yet. You can log in now, but downloads need it. <button type="button" onClick={() => go('settings')}>Add it in User Settings →</button></p>}
         </form>
       </Card>
       <p className="small muted">🔒 Frequencies and talkgroups you download are protected information: kept only on this device, encrypted, and shown only while you are logged in.</p>
@@ -266,7 +258,7 @@ function RrBrowser({ d, county, state }: { d: RrDownload | null; county: string;
 
 /** Frequency picker for design pages: every frequency in the project county's saved RadioReference list. */
 export function RrFreqPicker({ onPick }: { onPick: (fMHz: number) => void }) {
-  const { project: p } = useStore();
+  const { project: p, go } = useStore();
   const here = projectPlace(p);
   const on = useRrLoggedIn();
   const d0 = useRrDownload(here.state, here.county ?? '');

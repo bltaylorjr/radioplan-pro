@@ -6,8 +6,9 @@ import { projectSystems } from '../data/systems';
 import { setHiddenTools, setToolOn, useHiddenTools, useAutoHideTools, setAutoHideTools, neededTools, neededBy, toolLabel } from '../engine/toolPrefs';
 import { checkProject } from '../engine/datacheck';
 import { issueText } from '../engine/validate';
+import { RrAppKeyCard } from '../components/RrAppKeyCard';
 
-/** User Settings: turn tools on or off, and check the project's data. */
+/** User Settings: turn tools on or off, check the project's data, and the RadioReference app key. */
 export function SettingsPage() {
   const { project: p, go } = useStore();
   const hidden = useHiddenTools(); const auto = useAutoHideTools();
@@ -50,6 +51,7 @@ export function SettingsPage() {
             </div>))}
         </>}
       </Card>
+      <RrAppKeyCard />
     </div>
   );
 }
