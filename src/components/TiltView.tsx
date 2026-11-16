@@ -94,7 +94,7 @@ export default function TiltView({ view, sites, txId, rxId, dem: projectDem, hei
       if (projectDem && demCovers(projectDem, area)) { setDem(cropDem(projectDem, area) ?? projectDem); setMsg(''); return; }
       setMsg('Loading terrain…');
       try {
-        const r = await downloadTerrain(area, { maxTiles: 36, retries: navigator.onLine === false ? 1 : 2 });
+        const r = await downloadTerrain(area, { maxTiles: 64, retries: navigator.onLine === false ? 1 : 2 });
         if (r.missingTiles) throw new Error('part missing');
         if (live) { setDem(r.dem); setMsg(''); } return;
       } catch { /* try the built-in terrain */ }
@@ -113,7 +113,7 @@ export default function TiltView({ view, sites, txId, rxId, dem: projectDem, hei
     if (!sources.length) { setDrape(null); return; }
     let zmin = Infinity, zmax = -Infinity; for (const z of dem.data) if (Number.isFinite(z) && z !== dem.nodata) { zmin = Math.min(zmin, z); zmax = Math.max(zmax, z); }
     buildDrape(b, sources, {
-      maxTiles: 36, signal: ac.signal,
+      maxTiles: 160, signal: ac.signal,
       under: (ctx, d) => { // height colors under any tile that is not saved, so the view is never blank
         const step = 4; for (let y = 0; y < d.ny * 256; y += step) for (let x = 0; x < d.nx * 256; x += step) {
           const lon = ((d.x0 + x / 256) / 2 ** d.z) * 360 - 180, n = Math.PI - (2 * Math.PI * (d.y0 + y / 256)) / 2 ** d.z, lat = (180 / Math.PI) * Math.atan(Math.sinh(n));
