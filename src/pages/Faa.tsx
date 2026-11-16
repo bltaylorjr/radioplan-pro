@@ -9,7 +9,7 @@ import { MapView } from '../components/MapView';
 import { PointPicker, type PickedPoint } from '../components/PointPicker';
 import { faaCheck, FT_PER_M, AIRPORT_TYPE, ownershipName, FAA_NOTICE_TOOL, FAA_OEAAA, FCC_TOWAIR, type FaaResult } from '../engine/faa';
 import { declinationDeg, fmtAz } from '../engine/azimuth';
-import { sampleDem } from '../engine/terrain';
+import { sampleDem, finestDem } from '../engine/terrain';
 import { bundledDem } from '../engine/bundledTerrain';
 import { usgsPointElevation } from '../engine/autoterrain';
 
@@ -34,12 +34,12 @@ export function FaaPage() {
       const set = (m: number, src: string) => { if (live) { setGroundFt(Math.round(m * FT_PER_M)); setGroundSrc(src); } };
       if (f0 && f0.lat === pt.lat && f0.lon === pt.lon && f0.groundM != null) return set(f0.groundM, 'FCC tower registration');
       if (site?.groundElevM != null) return set(site.groundElevM, 'Site Data & GPS');
-      const d = rt.dem ? sampleDem(rt.dem, pt) : null; if (d != null && Number.isFinite(d)) return set(d, 'project terrain');
+      const g = finestDem([rt.demPath, rt.dem], [pt]), d = g ? sampleDem(g, pt) : null; if (d != null && Number.isFinite(d)) return set(d, 'project terrain');
       const b = await bundledDem(); const v = b ? sampleDem(b, pt) : null; if (v != null && Number.isFinite(v) && v > -1000) return set(v, 'built-in terrain');
       try { set(await usgsPointElevation(pt), 'USGS 3DEP (online)'); } catch { if (live) { setGroundFt(null); setGroundSrc(''); } }
     })();
     return () => { live = false; };
-  }, [pt?.lat, pt?.lon, manualGround, rt.dem]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [pt?.lat, pt?.lon, manualGround, rt.dem, rt.demPath]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (!pt) return; let live = true; faaCheck(pt, heightFt, groundFt).then((r) => live && setRes(r)).catch((e) => live && setMsg((e as Error).message)); return () => { live = false; }; }, [pt?.lat, pt?.lon, heightFt, groundFt]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const dec = pt ? declinationDeg(pt) : 0;

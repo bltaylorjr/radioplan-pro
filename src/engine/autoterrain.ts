@@ -4,7 +4,7 @@
 import type { DemGrid } from './terrain';
 import { cachedFetchBlob, cacheGet } from './tilecache';
 import { lonToTileX, latToTileY, tileRange, metersPerPixel, terrariumElevation } from './webmercator';
-import type { LatLon } from './geo';
+import { haversineKm, type LatLon } from './geo';
 
 export const TERRARIUM_URL = (z: number, x: number, y: number) => `https://s3.amazonaws.com/elevation-tiles-prod/terrarium/${z}/${x}/${y}.png`;
 export interface Bounds { north: number; south: number; east: number; west: number }
@@ -14,6 +14,11 @@ export function boundsAround(points: LatLon[], marginKm: number): Bounds {
   const mLat = marginKm / 111.32, midLat = (Math.max(...lat) + Math.min(...lat)) / 2;
   const mLon = marginKm / (111.32 * Math.cos((midLat * Math.PI) / 180));
   return { north: Math.max(...lat) + mLat, south: Math.min(...lat) - mLat, east: Math.max(...lon) + mLon, west: Math.min(...lon) - mLon };
+}
+
+/** Area around a radio link (or one site) that gets the detailed terrain: the path plus 30% of its length each side. */
+export function linkBounds(tx: LatLon, rx?: LatLon | null): Bounds {
+  return rx ? boundsAround([tx, rx], Math.max(2, haversineKm(tx, rx) * 0.3)) : boundsAround([tx], 6);
 }
 
 /** Highest zoom (≤ maxZ) whose tile count stays within budget. */

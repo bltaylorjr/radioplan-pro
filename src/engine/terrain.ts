@@ -15,6 +15,22 @@ export function demBounds(g: DemGrid) {
   return { west: g.west, east: g.west + g.ncols * g.cellDeg, north: g.north, south: g.north - g.nrows * cy };
 }
 
+/** Approximate cell size of a grid in metres (east-west, at its middle latitude). */
+export function demCellM(g: DemGrid): number {
+  const midLat = g.north - (g.nrows * (g.cellDegY ?? g.cellDeg)) / 2;
+  return g.cellDeg * 111320 * Math.cos((midLat * Math.PI) / 180);
+}
+
+/** The most detailed of `grids` that has ground heights at every point in `pts` (null when none does). */
+export function finestDem(grids: (DemGrid | null | undefined)[], pts: LatLon[]): DemGrid | null {
+  let best: DemGrid | null = null;
+  for (const g of grids) {
+    if (!g || !pts.every((q) => sampleDem(g, q) != null)) continue;
+    if (!best || demCellM(g) < demCellM(best)) best = g;
+  }
+  return best;
+}
+
 /** Bilinear elevation (m) or null when outside the grid / nodata. */
 export function sampleDem(g: DemGrid, p: LatLon): number | null {
   const cy = g.cellDegY ?? g.cellDeg;
