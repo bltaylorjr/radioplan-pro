@@ -1,5 +1,6 @@
 import React, { Suspense, lazy, useEffect, useRef, useState } from 'react';
 import { FullView } from './FullView';
+import { ViewPad, LayersButton, LayerList, type ViewApi, type LayerItem } from './ViewControls';
 import L from 'leaflet';
 import type { Site } from '../types';
 import type { CoverageResult } from '../engine/coverage';
@@ -150,6 +151,12 @@ export function MapView({ sites, txId, rxId, coverage, floor = -110, dem, onClic
   const el = useRef<HTMLDivElement>(null);
   const map = useRef<L.Map>();
   const layer = useRef<L.LayerGroup>();
+  // Each kind of thing on the map is its own layer, so it can be switched off (🗂 Layers on a full page, or the
+  // map's own layer list in the corner).
+  const covLayer = useRef<L.LayerGroup>(), demLayer = useRef<L.LayerGroup>(), extraLayer = useRef<L.LayerGroup>();
+  const overlays = useRef<{ id: string; label: string; g: L.LayerGroup }[]>([]);
+  const [, setLyrTick] = useState(0); const relayer = () => setLyrTick((t) => t + 1);
+  const [heatOp, setHeatOp] = useState(0.75);
   const bases = useRef<Record<string, L.TileLayer>>({});
   const clickRef = useRef(onClick); clickRef.current = onClick;
   const extraRef = useRef(extra); extraRef.current = extra;
@@ -184,7 +191,16 @@ export function MapView({ sites, txId, rxId, coverage, floor = -110, dem, onClic
     m.on('baselayerchange', (e: L.LayersControlEvent) => { baseName.current = e.name; try { localStorage.setItem('radioplan.basemap', e.name); } catch { /* ignore */ } });
     const towers = towersOverlay(m), fcc = fccOverlay(m);
     const photos = L.layerGroup(); photoLayer.current = photos;
-    L.control.layers(bases.current, { '📡 Existing towers & comm sites': towers, '🗼 FCC registered towers (offline)': fcc, '📷 Photo survey spots': photos }, { position: 'topright' }).addTo(m);
+    const sitesG = L.layerGroup().addTo(m), covG = L.layerGroup().addTo(m), demG = L.layerGroup().addTo(m), extraG = L.layerGroup().addTo(m);
+    layer.current = sitesG; covLayer.current = covG; demLayer.current = demG; extraLayer.current = extraG;
+    overlays.current = [
+      { id: 'sites', label: '📍 Sites and radio path', g: sitesG }, { id: 'cov', label: '🌡 Coverage heat map', g: covG },
+      { id: 'extra', label: '📐 Drawings on this page', g: extraG }, { id: 'dem', label: '⬚ Terrain area outline', g: demG },
+      { id: 'towers', label: '📡 Existing towers & comm sites', g: towers }, { id: 'fcc', label: '🗼 FCC registered towers (offline)', g: fcc },
+      { id: 'photos', label: '📷 Photo survey spots', g: photos },
+    ];
+    L.control.layers(bases.current, Object.fromEntries(overlays.current.map((o) => [o.label, o.g])), { position: 'topright' }).addTo(m);
+    m.on('overlayadd overlayremove baselayerchange', relayer);
     try { if (localStorage.getItem('radioplan.photomap') !== '0') photos.addTo(m); } catch { photos.addTo(m); }
     photos.on('add', () => { try { localStorage.setItem('radioplan.photomap', '1'); } catch { /* ignore */ } });
     photos.on('remove', () => { if (!(m as unknown as { _lvClosing?: boolean })._lvClosing) try { localStorage.setItem('radioplan.photomap', '0'); } catch { /* ignore */ } });
@@ -193,7 +209,6 @@ export function MapView({ sites, txId, rxId, coverage, floor = -110, dem, onClic
     L.control.scale({ imperial: true, metric: true }).addTo(m);
     addLocateControl(m);
     m.on('click', (e: L.LeafletMouseEvent) => { if (drawRef.current) return; if (measRef.current) setMpts((x) => [...x, { lat: e.latlng.lat, lon: e.latlng.lng }]); else clickRef.current?.(e.latlng.lat, e.latlng.lng); });
-    layer.current = L.layerGroup().addTo(m);
     mlayer.current = L.layerGroup().addTo(m);
     map.current = m; setMapObj(m);
     if (!center && sites.length > 1) m.fitBounds(L.latLngBounds(sites.map((s) => [s.lat, s.lon])), { padding: [40, 40] });
@@ -207,10 +222,10 @@ export function MapView({ sites, txId, rxId, coverage, floor = -110, dem, onClic
     Object.values(bases.current).forEach((l) => m.hasLayer(l) && m.removeLayer(l)); bases.current[base].addTo(m);
   }, [base]);
   useEffect(() => {
-    const g = layer.current; if (!g) return;
-    g.clearLayers();
-    if (dem) { const b = demBounds(dem); L.rectangle([[b.south, b.west], [b.north, b.east]], { color: '#8a5a2b', weight: 1, dashArray: '4 4', fill: false, interactive: false }).addTo(g); }
-    if (coverage) L.imageOverlay(coverageCanvas(coverage, floor), [[coverage.south, coverage.west], [coverage.north, coverage.east]], { opacity: 0.75, interactive: false }).addTo(g);
+    const g = layer.current, cg = covLayer.current, dg = demLayer.current, xg = extraLayer.current; if (!g || !cg || !dg || !xg) return;
+    g.clearLayers(); cg.clearLayers(); dg.clearLayers(); xg.clearLayers();
+    if (dem) { const b = demBounds(dem); L.rectangle([[b.south, b.west], [b.north, b.east]], { color: '#8a5a2b', weight: 1, dashArray: '4 4', fill: false, interactive: false }).addTo(dg); }
+    if (coverage) L.imageOverlay(coverageCanvas(coverage, floor), [[coverage.south, coverage.west], [coverage.north, coverage.east]], { opacity: heatOp, interactive: false }).addTo(cg);
     const tx = sites.find((s) => s.id === txId), rx = sites.find((s) => s.id === rxId);
     if (tx && rx && tx !== rx) {
       const z = azimuthPair(tx, rx);
@@ -225,12 +240,13 @@ export function MapView({ sites, txId, rxId, coverage, floor = -110, dem, onClic
           + (z ? `<br>From ${esc(tx!.name)}: ${u.f(z.km)} at ${fmtAz(z.fwd, z.decA)}<br>Aim back at ${fmtAz(z.back, z.decB)}` : '')).addTo(g);
     });
     if (marker) L.marker([marker.lat, marker.lon], { icon: icon('★', '#ef6c00') }).bindPopup(marker.label ?? 'Search location').addTo(g);
-    extraRef.current?.(g);
+    extraRef.current?.(xg); relayer();
   }, [sites, txId, rxId, coverage, floor, dem, selectedId, marker, extraKey, u.unit]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     const g = photoLayer.current; if (!g) return;
     drawPhotoSpots(g, proj.photoSpots ?? [], (id) => { try { localStorage.setItem(PHOTO_SPOT_KEY, id); } catch { /* ignore */ } window.dispatchEvent(new CustomEvent('lv-photospot', { detail: id })); go('photosurvey'); });
   }, [proj.photoSpots, mapObj]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { covLayer.current?.eachLayer((l) => (l as L.ImageOverlay).setOpacity?.(heatOp)); }, [heatOp]);
   const legs = mpts.slice(1).map((b, i) => azimuthPair(mpts[i], b));
   useEffect(() => {
     const g = mlayer.current; if (!g) return; g.clearLayers();
@@ -240,6 +256,28 @@ export function MapView({ sites, txId, rxId, coverage, floor = -110, dem, onClic
     legs.forEach((z, i) => { const a = mpts[i], b = mpts[i + 1];
       L.tooltip({ permanent: true, direction: 'center', className: 'measure-label' }).setLatLng([(a.lat + b.lat) / 2, (a.lon + b.lon) / 2]).setContent(`${u.f(z.km)} · ${fmtAz(z.fwd, z.decA, 0)}`).addTo(g); });
   }, [mpts, u.unit]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Big zoom buttons and the layer list for the full page view
+  const fitAll = () => {
+    const m = map.current; if (!m) return;
+    const pts: [number, number][] = sites.map((s) => [s.lat, s.lon]);
+    if (coverage) pts.push([coverage.south, coverage.west], [coverage.north, coverage.east]);
+    if (marker) pts.push([marker.lat, marker.lon]);
+    if (pts.length > 1) m.fitBounds(L.latLngBounds(pts), { padding: [40, 40] }); else if (pts.length) m.setView(pts[0], Math.max(m.getZoom(), 14));
+  };
+  const mapApi: ViewApi = {
+    zoomIn: () => map.current?.zoomIn(), zoomOut: () => map.current?.zoomOut(), fit: fitAll,
+    extra: [{ icon: '⛰', label: 'Tilt',  title: 'Tilt and turn this area in 3D', onClick: open3d }],
+  };
+  const has = (id: string) => id === 'sites' ? sites.length > 0 || !!marker : id === 'cov' ? !!coverage : id === 'dem' ? !!dem : id === 'extra' ? !!extra : true;
+  const layerItems: LayerItem[] = overlays.current.filter((o) => has(o.id)).map((o) => ({
+    id: o.id, label: o.label, on: !!map.current?.hasLayer(o.g),
+    set: (v) => { const m = map.current; if (!m) return; if (v) m.addLayer(o.g); else m.removeLayer(o.g); relayer(); },
+  }));
+  const setBase = (name: string) => {
+    const m = map.current, l = bases.current[name]; if (!m || !l) return;
+    Object.values(bases.current).forEach((b) => m.hasLayer(b) && m.removeLayer(b)); l.addTo(m); baseName.current = name;
+    try { localStorage.setItem('radioplan.basemap', name); } catch { /* ignore */ } relayer();
+  };
   return (
     <FullView title="Map">
       <div className="row map-modes" role="group" aria-label="Map view">
@@ -255,7 +293,17 @@ export function MapView({ sites, txId, rxId, coverage, floor = -110, dem, onClic
         {mpts.length > 0 && <span className="row" style={{ gap: 6, marginTop: 4 }}><button onClick={() => setMpts((x) => x.slice(0, -1))}>↶ Undo point</button><button onClick={() => setMpts([])}>Clear</button></span>}
       </div>}
       {!mode3d && <RouteTools map={mapObj} projectDem={dem} active={drawing} onClose={() => setDrawing(false)} resultsEl={resEl} />}
-      <div ref={el} className="map" style={{ height, display: mode3d ? 'none' : undefined }} data-tour="map" />
+      <div className="vc-host" style={{ display: mode3d ? 'none' : undefined }}>
+        <div ref={el} className="map" style={{ height }} data-tour="map" />
+        <LayersButton>
+          <LayerList items={layerItems} bases={Object.keys(BASEMAPS)} base={baseName.current} setBase={setBase}>
+            {coverage && map.current?.hasLayer(covLayer.current!) && <fieldset><legend>Heat map strength</legend>
+              <label className="vc-row"><input type="range" min={0.2} max={1} step={0.05} value={heatOp} onChange={(e) => setHeatOp(+e.target.value)} aria-label="Heat map strength" style={{ flex: 1 }} /> {Math.round(heatOp * 100)}%</label>
+            </fieldset>}
+          </LayerList>
+        </LayersButton>
+        <ViewPad api={mapApi} />
+      </div>
       {!mode3d && <div ref={setResEl} />}
       {mode3d && <Suspense fallback={<div className="three empty" style={{ height }}>Loading 3D view…</div>}>
         <TiltView view={view} sites={sites} txId={txId} rxId={rxId} dem={dem} base={baseName.current} height={height} />

@@ -1,5 +1,6 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { FullView } from './FullView';
+import { ViewPad, orbitApi } from './ViewControls';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import type { AutoResult, Kind } from '../engine/autodesign';
@@ -9,6 +10,8 @@ export const KIND_COLOR: Record<Kind, string> = { tr: '#6d4c41', facp: '#b71c1c'
 /** 3-D model of the building: one slab per floor with every device the auto-design placed. Drag to turn, scroll to zoom. */
 export function Building3D({ r, lengthFt, widthFt, floorHeightFt, floor, hidden }: { r: AutoResult; lengthFt: number; widthFt: number; floorHeightFt: number; floor: number | 'all'; hidden: Set<Kind> }) {
   const mount = useRef<HTMLDivElement>(null);
+  const orb = useRef<{ camera: THREE.Camera; ctl: OrbitControls } | null>(null);
+  const api = useMemo(() => orbitApi(() => orb.current), []);
   useEffect(() => {
     const el = mount.current; if (!el) return;
     const w = el.clientWidth, h = Math.max(360, Math.min(620, w * 0.62));
@@ -46,11 +49,11 @@ export function Building3D({ r, lengthFt, widthFt, floorHeightFt, floor, hidden 
       const y = d.kind === 'donor' ? floors * FH + 6 : d.outdoor ? 6 : ['tr', 'facp'].includes(d.kind) ? d.floor * FH + 4 : ['smoke', 'speaker', 'wap', 'das', 'dome', 'motion', 'camera'].includes(d.kind) ? ceilingY : wallY;
       mesh.position.set(d.x, y, d.y); if (d.kind === 'camera') mesh.rotation.x = Math.PI; g.add(mesh);
     }
-    const ctl = new OrbitControls(cam, renderer.domElement); ctl.target.set(0, (floors * FH) / 3, 0); ctl.update();
+    const ctl = new OrbitControls(cam, renderer.domElement); ctl.target.set(0, (floors * FH) / 3, 0); ctl.update(); orb.current = { camera: cam, ctl };
     let raf = 0; const loop = () => { raf = requestAnimationFrame(loop); ctl.update(); renderer.render(scene, cam); }; loop();
     const onResize = () => { const nw = el.clientWidth; const nh = el.closest('.fullview-on') ? Math.max(300, el.clientHeight) : Math.max(360, Math.min(620, nw * 0.62)); cam.aspect = nw / nh; cam.updateProjectionMatrix(); renderer.setSize(nw, nh); };
     window.addEventListener('resize', onResize);
-    return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', onResize); ctl.dispose(); renderer.dispose(); scene.traverse((o) => { const m = o as THREE.Mesh; m.geometry?.dispose?.(); }); };
+    return () => { orb.current = null; cancelAnimationFrame(raf); window.removeEventListener('resize', onResize); ctl.dispose(); renderer.dispose(); scene.traverse((o) => { const m = o as THREE.Mesh; m.geometry?.dispose?.(); }); };
   }, [r, lengthFt, widthFt, floorHeightFt, floor, hidden]);
-  return <FullView title="3D building model"><div ref={mount} className="bldg3d" aria-label="3D model of the building and equipment" /></FullView>;
+  return <FullView title="3D building model"><div className="vc-host"><div ref={mount} className="bldg3d" aria-label="3D model of the building and equipment" /><ViewPad api={api} /></div></FullView>;
 }

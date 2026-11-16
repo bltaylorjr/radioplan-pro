@@ -470,3 +470,38 @@ button.nav-group-title:hover { color: #fff; }
 .tone-ok { color: var(--ok, #2e7d32); font-weight: 600; } .tone-warn { color: var(--warn, #b26a00); font-weight: 600; } .tone-bad { color: var(--bad, #c62828); font-weight: 600; }
 .ps-howto summary { cursor: pointer; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 4px 0; }
 .ps-howto ol { margin: 6px 0 10px; padding-left: 22px; } .ps-howto li { margin: 3px 0; }
+
+/* Full page view: big Layers, zoom, tilt and turn buttons over maps and 3D views (ViewControls.tsx) */
+.fullview-body { position: relative; }
+.vc-host { position: relative; }
+.fullview-on .vc-host { display: flex; flex-direction: column; min-height: 0; }
+.fullview-on .vc-host > .map, .fullview-on .vc-host > .three, .fullview-on .vc-host > .bldg3d { flex: 1; }
+.fullview-on .tiltview .vc-host { flex: none; }
+.fullview-on .tiltview .vc-host > .three { flex: none; height: 72vh !important; }
+.fullview-on .leaflet-control-zoom, .fullview-on .leaflet-control-layers { display: none; }
+.vc-pad { position: absolute; right: max(10px, env(safe-area-inset-right)); bottom: max(26px, env(safe-area-inset-bottom)); z-index: 1000;
+  display: flex; flex-direction: column; flex-wrap: wrap-reverse; align-content: flex-end; gap: 6px; max-height: calc(100% - 96px); }
+.vc-btn { min-width: 48px; min-height: 48px; padding: 0 8px; font-size: 1.45rem; line-height: 1; border-radius: 10px;
+  background: var(--panel, #fff); color: var(--text, #111); border: 1px solid var(--line, #bbb); box-shadow: 0 2px 6px rgba(0,0,0,.28);
+  touch-action: manipulation; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; cursor: pointer; }
+.vc-btn:active { transform: scale(.95); }
+.vc-btn.vc-wide { font-size: 1rem; font-weight: 600; padding: 0 14px; }
+.vc-btn.vc-labeled { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; padding: 2px 4px; }
+.vc-btn.vc-labeled small { font-size: .7rem; font-weight: 700; }
+.fullview-on .fullview-body > div:empty { flex: 0 0 auto; }
+.fullview-on .fullview-body > .vc-host { flex: 1 1 auto; }
+@media (max-width: 640px) { .vc-btn { min-width: 44px; min-height: 44px; font-size: 1.25rem; } .vc-pad { gap: 5px; } }
+.vc-btn.primary { background: var(--accent, #1565c0); color: #fff; }
+.vc-layerbox { position: absolute; top: 10px; bottom: 10px; right: max(10px, env(safe-area-inset-right)); z-index: 1001; display: flex; flex-direction: column; align-items: flex-end; pointer-events: none; }
+.vc-layerbox > * { pointer-events: auto; }
+.vc-sheet { margin-top: 6px; width: min(360px, calc(100vw - 32px)); min-height: 0; flex: 0 1 auto; max-height: 560px; overflow: auto; -webkit-overflow-scrolling: touch;
+  background: var(--panel, #fff); color: var(--text, #111); border: 1px solid var(--line, #bbb); border-radius: 12px; box-shadow: 0 6px 20px rgba(0,0,0,.3); padding: 10px 12px; }
+.vc-sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; position: sticky; top: -10px; background: inherit; padding: 4px 0 6px; }
+.vc-sheet-head button { min-height: 44px; padding: 0 18px; font-size: 1rem; }
+.vc-layers fieldset { border: 0; padding: 0; margin: 4px 0 8px; }
+.vc-layers legend { font-weight: 700; font-size: .9rem; opacity: .8; padding: 0; margin-bottom: 2px; }
+.vc-row { display: flex; align-items: center; gap: 10px; min-height: 44px; font-size: 1rem; border-bottom: 1px solid var(--line, #eee); cursor: pointer; }
+.vc-row input[type=checkbox], .vc-row input[type=radio] { width: 24px; height: 24px; flex: none; }
+.vc-layers .layer-panel { font-size: 1rem; }
+.vc-layers .legend-chip, .vc-layerbox .legend-chip { min-height: 40px; }
+@media print { .vc-pad, .vc-layerbox { display: none; } }

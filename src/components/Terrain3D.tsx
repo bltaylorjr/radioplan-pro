@@ -1,5 +1,6 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { FullView } from './FullView';
+import { ViewPad, LayersButton, orbitApi } from './ViewControls';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { sampleDem, demBounds, buildProfile, analyzeProfile, DemGrid, ProfileAnalysis } from '../engine/terrain';
@@ -60,6 +61,10 @@ export interface Terrain3DProps {
   path?: { points: PathPoint[]; hops: { ok: boolean; los: boolean }[] } | null;
   /** Formats a height in metres and a distance in km in the person's units (labels on obstructions). */
   fmtLen?: (m: number) => string; fmtDist?: (km: number) => string;
+  /** Layer switches shown in the 🗂 Layers panel on a full page. */
+  layers?: React.ReactNode;
+  /** Extra buttons under zoom / tilt (e.g. back to the flat map). */
+  padExtra?: { icon: string; label: string; title: string; onClick: () => void }[];
 }
 
 /** Put the camera at `deg` from straight down (0) toward level (88), keeping its compass direction and distance. */
@@ -328,5 +333,10 @@ export function Terrain3D(props: Terrain3DProps) {
     if (Math.abs((c.ctl.getPolarAngle() * 180) / Math.PI - props.tilt) < 0.5) return;
     setTilt(c.camera, c.ctl, props.tilt); c.ctl.update();
   }, [props.tilt]);
-  return <FullView title="3D terrain model"><div ref={mount} className="three" style={props.height ? { height: props.height } : undefined} /></FullView>;
+  const api = useMemo(() => orbitApi(() => cam.current, (d) => onTiltRef.current?.(d)), []);
+  return <FullView title="3D terrain model"><div className="vc-host">
+    <div ref={mount} className="three" style={props.height ? { height: props.height } : undefined} />
+    {props.layers && <LayersButton>{props.layers}</LayersButton>}
+    <ViewPad api={props.padExtra ? { ...api, extra: props.padExtra } : api} />
+  </div></FullView>;
 }

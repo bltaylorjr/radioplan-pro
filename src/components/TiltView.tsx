@@ -8,6 +8,7 @@ import { useDrawnLines, useLineAnalysis, signalColor } from './RouteTools';
 import { predictPoint } from '../engine/coverage';
 import { Terrain3D, meshN, type PathPoint } from './Terrain3D';
 import { BASEMAPS } from './basemaps';
+import { LayerList, type LayerItem } from './ViewControls';
 import { buildDrape, type Drape } from '../engine/drape';
 import { downloadTerrain, boundsAround, demCovers, type Bounds } from '../engine/autoterrain';
 import { bundledDem, cropDem } from '../engine/bundledTerrain';
@@ -218,6 +219,25 @@ export default function TiltView({ view, sites, txId, rxId, dem: projectDem, hei
     setMsg(`Suggested a relay spot with ${u.len(agl, 0)} antenna that sees both ends (shortest total path). Check access, power and land ownership there before relying on it.`);
   };
 
+  // The same switches appear under the tilt slider and, on a full page, in the 🗂 Layers panel over the 3D view.
+  const layerItems: LayerItem[] = [
+    { id: 'los', label: 'Line of sight and obstructions', on: showLos, set: setShowLos },
+    { id: 'fresnel', label: 'Fresnel zone', on: showF, set: setShowF },
+    { id: 'view', label: 'What point A can see (red = hidden)', on: showView, set: setShowView },
+    { id: 'towers', label: 'Existing towers', on: showT, set: setShowT },
+    ...((p.photoSpots?.length ?? 0) > 0 ? [{ id: 'photos', label: 'Photo survey spots', on: showPh, set: setShowPh }] : []),
+    ...(lines.length > 0 ? [{ id: 'lines', label: 'Drawn lines', on: showLines, set: setShowLines }] : []),
+    { id: 'heat', label: 'Signal heat map', on: showHeat, set: setShowHeat, disabled: !la.cov, note: la.cov ? undefined : '(set a transmit site and radio first)' },
+  ];
+  const imageryKeys = Object.keys(IMAGERY) as Imagery[];
+  const layersPanel = (
+    <LayerList items={layerItems} bases={imageryKeys.map((k) => IMAGERY[k].label)} base={IMAGERY[imagery].label} setBase={(l) => setImagery(imageryKeys.find((k) => IMAGERY[k].label === l) ?? 'sat')}>
+      <fieldset><legend>Height boost</legend>
+        <label className="vc-row"><input type="range" min={1} max={5} step={0.5} value={exag} onChange={(e) => setExag(+e.target.value)} aria-label="Height boost" style={{ flex: 1 }} /> {exag === 1 ? 'true scale' : `${exag}×`}</label>
+      </fieldset>
+    </LayerList>
+  );
+
   const onPick = (q: LatLon) => { if (placing == null) return; setPoint(placing, q); setPlacing(null); setMsg(''); };
 
   return (
@@ -236,18 +256,12 @@ export default function TiltView({ view, sites, txId, rxId, dem: projectDem, hei
         <button className={exag === 1 ? 'primary' : ''} aria-pressed={exag === 1} onClick={() => setExag(exag === 1 ? 2 : 1)} title="Heights and distances to the same scale (no height boost)">True scale</button>
       </div>
       <div className="row wrap small">
-        <label><input type="checkbox" checked={showLos} onChange={(e) => setShowLos(e.target.checked)} /> Line of sight and obstructions</label>
-        <label><input type="checkbox" checked={showF} onChange={(e) => setShowF(e.target.checked)} /> Fresnel zone</label>
-        <label><input type="checkbox" checked={showView} onChange={(e) => setShowView(e.target.checked)} /> What point A can see (red = hidden)</label>
-        <label><input type="checkbox" checked={showT} onChange={(e) => setShowT(e.target.checked)} /> Existing towers</label>
-        {(p.photoSpots?.length ?? 0) > 0 && <label><input type="checkbox" checked={showPh} onChange={(e) => setShowPh(e.target.checked)} /> Photo survey spots</label>}
-        {lines.length > 0 && <label><input type="checkbox" checked={showLines} onChange={(e) => setShowLines(e.target.checked)} /> Drawn lines</label>}
-        <label title={la.cov ? '' : 'Set a transmit site and radio first'}><input type="checkbox" checked={showHeat} disabled={!la.cov} onChange={(e) => setShowHeat(e.target.checked)} /> Signal heat map</label>
+        {layerItems.map((l) => <label key={l.id} title={l.disabled ? 'Set a transmit site and radio first' : ''}><input type="checkbox" checked={l.on} disabled={l.disabled} onChange={(e) => l.set(e.target.checked)} /> {l.label}</label>)}
       </div>
       {placing != null && <p className="note">👆 Tap the ground in the 3D view to place <b>{pts[placing]?.name}</b>. <button onClick={() => setPlacing(null)}>Cancel</button></p>}
       {dem ? <Terrain3D dem={dem} sites={path ? [] : sites} txId={txId} rxId={rxId} fMHz={p.radio.fMHz} kFactor={p.radio.kFactor} clutterM={p.radio.clutterM}
         exag={exag} showFresnel={showF} drape={drape} tilt={tilt} onTilt={setTilt} viewshed={vs} obstructions={obstructions} path={path} onPick={onPick}
-        comm={showT ? comm : undefined} routes={routes} heat={heat} photos={photos} height={height} fmtLen={(m) => u.len(m, 0)} fmtDist={(km) => u.f(km)} />
+        comm={showT ? comm : undefined} routes={routes} heat={heat} photos={photos} height={height} layers={layersPanel} fmtLen={(m) => u.len(m, 0)} fmtDist={(km) => u.f(km)} />
         : <div className="three empty" style={{ height }}>{msg || 'Loading terrain…'}</div>}
       {msg && dem && <p className="note">{msg}</p>}
 

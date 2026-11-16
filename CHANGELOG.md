@@ -1,3 +1,11 @@
+# LvPlan Pro 1.5.63
+
+- **Layers, zoom and tilt on full page maps.** Open any map or 3D view with ⛶ Full page and you get big buttons made for fingers:
+  - **🗂 Layers** (top right): pick the map picture (USGS topo, satellite, streets and more) and switch each layer on or off: sites and radio path, coverage heat map (with a strength slider), the page's own drawings, terrain area, existing towers, FCC registered towers and photo survey spots. On the 3D tilt view it lists line of sight, Fresnel zone, what point A can see, towers, drawn lines, signal heat map and height boost. On 2D & 3D Models and the campus site plan it holds the full layer list for every system.
+  - **＋ / −** zoom, **⤢** shows everything. On the flat map **⛰ Tilt** opens the 3D tilt view of the same area.
+  - In every 3D view (terrain, building, indoor walls, layered models): **⤒ ⤓** tilt, **⟲ ⟳** turn, **N** puts north at the top looking straight down. Hold a button to keep zooming, tilting or turning.
+- Works offline like the rest of the app; nothing new to download.
+
 # LvPlan Pro 1.5.62
 
 - **Fixed: "This page could not open – Importing a module script failed"** (seen on iPhone on Map & Terrain). It happened when a new version was published while the app was open: the open copy asked for page files that no longer exist on the website. Now the app tries again, and if the files have changed it reloads itself once into the new version and opens the page. The offline copy also keeps the previous version's files, so an open app keeps working during an update.
