@@ -178,7 +178,7 @@ export const FEATURES: Feature[] = [
     steps: ['Type a number. If it is out of range, read the message under the box and tap Use … for the suggested value.', 'Open User Settings and look at Check my data.', 'Tap Fix on … to go to the page with the problem.'],
     keywords: 'check my data wrong entry red box out of range validate mistake error fix blank zero', topic: 'settings',
     tour: [ { target: 'text:Check my data', title: 'Check my data', text: 'Every empty, out-of-range or mismatched entry in the project, with a Fix button.' } ] },
-  { id: 'rr-appkey', version: '1.5.66', title: 'RadioReference app key (in User Settings)', page: 'settings', alsoOn: ['radioref'], where: 'User Settings → RadioReference app key',
+  { id: 'rr-appkey', version: '1.5.67', title: 'RadioReference app key (in User Settings)', page: 'settings', alsoOn: ['radioref'], where: 'User Settings → RadioReference app key',
     summary: 'The RadioReference app key is entered once in User Settings, kept encrypted on this device, and is no longer on the login page. Do not change it unless RadioReference sends a new one.',
     steps: ['Open User Settings at the bottom of the menu.', 'Paste the key RadioReference emailed you and tap Save app key (one time).', 'Leave it alone after that: Change… asks first, because a wrong key stops downloads.'],
     keywords: 'radioreference radio reference app key api key settings change warning', topic: 'radioref',
