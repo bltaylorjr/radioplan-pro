@@ -1,3 +1,9 @@
+# LvPlan Pro 1.5.65
+
+- **Sharper maps on iPhone and other high-resolution screens.** The flat map now builds each map square from the four more-detailed squares under it, so roads, contour lines, labels and satellite pictures are crisp instead of soft. If those aren't saved (offline), it shows the normal map as before.
+- **Zoom in closer**: every map picture can now zoom to level 20. Past a picture's most detailed level it enlarges the last one instead of stopping.
+- **Sharper 3D tilt view**: the satellite picture over the 3D ground uses up to 4 times more detail (high-res satellite up to level 18, up to 4096 × 4096 pixels), and the ground uses more terrain detail. Offline, any square not saved at full detail is filled from a saved less-detailed one, not left as plain height colors.
+
 # LvPlan Pro 1.5.64
 
 - **Layers, zoom and tilt on full page maps.** Open any map or 3D view with ⛶ Full page and you get big buttons made for fingers:

@@ -184,7 +184,7 @@ export function MapView({ sites, txId, rxId, coverage, floor = -110, dem, onClic
     if (!el.current || map.current) return;
     const start = center ?? sites[0] ?? { lat: 35.2, lon: -80.8 };
     const m = L.map(el.current, { zoomControl: true }).setView([start.lat, start.lon], center?.zoom ?? 11);
-    for (const [k, v] of Object.entries(BASEMAPS)) bases.current[k] = new CachedTileLayer(v.url, { attribution: v.attr, maxZoom: v.max, maxNativeZoom: v.max } as L.TileLayerOptions);
+    for (const [k, v] of Object.entries(BASEMAPS)) bases.current[k] = new CachedTileLayer(v.url, { attribution: v.attr, maxZoom: 20, maxNativeZoom: v.max } as L.TileLayerOptions);
     let chosen = base ?? DEFAULT_BASE;
     try { chosen = base ?? localStorage.getItem('radioplan.basemap') ?? DEFAULT_BASE; } catch { /* ignore */ }
     (bases.current[chosen] ?? bases.current[DEFAULT_BASE]).addTo(m); baseName.current = bases.current[chosen] ? chosen : DEFAULT_BASE;
