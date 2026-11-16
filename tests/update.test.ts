@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { cmpVersion, pickUpdate, ASSETS } from '../src/engine/update';
 
 const rel = (tag: string, extra = {}) => ({ tag_name: tag, html_url: 'https://github.com/x/y/releases/tag/' + tag, body: 'notes',
-  assets: Object.values(ASSETS).map((n) => ({ name: n, browser_download_url: `https://github.com/bltaylorjr/radioplan-pro/releases/download/${tag}/${n}` })), ...extra });
+  assets: Object.values(ASSETS).map((n) => ({ name: n, browser_download_url: `https://github.com/bltaylorjr/lvplan-pro/releases/download/${tag}/${n}` })), ...extra });
 
 describe('updates', () => {
   it('compares versions', () => {

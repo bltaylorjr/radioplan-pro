@@ -1,7 +1,11 @@
 use tauri::{WebviewUrl, WebviewWindowBuilder};
 
-/// Where automatic updates come from (GitHub Releases of the project repository).
-const UPDATE_PREFIX: &str = "https://github.com/bltaylorjr/radioplan-pro/releases/download/";
+/// Where automatic updates come from: GitHub Releases of the public downloads repository.
+/// The old project repository is still accepted so a reinstall of an older version keeps working.
+const UPDATE_PREFIXES: [&str; 2] = [
+    "https://github.com/bltaylorjr/lvplan-pro/releases/download/",
+    "https://github.com/bltaylorjr/radioplan-pro/releases/download/",
+];
 
 /// Portable mode: when a folder named "RadioPlan Data" (or a file "portable.txt") sits next to the
 /// program, all projects and maps are stored there (for example on a flash drive) instead of in
@@ -29,7 +33,7 @@ fn app_info() -> AppInfo { AppInfo { portable: portable_data_dir().is_some(), os
 #[tauri::command]
 fn install_update(url: String, sha256: Option<String>) -> Result<(), String> {
     let ok_chars = url.chars().all(|c| c.is_ascii_alphanumeric() || "/:._-".contains(c));
-    if !url.starts_with(UPDATE_PREFIX) || !url.ends_with(".exe") || url.contains("..") || !ok_chars {
+    if !UPDATE_PREFIXES.iter().any(|p| url.starts_with(p)) || !url.ends_with(".exe") || url.contains("..") || !ok_chars {
         return Err("Update address refused".into());
     }
     // The SHA-256 GitHub reports for the file. When given, a download that does not match is deleted and not run.

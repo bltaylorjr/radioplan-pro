@@ -1,6 +1,9 @@
 name: Build installers and publish a release
 # Raising "version" in package.json (pushed to main) builds every download and publishes it as the latest
-# GitHub Release vX.Y.Z. Installed apps check that release and update themselves. Can also be run manually.
+# GitHub Release vX.Y.Z here and in the public downloads repository bltaylorjr/lvplan-pro, which is where installed
+# apps (1.5.69 and later) check for updates. Can also be run manually.
+# PUBLISH_TOKEN: a fine-grained token with Contents read/write on bltaylorjr/lvplan-pro only. It lets this
+# (possibly private) source repository publish the downloads there.
 # Secrets: ANDROID_KEYSTORE_B64 (base64 of the release keystore) and ANDROID_STOREPASS. Android only
 # accepts updates signed with the same key, so these must stay the same for the life of the app.
 on:
@@ -53,3 +56,18 @@ jobs:
           gh release create "$TAG" --target "$GITHUB_SHA" --title "LvPlan Pro ${TAG#v}" --notes-file CHANGELOG.md --latest \
             out/RadioPlan-Pro-Setup.exe out/RadioPlan-Pro.apk out/RadioPlan-Pro-FlashDrive.zip out/SHA256SUMS.txt || \
           gh release upload "$TAG" --clobber out/RadioPlan-Pro-Setup.exe out/RadioPlan-Pro.apk out/RadioPlan-Pro-FlashDrive.zip out/SHA256SUMS.txt
+      - if: steps.chk.outputs.ok == 'true' && steps.ver.outputs.ok == 'true'
+        name: Publish release to the public downloads repository
+        env: { GH_TOKEN: '${{ secrets.PUBLISH_TOKEN }}', OWN_TOKEN: '${{ github.token }}', PUB: bltaylorjr/lvplan-pro }
+        run: |
+          if [ -z "$GH_TOKEN" ]; then echo "::warning::PUBLISH_TOKEN is not set, so the release was not copied to $PUB."; exit 0; fi
+          TAG="${{ steps.ver.outputs.tag }}"
+          # One time only: copy the newest earlier release, so a Windows reinstall of the last good version still finds it.
+          PREV=$(GH_TOKEN="$OWN_TOKEN" gh release list --exclude-pre-releases --exclude-drafts -L 2 --json tagName -q '.[].tagName' | grep -vx "$TAG" | head -1 || true)
+          if [ -n "$PREV" ] && ! gh release view "$PREV" -R "$PUB" >/dev/null 2>&1; then
+            mkdir -p "$RUNNER_TEMP/prev" && GH_TOKEN="$OWN_TOKEN" gh release download "$PREV" -D "$RUNNER_TEMP/prev" -p '*.exe' -p '*.apk' -p '*.zip' -p 'SHA256SUMS.txt'
+            gh release create "$PREV" -R "$PUB" --title "LvPlan Pro ${PREV#v}" --notes "Earlier version, kept for automatic repair." --latest=false "$RUNNER_TEMP"/prev/*
+          fi
+          gh release create "$TAG" -R "$PUB" --title "LvPlan Pro ${TAG#v}" --notes-file CHANGELOG.md --latest \
+            out/RadioPlan-Pro-Setup.exe out/RadioPlan-Pro.apk out/RadioPlan-Pro-FlashDrive.zip out/SHA256SUMS.txt || \
+          gh release upload "$TAG" -R "$PUB" --clobber out/RadioPlan-Pro-Setup.exe out/RadioPlan-Pro.apk out/RadioPlan-Pro-FlashDrive.zip out/SHA256SUMS.txt

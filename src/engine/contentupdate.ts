@@ -6,7 +6,7 @@ import { registerDataset, sha256 } from './maintain';
 import { notify, logRepair } from './carelog';
 
 /** Where the website keeps the packs (published with every update of main). */
-export const CONTENT_URL = 'https://bltaylorjr.github.io/radioplan-pro/content/';
+export const CONTENT_URL = 'https://bltaylorjr.github.io/lvplan-pro/content/';
 const KEY = 'content.pack.v1:';
 const keyOf = (name: string) => KEY + name;
 
