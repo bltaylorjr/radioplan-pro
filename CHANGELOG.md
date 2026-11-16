@@ -1,3 +1,8 @@
+# LvPlan Pro 1.5.69
+
+- **New introduction video.** The ▶ Video at the top of the app is a new, full tour, about 30 minutes long. It goes through every page and tool in the order of the menu, from project setup to reports, then the tools and settings. It includes everything new up to this version: costs, vendors and budget, full-page maps, sharper maps and the RadioReference key in User Settings.
+- Clearer narration: DAS is said "dass", ERCES is said "ER-sees", and NFPA, BDA and FAA are spelled out letter by letter. The background music is soft and drops lower while he talks.
+
 # LvPlan Pro 1.5.68
 
 - **Pages open at once again.** Since 1.5.60 each page was downloaded the first time it was opened, so on a phone a page could show "Loading…" for a few seconds (Site Data took 3 seconds on a slow connection). Now the app still starts quickly with just the first page, then quietly downloads the other pages in the background, so picking a page opens it right away (Site Data: 0.26 s, like 1.5.59).
