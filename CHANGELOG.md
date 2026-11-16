@@ -1,3 +1,9 @@
+# LvPlan Pro 1.5.68
+
+- **Pages open at once again.** Since 1.5.60 each page was downloaded the first time it was opened, so on a phone a page could show "Loading…" for a few seconds (Site Data took 3 seconds on a slow connection). Now the app still starts quickly with just the first page, then quietly downloads the other pages in the background, so picking a page opens it right away (Site Data: 0.26 s, like 1.5.59).
+- **Opens instantly on a weak signal** (online version): the app opens from the copy saved on the phone instead of waiting up to 4 seconds for the website. A new version is saved in the background and is used the next time the app is opened.
+- The large FCC, airport and terrain files are saved for offline use only after the app has been idle for 20 seconds (not when the phone is set to save data), so they no longer compete with maps and pages. After an update, files that did not change are reused instead of downloaded again.
+
 # LvPlan Pro 1.5.67
 
 - **RadioReference app key moved to User Settings.** The login page now asks only for your username and password. The app key has its own card in **User Settings → RadioReference app key**, with a warning not to change it: **Change…** asks first, and the key is shown hidden (last 4 characters) unless you tap Show.

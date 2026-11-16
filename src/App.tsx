@@ -1,5 +1,5 @@
 import React, { Suspense, lazy, useEffect, useState } from 'react';
-import { loadChunk } from './engine/chunkload';
+import { track, preloadPages } from './engine/chunkload';
 import { useStore, downloadText } from './store';
 import { HELP } from './help/content';
 import { HelpManual, HelpPanel, Tour } from './help/HelpUI';
@@ -31,9 +31,10 @@ import type { TourStep } from './help/content';
 import { NavFind } from './components/NavFind';
 import { DevicesPage, useDevices } from './pages/Devices';
 import { setDistanceUnit, ROLE_LABEL } from './engine/devices';
-/** Each page loads the first time it is opened, so the app starts quickly. */
+/** Each page is its own file: the app starts with only what the first screen needs, then fetches the rest in the background. */
 function page<M extends Record<string, unknown>>(load: () => Promise<M>, name: keyof M & string) {
-  return lazy(() => loadChunk(load).then((m) => ({ default: m[name] as React.ComponentType })));
+  const f = track(load);
+  return lazy(() => f().then((m) => ({ default: m[name] as React.ComponentType })));
 }
 const DirectionsPage = page(() => import('./pages/Directions'), 'DirectionsPage');
 const SitesPage = page(() => import('./pages/Sites'), 'SitesPage');
@@ -75,11 +76,11 @@ const CampusPage = page(() => import('./pages/Campus'), 'CampusPage');
 const SettingsPage = page(() => import('./pages/Settings'), 'SettingsPage');
 const SignalReadingsPage = page(() => import('./pages/SignalReadings'), 'SignalReadingsPage');
 const AssetsPage = page(() => import('./pages/Assets'), 'AssetsPage');
-const TerrainPage = lazy(() => loadChunk(() => import('./pages/Terrain')));
-const CoveragePage = lazy(() => loadChunk(() => import('./pages/Coverage')));
-const View3DPage = lazy(() => loadChunk(() => import('./pages/View3D')));
-const FccPage = lazy(() => loadChunk(() => import('./pages/Fcc')));
-const FaaPage = lazy(() => loadChunk(() => import('./pages/Faa')));
+const TerrainPage = lazy(track(() => import('./pages/Terrain')));
+const CoveragePage = lazy(track(() => import('./pages/Coverage')));
+const View3DPage = lazy(track(() => import('./pages/View3D')));
+const FccPage = lazy(track(() => import('./pages/Fcc')));
+const FaaPage = lazy(track(() => import('./pages/Faa')));
 const OfflineArea = page(() => import('./components/OfflineArea'), 'OfflineArea');
 import { MapPackBadge } from './components/MapPacks';
 
@@ -147,6 +148,7 @@ export const WORKFLOW: WorkflowPage[] = MENU_ORDER.filter((p) => PAGE_ELEMENTS[p
 export default function App() {
   const { page, go, project, update, rt, setRt, lib } = useStore();
   const [online, setOnline] = useState(typeof navigator === 'undefined' ? true : navigator.onLine);
+  useEffect(() => { preloadPages(); }, []);
   useEffect(() => { const on = () => setOnline(true), off = () => setOnline(false); window.addEventListener('online', on); window.addEventListener('offline', off); return () => { window.removeEventListener('online', on); window.removeEventListener('offline', off); }; }, []);
   const [helpOpen, setHelpOpen] = useState(false);
   const [tour, setTour] = useState<TourStep[] | null>(null);
