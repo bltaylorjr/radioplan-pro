@@ -10,7 +10,7 @@ export const ALWAYS_PAGES = ['company', 'systems', 'projects', 'settings'];
 export const PAGE_GROUPS: [string, string[]][] = MENU_GROUPS.map((g) => [groupHeading(g), MENU_PAGES.filter((p) => p.group === g.id).map((p) => p.id)]);
 
 /** Pages most low-voltage jobs use, whatever the systems. */
-const COMMON = ['locate', 'sites', 'fieldnotes', 'compliance', 'materials', 'blueprints', 'testing', 'reports', 'troubleshoot', 'directions', 'service', 'assets', 'devices', 'install', 'theory', 'library', 'contacts', 'calculators'];
+const COMMON = ['locate', 'sites', 'fieldnotes', 'compliance', 'materials', 'vendors', 'blueprints', 'testing', 'reports', 'troubleshoot', 'directions', 'service', 'assets', 'devices', 'install', 'theory', 'library', 'contacts', 'calculators'];
 /** Extra pages for systems that need radio or design pages. */
 const EXTRA: Record<string, string[]> = {
   firealarm: ['alarm', 'autodesign', 'models', 'campus'], massnotif: ['alarm', 'autodesign', 'models', 'campus'], security: ['autodesign', 'models', 'campus'], access: ['autodesign', 'models', 'campus'], cctv: ['autodesign', 'models', 'campus'],

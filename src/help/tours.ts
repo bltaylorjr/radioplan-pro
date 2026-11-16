@@ -67,7 +67,14 @@ export const PAGE_TOURS: Record<string, TourStep[]> = {
   materials: [
     { target: 'text:Materials list (bill of materials)', title: 'Materials list', text: 'Built from the design. Change any quantity, brand or model.' },
     { target: 'text:Add item', title: 'Add item', text: 'Add anything the design did not include.' },
-    { target: 'text:Export PDF', title: 'Export', text: 'Save the list as PDF or CSV for ordering.' },
+    { target: 'text:Unit cost', title: 'Prices', text: 'Type a unit cost on a line; the totals fill in. Tap ✎ to change a line, ✕ to remove it.' },
+    { target: 'text:🔎 Search online', title: 'Search online', text: 'Tick lines or Select all, then look the parts up online.' },
+    { target: 'text:Labor costs', title: 'Labor', text: 'Add labor, or let the app suggest it from the materials.' },
+    { target: 'text:Estimate and budget', title: 'Budget', text: 'Type your budget. Anything over budget shows in red.' },
+    { target: 'text:Export PDF', title: 'Export', text: 'Save the list and estimate as PDF or CSV for ordering.' },
+  ],
+  vendors: [
+    { target: 'text:+ Add vendor', title: 'Add a vendor', text: 'Your suppliers, saved on this device for every project.' },
   ],
   blueprints: [
     { target: 'text:Blueprints', title: 'Blueprints', text: 'Drawing sheets for permits and installers, with a title block and north arrow.' },

@@ -505,3 +505,13 @@ button.nav-group-title:hover { color: #fff; }
 .vc-layers .layer-panel { font-size: 1rem; }
 .vc-layers .legend-chip, .vc-layerbox .legend-chip { min-height: 40px; }
 @media print { .vc-pad, .vc-layerbox { display: none; } }
+/* Materials costing (1.5.62) */
+.tbl .amt { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.money-in { display: inline-flex; align-items: center; gap: 2px; } .money-in input { width: 84px; }
+.tbl.bom .vendor-sel { max-width: 130px; } .tbl.bom tr.sel { background: var(--warn-bg); }
+.mat-tools { align-items: center; gap: 8px; margin: 6px 0 8px; }
+.search-list { columns: 2 260px; margin: 6px 0; padding-left: 18px; }
+.tbl.estimate th { text-align: left; font-weight: 500; } .tbl.estimate tr.over td { background: var(--bad-bg); }
+.tbl.labor input:not(.qty) { min-width: 190px; } .tbl.labor td:nth-child(6) input { min-width: 240px; }
+.vendor-card { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; }
+.vendor-card h4 { margin: 0 0 4px; }

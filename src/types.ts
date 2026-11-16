@@ -117,6 +117,10 @@ export interface Project {
   serviceLog?: ServiceCall[];
   /** Materials you added by hand. */
   bomExtra?: BomExtra[];
+  /** Materials list costing: unit cost, vendor, part number, text changes and removed lines, by line key. */
+  bomCost?: Record<string, import('./engine/estimate').BomCost>;
+  /** Labor, tax, shipping, contingency, markup and budgets for the estimate. */
+  estimate?: import('./engine/estimate').Estimate;
   /** Lines drawn on the map (by hand or point to point) to check signal and obstacles along them. */
   drawnLines?: import('./engine/routes').DrawnLine[];
   /** Photo site survey: spots where photos or panoramas were taken, with direction and terrain matching. */
