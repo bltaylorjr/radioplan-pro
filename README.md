@@ -10,8 +10,8 @@ materials lists, reports and commissioning tests.
 
 ## Downloads
 
-Get everything from the [latest release](https://github.com/bltaylorjr/radioplan-pro/releases/latest), or use it online at
-**https://bltaylorjr.github.io/radioplan-pro/**.
+Get everything from the [latest release](https://github.com/bltaylorjr/lvplan-pro/releases/latest), or use it online at
+**https://bltaylorjr.github.io/lvplan-pro/**.
 
 | Download | For | What happens |
 |---|---|---|

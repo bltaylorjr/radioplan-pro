@@ -1,7 +1,8 @@
-// Automatic updates from the project's GitHub Releases (free, no account needed by the user).
+// Automatic updates from GitHub Releases of the public downloads repository (free, no account needed by the user).
+// The source code lives in a separate repository, which can be private; its release workflow publishes here.
 import pkg from '../../package.json';
 export const APP_VERSION: string = (pkg as { version: string }).version;
-export const UPDATE_REPO = 'bltaylorjr/radioplan-pro';
+export const UPDATE_REPO = 'bltaylorjr/lvplan-pro';
 export const ASSETS = { windows: 'RadioPlan-Pro-Setup.exe', android: 'RadioPlan-Pro.apk', usb: 'RadioPlan-Pro-FlashDrive.zip' } as const;
 export type Platform = 'windows' | 'android' | 'usb' | 'web';
 

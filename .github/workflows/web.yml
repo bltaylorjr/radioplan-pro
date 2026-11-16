@@ -1,4 +1,10 @@
 name: Test and publish the online version
+# Builds the online version and publishes it to GitHub Pages of the public downloads repository
+# bltaylorjr/lvplan-pro (branch gh-pages), at https://bltaylorjr.github.io/lvplan-pro/. Installed apps
+# also download their content packs and the intro video from there.
+# While this source repository is still public, the old address https://bltaylorjr.github.io/radioplan-pro/
+# keeps getting the same build so older installed apps keep working until they update.
+# PUBLISH_TOKEN: a fine-grained token with Contents read/write on bltaylorjr/lvplan-pro only.
 on:
   push:
     branches: [main]
@@ -18,10 +24,20 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
-      - uses: actions/upload-pages-artifact@v3
+      - name: Publish to the public downloads repository
+        env: { T: '${{ secrets.PUBLISH_TOKEN }}', PUB: bltaylorjr/lvplan-pro }
+        run: |
+          if [ -z "$T" ]; then echo "::warning::PUBLISH_TOKEN is not set, so the online version was not copied to $PUB."; exit 0; fi
+          cp -r dist "$RUNNER_TEMP/site" && cd "$RUNNER_TEMP/site" && touch .nojekyll
+          git init -q -b gh-pages && git add -A
+          git -c user.name="LvPlan Pro build" -c user.email="actions@users.noreply.github.com" commit -qm "Online version ${GITHUB_SHA::7}"
+          git push -q -f "https://x-access-token:${T}@github.com/${PUB}.git" gh-pages
+      - if: ${{ !github.event.repository.private }}
+        uses: actions/upload-pages-artifact@v3
         with: { path: dist }
   deploy:
     needs: build
+    if: ${{ !github.event.repository.private }}
     runs-on: ubuntu-latest
     environment: { name: github-pages, url: '${{ steps.d.outputs.page_url }}' }
     steps:

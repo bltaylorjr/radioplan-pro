@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 
 /** The introduction video, bundled with the app (public/intro.mp4) so it plays offline. */
-const ONLINE = 'https://bltaylorjr.github.io/radioplan-pro/';
+const ONLINE = 'https://bltaylorjr.github.io/lvplan-pro/';
 /** Set once the video has opened by itself on the first visit, so it never opens by itself again. */
 export const SEEN_VIDEO_KEY = 'radioplan.seenVideo';
 

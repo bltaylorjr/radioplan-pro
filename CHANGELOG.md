@@ -1,3 +1,8 @@
+# LvPlan Pro 1.5.69
+
+- **Updates now come from a new download address.** The app checks for updates, content packs and the intro video at the public LvPlan Pro downloads page (github.com/bltaylorjr/lvplan-pro and bltaylorjr.github.io/lvplan-pro) instead of the source code page. Nothing to do: this update switches over by itself, and later updates keep arriving automatically.
+- This lets the source code be kept private while updates keep working. The online version moves to **https://bltaylorjr.github.io/lvplan-pro/**; projects saved in the browser stay on the phone.
+
 # LvPlan Pro 1.5.68
 
 - **Pages open at once again.** Since 1.5.60 each page was downloaded the first time it was opened, so on a phone a page could show "Loading…" for a few seconds (Site Data took 3 seconds on a slow connection). Now the app still starts quickly with just the first page, then quietly downloads the other pages in the background, so picking a page opens it right away (Site Data: 0.26 s, like 1.5.59).
