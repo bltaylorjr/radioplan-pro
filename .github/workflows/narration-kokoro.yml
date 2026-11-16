@@ -5,33 +5,40 @@ name: Narration for the intro video (Kokoro)
 on:
   workflow_dispatch:
     inputs:
-      lines: { description: 'base64 JSON list of {id, text}', required: true }
+      lines: { description: 'base64 JSON list of {id, text} (or leave empty and give lines_file)', required: false, default: '' }
+      lines_file: { description: 'Path in the repo (at the chosen branch) of a JSON list of {id, text}', required: false, default: '' }
       voice: { description: 'Kokoro voice', required: false, default: 'am_michael' }
       speed: { description: 'Speed (1 = normal)', required: false, default: '0.92' }
+      asset: { description: 'Zip name on the narration pre-release (use your own so threads do not overwrite each other)', required: false, default: 'narration.zip' }
 permissions:
   contents: write
 jobs:
   speak:
     runs-on: ubuntu-24.04
     steps:
+      - uses: actions/checkout@v4
+        if: ${{ inputs.lines_file != '' }}
+        with: { path: repo }
       - uses: actions/setup-python@v5
         with: { python-version: '3.11' }
       - run: sudo apt-get update -q && sudo apt-get install -y -q espeak-ng
       - run: pip install -q torch --index-url https://download.pytorch.org/whl/cpu && pip install -q "kokoro>=0.9.4" soundfile faster-whisper
       - name: Speak and transcribe each segment
-        env: { LINES: '${{ inputs.lines }}', VOICE: '${{ inputs.voice }}', SPEED: '${{ inputs.speed }}' }
+        env: { LINES: '${{ inputs.lines }}', LINES_FILE: '${{ inputs.lines_file }}', VOICE: '${{ inputs.voice }}', SPEED: '${{ inputs.speed }}' }
         run: |
           mkdir -p out
-          echo "$LINES" | base64 -d > lines.json
+          if [ -n "$LINES_FILE" ]; then cp "repo/$LINES_FILE" lines.json; else echo "$LINES" | base64 -d > lines.json; fi
           python - <<'PY'
           import json, os, numpy as np, soundfile as sf
           from kokoro import KPipeline
           from faster_whisper import WhisperModel
           pipe = KPipeline(lang_code='a')
           asr = WhisperModel('small.en', device='cpu', compute_type='int8')
-          trans = {}
+          trans, phon = {}, {}
           for l in json.load(open('lines.json')):
-              parts = [a for _, _, a in pipe(l['text'], voice=os.environ['VOICE'], speed=float(os.environ['SPEED']), split_pattern=r'\n+')]
+              res = list(pipe(l['text'], voice=os.environ['VOICE'], speed=float(os.environ['SPEED']), split_pattern=r'\n+'))
+              parts = [a for _, _, a in res]
+              phon[l['id']] = ' | '.join(ps for _, ps, _ in res)
               gap = np.zeros(int(24000 * 0.25), dtype=np.float32)
               audio = np.concatenate([np.concatenate([np.asarray(p, dtype=np.float32), gap]) for p in parts])
               path = f"out/{l['id']}.wav"; sf.write(path, audio, 24000)
@@ -39,10 +46,11 @@ jobs:
               trans[l['id']] = ' '.join(s.text.strip() for s in segs)
               print(l['id'], '|', trans[l['id']])
           json.dump(trans, open('out/transcripts.json', 'w'), indent=1)
+          json.dump(phon, open('out/phonemes.json', 'w'), indent=1, ensure_ascii=False)
           PY
       - name: Publish as a pre-release asset (never "latest", so app updates ignore it)
-        env: { GH_TOKEN: '${{ github.token }}' }
+        env: { GH_TOKEN: '${{ github.token }}', ASSET: '${{ inputs.asset }}' }
         run: |
-          cd out && zip -q ../narration.zip *.wav transcripts.json && cd ..
+          cd out && zip -q "../$ASSET" *.wav transcripts.json phonemes.json && cd ..
           gh release view narration -R "$GITHUB_REPOSITORY" >/dev/null 2>&1 || gh release create narration -R "$GITHUB_REPOSITORY" --prerelease --latest=false --title "Intro video narration (not an app release)" --notes "Voice files for the introduction video. Not an app update."
-          gh release upload narration narration.zip --clobber -R "$GITHUB_REPOSITORY"
+          gh release upload narration "$ASSET" --clobber -R "$GITHUB_REPOSITORY"
