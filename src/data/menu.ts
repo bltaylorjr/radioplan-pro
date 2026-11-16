@@ -100,7 +100,7 @@ export const MENU_PAGES: MenuPage[] = [
 
   { id: 'projects', label: 'Projects & Storage', group: 'files', keywords: 'save open backup history delete check for updates automatic care' },
   { id: 'sync', label: 'Sync Devices', group: 'files', keywords: 'sync phone tablet share qr bluetooth' },
-  { id: 'settings', label: 'User Settings', group: 'files', keywords: 'settings turn tools on off hide show data check preferences' },
+  { id: 'settings', label: 'User Settings', group: 'files', keywords: 'settings turn tools on off hide show data check preferences radioreference app key' },
 ];
 
 export const groupOf = (id: string): MenuGroup | undefined => MENU_GROUPS.find((g) => g.id === MENU_PAGES.find((p) => p.id === id)?.group);

@@ -1,3 +1,9 @@
+# LvPlan Pro 1.5.67
+
+- **RadioReference app key moved to User Settings.** The login page now asks only for your username and password. The app key has its own card in **User Settings → RadioReference app key**, with a warning not to change it: **Change…** asks first, and the key is shown hidden (last 4 characters) unless you tap Show.
+- A key you already saved is moved there automatically; nothing to type again. Log out and Log out and delete downloads both keep the key.
+- If no key is set yet, the login page and the RadioReference page have a button that opens User Settings.
+
 # LvPlan Pro 1.5.66
 
 - **Sharper maps on iPhone and other high-resolution screens.** The flat map now builds each map square from the four more-detailed squares under it, so roads, contour lines, labels and satellite pictures are crisp instead of soft. If those aren't saved (offline), it shows the normal map as before.
