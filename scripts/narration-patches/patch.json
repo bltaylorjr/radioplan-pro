@@ -1,50 +1,14 @@
 [
  {
   "id": "info.vi2",
-  "text": "It also shows the industry standard value and where it comes from, like [[NFPA](/ˌɛnˌɛfpˌiˈA/)](/ˌɛnˌɛfpˌiˈA/) seventy-two for twenty-four hours of fire alarm standby.\nTap Use default, and the box is filled in for you."
- },
- {
-  "id": "tour-setup.t-locate",
-  "text": "Find Location and Auto-Plan takes an address or G P S coordinates, and shows the spot on a map and in three D, with its ground height.\nTap Build plan for this location, and the app looks over the terrain for a good tower spot nearby, and sets up the sites for you to review."
- },
- {
-  "id": "tilt.tilt2",
-  "text": "Next, plot your radio path.\nType G P S coordinates or an address for point [A](/ˈA/) and point B, use your phone's G P S, or tap Pick on three D and touch the ground."
- },
- {
-  "id": "tilt.tilt4",
-  "text": "To get around a hill, tap Add relay point, or tap Suggest a relay spot, and the app finds a spot that sees both ends.\nThen turn on the shading, and any ground hidden from point [A](/ˈA/) turns red."
- },
- {
-  "id": "fullpage.fl4",
-  "text": "Tap Tilt to see the same area in three D.\nUse the up and down arrows to tilt, and the round arrows to turn the view.\nTap [N](/ˈɛn/) to put north back at the top."
+  "text": "It also shows the industry standard value and where it comes from, like [NFPA](/ˌɛnˌɛfpˌiˈA/) seventy-two for twenty-four hours of fire alarm standby.\nTap Use default, and the box is filled in for you."
  },
  {
   "id": "tour-lv.t-alarm",
-  "text": "Fire Alarm and Batteries sizes the standby battery and checks voltage drop on each notification circuit.\nChange the wire length, and the end-of-line voltage updates.\nTick Include in project to run the [[NFPA](/ˌɛnˌɛfpˌiˈA/)](/ˌɛnˌɛfpˌiˈA/) seventy-two and N E C checks."
+  "text": "Fire Alarm and Batteries sizes the standby battery and checks voltage drop on each notification circuit.\nChange the wire length, and the end-of-line voltage updates.\nTick Include in project to run the [NFPA](/ˌɛnˌɛfpˌiˈA/) seventy-two and N E C checks."
  },
  {
   "id": "tour-lv.t-erces",
-  "text": "Emergency Radio, for [ERCES](/ˈɜɹsiz/) and [BDA](/bˌidˌiˈA/) systems, works out the donor signal, the [BDA](/bˌidˌiˈA/) gain, and the downlink budget to the worst spot in the building, with the code checks for the I F C and [[NFPA](/ˌɛnˌɛfpˌiˈA/)](/ˌɛnˌɛfpˌiˈA/) twelve twenty-five."
- },
- {
-  "id": "fcc.fc3",
-  "text": "The [FAA](/ˌɛfˌAˈA/) Height Check tells you if a new tower, mast or antenna needs [FAA](/ˌɛfˌAˈA/) notice.\nType the height.\nThe ground height fills in, and the app checks every airport and heliport nearby, and shows the tallest structure you can build without notice."
- },
- {
-  "id": "calc.az2",
-  "text": "It shows the [azimuth](/ˈæzəməθ/) from point [A](/ˈA/) to point B, and the back [azimuth](/ˈæzəməθ/), both in degrees true and as a compass reading, plus the distance in miles."
- },
- {
-  "id": "tour-tools.t-directions",
-  "text": "Map and Directions shows the project location, and opens directions to the job site in Google Maps, Apple Maps or Waze."
- },
- {
-  "id": "online.u1",
-  "text": "When you are online, code [editions](/ɪdˈɪʃənz/), contacts, the equipment catalog, help, and the magnetic model update by themselves."
- },
- {
-  "id": "tour-tools.t-sync",
-  "text": "Sync Devices moves your projects between your phone, tablet and computer: directly over Wi-Fi by scanning a code, by Bluetooth or email, or through a cloud-drive folder."
+  "text": "Emergency Radio, for [ERCES](/ˈɜɹsiz/) and [BDA](/bˌidˌiˈA/) systems, works out the donor signal, the [BDA](/bˌidˌiˈA/) gain, and the downlink budget to the worst spot in the building, with the code checks for the I F C and [NFPA](/ˌɛnˌɛfpˌiˈA/) twelve twenty-five."
  }
 ]

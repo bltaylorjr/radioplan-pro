@@ -37,7 +37,7 @@
  },
  {
   "id": "info.vi2",
-  "text": "It also shows the industry standard value and where it comes from, like [[NFPA](/ˌɛnˌɛfpˌiˈA/)](/ˌɛnˌɛfpˌiˈA/) seventy-two for twenty-four hours of fire alarm standby.\nTap Use default, and the box is filled in for you."
+  "text": "It also shows the industry standard value and where it comes from, like [NFPA](/ˌɛnˌɛfpˌiˈA/) seventy-two for twenty-four hours of fire alarm standby.\nTap Use default, and the box is filled in for you."
  },
  {
   "id": "clear.cl1",
@@ -265,11 +265,11 @@
  },
  {
   "id": "tour-lv.t-alarm",
-  "text": "Fire Alarm and Batteries sizes the standby battery and checks voltage drop on each notification circuit.\nChange the wire length, and the end-of-line voltage updates.\nTick Include in project to run the [[NFPA](/ˌɛnˌɛfpˌiˈA/)](/ˌɛnˌɛfpˌiˈA/) seventy-two and N E C checks."
+  "text": "Fire Alarm and Batteries sizes the standby battery and checks voltage drop on each notification circuit.\nChange the wire length, and the end-of-line voltage updates.\nTick Include in project to run the [NFPA](/ˌɛnˌɛfpˌiˈA/) seventy-two and N E C checks."
  },
  {
   "id": "tour-lv.t-erces",
-  "text": "Emergency Radio, for [ERCES](/ˈɜɹsiz/) and [BDA](/bˌidˌiˈA/) systems, works out the donor signal, the [BDA](/bˌidˌiˈA/) gain, and the downlink budget to the worst spot in the building, with the code checks for the I F C and [[NFPA](/ˌɛnˌɛfpˌiˈA/)](/ˌɛnˌɛfpˌiˈA/) twelve twenty-five."
+  "text": "Emergency Radio, for [ERCES](/ˈɜɹsiz/) and [BDA](/bˌidˌiˈA/) systems, works out the donor signal, the [BDA](/bˌidˌiˈA/) gain, and the downlink budget to the worst spot in the building, with the code checks for the I F C and [NFPA](/ˌɛnˌɛfpˌiˈA/) twelve twenty-five."
  },
  {
   "id": "azimuth.az4",
