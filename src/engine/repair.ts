@@ -40,6 +40,16 @@ export function repairProject(input: unknown): { project: Project; fixes: string
     else if (gv === undefined || typeof gv !== typeof dv) out[k] = dv;
   }
   for (const k of LISTS) if (out[k] !== undefined && k !== 'proposal' && !Array.isArray(out[k])) { out[k] = []; fixes.push(`${k} list was damaged; reset`); }
+  // Materials costing and estimate (optional): drop damaged parts so the Materials page always opens.
+  if (out.bomCost !== undefined && !isObj(out.bomCost)) { delete out.bomCost; fixes.push('Materials prices were damaged; reset'); }
+  if (out.estimate !== undefined) {
+    if (!isObj(out.estimate)) { delete out.estimate; fixes.push('Materials estimate was damaged; reset'); }
+    else {
+      const e = out.estimate as Record<string, unknown>;
+      for (const k of ['taxPct', 'shipping', 'contingencyPct', 'markupPct', 'budgetMaterials', 'budgetLabor', 'budgetTotal']) if (e[k] !== undefined && !Number.isFinite(Number(e[k]))) e[k] = 0; else if (e[k] !== undefined) e[k] = Number(e[k]);
+      e.labor = (Array.isArray(e.labor) ? e.labor : []).filter(isObj).map((l, i) => ({ ...l, id: String(l.id ?? `lab${i}`), task: String(l.task ?? ''), people: Number(l.people) || 0, hours: Number(l.hours) || 0, rate: Number(l.rate) || 0 }));
+    }
+  }
   // Sites need an id, a name and real coordinates.
   const sites = (out.sites as Record<string, unknown>[]).filter(isObj);
   const seen = new Set<string>();

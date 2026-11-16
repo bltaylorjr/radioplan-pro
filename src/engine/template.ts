@@ -29,7 +29,7 @@ export function projectFromTemplate(src: Project, fresh: Project, o: TemplateOpt
     p.indoor = s.indoor; p.network = s.network; p.scenarios = s.scenarios;
     if (s.autoDesign) p.autoDesign = s.autoDesign;
   }
-  if (k.equipment) { p.customCatalog = s.customCatalog; p.bomExtra = (s.bomExtra ?? []).map((b) => ({ ...b })); p.bomOverrides = s.bomOverrides ?? {}; }
+  if (k.equipment) { p.customCatalog = s.customCatalog; p.bomExtra = (s.bomExtra ?? []).map((b) => ({ ...b })); p.bomOverrides = s.bomOverrides ?? {}; p.bomCost = structuredClone(s.bomCost ?? {}); if (s.estimate) p.estimate = structuredClone(s.estimate); }
   if (k.proposal && s.proposal) p.proposal = { ...s.proposal, startDate: '' };
   if (k.drawings && s.blueprint) p.blueprint = { ...s.blueprint, revisions: [] };
   if (k.checklists) p.checklistExtra = s.checklistExtra;

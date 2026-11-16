@@ -61,7 +61,7 @@ export const PAGE_CLEAR: Record<string, PageClear> = {
   },
   scenarios: { what: 'every saved scenario', paths: ['scenarios'], local: true },
   compliance: { what: 'the permit checklist ticks and the items you added to it' },
-  materials: { what: 'the materials you added and the quantities you changed', keeps: 'Materials worked out from the other pages.', paths: ['bomOverrides'], remove: ['bomExtra'], local: true },
+  materials: { what: 'the materials you added, the quantities, prices and vendors you changed, the lines you removed, and the labor and budget', keeps: 'Materials worked out from the other pages, your vendors and your price list.', paths: ['bomOverrides'], remove: ['bomExtra', 'bomCost', 'estimate'], local: true },
   blueprints: { what: 'the sheet size, scale, drawn by / checked by, revisions, hidden sheets and plan north', remove: ['blueprint'], local: true },
   testing: { what: 'every test row and the testing checklist ticks', paths: ['tests'] },
   reports: { what: 'the proposal pricing, schedule and terms, and the closeout checklist ticks', keeps: 'Files attached to the project and the report pages you picked.', remove: ['proposal'], local: true },

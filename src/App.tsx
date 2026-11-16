@@ -47,6 +47,7 @@ const AlarmPage = page(() => import('./pages/Specialty'), 'AlarmPage');
 const ErcesPage = page(() => import('./pages/Specialty'), 'ErcesPage');
 const CompliancePage = page(() => import('./pages/Compliance'), 'CompliancePage');
 const MaterialsPage = page(() => import('./pages/Materials'), 'MaterialsPage');
+const VendorsPage = page(() => import('./pages/Vendors'), 'VendorsPage');
 const ReportsPage = page(() => import('./pages/Reports'), 'ReportsPage');
 const TestingPage = page(() => import('./pages/Testing'), 'TestingPage');
 const IndoorPage = page(() => import('./pages/Indoor'), 'IndoorPage');
@@ -115,6 +116,7 @@ export const PAGE_ELEMENTS: Record<string, React.ReactNode> = {
   compliance: <CompliancePage />,
   faa: <FaaPage />,
   materials: <MaterialsPage />,
+  vendors: <VendorsPage />,
   blueprints: <BlueprintsPage />,
   testing: <TestingPage />,
   reports: <ReportsPage />,
