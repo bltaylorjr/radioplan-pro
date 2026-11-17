@@ -76,6 +76,7 @@ const CampusPage = page(() => import('./pages/Campus'), 'CampusPage');
 const SettingsPage = page(() => import('./pages/Settings'), 'SettingsPage');
 const SignalReadingsPage = page(() => import('./pages/SignalReadings'), 'SignalReadingsPage');
 const AssetsPage = page(() => import('./pages/Assets'), 'AssetsPage');
+const WeatherPage = page(() => import('./pages/Weather'), 'WeatherPage');
 const TerrainPage = lazy(track(() => import('./pages/Terrain')));
 const CoveragePage = lazy(track(() => import('./pages/Coverage')));
 const View3DPage = lazy(track(() => import('./pages/View3D')));
@@ -131,6 +132,7 @@ export const PAGE_ELEMENTS: Record<string, React.ReactNode> = {
   library: <SpecLibraryPage />,
   contacts: <ContactsPage />,
   calculators: <CalculatorsPage />,
+  weather: <WeatherPage />,
   mappacks: <OfflineArea />,
   projects: <ProjectsPage />,
   sync: <SyncPage />,

@@ -265,6 +265,11 @@ export const FEATURES: Feature[] = [
     tour: [
       { target: 'text:+ Add vendor', title: 'Add a vendor', text: 'Type the name, phone, email and any other details.' },
     ] },
+  { id: 'weather-radar', version: '1.5.71', title: 'Weather & radar (NOAA)', page: 'weather', where: 'Tools & reference → Weather & Radar (NOAA)',
+    summary: 'Live NOAA radar, weather alerts, current conditions and the 7-day forecast for the job site or where you are, work-day checks for tower, roof and cable work, and weather saved on the project.',
+    steps: ['Open Tools & reference → Weather & Radar (NOAA).', 'Read the conditions and any alerts at the site.', 'Look at the radar map and the Work-day check.', 'Tap Add today\'s weather to Field Notes to keep a record.'],
+    keywords: 'weather radar forecast noaa nws alerts warning lightning wind cold heat work day', topic: 'weather',
+    tour: [ { target: 'wx-now', title: 'Weather here', text: 'The latest NOAA station report at the site.' }, { target: 'wx-radar', title: 'Radar map', text: 'NOAA’s live radar with alert areas.' }, { target: 'wx-work', title: 'Work-day check', text: 'Lightning, wind, cold and heat for the next 24 hours.' } ] },
 ];
 
 /** Features that live on, or also show on, a page. Features marked for every page ('*') are left out unless `all`. */

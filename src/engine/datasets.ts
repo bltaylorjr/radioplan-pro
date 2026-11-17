@@ -11,6 +11,7 @@ import { canReachApi, checkDownload, countFreqs, downloadCounty, downloadKeys, k
 import { currentJob } from './rrjob';
 import './contentupdate'; // codes, contacts, catalog, help and magnetic model from the website
 import './recallsData'; // equipment recalls (registers itself)
+import './weather'; // NOAA weather for the last place looked at (registers itself)
 
 const H = 3600e3, DAY = 24 * H;
 export const STATE_KEY = 'maint.state.v1';

@@ -149,6 +149,8 @@ export interface Project {
   signalReadings?: import('./engine/signal').SignalReading[];
   /** Installed equipment logged by its barcode or QR tag, with PM and service history. */
   assets?: import('./engine/assets').Asset[];
+  /** NOAA weather for the project site (saved by the Weather page): conditions, 7-day low/high/wind, alerts and work-day notes. */
+  weather?: import('./engine/weather').ProjectWeather;
 }
 export interface Blueprint { size: string; scale: string; drawnBy: string; checkedBy: string; revisions: { rev: string; date: string; desc: string }[]; off: string[];
   /** Azimuth (degrees true) that the top of the plan faces; turns the north arrow. 0 = plan north is true north. */

@@ -70,6 +70,18 @@ export function LfHfPage() {
   );
 }
 
+/** Compares the NOAA 7-day forecast low saved on the project (Weather & Radar page) with the design record low. */
+function SolarColdCheck({ recordLowC }: { recordLowC: number }) {
+  const { project: p, go } = useStore();
+  const w = p.weather;
+  if (!w || w.lowF == null || Date.now() - w.at > 7 * 24 * 3600e3) return null;
+  const lowC = (w.lowF - 32) * 5 / 9;
+  const colder = lowC < recordLowC;
+  return <p className={'small note' + (colder ? ' req-note' : '')} data-tour="wx-solar">
+    🌡 NOAA forecast low at the site this week: {Math.round(w.lowF)} °F ({lowC.toFixed(1)} °C){colder ? <> is <b>colder than the design record low ({recordLowC} °C)</b>. Re-check the record low (ASHRAE extreme minimum) so the cold string voltage (690.7) is not under-stated.</> : <>, warmer than the design record low ({recordLowC} °C). OK.</>} <a href="#weather" onClick={(e) => { e.preventDefault(); go('weather'); }}>Weather & Radar</a>
+  </p>;
+}
+
 export function SolarPage() {
   const { project: p, update } = useStore();
   const s = p.solar, mod = byId(PV_MODULES, s.moduleId) ?? PV_MODULES[0];
@@ -104,6 +116,7 @@ export function SolarPage() {
               <Check value={s.batteryDisconnect} onChange={(v) => set('batteryDisconnect', v)} label="Battery / ESS disconnect (706.15)" />
             </span></Field>
           </div>
+          <SolarColdCheck recordLowC={s.recordLowC} />
         </Card>
       </div>
       <div className="stack">

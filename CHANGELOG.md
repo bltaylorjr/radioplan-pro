@@ -1,3 +1,10 @@
+# LvPlan Pro (next version, number set at merge)
+
+- **New page: Weather & Radar (NOAA)** under Tools & reference. For the project site (Asheville, NC when no site is set) or where you are now: NOAA's live radar map with alert areas outlined, the latest checked report from the nearest National Weather Service station (temperature, feels-like, wind and gusts, humidity, pressure, visibility), watches, warnings and advisories with what to do, the next 24 hours and the 7-day forecast. °F, mph and miles.
+- **Live when online, last conditions when offline.** The page updates by itself every 10 minutes while open and as soon as the connection comes back; automatic care refreshes it hourly. With no internet it shows the last weather and how long ago it was downloaded.
+- **Work-day check:** plain warnings for lightning (no tower, roof or lift work), wind for climbing and lifts, cold for cable pulls and batteries, heat, and rain.
+- **Weather on the project:** weather for the project site is saved on the project. Site Data & GPS, Installation guides and Service show a warning during alerts, lightning, high wind, cold or heat; Solar & DC Power checks the forecast low against the design record low; one tap adds today's weather to Field Notes.
+
 # LvPlan Pro 1.5.69
 
 - **New introduction video.** The ▶ Video at the top of the app is a new, full tour, about 30 minutes long. It goes through every page and tool in the order of the menu, from project setup to reports, then the tools and settings. It includes everything new up to this version: costs, vendors and budget, full-page maps, sharper maps and the RadioReference key in User Settings.
