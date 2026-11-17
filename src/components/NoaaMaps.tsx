@@ -72,7 +72,7 @@ export function NoaaMaps({ groups, regionChoice = true }: { groups: NoaaMap['gro
       </div>
       <figure className="noaa-main">
         {cur ? <img src={cur.src} alt={m.title} onError={() => setShown((x) => ({ ...x, [m.id]: null }))} />
-          : <p className="note">{navigator.onLine === false ? 'No internet and no saved copy of this map yet. It is saved the first time it is shown online.' : busy ? 'Downloading from NOAA…' : 'Not available right now.'}</p>}
+          : <p className="note">{navigator.onLine === false && m.liveOnly ? 'This NOAA map shows only with internet: NOAA does not let apps keep a copy of it.' : navigator.onLine === false ? 'No internet and no saved copy of this map yet. It is saved the first time it is shown online.' : busy ? 'Downloading from NOAA…' : 'Not available right now.'}</p>}
         <figcaption>
           <b>{m.title}</b> · {m.note}
           <div className={'small ' + (age != null && age > m.everyMin * 60e3 * 2 ? 'note' : 'muted')}>

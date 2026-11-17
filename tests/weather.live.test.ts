@@ -32,6 +32,7 @@ describe.runIf(!!process.env.NWS_LIVE)('NOAA weather, live (Asheville, NC)', () 
 
   it('every NOAA map picture is published (and says whether the app may keep a copy)', async () => {
     const urls = [...new Set(NOAA_MAPS.flatMap((m) => [m.url.se, m.url.us]))];
+    const keepable = new Set(NOAA_MAPS.filter((m) => !m.liveOnly).flatMap((m) => [m.url.se, m.url.us]));
     const rows: string[] = []; const bad: string[] = [];
     for (const u of urls) {
       try {
@@ -39,6 +40,7 @@ describe.runIf(!!process.env.NWS_LIVE)('NOAA weather, live (Asheville, NC)', () 
         const b = await r.arrayBuffer();
         rows.push(`${r.status} ${r.headers.get('content-type')} ${b.byteLength}B cors=${r.headers.get('access-control-allow-origin')} lm=${r.headers.get('last-modified')} ${u}`);
         if (!r.ok || !/image/.test(r.headers.get('content-type') ?? '')) bad.push(u);
+        else if (keepable.has(u) && !r.headers.get('access-control-allow-origin')) bad.push(`${u} (no longer lets the app keep a copy: mark it liveOnly)`);
       } catch (e) { rows.push(`ERR ${(e as Error).message} ${u}`); bad.push(u); }
     }
     console.log(rows.join('\n'));
@@ -50,20 +52,6 @@ describe.runIf(!!process.env.NWS_LIVE)('NOAA weather, live (Asheville, NC)', () 
     const sw = verifySpaceWeather({ fetchedAt: Date.now(), kp: parseKp(k), scales: parseScales(sc) });
     console.log('SPACE CHECK', JSON.stringify(sw.check), 'scales now', JSON.stringify(sw.scales.now));
     expect(sw.check.ok).toBe(true);
-  }, 60000);
-  it('finds the current NOAA storm outlook and HF blackout picture names', async () => {
-    const pages = ['https://www.spc.noaa.gov/products/outlook/day1otlk.html', 'https://www.spc.noaa.gov/products/outlook/day2otlk.html', 'https://www.spc.noaa.gov/products/outlook/day3otlk.html', 'https://services.swpc.noaa.gov/images/animations/d-rap/global/', 'https://services.swpc.noaa.gov/products/animations/', 'https://services.swpc.noaa.gov/images/'];
-    for (const u of pages) {
-      try {
-        const r = await fetch(u, { headers: { Origin: 'https://bltaylorjr.github.io' } }); const t = await r.text();
-        const names = [...new Set([...t.matchAll(/["'(=]([^"'()=\s]*?\.(?:png|gif|jpg|json))/gi)].map((m) => m[1]))].filter((n) => /otlk|drap|d-rap/i.test(n));
-        console.log('LIST', r.status, 'cors=' + r.headers.get('access-control-allow-origin'), u, names.length, names.slice(0, 15).join(' '), '…', names.slice(-4).join(' '));
-      } catch (e) { console.log('LIST ERR', u, (e as Error).message); }
-    }
-    for (const u of ['https://www.spc.noaa.gov/products/outlook/day1otlk.png', 'https://www.spc.noaa.gov/products/outlook/day1otlk_prt.gif', 'https://www.spc.noaa.gov/products/outlook/day1otlk_sm.gif', 'https://www.spc.noaa.gov/products/outlook/day1otlk_1200.png', 'https://www.spc.noaa.gov/products/outlook/day2otlk.png', 'https://www.spc.noaa.gov/products/outlook/day3otlk.png', 'https://services.swpc.noaa.gov/images/animations/d-rap/global/latest.png', 'https://services.swpc.noaa.gov/images/d-rap/global.png', 'https://services.swpc.noaa.gov/images/drap_global.png', 'https://services.swpc.noaa.gov/products/animations/d-rap_global.json']) {
-      try { const r = await fetch(u, { headers: { Origin: 'https://bltaylorjr.github.io' } }); const b = await r.arrayBuffer(); console.log('TRY', r.status, r.headers.get('content-type'), b.byteLength, 'cors=' + r.headers.get('access-control-allow-origin'), u); }
-      catch (e) { console.log('TRY ERR', u, (e as Error).message); }
-    }
   }, 60000);
   it('high-resolution magnetic model (WMMHR) matches the NOAA NCEI online calculator (when it answers)', async () => {
     expect(await loadHighResMagModel()).toBe(true);

@@ -17,6 +17,8 @@ export interface NoaaMap {
   source: string;
   /** One plain sentence: what it shows and what to look for. */
   note: string;
+  /** NOAA's server does not let apps keep a copy of this picture (checked by the live test), so it shows live only. */
+  liveOnly?: boolean;
   /** A moving loop of the same picture, opened in the browser (online only). */
   loop?: Record<MapRegion, string>;
 }
@@ -40,29 +42,29 @@ export const NOAA_MAPS: NoaaMap[] = [
   { id: 'alerts-map', title: 'Watches, warnings & advisories', group: 'storms', everyMin: 10, source: 'National Weather Service',
     url: both('https://forecast.weather.gov/wwamap/png/US.png'), note: 'Every alert in force in the US, colored by type. The alert list above has the ones at this place.' },
   { id: 'spc-day1', title: 'Severe storm outlook: today', group: 'storms', everyMin: 60, source: 'NOAA Storm Prediction Center',
-    url: both('https://www.spc.noaa.gov/products/outlook/day1otlk.gif'), note: 'Risk of severe thunderstorms (damaging wind, hail, tornadoes): marginal, slight, enhanced, moderate, high.' },
+    url: both('https://www.spc.noaa.gov/products/outlook/day1otlk.png'), note: 'Risk of severe thunderstorms (damaging wind, hail, tornadoes): marginal, slight, enhanced, moderate, high.' },
   { id: 'spc-day2', title: 'Severe storm outlook: tomorrow', group: 'storms', everyMin: 120, source: 'NOAA Storm Prediction Center',
-    url: both('https://www.spc.noaa.gov/products/outlook/day2otlk.gif'), note: 'The same risk levels for tomorrow. Plan tower and roof days around it.' },
+    url: both('https://www.spc.noaa.gov/products/outlook/day2otlk.png'), note: 'The same risk levels for tomorrow. Plan tower and roof days around it.' },
   { id: 'spc-day3', title: 'Severe storm outlook: day 3', group: 'storms', everyMin: 180, source: 'NOAA Storm Prediction Center',
-    url: both('https://www.spc.noaa.gov/products/outlook/day3otlk.gif'), note: 'The risk for the day after tomorrow.' },
-  { id: 'fronts', title: 'Weather fronts & pressure (now)', group: 'forecast', everyMin: 180, source: 'NOAA Weather Prediction Center',
+    url: both('https://www.spc.noaa.gov/products/outlook/day3otlk.png'), note: 'The risk for the day after tomorrow.' },
+  { id: 'fronts', liveOnly: true, title: 'Weather fronts & pressure (now)', group: 'forecast', everyMin: 180, source: 'NOAA Weather Prediction Center',
     url: both('https://www.wpc.ncep.noaa.gov/sfc/usfntsfcwbg.gif'), note: 'Cold fronts (blue), warm fronts (red), highs and lows. Fronts bring wind shifts and storms.' },
-  { id: 'temp-high', title: 'High temperatures (forecast)', group: 'forecast', everyMin: 180, source: 'National Weather Service forecast (NDFD)',
+  { id: 'temp-high', liveOnly: true, title: 'High temperatures (forecast)', group: 'forecast', everyMin: 180, source: 'National Weather Service forecast (NDFD)',
     url: ndfd('MaxT1'), note: 'Forecast highs. Watch for heat over about 90 °F for attic and roof work.' },
-  { id: 'temp-low', title: 'Low temperatures (forecast)', group: 'forecast', everyMin: 180, source: 'National Weather Service forecast (NDFD)',
+  { id: 'temp-low', liveOnly: true, title: 'Low temperatures (forecast)', group: 'forecast', everyMin: 180, source: 'National Weather Service forecast (NDFD)',
     url: ndfd('MinT1'), note: 'Forecast lows. Below freezing: check cable jacket temperature limits and battery capacity.' },
-  { id: 'wind', title: 'Wind speed (forecast)', group: 'forecast', everyMin: 180, source: 'National Weather Service forecast (NDFD)',
+  { id: 'wind', liveOnly: true, title: 'Wind speed (forecast)', group: 'forecast', everyMin: 180, source: 'National Weather Service forecast (NDFD)',
     url: ndfd('WindSpd1'), note: 'Sustained wind. Above 20 mph: check lift ratings and the safety plan before going up.' },
-  { id: 'gust', title: 'Wind gusts (forecast)', group: 'forecast', everyMin: 180, source: 'National Weather Service forecast (NDFD)',
+  { id: 'gust', liveOnly: true, title: 'Wind gusts (forecast)', group: 'forecast', everyMin: 180, source: 'National Weather Service forecast (NDFD)',
     url: ndfd('WindGust1'), note: 'Gusts. Above 28 mph most aerial lifts must come down.' },
-  { id: 'rain-1', title: 'Rain expected: next 24 hours', group: 'forecast', everyMin: 360, source: 'NOAA Weather Prediction Center',
+  { id: 'rain-1', liveOnly: true, title: 'Rain expected: next 24 hours', group: 'forecast', everyMin: 360, source: 'NOAA Weather Prediction Center',
     url: both('https://www.wpc.ncep.noaa.gov/qpf/fill_94qwbg.gif'), note: 'Inches of rain (or melted snow) expected in the next day.' },
-  { id: 'rain-7', title: 'Rain expected: next 7 days', group: 'forecast', everyMin: 360, source: 'NOAA Weather Prediction Center',
+  { id: 'rain-7', liveOnly: true, title: 'Rain expected: next 7 days', group: 'forecast', everyMin: 360, source: 'NOAA Weather Prediction Center',
     url: both('https://www.wpc.ncep.noaa.gov/qpf/p168i.gif'), note: 'Total rain for the week: plan trenching, conduit and outdoor work.' },
   { id: 'aurora', title: 'Aurora forecast (northern lights)', group: 'space', everyMin: 30, source: 'NOAA Space Weather Prediction Center (OVATION)',
     url: both('https://services.swpc.noaa.gov/images/aurora-forecast-northern-hemisphere.jpg'), note: 'Where the aurora is likely in the next half hour. When it reaches the northern US, compasses and GPS are being disturbed.' },
   { id: 'drap', title: 'HF radio blackout (D-RAP)', group: 'space', everyMin: 15, source: 'NOAA Space Weather Prediction Center',
-    url: both('https://services.swpc.noaa.gov/images/animations/d-rap/global/d-rap/latest.png'), note: 'Where HF (shortwave) radio is being absorbed by solar activity, and the highest frequency affected. VHF/UHF two-way radio is not affected.' },
+    url: both('https://services.swpc.noaa.gov/images/animations/d-rap/global/latest.png'), note: 'Where HF (shortwave) radio is being absorbed by solar activity, and the highest frequency affected. VHF/UHF two-way radio is not affected.' },
 ];
 
 export const mapsIn = (group: NoaaMap['group']) => NOAA_MAPS.filter((m) => m.group === group);
@@ -79,6 +81,7 @@ export const savedMap = (id: string, region: MapRegion) => kvGet<SavedMap>(key(i
  */
 export async function downloadMap(m: NoaaMap, region: MapRegion): Promise<SavedMap | null> {
   const url = m.url[region];
+  if (m.liveOnly) return null;
   let r: Response;
   try { r = await fetch(url, { mode: 'cors', cache: 'no-store' }); }
   catch (e) {
