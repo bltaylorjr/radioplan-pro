@@ -87,7 +87,7 @@ export function CompanyPage() {
       </Card>
       <Card title="Your company information" tour="company-form" tip="Your firm. Printed on every report header.">
         <div className="form">
-          <Field label="Company name" required missing={showReq && isMissing(p, 'company')}><Txt value={c.name} onChange={setC('name')} placeholder="e.g. Carolina Comm Engineering LLC" /></Field>
+          <Field label="Company name" required missing={showReq && isMissing(p, 'company')}><Txt value={c.name} onChange={setC('name')} placeholder="e.g. Bluefern Comm Engineering LLC" /></Field>
           <Field label="Title / department" tip="Your title or division, e.g. RF Engineering Manager."><Txt value={c.title} onChange={setC('title')} /></Field>
           <Field label="Street address" wide tip="Start typing for suggestions; picking one fills city, state and ZIP."><AddressInput value={c.address} onChange={setC('address')} onPick={(g) => update((d) => { d.company.address = g.street ?? g.label.split(',')[0]; if (g.city) d.company.city = g.city; if (g.state) d.company.state = g.state; if (g.postcode) d.company.zip = g.postcode; })} /></Field>
           <Field label="City"><Txt value={c.city} onChange={setC('city')} /></Field>

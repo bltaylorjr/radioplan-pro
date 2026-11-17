@@ -150,7 +150,7 @@ export function ProjectsPage() {
               <option value="">Choose a project…</option>
               {list.map((p) => <option key={p.id} value={p.id}>{p.id === lib.projectId ? project.meta.name || p.name : p.name}{p.number ? ` (${p.number})` : ''}{p.client ? ` · ${p.client}` : ''}</option>)}
             </select></label>
-          <label className="field">New project name<input value={tplName} onChange={(e) => setTplName(e.target.value)} placeholder="e.g. Mission Hospital, building B" /></label>
+          <label className="field">New project name<input value={tplName} onChange={(e) => setTplName(e.target.value)} placeholder="e.g. Tallpine Medical Center, building B" /></label>
           <label className="field">Project number<input value={tplNo} onChange={(e) => setTplNo(e.target.value)} placeholder="optional" /></label>
         </div>
         <p className="muted">Carry over:</p>
