@@ -3,7 +3,7 @@ const { chromium } = require(process.env.PLAYWRIGHT || '/home/claude/.npm-global
 const fs = require('fs'), path = require('path');
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const MISS = '/tmp/tiles/missing.txt';
-const CAPTURE = fs.existsSync('/tmp/noaa/noaa-capture.json') ? JSON.parse(fs.readFileSync('/tmp/noaa/noaa-capture.json', 'utf8')) : {};
+let CAPTURE = {}; try { CAPTURE = JSON.parse(fs.readFileSync(process.env.NOAA_CAPTURE || '/tmp/noaa/noaa-capture.json', 'utf8')); } catch { /* no saved NOAA data */ }
 const HOSTS = /(basemap\.nationalmap\.gov|elevation-tiles-prod|tile\.openstreetmap\.org|tile\.opentopomap\.org|server\.arcgisonline\.com)/;
 async function newPage(b, recordDir) {
   const ctx = await b.newContext({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: 1, permissions: ['microphone'], ...(recordDir ? { recordVideo: { dir: recordDir, size: { width: 1280, height: 720 } } } : {}) });
@@ -11,7 +11,8 @@ async function newPage(b, recordDir) {
   await ctx.route((u) => !u.href.startsWith('http://localhost'), async (route) => {
     const href = route.request().url(); const u = new URL(href);
     const f = path.join('/tmp/tiles', u.hostname.replace(/^[abc]\./, ''), u.pathname);
-    if (HOSTS.test(href) && fs.existsSync(f) && fs.statSync(f).isFile()) return route.fulfill({ status: 200, body: fs.readFileSync(f), headers: { 'access-control-allow-origin': '*', 'content-type': f.endsWith('.png') ? 'image/png' : 'image/jpeg' } });
+    let tile = null; if (HOSTS.test(href)) { try { tile = fs.readFileSync(f); } catch { /* not saved */ } }
+    if (tile) return route.fulfill({ status: 200, body: tile, headers: { 'access-control-allow-origin': '*', 'content-type': f.endsWith('.png') ? 'image/png' : 'image/jpeg' } });
     const c = CAPTURE[href];
     if (c) return route.fulfill({ status: c.s, body: Buffer.from(c.b, 'base64'), headers: { 'access-control-allow-origin': '*', 'content-type': c.ct } });
     fs.appendFileSync(MISS, href + '\n'); return route.fulfill({ status: 404, body: '', headers: { 'access-control-allow-origin': '*' } });
