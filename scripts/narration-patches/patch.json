@@ -1,14 +1,26 @@
 [
  {
-  "id": "info.vi2",
-  "text": "It also shows the industry standard value and where it comes from, like [NFPA](/ˌɛnˌɛfpˌiˈA/) seventy-two for twenty-four hours of fire alarm standby.\nTap Use default, and the box is filled in for you."
+  "id": "info.vi1",
+  "text": "Every value box has a small i beside it.\nPoint at it with the mouse, or tap it on a phone, to see what the value means in [laymen's](/lˈAmənz/) terms, its unit, and the normal range."
  },
  {
-  "id": "tour-lv.t-alarm",
-  "text": "Fire Alarm and Batteries sizes the standby battery and checks voltage drop on each notification circuit.\nChange the wire length, and the end-of-line voltage updates.\nTick Include in project to run the [NFPA](/ˌɛnˌɛfpˌiˈA/) seventy-two and N E C checks."
+  "id": "fullpage.fl1",
+  "text": "Every map and three D view can open on a full page with its own buttons.\nTap Full page above the map to open it."
  },
  {
-  "id": "tour-lv.t-erces",
-  "text": "Emergency Radio, for [ERCES](/ˈɜɹsiz/) and [BDA](/bˌidˌiˈA/) systems, works out the donor signal, the [BDA](/bˌidˌiˈA/) gain, and the downlink budget to the worst spot in the building, with the code checks for the I F C and [NFPA](/ˌɛnˌɛfpˌiˈA/) twelve twenty-five."
+  "id": "fullpage.fl3",
+  "text": "The plus and minus buttons zoom in and out.\nHold a button down to keep zooming.\nThe arrows button shows everything at once."
+ },
+ {
+  "id": "signal.sg3",
+  "text": "The app compares the real readings with the prediction and tells you in [laymen's](/lˈAmənz/) terms how well they match.\nThe map shows the readings, the difference, or a heat map.\nIndoors, the grid test shows pass or fail on each floor."
+ },
+ {
+  "id": "tour-tools.t-theory",
+  "text": "Low-Voltage Principles explains how each system works, in [laymen's](/lˈAmənz/) terms."
+ },
+ {
+  "id": "settings.st3",
+  "text": "When a number is out of range, the box turns red, says what is wrong in [laymen's](/lˈAmənz/) terms, and offers a one-tap fix.\nA blank box is never counted as zero."
  }
 ]
