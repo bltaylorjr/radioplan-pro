@@ -9,7 +9,7 @@
  },
  {
   "id": "tour-cards.c-open3",
-  "text": "This tour follows a job from start to finish, then shows the tools, your projects and your settings.\nPause it any time.\nYou can play it again from the Video button at the top of the app."
+  "text": "This tour comes in two parts.\nPart one follows a job from start to finish.\nPart two shows the tools, your projects and your settings.\nPause it any time.\nYou can play it again from the Video button at the top of the app."
  },
  {
   "id": "menuhelp.mh1",
@@ -240,26 +240,6 @@
   "text": "Under the model, the results follow your materials: outside signal loss, echo for speakers, firestops, cable jacket and fire ratings.\nCompare a scenario, like a tilt-up warehouse, to see what changes before you choose."
  },
  {
-  "id": "floorplan.fp1",
-  "text": "Floor Plan to 2D and 3D turns a floor plan or blueprint into a true-scale model.\nDrag a PDF, D X F, J P G or P N G onto the upload box. Here is a real example: a vector PDF of a one-story office, drawn at one quarter inch equals one foot."
- },
- {
-  "id": "floorplan.fp2",
-  "text": "The app reads the scale from the title block, traces the walls, finds three doors and two windows, and measures four rooms: an office and a conference room of five hundred ninety-one square feet each, a lobby of four hundred five, and a workroom of seven hundred eighty-six.\nThe building comes out sixty-four feet six inches by forty feet six inches, two thousand three hundred seventy-four square feet net. Grade A."
- },
- {
-  "id": "floorplan.fp3",
-  "text": "Now a blurry phone photo of the same plan. It only grades an F: too low resolution, rotated, taken at an angle, and no scale.\nThe app lists each problem with its fix and asks for a better file. Drop the new file right in the box."
- },
- {
-  "id": "floorplan.fp4",
-  "text": "Say yes to add the plan to the project, and the models, auto-design, device layouts, cable lengths and materials all use it.\nTick boxes turn each layer on and off: walls, doors, windows, room tags, and every system's devices, coverage and cabling."
- },
- {
-  "id": "floorplan.fp5",
-  "text": "Set a drawing scale, like one quarter inch or one eighth inch to the foot, or type a custom one, pick an ARCH D or tabloid sheet, and print it to scale.\nPicture in picture keeps the live plan on top while you fill in other pages. Change the building type, and the fire alarm devices move on the plan right away."
- },
- {
   "id": "campus.k1",
   "text": "For a site with several buildings, open Multi-Building Site and Campus.\nIt builds on Auto-Design and the [2D](/tˌu dˈi/) and [3D](/θɹˌi dˈi/) models, and adds the links between buildings to the Materials list."
  },
@@ -305,7 +285,7 @@
  },
  {
   "id": "examples.ex6",
-  "text": "Inside a building at eight hundred megahertz, the I T U P twelve thirty-eight model predicts about seventy-nine decibels across thirty meters of open office, and about eighty-eight with one floor between.\nEach wall adds its own loss: drywall about two decibels, concrete block ten, poured concrete fourteen, and low-E glass about twenty. That is why an emergency radio system needs antennas on every floor."
+  "text": "Inside a building at eight hundred megahertz, the I T U indoor model predicts about seventy-nine decibels of loss across thirty meters of open office, and about eighty-eight with a floor between.\nEach wall adds its own loss: drywall about two decibels, concrete block ten, poured concrete fourteen, and low-E glass about twenty.\nThat is why an emergency radio system needs antennas on every floor."
  },
  {
   "id": "tour-lv.t-solar",
@@ -337,11 +317,11 @@
  },
  {
   "id": "examples.ex1",
-  "text": "A real example: a five point eight gigahertz link between two buildings ten miles apart.\nFree-space loss is about one hundred thirty-two decibels. At the middle of the path, sixty percent of the first Fresnel zone is about twenty-eight feet, so the line of sight has to clear trees and roofs by that much."
+  "text": "A real example: a five point eight gigahertz link between two buildings ten miles apart.\nThe free-space loss is about one hundred thirty-two decibels.\nAt the middle of the path, sixty percent of the first [Fresnel](/fɹənˈɛl/) zone is about twenty-eight feet, so the line of sight has to clear the trees and roofs by that much."
  },
  {
   "id": "examples.ex2",
-  "text": "Radio horizon: a hundred-foot tower talking to a portable radio at five feet reaches about seventeen miles over smooth earth, using four-thirds earth.\nA ridge thirty feet above the line, two miles from one end and three from the other, adds about nine and a half decibels of knife-edge loss at four hundred sixty megahertz."
+  "text": "Radio horizon: a hundred-foot tower talking to a portable radio at five feet reaches about seventeen miles over smooth earth.\nA ridge thirty feet above the line, two miles from one end and three from the other, adds about nine and a half decibels of loss at four hundred sixty megahertz."
  },
  {
   "id": "azimuth.az5",
@@ -353,15 +333,15 @@
  },
  {
   "id": "examples.ex3",
-  "text": "Coverage predictions, with real numbers. Okumura-Hata, for a four hundred sixty megahertz repeater on a hundred fifty-foot tower over suburban ground: the path loss at eight miles is about one hundred forty-six decibels.\nWith fifty dB m E R P, a portable hears about minus ninety-six dB m there, well above its minus one hundred nineteen sensitivity."
+  "text": "Coverage, with real numbers.\nFor a four hundred sixty megahertz repeater on a hundred fifty-foot tower over suburban ground, the Okumura-Hata model gives about one hundred forty-six decibels of loss at eight miles.\nWith fifty dB m of power out, a portable radio gets about minus ninety-six dB m there, well above its minus one hundred nineteen sensitivity."
  },
  {
   "id": "examples.ex4",
-  "text": "COST two thirty-one Hata, for nineteen hundred megahertz in a city, at three miles from a hundred-foot site: about one hundred sixty-one decibels. Higher frequencies need closer sites."
+  "text": "At nineteen hundred megahertz in a city, the COST two thirty-one model gives about one hundred sixty-one decibels at three miles from a hundred-foot site.\nHigher frequencies need closer sites."
  },
  {
   "id": "examples.ex5",
-  "text": "Predictions are medians. With an eight dB spread, a margin of one point two eight times sigma, about ten dB, gives ninety percent at the cell edge, and about ninety-seven percent of the area.\nDrive test the site, and the calibration fits the model to your readings and shows how far off it was."
+  "text": "Predictions are medians.\nWith an eight decibel spread, a ten decibel margin gives ninety percent coverage at the edge, and about ninety-seven percent of the area.\nDrive test the site, and the calibration fits the model to your readings."
  },
  {
   "id": "truescale.ts1",
@@ -401,7 +381,7 @@
  },
  {
   "id": "examples.ex7",
-  "text": "L F and H F examples. At one point seven megahertz with one kilowatt, the ground wave at fifty kilometers is about four millivolts per meter over sea water, but only about point one seven over dry rocky ground. The ground decides the range.\nFor sky wave, with a critical frequency of seven megahertz, the highest usable frequency is about nine megahertz for a five hundred kilometer hop, and about seventeen for fifteen hundred."
+  "text": "L F and H F examples.\nAt one point seven megahertz with one kilowatt, the ground wave at fifty kilometers is about four millivolts per meter over sea water, but only about point one seven over dry, rocky ground.\nThe ground decides the range.\nFor sky wave, the highest usable frequency is about nine megahertz for a five hundred kilometer hop, and about seventeen for fifteen hundred."
  },
  {
   "id": "tour-codes.t-compliance",
@@ -488,8 +468,44 @@
   "text": "Section ten, Reports, Proposals and Closeout.\nPick a proposal, a build plan, a site survey report or the closeout package, choose the sections, then print it, or save it as P D F, Word or Excel.\nIt pulls from every page: your company and the client, the materials and labor, field notes and photos, test results and the equipment list."
  },
  {
+  "id": "tour-cards.c-p1end",
+  "text": "That's the end of part one.\nPart two, with the tools, your projects and your settings, starts next."
+ },
+ {
+  "id": "tour-cards.c-p2open",
+  "text": "Welcome to part two.\nThese tools open any time, from Tools and reference near the bottom of the menu.\nAfter them come your projects and your settings."
+ },
+ {
+  "id": "newtools.fp1",
+  "text": "Floor Plan to [2D](/tˌu dˈi/) and [3D](/θɹˌi dˈi/) turns a floor plan or blueprint into a true-scale model.\nDrag a P D F, D X F, J P G or P N G file onto the upload box.\nHere is a real example: a vector P D F of a one-story office, drawn at one quarter inch equals one foot."
+ },
+ {
+  "id": "newtools.fp2",
+  "text": "The app reads the scale from the title block, traces the walls, and finds three doors, two windows and four rooms.\nThe building comes out sixty-four feet six inches by forty feet six inches, about twenty-four hundred square feet.\nIt grades an A."
+ },
+ {
+  "id": "newtools.fp3",
+  "text": "Now a blurry phone photo of the same plan.\nIt grades an F: the resolution is too low, it is rotated, it was taken at an angle, and it has no scale.\nThe app lists each problem with its fix, and asks for a better file.\nThen drag the new file into the box."
+ },
+ {
+  "id": "newtools.fp4",
+  "text": "Say yes to add the plan to the project.\nThen the [2D](/tˌu dˈi/) and [3D](/θɹˌi dˈi/) Models, Auto-Design, the device layouts, the cable lengths and the Materials list all use it.\nTick boxes turn each layer on and off: walls, doors, windows, room tags, and each system's devices and cabling."
+ },
+ {
+  "id": "newtools.fp5",
+  "text": "Pick a drawing scale, like one quarter inch or one eighth inch to the foot, or type your own.\nChoose the sheet size, then print it to scale.\nTick Include in project documentation, and the plan goes into Reports."
+ },
+ {
+  "id": "newtools.lv1",
+  "text": "The Live view button, at the top of the design pages, shows the [2D](/tˌu dˈi/) plan or the [3D](/θɹˌi dˈi/) model in picture in picture, or in its own window.\nIt stays open while you fill in other pages, and changes as you type."
+ },
+ {
+  "id": "newtools.bo1",
+  "text": "Project Build Output shows the finished project as it is built: the title block, the sheet index, the floor plans with layers, the [3D](/θɹˌi dˈi/) model, the schedules, and what was added when.\nEvery missing item links to the page where you add it."
+ },
+ {
   "id": "calc.az1",
-  "text": "Now the tools, which you can open any time.\nThe Calculators page has calculators for cabling, power, fire alarm, sound, radio and antennas.\nThe [azimuth](/ˈæzəməθ/) calculator takes two G P S positions or addresses, or two project sites.\nResults can be applied to the project, and Low-Voltage Principles opens the matching calculators."
+  "text": "The Calculators page has calculators for cabling, power, fire alarm, sound, radio and antennas.\nThe [azimuth](/ˈæzəməθ/) calculator takes two G P S positions or addresses, or two project sites.\nResults can be applied to the project, and Low-Voltage and R F Design Principles opens the matching calculators."
  },
  {
   "id": "calc.az2",
@@ -512,48 +528,16 @@
   "text": "Use project values copies numbers from your project into a calculator, and leaves the project as it is."
  },
  {
+  "id": "newtools.sc1",
+  "text": "Site conditions shows the values at the project that change a result: the magnetic field and storms from the Magnetic page, the weather from the Weather page, and U S G S data, such as the iron in the soil.\nA cold forecast, for example, raises the battery size.\nRemove any of them from a calculation, or add it back."
+ },
+ {
   "id": "tour-tools.t-theory",
-  "text": "Low-Voltage Principles explains how each system works, in plain language.\nUnder many sections, Calculators opens the matching calculator, and Open takes you to the page that puts it to work."
+  "text": "Low-Voltage and R F Design Principles explains how each system works, and the R F engineering behind it, in plain language.\nUnder many sections, Calculators opens the matching calculator, and Open takes you to the page that puts it to work."
  },
  {
-  "id": "spectrum.sa1",
-  "text": "The R F Spectrum Analyzer turns a U S B receiver into a spectrum analyzer. Plug in a tiny S A, an R T L S D R or a Hack R F, and press Connect. The list of compatible receivers shows which ones are plugged in right now, how far each one tunes, and how accurate its levels are."
- },
- {
-  "id": "spectrum.sa2",
-  "text": "Here are the built-in test signals across the eight hundred megahertz band. The self-test finds the eight fifty-one megahertz carrier within a kilohertz, reads its channel power at minus sixty-six dB m, and flags the intermod product at eight fifty point zero one two five, made by two times the first carrier minus the second."
- },
- {
-  "id": "spectrum.sa3",
-  "text": "Markers, max hold, the waterfall and the measurements work like a bench analyzer: channel power, occupied bandwidth, adjacent channel power, noise floor and limit lines.\nThe tests set the analyzer up for you: B D A uplink noise and oscillation, the donor signal for each channel, and the minus ninety-five dB m downlink check."
- },
- {
-  "id": "spectrum.sa4",
-  "text": "Benchmarks grade the receiver against a signal generator. Only measurement-grade equipment should be used for acceptance tests. The certification tests cover the [ERCES](/ˈɜɹsiz/) grid test, the F C C emission mask and booster checks, and each one saves a signed report."
- },
- {
-  "id": "audio.au1",
-  "text": "The Audio and Acoustic Analyzer is a sound level meter and real-time analyzer. Calibrate with a ninety-four dB calibrator and load the microphone's calibration file, and readings are in dB S P L with A, C or Z weighting."
- },
- {
-  "id": "audio.au2",
-  "text": "A sine sweep through the speakers measures the room: reverberation time by octave, and the speech transmission index. A classroom with a reverberation time of about one second and a quiet background comes out around zero point five eight, which passes the N F P A seventy-two intelligibility target of zero point five."
- },
- {
-  "id": "audio.au3",
-  "text": "The fire alarm audibility test measures the ambient for sixty seconds, then the alarm. In public mode the signal must be fifteen dB over the average, or five dB over the loudest sixty-second sound. It all goes into a signed report under Reports, with the benchmark of the microphone and interface."
- },
- {
-  "id": "theory.rf1",
-  "text": "The principles page is now Low-Voltage and R F Design Principles. Part six covers R F engineering: decibels, transmission lines and V S W R, antennas, propagation and Fresnel zones, path loss models, fading, noise, modulation and interference.\nPart seven covers design concepts, from surge protection and P o E to Wi-Fi, [DAS](/dˈæs/), structured cabling and drawing scales. Every section ends with industry best practices."
- },
- {
-  "id": "buildout.bo1",
-  "text": "Project Build Output shows the finished project as it is built: the title block, the sheet index, floor plans with layers, the 3D model, schedules, and what was added when. Every missing item links to the page where you add it."
- },
- {
-  "id": "site.sc1",
-  "text": "Calculations now show the site conditions that change them: the magnetic field and storms, the weather, and U S G S data such as the soil iron content. A cold forecast raises the battery size by the I triple E four eighty-five factor. Remove any of them from a calculation, or add it back."
+  "id": "newtools.rf1",
+  "text": "Part six covers R F engineering: decibels, transmission lines and V S W R, antennas, propagation and [Fresnel](/fɹənˈɛl/) zones, path loss models, fading, noise, modulation and interference.\nPart seven covers design concepts, from surge protection and P o E to Wi-Fi, [DAS](/dˈæs/), structured cabling and drawing scales.\nEvery section ends with industry best practices."
  },
  {
   "id": "tour-tools.t-contacts",
@@ -562,6 +546,38 @@
  {
   "id": "tour-tools.t-directions",
   "text": "Map and Directions shows the project location, and opens directions to the job site in Google Maps, Apple Maps or Waze.\nIt uses the site address from Company and Project at Site A's position, with the client contact for the crew."
+ },
+ {
+  "id": "newtools.sa1",
+  "text": "The R F Spectrum Analyzer turns a U S B receiver into a spectrum analyzer.\nPlug in a tiny S A, an R T L S D R or a Hack R F, and press Connect.\nThe list shows which receivers are plugged in, how far each one tunes, and how accurate its levels are."
+ },
+ {
+  "id": "newtools.sa2",
+  "text": "With no receiver, tap Use test signals for built-in signals in the eight hundred megahertz band.\nThe self-test finds the eight fifty-one megahertz carrier within a kilohertz, reads its channel power at about minus sixty-six dB m, and flags the intermod product made by the two carriers."
+ },
+ {
+  "id": "newtools.sa3",
+  "text": "Markers, max hold, the waterfall and the measurements work like a bench analyzer: channel power, occupied bandwidth, adjacent channel power, noise floor and limit lines.\nGuided tests set it up for you: [BDA](/bˌidˌiˈA/) uplink noise and oscillation, the donor signal for each channel, and the downlink check.\nAdd to [Live](/lˈIv/) Signal Readings sends the readings to the [ERCES](/ˈɜɹsiz/) grid test."
+ },
+ {
+  "id": "newtools.sa4",
+  "text": "Benchmarks grade the receiver against a signal generator.\nUse only measurement-grade equipment for acceptance tests.\nThe certification tests cover the [ERCES](/ˈɜɹsiz/) grid test, the F C C emission mask and booster checks, and each one saves a signed report for Reports."
+ },
+ {
+  "id": "newtools.au1",
+  "text": "The Audio and Acoustic Analyzer is a sound level meter and real-time analyzer.\nCalibrate with a ninety-four dB calibrator, and readings are in dB S P L, with A, C or Z weighting."
+ },
+ {
+  "id": "newtools.au5",
+  "text": "The calibration library has typical curves for measurement mics, phones and tablets.\nSearch for your mic and tap Use, and the badge shows Mic calibration on.\nFor the best accuracy, add the file made for your mic's serial number.\nIt is saved in the app, and works offline."
+ },
+ {
+  "id": "newtools.au2",
+  "text": "Measure the room plays a test sweep through the speakers, and works out the reverberation time by octave and the speech transmission index.\nA classroom with about one second of reverberation and a quiet background comes out around zero point five eight, which passes the [NFPA](/ˌɛnˌɛfpˌiˈA/) seventy-two target of zero point five."
+ },
+ {
+  "id": "newtools.au3",
+  "text": "The fire alarm audibility test measures the room for sixty seconds, then the alarm.\nIn public mode, the alarm must be fifteen dB over the average, or five dB over the loudest sound.\nEach test saves a signed report under Reports, for the Final Testing records."
  },
  {
   "id": "signal.dv1",
@@ -581,7 +597,15 @@
  },
  {
   "id": "noaa.mg4",
-  "text": "Space weather comes live from NOAA's Space Weather Prediction Center: the K P index, the storm level, and the chance of radio blackouts.\nDuring a geomagnetic storm, a warning shows beside compass bearings on other pages, so you aim with G P S instead.\nOffline, it shows the last forecast and when it was downloaded."
+  "text": "Space weather comes live from NOAA's Space Weather Prediction Center: the K P index, the storm level, and the chance of radio blackouts.\nEach download is checked, and marked Verified, with the time.\nDuring a geomagnetic storm, a warning shows beside compass bearings on other pages, so you aim with G P S instead.\nWith no internet, it shows the last forecast and when it was downloaded."
+ },
+ {
+  "id": "noaa.mg6",
+  "text": "Space weather maps show NOAA's aurora forecast and the H F radio blackout map.\nEach one downloads again when NOAA makes a new one, and the last copy is kept for offline use."
+ },
+ {
+  "id": "noaa.mg7",
+  "text": "The declination map shows lines of equal compass declination across the country for today, from the high-resolution magnetic model built into the app.\nIt works with no internet."
  },
  {
   "id": "noaa.mg5",
@@ -589,11 +613,15 @@
  },
  {
   "id": "noaa.wx1",
-  "text": "Weather and Radar shows the latest report from the nearest National Weather Service station: temperature, feels-like, wind and gusts, humidity, pressure and visibility.\nWith no internet, it shows the last weather downloaded, and how long ago."
+  "text": "Weather and Radar shows the latest report from the nearest National Weather Service station: temperature, feels-like, wind and gusts, humidity, pressure and visibility.\nEach download is checked, and marked Verified, with the time.\nWith no internet, it shows the last weather downloaded, and how long ago."
  },
  {
   "id": "noaa.wx2",
-  "text": "The radar map is NOAA's live radar for the whole country, refreshed every five minutes, with alert areas outlined."
+  "text": "The radar map is NOAA's live radar, refreshed every five minutes, with alert areas outlined.\nTap Play last hour to loop the past hour, and see where the storms are heading."
+ },
+ {
+  "id": "noaa.wx6",
+  "text": "NOAA maps adds the satellite view, lightning from the last five minutes, severe storm outlooks, alerts and forecast maps.\nEach one shows its time, and the last copy is kept for offline use."
  },
  {
   "id": "noaa.wx3",

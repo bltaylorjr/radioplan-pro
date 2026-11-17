@@ -1,5 +1,8 @@
 # LvPlan Pro 1.5.77
 
+- **Introduction video in two parts.** Part 1 follows a job from start to finish; Part 2 covers the tools, your projects and your settings. Part 2 starts by itself when Part 1 ends, and buttons under the video jump to either part. Splitting it keeps the picture sharp and each file small enough to host.
+- **New in the video:** Floor Plan to 2D / 3D (a vector PDF graded A, a blurry photo graded F with its fixes, layers, drawing scale and sheet size), ⧉ Live view, Project Build Output, site conditions in Calculators, the RF engineering and design concepts parts of Low-Voltage & RF Design Principles, the RF Spectrum Analyzer, the Audio & Acoustic Analyzer with the microphone calibration library, worked examples for each prediction model (path, Okumura-Hata, COST 231, indoor, LF / HF), and on the Weather and Magnetic pages the radar loop, NOAA maps, aurora and HF blackout maps, the declination map and the ✓ Verified line.
+- Every part of the video was re-recorded on this version: the menu without sub-step numbers, the Next / Skip bar only on project steps, and the high-resolution magnetic model (7.3° W at Asheville). Each tool's section also says what it connects to and why.
 - **Introduction video, clearer narration.** "3D" and "2D" are now said clearly as "three-D" and "two-D". The narrator slows down a little whenever he reads through a list. He says "plain language" instead of "plain words", and the zoom buttons are just "plus and minus buttons".
 - The sample projects and suppliers in the video now use made-up business names (Tallpine Medical Center, Downtown Office Renovation, Brightwire Electric Supply, Copperleaf Low Voltage). The example names in the Project name and Company name boxes changed to match.
 
