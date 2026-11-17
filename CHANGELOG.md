@@ -2,6 +2,7 @@
 
 - **Introduction video, clearer narration.** "3D" and "2D" are now said clearly as "three-D" and "two-D". The narrator slows down a little whenever he reads through a list. He says "plain language" instead of "plain words", and the zoom buttons are just "plus and minus buttons".
 - The sample projects and suppliers in the video now use made-up business names (Tallpine Medical Center, Downtown Office Renovation, Brightwire Electric Supply, Copperleaf Low Voltage). The example names in the Project name and Company name boxes changed to match.
+
 # LvPlan Pro 1.5.71
 
 - **New page: Weather & Radar (NOAA)** under Tools & reference. For the project site (Asheville, NC when no site is set) or where you are now: NOAA's live radar map with alert areas outlined, the latest checked report from the nearest National Weather Service station (temperature, feels-like, wind and gusts, humidity, pressure, visibility), watches, warnings and advisories with what to do, the next 24 hours and the 7-day forecast. °F, mph and miles.
