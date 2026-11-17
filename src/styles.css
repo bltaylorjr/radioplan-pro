@@ -599,3 +599,5 @@ button.nav-group-title:hover { color: #fff; }
 .nav-done { margin-left: 6px; color: #7ee2a8; font-size: .8rem; }
 .grade-line { margin: 4px 0 8px; }
 .au-big { font-size: 1rem; margin: 4px 0 10px; } .au-big b { font-size: 3rem; font-variant-numeric: tabular-nums; margin-right: 8px; }
+.live-btn { position: relative; } .live-menu { position: absolute; right: 0; top: calc(100% + 4px); z-index: 950; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,.2); padding: 10px; display: grid; gap: 6px; min-width: 230px; }
+.live-menu > button { justify-content: flex-start; } .popout-doc .pip-body { min-height: 100vh; } .popout-doc .pip-view .plan-sheet { max-height: calc(100vh - 110px) !important; }

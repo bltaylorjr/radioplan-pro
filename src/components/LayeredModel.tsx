@@ -270,9 +270,9 @@ export function Model3D({ scene, visible, floor, explode, heatOpacity = 0.7, nor
 }
 
 /** The whole viewer: 2D/3D switch, floor picker, pull-apart slider, layer panel, legend and tap-to-identify. */
-export function LayeredModel({ scene, northDeg = 0, planImage, parking = 0, title = '2D & 3D model', onMoveBuilding }: { scene: ModelScene; northDeg?: number; planImage?: string; parking?: number; title?: string; onMoveBuilding?: (id: string, dx: number, dy: number) => void }) {
+export function LayeredModel({ scene, northDeg = 0, planImage, parking = 0, title = '2D & 3D model', onMoveBuilding, initialView }: { scene: ModelScene; northDeg?: number; planImage?: string; parking?: number; title?: string; onMoveBuilding?: (id: string, dx: number, dy: number) => void; initialView?: '2d' | '3d' }) {
   const { visible, set, reset } = useLayerVisibility(scene);
-  const [view, setView] = useState<'2d' | '3d'>(() => { try { return localStorage.getItem('radioplan.designView') === '2d' ? '2d' : '3d'; } catch { return '3d'; } });
+  const [view, setView] = useState<'2d' | '3d'>(() => { if (initialView) return initialView; try { return localStorage.getItem('radioplan.designView') === '2d' ? '2d' : '3d'; } catch { return '3d'; } });
   const pickView = (v: '2d' | '3d') => { setView(v); try { localStorage.setItem('radioplan.designView', v); } catch { /* ignore */ } };
   const [floor, setFloor] = useState<number | 'all'>('all');
   const [explode, setExplode] = useState(0);

@@ -90,7 +90,9 @@ const FaaPage = lazy(track(() => import('./pages/Faa')));
 const OfflineArea = page(() => import('./components/OfflineArea'), 'OfflineArea');
 import { MapPackBadge } from './components/MapPacks';
 import { GlobalFileDrop } from './components/DropZone';
-import { PlanPipHost } from './components/PlanPip';
+import { PlanPipHost, LiveViewButton } from './components/PlanPip';
+/** Pages where the design is being shaped: their header has the Live view button. */
+const LIVE_PAGES = ['company', 'systems', 'autodesign', 'models', 'campus', 'alarm', 'erces', 'indoor', 'wifi', 'blueprints', 'materials', 'floorplan', 'buildout'];
 
 /** Page components by menu id. The menu order, labels and sections live in src/data/menu.ts. */
 export const PAGE_ELEMENTS: Record<string, React.ReactNode> = {
@@ -345,6 +347,7 @@ export default function App() {
                   {groups.map((g) => <optgroup key={g} label={g}>{VIS.filter((w) => w.group === g).map((w) => <option key={w.id} value={w.id}>{w.label}</option>)}</optgroup>)}
                 </select>
                 <button disabled={!nextW} onClick={() => nextW && go(nextW.id)} aria-label="Next page" title={nextW?.label}>→</button>
+                {LIVE_PAGES.includes(current.id) && <LiveViewButton />}
                 {topic.tour && <button onClick={() => setTour(topic.tour!)} data-tour-btn>▶ Guide me</button>}
                 <button onClick={() => setHelpOpen(true)}>? Page help</button>
                 <ClearPageButton page={current.id} label={current.label} onCleared={(before) => { setCleared({ page: current.id, before }); setResetN((n) => n + 1); }} />

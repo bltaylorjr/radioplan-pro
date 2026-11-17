@@ -311,6 +311,9 @@ export const FEATURES: Feature[] = [
   { id: 'certification', version: '1.5.73', title: 'Benchmarks and certification reports', page: 'spectrum', alsoOn: ['audio', 'reports'], where: 'RF Spectrum Analyzer → 6, Audio & Acoustic Analyzer → 4, Reports → Certification test reports',
     summary: 'Grade the measuring equipment, run certification-level tests (ERCES acceptance, FCC emission mask, booster checks, NFPA 72 audibility, STI acceptance) and keep signed reports with the project.',
     steps: ['Benchmark the receiver or microphone chain.', 'Run the certification test.', 'Save the report and print it from Reports.'], keywords: 'certification benchmark acceptance report pass fail erces nfpa fcc mask', topic: 'spectrum' },
+  { id: 'live-view', version: '1.5.73', title: 'Live view: 2D or 3D in picture in picture or a pop-out window', page: 'company', alsoOn: ['systems', 'autodesign', 'models', 'campus', 'alarm', 'erces', 'indoor', 'wifi', 'blueprints', 'materials', 'floorplan', 'buildout'], where: 'Header of the design pages → ⧉ Live view',
+    summary: 'Pick the 2D plan or the 3D model and show it in picture in picture or a pop-out window that updates as you enter the design details on any page.',
+    steps: ['Press ⧉ Live view in the page header.', 'Choose 2D plan or 3D model.', 'Choose Picture in picture or Pop-out window.', 'Keep working: the view changes as you type.'], keywords: 'live view picture in picture pop out window 2d 3d real time', topic: 'floorplan' },
 ];
 
 /** Features that live on, or also show on, a page. Features marked for every page ('*') are left out unless `all`. */
