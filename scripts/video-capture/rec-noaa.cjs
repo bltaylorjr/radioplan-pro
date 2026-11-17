@@ -8,7 +8,7 @@ const D = process.env.OUT || __dirname, CAPTURE = !!process.env.CAPTURE;
 const CAPF = process.env.CAP || path.join(D, 'noaa-capture.json');
 const T = path.join(__dirname, 't/tiles');
 const APP = process.env.APP || 'http://localhost:4173/';
-const key = (u) => u.replace(/([?&])_t=\d+&?/, '$1').replace(/[?&]$/, '');
+const key = (u) => u.replace(/([?&])(_t|t)=\d+&?/g, '$1').replace(/[?&]$/, '');
 function tileFile(url) {
   let m;
   if ((m = url.match(/USGSImageryOnly\/MapServer\/tile\/(\d+)\/(\d+)\/(\d+)/))) return `${T}/usgsimg/${m[1]}/${m[3]}/${m[2]}`;
@@ -27,7 +27,9 @@ const CSS = `
   .rec-ring { outline: 4px solid #ff9800 !important; outline-offset: 2px; border-radius: 6px; transition: outline .2s; }`;
 
 (async () => {
-  const saved = CAPTURE ? {} : JSON.parse(fs.readFileSync(CAPF, 'utf8'));
+  const saved = CAPTURE ? { __at: Date.now() } : JSON.parse(fs.readFileSync(CAPF, 'utf8'));
+  // Replay: run the page clock as if it were the moment of the capture, so time-stamped NOAA requests (radar loop frames) match.
+  const shift = CAPTURE || !saved.__at ? 0 : saved.__at - Date.now() + 60e3;
   const b = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
   const ctx = await b.newContext({ viewport: { width: 1280, height: 720 }, recordVideo: { dir: path.join(D, 'raw'), size: { width: 1280, height: 720 } },
     geolocation: { latitude: 35.5951, longitude: -82.5515 }, permissions: ['geolocation'] });
@@ -42,13 +44,18 @@ const CSS = `
         return r.fulfill({ response: res, body });
       } catch (e) { console.log('fetch fail', u, e.message.slice(0, 80)); return r.fulfill({ status: 404, body: '' }); }
     }
-    const hit = saved[key(u)];
+    const hit = typeof saved[key(u)] === 'object' ? saved[key(u)] : null;
     if (hit) return r.fulfill({ status: hit.s, contentType: hit.ct, headers: { 'access-control-allow-origin': '*' }, body: Buffer.from(hit.b, 'base64') });
     const f = tileFile(u);
     if (f && fs.existsSync(f)) return r.fulfill({ status: 200, contentType: f.includes('terrarium') ? 'image/png' : 'image/jpeg', headers: { 'access-control-allow-origin': '*' }, body: fs.readFileSync(f) });
     console.log('miss', u.slice(0, 140));
     return r.fulfill({ status: 404, headers: { 'access-control-allow-origin': '*' }, body: '' });
   });
+  if (shift) await pg.addInitScript((sh) => {
+    const D0 = Date; const N = () => D0.now() + sh;
+    class D extends D0 { constructor(...a) { super(...(a.length ? a : [N()])); } static now() { return N(); } }
+    window.Date = D;
+  }, shift);
   await pg.addInitScript((css) => {
     localStorage.setItem('radioplan.seenVideo', '1'); localStorage.setItem('radioplan.seenIntro', '1');
     localStorage.setItem('radioplan.basemap', 'USGS Topo');
@@ -100,9 +107,20 @@ const CSS = `
   await wait(800); await ring(tour('mag-convert'), 3000);
   until('mg3');
 
-  start('mg4'); await cap('Space weather, live from NOAA', 'Storm levels and radio blackouts for compass, GPS and HF radio');
-  await show(tour('mag-space'), 80, 1500); await wait(1500); await scrollBy(250, 2000); await scrollBy(250, 2000);
+  start('mg4'); await cap('Space weather, live from NOAA', 'Storm levels and radio blackouts for compass, GPS and HF radio. Each download is checked.');
+  await show(tour('mag-space'), 80, 1500); await wait(1500); await scrollBy(250, 2000);
+  await ring(pg.locator(`${tour('mag-space')} :text-matches("Verified|Checked")`), 2200);
   until('mg4');
+
+  start('mg6'); await cap('Space weather maps', 'Aurora forecast and HF radio blackout map, kept for offline use');
+  await show(tour('mag-maps'), 80, 1800); await wait(1200);
+  await pg.locator(`${tour('mag-maps')} [role=tab]`).nth(1).click().catch(() => {}); await wait(2200);
+  await pg.locator(`${tour('mag-maps')} [role=tab]`).nth(0).click().catch(() => {}); await wait(1500);
+  until('mg6');
+
+  start('mg7'); await cap('Declination map', 'Lines of equal compass declination across the US. Works with no internet.');
+  await show(tour('mag-declmap'), 80, 1800); await ring(tour('mag-declmap'), 2800);
+  until('mg7');
 
   start('mg5'); await cap('Saved with this project', 'Used on drawings and reports. Kept for offline use.');
   await show(tour('mag-project'), 120, 1200); await ring(tour('mag-project'), 3000);
@@ -110,12 +128,24 @@ const CSS = `
 
   // Weather & Radar (NOAA)
   start('wx1'); await cap('Weather & Radar (NOAA)', 'Live conditions from the nearest National Weather Service station');
-  await go('weather', 5000); await ring(tour('wx-now'), 3500);
+  await go('weather', 5000); await ring(tour('wx-now'), 2500);
+  await ring(pg.locator(`${tour('wx-now')} :text-matches("Verified|Checked")`), 1800);
   until('wx1');
 
-  start('wx2'); await cap('Radar map', 'NOAA’s live radar, refreshed every 5 minutes, with alert areas outlined');
-  await show(tour('wx-radar'), 80, 2500); await wait(2500);
+  start('wx2'); await cap('Radar map', 'NOAA’s live radar with alert areas outlined. ▶ Play last hour shows where storms are heading.');
+  await show(tour('wx-radar'), 80, 2500); await wait(1500);
+  await pg.click('[data-tour="wx-loop"] button', { timeout: 2000 }).catch(() => console.log('no loop button')); await wait(9000);
   until('wx2');
+
+  start('wx6'); await cap('NOAA maps', 'Satellite, lightning, storm outlooks and forecast maps, each with its time');
+  await show(tour('wx-maps'), 80, 1500); await wait(1500);
+  const tabs = pg.locator(`${tour('wx-maps')} [role=tab]`);
+  await tabs.nth(2).click().catch(() => {}); await wait(1800);
+  const grp = pg.locator(`${tour('wx-maps')} .row button`);
+  await grp.nth(1).click().catch(() => {}); await wait(2200);
+  await grp.nth(2).click().catch(() => {}); await wait(2200);
+  await grp.nth(0).click().catch(() => {}); await wait(1000);
+  until('wx6');
 
   start('wx3'); await cap('Work-day check', 'Lightning, wind, cold, heat and rain for the next 24 hours');
   await show(tour('wx-work'), 80, 1200); await ring(tour('wx-work'), 2500);
