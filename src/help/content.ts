@@ -181,6 +181,19 @@ Not counted: roads and railroads under the structure (77.9(c)), shielding (77.9(
 - During a **geomagnetic storm** (Kp 5 or more, now or forecast for now by the last download) a warning shows beside compass bearings on other pages: aim antennas with GPS or a satellite alignment tool instead of a compass.
 
 **Limits:** the model is about ±0.5° in the continental US. Local iron, rebar, vehicles, steel buildings and power lines can throw a hand compass off much more. Space weather forecasts change quickly.` },
+  { id: 'weather', title: 'Weather & radar (NOAA)', page: 'weather', keywords: 'weather radar forecast noaa national weather service nws rain storm thunder lightning wind gust temperature cold heat alerts warning watch advisory current conditions hourly 7 day work day tower climbing lift offline', summary: 'Live NOAA radar, alerts, current conditions and the 7-day forecast for the job site or where you are, with work-day checks.',
+    body: `Open **Tools & reference → Weather & Radar (NOAA)**. The place is the project's Site A (Asheville, NC when no site is set). Tap **📡 Use where I am now** for your GPS position, or type a GPS point.
+
+- **Weather here:** the latest report from the nearest National Weather Service station: temperature, feels-like, wind and gusts, humidity, pressure and visibility, with the station name and the time it was observed. Values that failed NOAA's own quality checks are left out.
+- **Weather alerts:** watches, warnings and advisories in force at the place. Tap one for the full text and what to do.
+- **Radar map:** NOAA's live radar of all US radars combined, refreshed every 5 minutes, with alert areas outlined. Use **See-through** to see the map under it.
+- **Work-day check:** plain checks for the next 24 hours: lightning (no tower, roof or lift work), wind for climbing and lifts, cold for cable pulls and batteries, heat, and rain for outdoor terminations.
+- **Next 24 hours** and **7-day forecast:** NOAA's official forecast. Tap a day for the full text.
+- **Weather on this project:** when the weather is for the project site it is saved on the project. Site Data & GPS, Installation guides and Service then show a warning when there is an alert, lightning, high wind, cold or heat; Solar & DC Power compares the forecast low with the design record low; and **📝 Add today's weather to Field Notes** writes a weather line into a field note.
+
+**Live and offline:** with internet the page updates by itself every 10 minutes while open, as soon as the connection comes back, and every hour in the background for the last place looked at. With no internet it shows the last weather downloaded and says how long ago that was. The radar needs internet.
+
+**Limits:** forecasts are NOAA's (US only). They are not design values: code wind, ice and record temperatures still come from the adopted codes, TIA-222 and ASHRAE. Your safety plan and the equipment's ratings come first.` },
   { id: 'mappacks', title: 'Offline map packs', page: 'mappacks', keywords: 'offline map pack download satellite imagery topo terrain area no signal no internet field rural mountain storage size estimate progress', summary: 'Download satellite pictures, topo maps and terrain for a whole job area before going where there is no signal.',
     body: `Choose the **area**: around your project sites, around an address or GPS point, or (on Map & Terrain) what the map shows. Pick the **detail** (street level suits most jobs) and **what to save**: satellite pictures, satellite with roads and names, topo map, shaded relief, and terrain (needed for path profiles, line of sight, coverage and 3D).
 

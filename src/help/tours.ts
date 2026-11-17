@@ -152,6 +152,13 @@ export const PAGE_TOURS: Record<string, TourStep[]> = {
     { target: 'mag-space', title: 'Space weather', text: 'NOAA’s live storm forecast. Offline it shows the last conditions and when they were downloaded.' },
     { target: 'mag-project', title: 'Saved with this project', text: 'The checked declination and storm level are kept on the job by themselves and used on drawings and reports.' },
   ],
+  weather: [
+    { target: 'wx-now', title: 'Weather here', text: 'The latest report from the nearest National Weather Service station, and when it was downloaded. Works offline with the last download.' },
+    { target: 'wx-radar', title: 'Radar map', text: 'NOAA’s live radar, refreshed every 5 minutes, with alert areas outlined.' },
+    { target: 'wx-work', title: 'Work-day check', text: 'Plain checks for lightning, wind, cold, heat and rain for the next 24 hours.' },
+    { target: 'wx-week', title: '7-day forecast', text: 'NOAA’s forecast, day and night. Tap a day for the full text.' },
+    { target: 'wx-project', title: 'Weather on this project', text: 'Saved on the project so other pages can warn you, and one tap adds it to Field Notes.' },
+  ],
   mappacks: [
     { target: 'text:Around my project sites', title: 'Choose the area', text: 'Around your sites, or around an address or GPS point.' },
     { target: 'text:Download map pack', title: '⬇ Download map pack', text: 'Shows the size first, then downloads with the percent and time left.' },

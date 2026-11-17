@@ -77,6 +77,7 @@ const SettingsPage = page(() => import('./pages/Settings'), 'SettingsPage');
 const SignalReadingsPage = page(() => import('./pages/SignalReadings'), 'SignalReadingsPage');
 const AssetsPage = page(() => import('./pages/Assets'), 'AssetsPage');
 const MagneticPage = page(() => import('./pages/Magnetic'), 'MagneticPage');
+const WeatherPage = page(() => import('./pages/Weather'), 'WeatherPage');
 const TerrainPage = lazy(track(() => import('./pages/Terrain')));
 const CoveragePage = lazy(track(() => import('./pages/Coverage')));
 const View3DPage = lazy(track(() => import('./pages/View3D')));
@@ -133,6 +134,7 @@ export const PAGE_ELEMENTS: Record<string, React.ReactNode> = {
   contacts: <ContactsPage />,
   calculators: <CalculatorsPage />,
   magnetic: <MagneticPage />,
+  weather: <WeatherPage />,
   mappacks: <OfflineArea />,
   projects: <ProjectsPage />,
   sync: <SyncPage />,
@@ -165,11 +167,29 @@ function useProjectMagnetic(project: import('./types').Project, update: (fn: (d:
   }, [s?.lat, s?.lon, sw, day, project.sync?.projectId, project.meta.created]); // eslint-disable-line react-hooks/exhaustive-deps
 }
 
+/** Keeps project.weather current when the weather for Site A is downloaded in the background (hourly automatic care). */
+function useProjectWeather(project: import('./types').Project, update: (fn: (d: import('./types').Project) => void) => void) {
+  const ref = React.useRef(project); ref.current = project;
+  useEffect(() => {
+    let live = true, off = () => {};
+    import('./engine/weather').then((m) => {
+      if (!live) return;
+      off = m.onWeather((w) => {
+        const p = ref.current, s = p.sites[0];
+        if (!s || Math.abs(w.place.lat - s.lat) > 1e-3 || Math.abs(w.place.lon - s.lon) > 1e-3 || (p.weather && p.weather.at >= w.fetchedAt)) return;
+        update((d) => { d.weather = m.projectWeather(w); });
+      });
+    });
+    return () => { live = false; off(); };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+}
+
 export default function App() {
   const { page, go, project, update, rt, setRt, lib } = useStore();
   const [online, setOnline] = useState(typeof navigator === 'undefined' ? true : navigator.onLine);
   useEffect(() => { preloadPages(); }, []);
   useProjectMagnetic(project, update);
+  useProjectWeather(project, update);
   useEffect(() => { const on = () => setOnline(true), off = () => setOnline(false); window.addEventListener('online', on); window.addEventListener('offline', off); return () => { window.removeEventListener('online', on); window.removeEventListener('offline', off); }; }, []);
   const [helpOpen, setHelpOpen] = useState(false);
   const [tour, setTour] = useState<TourStep[] | null>(null);

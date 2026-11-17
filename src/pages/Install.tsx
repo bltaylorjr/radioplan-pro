@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { WeatherNote } from '../components/WeatherNote';
 import { FullView } from '../components/FullView';
 import { useStore } from '../store';
 import { Card } from '../components/ui';
@@ -229,6 +230,7 @@ export function InstallPage() {
   return (
     <div className="grid">
       <Card title="Installation guide" className="wide install" tip="Step-by-step installation with color wiring diagrams. Labels use the equipment chosen in this project where available. Print any guide for the field crew." actions={<button onClick={() => { document.querySelectorAll('.install details').forEach((d) => d.setAttribute('open', '')); setTimeout(() => window.print(), 50); }}>Print</button>}>
+        <WeatherNote />
         <label className="field no-print" style={{ maxWidth: 520 }}><span>Choose a guide ({GUIDES.length})</span>
           <select value={g.id} onChange={(e) => setOpen(e.target.value)} aria-label="Installation guide">
             {mine.length > 0 && <optgroup label="For this project">{mine.map((id) => <option key={id} value={id}>{GUIDES.find((x) => x.id === id)!.title}</option>)}</optgroup>}

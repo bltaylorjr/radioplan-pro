@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react';
+import { WeatherNote } from '../components/WeatherNote';
 import { useStore } from '../store';
 import { Card, Field, Txt, Num, Sel, Check, Stat, fmt } from '../components/ui';
 import { parseNmeaGga, averageFixes, NmeaFix, haversineKm } from '../engine/geo';
@@ -77,6 +78,7 @@ export function SitesPage() {
   return (
     <div className="grid2">
       <Card title="Sites" tour="site-list" actions={<span className="row"><button onClick={add}>+ Add site</button><button onClick={del} disabled={p.sites.length <= 1}>Delete</button></span>}>
+        <WeatherNote />
         <div className="scroll-x"><table className="tbl"><thead><tr><th>Name</th><th>Lat</th><th>Lon</th><th>Ground (m)</th><th>Antenna AGL</th><th>Role</th></tr></thead>
           <tbody>{p.sites.map((x) => (
             <tr key={x.id} className={x.id === s.id ? 'sel' : ''} onClick={() => setSel(x.id)}>
