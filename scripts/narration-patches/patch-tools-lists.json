@@ -1,0 +1,98 @@
+[
+ {
+  "id": "tour-setup.t-systems",
+  "text": "On Project Systems and Toolkits, pick the main system, and tick any other systems on the same job.\nEach one brings its own toolkit: a plan, install steps, tests, repairs and the tools you need.\nThe systems you pick turn on the tools the job needs, and put those systems first on Installation, Service, Troubleshooting and the Specifications Library."
+ },
+ {
+  "id": "tour-setup.t-locate",
+  "text": "Find Location and Auto-Plan takes an address or G P S coordinates, and shows the spot on a map and in [3D](/θɹˌi dˈi/), with its ground height.\nTap Build plan for this location, and the app looks over the terrain for a good tower spot nearby, and sets up the sites for you to review.\nThe plan fills in Site Data, the equipment, the coverage run, the path profile, the materials list, the code checks and the test plan, so every later page has a starting point."
+ },
+ {
+  "id": "tour-setup.t-sites",
+  "text": "Site Data and G P S holds each site: its G P S position, ground height, structure and antenna height.\nIt shows the distance and [azimuth](/ˈæzəməθ/) between sites, and the magnetic declination.\nUse this device's G P S, or bring in a G P S log.\nEvery map, path profile and coverage run, the F C C search, and the weather and magnetic pages use these sites.\nRuns measured between sites go to the Materials list."
+ },
+ {
+  "id": "tour-survey.t-fieldnotes",
+  "text": "Section two is the site survey.\nOn Field Notes and Photos, write a note, add photos from the camera, and save your G P S position.\nThe site survey checklist keeps track of what to look at while you are there.\nNotes link to a site, sync with the project, and print in Reports.\nThe Troubleshooting Wizard and the Weather page can add notes here too."
+ },
+ {
+  "id": "signal.sg1",
+  "text": "On [Live](/lˈIv/) Signal Readings, connect a signal meter by Bluetooth, a U S B cable or Wi-Fi, or use the phone's own signal.\nThe big number is the reading right now.\nIt uses the meters connected on Bluetooth and Wi-Fi Devices, and its results feed Drive Test and Calibration and the Emergency Radio page."
+ },
+ {
+  "id": "tour-lv.t-autodesign",
+  "text": "Section three is low-voltage design.\nOn Auto-Design, describe the building: its type, floors and size.\nThe app recommends the devices for each system, lays them out, and shows them on a [2D](/tˌu dˈi/) plan and a [3D](/θɹˌi dˈi/) model.\nIts layout feeds the [2D](/tˌu dˈi/) and [3D](/θɹˌi dˈi/) models, the campus plan, the Materials list, the Fire Alarm and Emergency Radio pages, and Blueprints, so you describe the building once."
+ },
+ {
+  "id": "tour-lv.t-erces",
+  "text": "Emergency Radio, for [ERCES](/ˈɜɹsiz/) and [BDA](/bˌidˌiˈA/) systems, works out the donor signal, the [BDA](/bˌidˌiˈA/) gain, and the downlink budget to the worst spot in the building, with the code checks for the I F C and [NFPA](/ˌɛnˌɛfpˌiˈA/) twelve twenty-five.\nIt takes the county's public-safety channels from Radio Reference, the donor tower from F C C Towers, and the measured coverage from [Live](/lˈIv/) Signal Readings."
+ },
+ {
+  "id": "tour-lv.t-solar",
+  "text": "Solar and DC Power sizes a remote site: the loads, the battery bank, the solar panels, and the wire sizes, using the worst month of sun for your location.\nIts equipment goes to the Materials list, and the Weather page warns you when the forecast low is colder than the design record low."
+ },
+ {
+  "id": "tour-lv.t-grounding",
+  "text": "Grounding and Structure covers ground rods, bonding and the ground ring, with a live code check, and the structure loading for the tower or mast.\nIts lines go to the Materials list, and the Installation Guides cover antenna feedline and grounding step by step."
+ },
+ {
+  "id": "fcc.fc1",
+  "text": "F C C Towers and Licenses.\nPick a project site, an address or your G P S, and the app lists every F C C registered tower and licensed transmitter nearby.\nThe F C C data for North Carolina, South Carolina, Georgia, Tennessee and Virginia is built in, so it works with no internet.\nFrom here, add a tower as a site, aim the emergency radio donor antenna at it, or send it to the [FAA](/ˌɛfˌAˈA/) Height Check."
+ },
+ {
+  "id": "tour-rf.t-path",
+  "text": "Path Profile shows the ground between two sites, with the earth's curve, the line of sight and the [Fresnel](/fɹənˈɛl/) zone, and tells you if the path is clear.\nIt uses the sites from Site Data and the terrain from Map and Terrain."
+ },
+ {
+  "id": "tour-rf.t-coverage",
+  "text": "Coverage Prediction paints a signal heat map over the terrain, and checks it against your acceptance criteria, for mobile, portable and in-building coverage.\nIt uses the Equipment settings and the terrain.\nDrive Test calibration tunes it, and its signal map feeds Multi-site, Scenarios and the Photo Site Survey."
+ },
+ {
+  "id": "truescale.ts1",
+  "text": "On Tilt, [Azimuth](/ˈæzəməθ/) and Power, the side view follows the real ground along the antenna's [azimuth](/ˈæzəməθ/), and shows where the main beam and its edges come down.\nThe ground is colored by the predicted signal.\nIt uses the antenna from Equipment and the predicted signal from Coverage Prediction."
+ },
+ {
+  "id": "tour-codes.t-blueprints",
+  "text": "Blueprints and Drawing Sets turns the design into a drawing set for the permit, with a north arrow and the device layout.\nIt is drawn from the Auto-Design layout, with the codes from Code Compliance, the fire alarm battery calculation, and a north arrow that uses the magnetic declination."
+ },
+ {
+  "id": "legacy.lg1",
+  "text": "Section six is equipment and materials.\nThe Specifications Library covers every low-voltage system.\nAccess control has door controllers, card readers, credentials, mag locks, electric strikes, power supplies and exit switches.\nItems from it go on the Materials list, and the Troubleshooting Wizard and Service use its specifications and manuals."
+ },
+ {
+  "id": "estimate.est4",
+  "text": "The Vendors page keeps your suppliers, with the phone, email, account and terms.\nTap Add field for anything else you need.\nIf a vendor gives you a stock address, the app checks stock and price by itself when you are online.\nVendors are shared by every project, and appear in Search online on the Materials list."
+ },
+ {
+  "id": "tour-codes.t-reports",
+  "text": "Section ten, Reports, Proposals and Closeout.\nPick a proposal, a build plan, a site survey report or the closeout package, choose the sections, then print it, or save it as P D F, Word or Excel.\nIt pulls from every page: your company and the client, the materials and labor, field notes and photos, test results and the equipment list."
+ },
+ {
+  "id": "calc.az1",
+  "text": "Now the tools, which you can open any time.\nThe Calculators page has calculators for cabling, power, fire alarm, sound, radio and antennas.\nThe [azimuth](/ˈæzəməθ/) calculator takes two G P S positions or addresses, or two project sites.\nResults can be applied to the project, and Low-Voltage Principles opens the matching calculators."
+ },
+ {
+  "id": "signal.dv1",
+  "text": "Bluetooth and Wi-Fi Devices: connect a signal meter, a G P S receiver, a laser distance meter or a barcode scanner once, and every page uses it.\nA laser measurement goes right into the box you tap.\nThe meter feeds [Live](/lˈIv/) Signal Readings, the G P S receiver feeds every G P S button, the laser fills in lengths, and the scanner feeds Asset Tags."
+ },
+ {
+  "id": "noaa.mg5",
+  "text": "The checked declination and storm level are saved on the project by themselves, and used on drawings, in reports, and on synced devices."
+ },
+ {
+  "id": "noaa.wx1",
+  "text": "Weather and Radar shows the latest report from the nearest National Weather Service station: temperature, feels-like, wind and gusts, humidity, pressure and visibility.\nWith no internet, it shows the last weather downloaded, and how long ago."
+ },
+ {
+  "id": "noaa.wx3",
+  "text": "The work-day check looks at the next twenty-four hours: lightning, so no tower, roof or lift work, wind for climbing and lifts, cold for cable pulls and batteries, heat, and rain.\nBelow it, the next twenty-four hours show the temperature and the chance of rain."
+ },
+ {
+  "id": "noaa.wx5",
+  "text": "When the weather is for the project site, it is saved on the project.\nSite Data, the Installation Guides and Service then warn you about alerts, lightning, high wind, cold or heat, and Solar and DC Power checks the forecast low against the design record low.\nOne tap adds today's weather to Field Notes."
+ },
+ {
+  "id": "tour-tools.t-sync",
+  "text": "Sync Devices moves your projects between your phone, tablet and computer: directly over Wi-Fi by scanning a code, by Bluetooth or email, or through a cloud-drive folder.\nRadio Reference data and your sign-in never sync."
+ }
+]

@@ -1,0 +1,138 @@
+[
+ {
+  "id": "tour-setup.t-company",
+  "text": "Step one is Company and Project.\nName the project, pick the project type, and type the site address.\nThe state and county fill in from the address, and they choose the codes.\nYour company details are saved once, and every new project fills them in.\nWhat you type here goes in the header of every report, picks the code set on Code Compliance, and can place Site A, so the rest of the job starts from it."
+ },
+ {
+  "id": "photosurvey.ps1",
+  "text": "The photo site survey.\nStand where an antenna or a tower might go, and take photos all the way around you, or one panorama.\nIt brings together the terrain, your project sites, the towers nearby and the coverage prediction, so you can see from the spot what the radio will see."
+ },
+ {
+  "id": "tour-survey.t-terrain",
+  "text": "Map and Terrain shows your sites on topo maps or satellite pictures.\nZoom in close for street-level detail.\nThe maps are sharp on phones and tablets, and they fill in from saved map areas when you are offline.\nThe same terrain drives the path profile, the coverage prediction and the [3D](/θɹˌi dˈi/) views, and Offline Map Packs save it for jobs with no signal."
+ },
+ {
+  "id": "tour-survey.t-wifi",
+  "text": "Wi-Fi and Network Survey puts your Wi-Fi readings on the floor plan.\nPaste or import the scans from a laptop or a survey app, and the app draws the signal heat map.\nThe readings are saved with the project and combine with readings from your other devices when you sync."
+ },
+ {
+  "id": "tour-survey.t-survey",
+  "text": "Drive Test and Calibration brings in signal readings taken in the field.\nTen or more readings tune the prediction model to match the real site.\nCalibration tunes the model used by Coverage Prediction, Multi-site and Scenarios, so later runs match the real world."
+ },
+ {
+  "id": "models.m1",
+  "text": "The page called [2D](/tˌu dˈi/) and [3D](/θɹˌi dˈi/) Models with Layers shows every system on the job.\nIt shares the building with Auto-Design, and the materials you pick here set the radio loss, sound and fire results under the model."
+ },
+ {
+  "id": "campus.k1",
+  "text": "For a site with several buildings, open Multi-Building Site and Campus.\nIt builds on Auto-Design and the [2D](/tˌu dˈi/) and [3D](/θɹˌi dˈi/) models, and adds the links between buildings to the Materials list."
+ },
+ {
+  "id": "tour-lv.t-alarm",
+  "text": "Fire Alarm and Batteries sizes the standby battery and checks voltage drop on each notification circuit.\nChange the wire length, and the end-of-line voltage updates.\nTick Include in project to run the [NFPA](/ˌɛnˌɛfpˌiˈA/) seventy-two and N E C checks.\nThe battery and circuit numbers go to the Materials list, the Blueprints schedules and the reports."
+ },
+ {
+  "id": "tour-lv.t-indoor",
+  "text": "Indoor Coverage and [DAS](/dˈæs/) lets you draw the walls, pick what they are made of, and place antennas.\nThe coverage shows right away, on the plan or in [3D](/θɹˌi dˈi/).\nUse it for a detailed indoor estimate behind the Emergency Radio downlink budget."
+ },
+ {
+  "id": "tour-rf.t-radioref",
+  "text": "Section four is radio design.\nRadio Reference Frequencies uses your Premium login to download a county's frequencies and talkgroups.\nThey are protected information, so they stay encrypted on this device only.\nThe app key is entered once, in User Settings.\nThe Emergency Radio page lists the county's public-safety channels from it.\nThese stay on this device only, never in files, reports or sync."
+ },
+ {
+  "id": "tour-rf.t-equipment",
+  "text": "Equipment and Link Budget picks the band, the radio, the antennas and the coax.\nThe link budget shows the power out, the losses and the margins, and how far the signal can reach.\nThe radio, antenna and coax chosen here drive Coverage Prediction, the Materials list and the Installation Guides diagrams."
+ },
+ {
+  "id": "tour-rf.t-network",
+  "text": "Multi-site and Interference runs several transmitters together, and shows the best server and where the signals interfere.\nIt uses the same model, tuning and terrain as Coverage Prediction, with the sites from Site Data."
+ },
+ {
+  "id": "tour-rf.t-scenarios",
+  "text": "Scenarios and Compare keeps each coverage run you save, so you can compare them side by side.\nRestore inputs puts a saved run's radio settings back into the project, and the comparison exports for the report."
+ },
+ {
+  "id": "tour-rf.t-view3d",
+  "text": "[3D](/θɹˌi dˈi/) Model shows the terrain, the towers and the [Fresnel](/fɹənˈɛl/) zone in [3D](/θɹˌi dˈi/).\nWhile you are online, the app downloads the terrain and existing towers around your sites by itself, and saves them for offline use.\nThe detailed terrain it saves is also used by Path Profile, Site Data and the [FAA](/ˌɛfˌAˈA/) Height Check."
+ },
+ {
+  "id": "tour-rf.t-lfhf",
+  "text": "L F and H F Systems covers long-range radio: antenna sizes, groundwave, and skywave.\nFor H F, the Magnetic Field and Space Weather page shows the chance of radio blackouts."
+ },
+ {
+  "id": "tour-codes.t-compliance",
+  "text": "Section five is codes, permits and drawings.\nCode Compliance shows the codes in force for the project address, with every check from every page in one list.\nIt reads the state and county from Company and Project and the nearest airport from the [FAA](/ˌɛfˌAˈA/) Height Check, and the codes print on the Blueprints cover sheet."
+ },
+ {
+  "id": "fcc.fc3",
+  "text": "The [FAA](/ˌɛfˌAˈA/) Height Check tells you if a new tower, mast or antenna needs [FAA](/ˌɛfˌAˈA/) notice.\nType the height.\nThe ground height fills in, and the app checks every airport and heliport nearby, and shows the tallest structure you can build without notice.\nSave airport on site keeps the result for the Code Compliance checks."
+ },
+ {
+  "id": "estimate.est1",
+  "text": "The Materials List and [Estimate](/ˈɛstəmət/) adds up the equipment and materials for the job.\nType a unit cost on any line, and the line total, the category totals and the materials subtotal fill in.\nIt fills in by itself from Auto-Design and the design pages, uses your Vendors, and its totals go into the proposal on Reports."
+ },
+ {
+  "id": "tour-codes.t-install",
+  "text": "Section seven, Installation Guides, gives step-by-step instructions with color wiring diagrams and a checklist for each kind of install.\nGuides for this project's systems come first, the diagrams use the antenna and coax chosen in the project, and weather warnings for the job site show here."
+ },
+ {
+  "id": "tour-codes.t-testing",
+  "text": "Section eight, Final Testing.\nLoad the standard test plan, type the results as you go, and work through the testing checklist before the inspector arrives.\nThe Troubleshooting Wizard can save its results here, and the results print in the commissioning report."
+ },
+ {
+  "id": "tour-codes.t-service",
+  "text": "Section nine is service, troubleshooting and repair.\nService and Maintenance Resources has the service and P M checklists for each system.\nIt leads into the Troubleshooting Wizard, and shows weather warnings for the job site."
+ },
+ {
+  "id": "tour-codes.t-troubleshoot",
+  "text": "The Troubleshooting Wizard asks what system and what is wrong, then lists the likely causes and what to check first.\nWhen you are done, save the results to Final Testing or as a field note."
+ },
+ {
+  "id": "signal.at1",
+  "text": "Equipment and Asset Tags keeps track of every device.\nTap Scan tag and point the camera at a barcode or Q R code.\nA new tag starts a new device.\nA tag you already have opens that device.\nA scanner connected on Bluetooth and Wi-Fi Devices works here too, and the equipment list prints in the closeout package."
+ },
+ {
+  "id": "tour-tools.t-theory",
+  "text": "Low-Voltage Principles explains how each system works, in plain language.\nUnder many sections, Calculators opens the matching calculator, and Open takes you to the page that puts it to work."
+ },
+ {
+  "id": "tour-tools.t-contacts",
+  "text": "Contacts and Web Resources lists fire marshals, inspectors and code offices by state, county and city.\nAdd your own contacts too.\nIt starts at the project's state, county and city."
+ },
+ {
+  "id": "tour-tools.t-directions",
+  "text": "Map and Directions shows the project location, and opens directions to the job site in Google Maps, Apple Maps or Waze.\nIt uses the site address from Company and Project at Site A's position, with the client contact for the crew."
+ },
+ {
+  "id": "noaa.mg1",
+  "text": "Magnetic Field and Space Weather shows how far a compass points away from true north at the job, from NOAA's World Magnetic Model.\nIt is built in and works with no internet.\nThe declination feeds every [azimuth](/ˈæzəməθ/) in the app, the north arrow on Blueprints, and the reports, so compass readings stay right."
+ },
+ {
+  "id": "noaa.mg2",
+  "text": "How it changes over time lists the same numbers for every half year to twenty thirty, with a chart.\nPut the declination and its date on your drawings."
+ },
+ {
+  "id": "noaa.mg3",
+  "text": "Type a map bearing to get the compass reading, or the other way round.\nIt also shows how far off one degree of error lands at one mile and at ten miles."
+ },
+ {
+  "id": "noaa.mg4",
+  "text": "Space weather comes live from NOAA's Space Weather Prediction Center: the K P index, the storm level, and the chance of radio blackouts.\nDuring a geomagnetic storm, a warning shows beside compass bearings on other pages, so you aim with G P S instead.\nOffline, it shows the last forecast and when it was downloaded."
+ },
+ {
+  "id": "noaa.wx2",
+  "text": "The radar map is NOAA's live radar for the whole country, refreshed every five minutes, with alert areas outlined."
+ },
+ {
+  "id": "noaa.wx4",
+  "text": "The seven-day forecast is NOAA's own, day and night.\nTap a day for the full text."
+ },
+ {
+  "id": "fcc.fc5",
+  "text": "Offline map packs save satellite pictures, topo maps and terrain for a whole job area before you go where there is no signal.\nYou see the size first, then the progress, and every pack you saved.\nThe terrain in a pack is what the path profile, line of sight, coverage and [3D](/θɹˌi dˈi/) views need when you are offline."
+ },
+ {
+  "id": "tour-tools.t-projects",
+  "text": "Projects and Storage keeps every project on this device, with its history and backups.\nThe app opens right away from its saved copy, and checks for updates by itself.\nReuse a project to start a similar job, carrying over the design, equipment and pricing."
+ }
+]
