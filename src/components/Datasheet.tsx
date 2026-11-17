@@ -36,7 +36,7 @@ export function Datasheet({ item, searchUrl }: { item: SpecItem; searchUrl: stri
     i.onchange = async () => { const f = i.files?.[0]; if (!f) return; const v: SavedSheet = { name: f.name, type: f.type || 'application/pdf', size: f.size, blob: f, savedAt: new Date().toISOString() }; await kvSet(key, v); setS(v); setMsg('Datasheet saved on this device ✓'); };
     i.click();
   };
-  const tryLink = async () => { if (!item.datasheet) return; setMsg('Downloading…'); const got = await fetchSheet(item.datasheet); if (got) { await kvSet(key, got); setS(got); setMsg('Datasheet saved for offline use ✓'); } else { window.open(item.datasheet, '_blank'); setMsg('That site does not let apps download its files. It opened in your browser: save the PDF, then tap “Attach saved PDF”.'); } };
+  const tryLink = async () => { if (!item.datasheet) return; setMsg('Downloading…'); const got = await fetchSheet(item.datasheet); if (got) { await kvSet(key, got); setS(got); setMsg('Datasheet saved for offline use ✓'); } else { window.open(item.datasheet, '_blank', 'noopener,noreferrer'); setMsg('That site does not let apps download its files. It opened in your browser: save the PDF, then tap “Attach saved PDF”.'); } };
   return (
     <div className="datasheet">
       <div className="row wrap">

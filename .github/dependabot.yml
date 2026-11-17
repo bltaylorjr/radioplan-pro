@@ -1,0 +1,24 @@
+# Dependabot (free, built into GitHub) opens a pull request each week when a library the app uses has an
+# update, and right away for security fixes. Every pull request runs the full checks (.github/workflows/ci.yml).
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule: { interval: weekly, day: monday }
+    open-pull-requests-limit: 5
+    groups:
+      app:
+        update-types: [minor, patch]
+  - package-ecosystem: cargo
+    directory: /src-tauri
+    schedule: { interval: weekly, day: monday }
+    open-pull-requests-limit: 5
+    groups:
+      desktop:
+        update-types: [minor, patch]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: monthly }
+    groups:
+      actions:
+        update-types: [minor, patch]

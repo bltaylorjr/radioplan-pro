@@ -1,3 +1,4 @@
+import { safeJsonParse } from './projectdb';
 // Cross-device sync without a server. Each project carries per-section change times and deletion
 // tombstones; two copies are merged section by section (newest wins) and collection by collection
 // (sites, scenarios, run log, tests, Wi-Fi readings and survey points are merged item by item).
@@ -81,7 +82,7 @@ export function mergeProjects(local: Project, remote: Project, now = Date.now())
 export interface SyncPackage { format: typeof SYNC_FORMAT; exportedAt: number; device: string; project: Project }
 export const toPackage = (p: Project): SyncPackage => ({ format: SYNC_FORMAT, exportedAt: Date.now(), device: p.sync?.deviceName ?? '', project: p });
 export function fromPackage(text: string): Project {
-  const j = JSON.parse(text);
+  const j = safeJsonParse(text);
   if (j?.format === SYNC_FORMAT && j.project) return j.project as Project;
   if (j?.meta && j?.radio) return j as Project; // plain .radioplan.json project file
   throw new Error('Not a LvPlan project or sync file.');
@@ -101,5 +102,5 @@ export async function unpackCode<T>(code: string): Promise<T> {
   const b64 = c.slice(1).replace(/-/g, '+').replace(/_/g, '/'); const bin = atob(b64 + '==='.slice((b64.length + 3) % 4));
   let data = Uint8Array.from(bin, (ch) => ch.charCodeAt(0));
   if (tag === 'D') { const ds = (globalThis as { DecompressionStream?: typeof DecompressionStream }).DecompressionStream!; data = new Uint8Array(await new Response(new Blob([data]).stream().pipeThrough(new ds('deflate-raw'))).arrayBuffer()); }
-  return JSON.parse(new TextDecoder().decode(data)) as T;
+  return safeJsonParse(new TextDecoder().decode(data)) as T;
 }

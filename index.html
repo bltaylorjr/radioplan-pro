@@ -2,6 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <!-- Security: only this app's own scripts run (no inline or injected scripts, no eval). Network access stays open
+       (https, and http / ws for meters and GPS on the local network) because the app reads many public data sources
+       and the user's own devices. Desktop app: src-tauri/tauri.conf.json carries the same policy. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https: wss: ws: http: data: blob:; worker-src 'self' blob:; child-src 'self' blob:; frame-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; manifest-src 'self'" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>LvPlan Pro</title>
   <link rel="icon" href="./icon-192.png" />

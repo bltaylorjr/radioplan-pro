@@ -17,17 +17,18 @@ jobs:
       - id: chk
         env: { K: '${{ secrets.ANDROID_KEYSTORE_B64 }}' }
         run: if [ -n "$K" ]; then echo "ok=true" >> "$GITHUB_OUTPUT"; else echo "::notice::Android signing secrets are not set, so no release is built."; fi
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with: { persist-credentials: false }
       - id: ver
         env: { GH_TOKEN: '${{ github.token }}' }
         run: |
           V="v$(node -p "require('./package.json').version")"; echo "tag=$V" >> "$GITHUB_OUTPUT"
           if gh release view "$V" >/dev/null 2>&1; then echo "::notice::$V is already released."; echo "ok=false" >> "$GITHUB_OUTPUT"; else echo "ok=true" >> "$GITHUB_OUTPUT"; fi
       - if: steps.chk.outputs.ok == 'true' && steps.ver.outputs.ok == 'true'
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with: { node-version: 22, cache: npm }
       - if: steps.chk.outputs.ok == 'true' && steps.ver.outputs.ok == 'true'
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@39008827e6b4319a349e9a42dfc90579dd25f1ca # stable
         with: { targets: x86_64-pc-windows-gnu }
       - if: steps.chk.outputs.ok == 'true' && steps.ver.outputs.ok == 'true'
         run: sudo apt-get update && sudo apt-get install -y mingw-w64 nsis android-sdk-platform-23 android-sdk-build-tools aapt zipalign apksigner dalvik-exchange zip
