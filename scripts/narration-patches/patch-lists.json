@@ -1,0 +1,178 @@
+[
+ {
+  "id": "tour-cards.c-open1",
+  "text": "Welcome to L V Plan Pro.\nIt helps you plan, install, test, troubleshoot and repair low-voltage and radio systems, from the first site visit to the closeout package."
+ },
+ {
+  "id": "tour-cards.c-open2",
+  "text": "It covers structured cabling, fiber, fire alarm, security, intercom, nurse call, paging, pro sound, access control, C C T V, mass notification, emergency call boxes, [DAS](/dˈæs/), and emergency responder radio.\nIt works offline, and it picks the right codes for North Carolina, South Carolina, Georgia, Tennessee and Virginia from the project address."
+ },
+ {
+  "id": "menuhelp.mh1",
+  "text": "The menu on the left follows a job from start to finish: project setup, site survey, design, codes and permits, equipment and materials, installation, testing, service and repair, and reports."
+ },
+ {
+  "id": "info.vi1",
+  "text": "Every value box has a small i beside it.\nPoint at it with the mouse, or tap it on a phone, to see what the value means in [laymen's](/lˈAmənz/) terms, its unit, and the normal range."
+ },
+ {
+  "id": "tour-setup.t-systems",
+  "text": "On Project Systems and Toolkits, pick the main system, and tick any other systems on the same job.\nEach one brings its own toolkit: a plan, install steps, tests, repairs and the tools you need."
+ },
+ {
+  "id": "tour-survey.t-fieldnotes",
+  "text": "Section two is the site survey.\nOn Field Notes and Photos, write a note, add photos from the camera, and save your G P S position.\nThe site survey checklist keeps track of what to look at while you are there."
+ },
+ {
+  "id": "photosurvey.ps6",
+  "text": "The table lists every site and tower, with distance, [azimuth](/ˈæzəməθ/), and the up or down angle.\nNudge any photo with the arrow buttons, or type a compass reading."
+ },
+ {
+  "id": "tilt.tilt1",
+  "text": "Above every map, tap [3D](/θɹˌi dˈi/) tilt view.\nThe map turns into a [3D](/θɹˌi dˈi/) model of the ground, with satellite pictures on top.\nDrag the tilt slider, or tap Straight down, Tilted, or Low angle."
+ },
+ {
+  "id": "tilt.tilt4",
+  "text": "To get around a hill, tap Add relay point, or tap Suggest a relay spot, and the app finds a spot that sees both ends.\nThen turn on the shading, and any ground hidden from point [A](/ˈA/) turns red."
+ },
+ {
+  "id": "azimuth.az1",
+  "text": "Every direction in the app is shown two ways: degrees true, for maps and G P S, and the compass reading, with magnetic declination built in, so it works offline."
+ },
+ {
+  "id": "lines.dl1",
+  "text": "You can also draw lines on any map.\nTap Draw lines, then Draw by hand, and drag with your finger or mouse along a road, a trail, or a cable route."
+ },
+ {
+  "id": "lines.dl2",
+  "text": "Each line is colored by the predicted signal from the transmitter.\nDotted stretches are hidden from the transmitter by terrain.\nBelow the map you get the length, the [azimuth](/ˈæzəməθ/), the weakest and average signal, and a chart of ground and signal along the line."
+ },
+ {
+  "id": "fullpage.fl2",
+  "text": "Tap Layers at the top right.\nPick the map picture, such as topo or satellite, and switch each layer on or off: sites and the radio path, the coverage heat map, towers, and photo spots."
+ },
+ {
+  "id": "signal.sg1",
+  "text": "On [Live](/lˈIv/) Signal Readings, connect a signal meter by Bluetooth, a U S B cable or Wi-Fi, or use the phone's own signal.\nThe big number is the reading right now."
+ },
+ {
+  "id": "models.m2",
+  "text": "First, pick what the building is made of: outside walls, windows, room walls, doors, floors, roof, ceiling, stairs and the elevator.\nEach building type starts with typical materials, and the number beside each one is the radio signal it costs."
+ },
+ {
+  "id": "models.m6",
+  "text": "Under the model, the results follow your materials: outside signal loss, echo for speakers, firestops, cable jacket and fire ratings.\nCompare a scenario, like a tilt-up warehouse, to see what changes before you choose."
+ },
+ {
+  "id": "campus.k2",
+  "text": "The main building comes from Auto-Design.\nTap Add a building for each one on the site, and give it its own type, floors, size and materials."
+ },
+ {
+  "id": "campus.k3",
+  "text": "Link the buildings with fiber or copper in underground conduit, aerial fiber, empty conduit for later, or a wireless bridge.\nWireless links get a signal check, and a warning when another building is in the way."
+ },
+ {
+  "id": "tour-lv.t-erces",
+  "text": "Emergency Radio, for [ERCES](/ˈɜɹsiz/) and [BDA](/bˌidˌiˈA/) systems, works out the donor signal, the [BDA](/bˌidˌiˈA/) gain, and the downlink budget to the worst spot in the building, with the code checks for the I F C and [NFPA](/ˌɛnˌɛfpˌiˈA/) twelve twenty-five."
+ },
+ {
+  "id": "tour-lv.t-solar",
+  "text": "Solar and DC Power sizes a remote site: the loads, the battery bank, the solar panels, and the wire sizes, using the worst month of sun for your location."
+ },
+ {
+  "id": "tour-lv.t-grounding",
+  "text": "Grounding and Structure covers ground rods, bonding and the ground ring, with a live code check, and the structure loading for the tower or mast."
+ },
+ {
+  "id": "fcc.fc1",
+  "text": "F C C Towers and Licenses.\nPick a project site, an address or your G P S, and the app lists every F C C registered tower and licensed transmitter nearby.\nThe F C C data for North Carolina, South Carolina, Georgia, Tennessee and Virginia is built in, so it works with no internet."
+ },
+ {
+  "id": "fcc.fc2",
+  "text": "Each tower shows the owner, the height above ground, the distance and the [azimuth](/ˈæzəməθ/).\nOpen a tower to see who is on it and on what frequencies.\nNarrow the list by band, by kind of user, or by a name, call sign or frequency."
+ },
+ {
+  "id": "tour-rf.t-path",
+  "text": "Path Profile shows the ground between two sites, with the earth's curve, the line of sight and the [Fresnel](/fɹənˈɛl/) zone, and tells you if the path is clear."
+ },
+ {
+  "id": "azimuth.az5",
+  "text": "Path profile, link budget, drive test, blueprints, calculators and reports all show the [azimuth](/ˈæzəməθ/) too."
+ },
+ {
+  "id": "tour-rf.t-coverage",
+  "text": "Coverage Prediction paints a signal heat map over the terrain, and checks it against your acceptance criteria, for mobile, portable and in-building coverage."
+ },
+ {
+  "id": "truescale.ts1",
+  "text": "On Tilt, [Azimuth](/ˈæzəməθ/) and Power, the side view follows the real ground along the antenna's [azimuth](/ˈæzəməθ/), and shows where the main beam and its edges come down.\nThe ground is colored by the predicted signal."
+ },
+ {
+  "id": "truescale.ts5",
+  "text": "The same true scale choice is on the path profile, the drawn line chart, the run profiles, and every [3D](/θɹˌi dˈi/) view."
+ },
+ {
+  "id": "legacy.lg1",
+  "text": "Section six is equipment and materials.\nThe Specifications Library covers every low-voltage system.\nAccess control has door controllers, card readers, credentials, mag locks, electric strikes, power supplies and exit switches."
+ },
+ {
+  "id": "legacy.lg2",
+  "text": "Tap Legacy equipment to list older and discontinued models that you still find on service calls: fire alarm panels, security panels, cameras, intercoms, nurse call, radios and cabling."
+ },
+ {
+  "id": "legacy.lg3",
+  "text": "Each legacy model shows its status, suggested current replacements, service and repair notes, and links to the maker's documentation pages.\nAttach the manual to keep it on this device."
+ },
+ {
+  "id": "legacy.lg4",
+  "text": "Official recalls are built in and update by themselves when you are online.\nA model with a recall is flagged, with the affected date codes, the problem, and the fix."
+ },
+ {
+  "id": "estimate.est2",
+  "text": "Tap the pencil to change any line: the item, brand and model, part number, unit, vendor or price.\nTap the X to take a line off the list.\nRemoved lines wait at the bottom, ready to put back."
+ },
+ {
+  "id": "estimate.est3",
+  "text": "To look parts up online, tick the lines you want, or Select all, then tap Search online.\nPick Google Shopping, Amazon, [Octopart](/ˈɑktəpˌɑɹt/), [Digi-Key](/dˈɪʤi kˌi/), [Mouser](/mˈWzəɹ/), or one of your own vendors."
+ },
+ {
+  "id": "estimate.est4",
+  "text": "The Vendors page keeps your suppliers, with the phone, email, account and terms.\nTap Add field for anything else you need.\nIf a vendor gives you a stock address, the app checks stock and price by itself when you are online."
+ },
+ {
+  "id": "estimate.est6",
+  "text": "Last, add tax, shipping and markup, and type your budgets.\nAnything over budget shows in red, so you know before you order."
+ },
+ {
+  "id": "signal.at2",
+  "text": "Keep the make, model, serial number, location, photos, install date, warranty and maintenance schedule.\nThe list shows maintenance that is due, and prints Q R labels and the equipment list."
+ },
+ {
+  "id": "tour-codes.t-reports",
+  "text": "Section ten, Reports, Proposals and Closeout.\nPick a proposal, a build plan, a site survey report or the closeout package, choose the sections, then print it, or save it as P D F, Word or Excel."
+ },
+ {
+  "id": "calc.az1",
+  "text": "Now the tools, which you can open any time.\nThe Calculators page has calculators for cabling, power, fire alarm, sound, radio and antennas.\nThe [azimuth](/ˈæzəməθ/) calculator takes two G P S positions or addresses, or two project sites."
+ },
+ {
+  "id": "signal.dv1",
+  "text": "Bluetooth and Wi-Fi Devices: connect a signal meter, a G P S receiver, a laser distance meter or a barcode scanner once, and every page uses it.\nA laser measurement goes right into the box you tap."
+ },
+ {
+  "id": "online.u1",
+  "text": "When you are online, code [editions](/ɪdˈɪʃənz/), contacts, the equipment catalog, help, and the magnetic model update by themselves."
+ },
+ {
+  "id": "tour-tools.t-sync",
+  "text": "Sync Devices moves your projects between your phone, tablet and computer: directly over Wi-Fi by scanning a code, by Bluetooth or email, or through a cloud-drive folder."
+ },
+ {
+  "id": "settings.st3",
+  "text": "When a number is out of range, the box turns red, says what is wrong in [laymen's](/lˈAmənz/) terms, and offers a one-tap fix.\nA blank box is never counted as zero."
+ },
+ {
+  "id": "tour-cards.c-end1",
+  "text": "To get started, type the project address on Company and Project, pick the project type, run Auto-Design, then check the codes and the materials list.\nWhen you are ready, print the proposal from Reports.\nIf you get stuck, use Find a tool, Page help, or Guide me on any page."
+ }
+]
