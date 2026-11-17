@@ -3,7 +3,7 @@ name: Weather API live check
 on:
   workflow_dispatch:
   pull_request:
-    paths: ['src/engine/weather.ts', 'src/engine/noaamaps.ts', 'src/engine/verify.ts', 'src/engine/spaceweather.ts', 'tests/weather*.ts', '.github/workflows/weather-live.yml']
+    paths: ['src/engine/weather.ts', 'src/engine/noaamaps.ts', 'src/engine/verify.ts', 'src/engine/spaceweather.ts', 'src/engine/azimuth.ts', 'src/data/wmmhr.ts', 'tests/weather*.ts', '.github/workflows/weather-live.yml']
 permissions: { contents: read }
 jobs:
   check:
