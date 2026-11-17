@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { WeatherNote } from '../components/WeatherNote';
 import { useStore, downloadText, deviceInfo, safeName } from '../store';
 import { Card } from '../components/ui';
 import { projectSystems, SYSTEMS } from '../data/systems';
@@ -29,6 +30,7 @@ export function ServicePage() {
   return (
     <div className="grid">
       <Card title="Service & maintenance resources" className="wide" tip="Maintenance intervals, common faults and fixes, test steps, standards and manuals for each system. Reference only; nothing here is saved to the project.">
+        <WeatherNote />
         <label className="field" style={{ maxWidth: 520 }}><span>System</span>
           <select value={sid} onChange={(e) => setSid(e.target.value)} aria-label="System">
             {mine.length > 0 && <optgroup label="On this project">{mine.map((x) => <option key={x.id} value={x.id}>{x.icon} {x.label}</option>)}</optgroup>}
