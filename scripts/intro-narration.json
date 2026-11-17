@@ -240,6 +240,26 @@
   "text": "Under the model, the results follow your materials: outside signal loss, echo for speakers, firestops, cable jacket and fire ratings.\nCompare a scenario, like a tilt-up warehouse, to see what changes before you choose."
  },
  {
+  "id": "floorplan.fp1",
+  "text": "Floor Plan to 2D and 3D turns a floor plan or blueprint into a true-scale model.\nDrag a PDF, D X F, J P G or P N G onto the upload box. Here is a real example: a vector PDF of a one-story office, drawn at one quarter inch equals one foot."
+ },
+ {
+  "id": "floorplan.fp2",
+  "text": "The app reads the scale from the title block, traces the walls, finds three doors and two windows, and measures four rooms: an office and a conference room of five hundred ninety-one square feet each, a lobby of four hundred five, and a workroom of seven hundred eighty-six.\nThe building comes out sixty-four feet six inches by forty feet six inches, two thousand three hundred seventy-four square feet net. Grade A."
+ },
+ {
+  "id": "floorplan.fp3",
+  "text": "Now a blurry phone photo of the same plan. It only grades an F: too low resolution, rotated, taken at an angle, and no scale.\nThe app lists each problem with its fix and asks for a better file. Drop the new file right in the box."
+ },
+ {
+  "id": "floorplan.fp4",
+  "text": "Say yes to add the plan to the project, and the models, auto-design, device layouts, cable lengths and materials all use it.\nTick boxes turn each layer on and off: walls, doors, windows, room tags, and every system's devices, coverage and cabling."
+ },
+ {
+  "id": "floorplan.fp5",
+  "text": "Set a drawing scale, like one quarter inch or one eighth inch to the foot, or type a custom one, pick an ARCH D or tabloid sheet, and print it to scale.\nPicture in picture keeps the live plan on top while you fill in other pages. Change the building type, and the fire alarm devices move on the plan right away."
+ },
+ {
   "id": "campus.k1",
   "text": "For a site with several buildings, open Multi-Building Site and Campus."
  },
@@ -284,6 +304,10 @@
   "text": "Indoor Coverage and [DAS](/dˈæs/) lets you draw the walls, pick what they are made of, and place antennas.\nThe coverage shows right away, on the plan or in three D."
  },
  {
+  "id": "examples.ex6",
+  "text": "Inside a building at eight hundred megahertz, the I T U P twelve thirty-eight model predicts about seventy-nine decibels across thirty meters of open office, and about eighty-eight with one floor between.\nEach wall adds its own loss: drywall about two decibels, concrete block ten, poured concrete fourteen, and low-E glass about twenty. That is why an emergency radio system needs antennas on every floor."
+ },
+ {
   "id": "tour-lv.t-solar",
   "text": "Solar and DC Power sizes a remote site: the loads, the battery bank, the solar panels, and the wire sizes, using the worst month of sun for your location."
  },
@@ -312,12 +336,32 @@
   "text": "Path Profile shows the ground between two sites, with the earth's curve, the line of sight and the [Fresnel](/fɹənˈɛl/) zone, and tells you if the path is clear."
  },
  {
+  "id": "examples.ex1",
+  "text": "A real example: a five point eight gigahertz link between two buildings ten miles apart.\nFree-space loss is about one hundred thirty-two decibels. At the middle of the path, sixty percent of the first Fresnel zone is about twenty-eight feet, so the line of sight has to clear trees and roofs by that much."
+ },
+ {
+  "id": "examples.ex2",
+  "text": "Radio horizon: a hundred-foot tower talking to a portable radio at five feet reaches about seventeen miles over smooth earth, using four-thirds earth.\nA ridge thirty feet above the line, two miles from one end and three from the other, adds about nine and a half decibels of knife-edge loss at four hundred sixty megahertz."
+ },
+ {
   "id": "azimuth.az5",
   "text": "Path profile, link budget, drive test, blueprints, calculators and reports all show the [azimuth](/ˈæzəməθ/) too."
  },
  {
   "id": "tour-rf.t-coverage",
   "text": "Coverage Prediction paints a signal heat map over the terrain, and checks it against your acceptance criteria, for mobile, portable and in-building coverage."
+ },
+ {
+  "id": "examples.ex3",
+  "text": "Coverage predictions, with real numbers. Okumura-Hata, for a four hundred sixty megahertz repeater on a hundred fifty-foot tower over suburban ground: the path loss at eight miles is about one hundred forty-six decibels.\nWith fifty dB m E R P, a portable hears about minus ninety-six dB m there, well above its minus one hundred nineteen sensitivity."
+ },
+ {
+  "id": "examples.ex4",
+  "text": "COST two thirty-one Hata, for nineteen hundred megahertz in a city, at three miles from a hundred-foot site: about one hundred sixty-one decibels. Higher frequencies need closer sites."
+ },
+ {
+  "id": "examples.ex5",
+  "text": "Predictions are medians. With an eight dB spread, a margin of one point two eight times sigma, about ten dB, gives ninety percent at the cell edge, and about ninety-seven percent of the area.\nDrive test the site, and the calibration fits the model to your readings and shows how far off it was."
  },
  {
   "id": "truescale.ts1",
@@ -354,6 +398,10 @@
  {
   "id": "tour-rf.t-lfhf",
   "text": "L F and H F Systems covers long-range radio: antenna sizes, groundwave, and skywave."
+ },
+ {
+  "id": "examples.ex7",
+  "text": "L F and H F examples. At one point seven megahertz with one kilowatt, the ground wave at fifty kilometers is about four millivolts per meter over sea water, but only about point one seven over dry rocky ground. The ground decides the range.\nFor sky wave, with a critical frequency of seven megahertz, the highest usable frequency is about nine megahertz for a five hundred kilometer hop, and about seventeen for fifteen hundred."
  },
  {
   "id": "tour-codes.t-compliance",
@@ -466,6 +514,46 @@
  {
   "id": "tour-tools.t-theory",
   "text": "Low-Voltage Principles explains how each system works, in plain language."
+ },
+ {
+  "id": "spectrum.sa1",
+  "text": "The R F Spectrum Analyzer turns a U S B receiver into a spectrum analyzer. Plug in a tiny S A, an R T L S D R or a Hack R F, and press Connect. The list of compatible receivers shows which ones are plugged in right now, how far each one tunes, and how accurate its levels are."
+ },
+ {
+  "id": "spectrum.sa2",
+  "text": "Here are the built-in test signals across the eight hundred megahertz band. The self-test finds the eight fifty-one megahertz carrier within a kilohertz, reads its channel power at minus sixty-six dB m, and flags the intermod product at eight fifty point zero one two five, made by two times the first carrier minus the second."
+ },
+ {
+  "id": "spectrum.sa3",
+  "text": "Markers, max hold, the waterfall and the measurements work like a bench analyzer: channel power, occupied bandwidth, adjacent channel power, noise floor and limit lines.\nThe tests set the analyzer up for you: B D A uplink noise and oscillation, the donor signal for each channel, and the minus ninety-five dB m downlink check."
+ },
+ {
+  "id": "spectrum.sa4",
+  "text": "Benchmarks grade the receiver against a signal generator. Only measurement-grade equipment should be used for acceptance tests. The certification tests cover the [ERCES](/ˈɜɹsiz/) grid test, the F C C emission mask and booster checks, and each one saves a signed report."
+ },
+ {
+  "id": "audio.au1",
+  "text": "The Audio and Acoustic Analyzer is a sound level meter and real-time analyzer. Calibrate with a ninety-four dB calibrator and load the microphone's calibration file, and readings are in dB S P L with A, C or Z weighting."
+ },
+ {
+  "id": "audio.au2",
+  "text": "A sine sweep through the speakers measures the room: reverberation time by octave, and the speech transmission index. A classroom with a reverberation time of about one second and a quiet background comes out around zero point five eight, which passes the N F P A seventy-two intelligibility target of zero point five."
+ },
+ {
+  "id": "audio.au3",
+  "text": "The fire alarm audibility test measures the ambient for sixty seconds, then the alarm. In public mode the signal must be fifteen dB over the average, or five dB over the loudest sixty-second sound. It all goes into a signed report under Reports, with the benchmark of the microphone and interface."
+ },
+ {
+  "id": "theory.rf1",
+  "text": "The principles page is now Low-Voltage and R F Design Principles. Part six covers R F engineering: decibels, transmission lines and V S W R, antennas, propagation and Fresnel zones, path loss models, fading, noise, modulation and interference.\nPart seven covers design concepts, from surge protection and P o E to Wi-Fi, [DAS](/dˈæs/), structured cabling and drawing scales. Every section ends with industry best practices."
+ },
+ {
+  "id": "buildout.bo1",
+  "text": "Project Build Output shows the finished project as it is built: the title block, the sheet index, floor plans with layers, the 3D model, schedules, and what was added when. Every missing item links to the page where you add it."
+ },
+ {
+  "id": "site.sc1",
+  "text": "Calculations now show the site conditions that change them: the magnetic field and storms, the weather, and U S G S data such as the soil iron content. A cold forecast raises the battery size by the I triple E four eighty-five factor. Remove any of them from a calculation, or add it back."
  },
  {
   "id": "tour-tools.t-contacts",

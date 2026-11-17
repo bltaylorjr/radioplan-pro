@@ -184,6 +184,76 @@ Not counted: roads and railroads under the structure (77.9(c)), shielding (77.9(
 - During a **geomagnetic storm** (Kp 5 or more, now or forecast for now by the last download) a warning shows beside compass bearings on other pages: aim antennas with GPS or a satellite alignment tool instead of a compass.
 
 **Limits:** the model is about ±0.4° in the continental US. Local iron, rebar, vehicles, steel buildings and power lines can throw a hand compass off much more. Space weather forecasts change quickly.` },
+  { id: 'floorplan', title: 'Floor plan to 2D / 3D', page: 'floorplan', keywords: 'floor plan blueprint upload drag drop pdf dxf jpg png svg scan photo cad trace walls doors windows rooms area scale calibrate quality grade issues fixes new upload integrate project documentation layers picture in picture to scale custom scale sheet print draw create', summary: 'Turn a floor plan or blueprint file into a true-scale 2D plan and 3D model, check how accurate it is, and add it to the project plan, build and documentation.',
+    body: `**Floor Plan to 2D / 3D** (in Tools & reference) reads a floor plan file and traces it into a true-scale plan and model.
+
+**1. Upload.** Pick the floor, then drag the file onto the upload box or click to browse. PDF (vector from CAD or scanned), DXF, JPG, PNG, WebP, GIF, BMP and SVG work. DWG, RVT and SKP must be exported to DXF or PDF first. For a PDF with several sheets, pick the floor plan sheet. **No drawing?** Open *Create a floor plan to scale*, type the outside length and width, and draw the rest.
+
+**How to get an accurate model** lists what to upload (best: DXF from CAD with A-WALL layers; vector PDF at 100 % with the scale noted; scan at 300 DPI; photo straight down only as a last resort) and what to check first.
+
+**2. Upload check.** The file gets a grade (A to F) from its resolution, contrast, sharpness, rotation, perspective, shading, whether the walls form a closed outline, and whether the scale is known. Each issue has its fix.
+- If it **won't produce an accurate model**, it says why, lists the fixes and asks for a **new upload** (drop it right there), or you can keep it as an approximate model.
+- If the model **is accurate**, it asks whether to **add it to the project plan and build**. Yes puts the walls, doors and windows into the 2D & 3D Models, the size, floors, rooms, exterior doors and ceiling height into Auto-Design (so devices, cable and materials follow), and the walls into Indoor Coverage if nothing is drawn there yet.
+- **Include in project documentation** puts the plan and its room, door and window schedules into Reports (Build plan, Closeout package) and keeps the drawing sheet and original file in Documents.
+
+**Scale.** Read from the sheet (e.g. 1/4" = 1'-0"), taken from the CAD units, entered as a known overall length, or calibrated by clicking two points and typing the distance. A scale only estimated from door widths is never called accurate.
+
+**3. Preview.** 2D, 3D or both. The 2D plan is drawn like a construction drawing: solid walls, door swings and marks, window marks, room tags (name, number, area in SF), overall dimensions in feet-inches, title, graphic scale and north arrow. **Layers** has tick boxes for each building element and each technology system (devices, coverage, cabling). Click a wall, door, window or room to fix it; **Undo / Redo** step back and forward. **Draw** adds exterior and interior walls, doors and windows.
+
+**Drawing scale & sheet** sets the plan to a standard architectural, engineering or metric scale or a custom one (e.g. 5/32" = 1'-0", 1" = 15', 1:75) on ANSI or ARCH sheets, says whether it fits, suggests the largest scale that does, and **Print to scale** prints it true size (print at 100 %). Downloads: DXF with AIA layers (A-WALL-EXTR, A-WALL-INTR, A-DOOR, A-GLAZ, A-AREA-IDEN) and the drawing sheet as SVG.
+
+**⧉ Picture in picture** keeps the live plan on top of other pages while you enter information; it changes as you type.
+
+Then it asks whether to **upload another file** (the next floor or a better file) or go to the **Project Build Output**.
+
+Traced plans follow the linework in the file. Check sizes against the dimensioned drawings; the architect's drawings and the AHJ govern.` },
+  { id: 'buildout', title: 'Project Build Output', page: 'buildout', keywords: 'build output final output sheet index cover title block schedules device schedule progress live recently added picture in picture', summary: 'The project\'s final output, filled in live as each value and element is added.',
+    body: `**Project Build Output** (in Tools & reference) shows the finished project as it is being built, and updates by itself as information is added on any page.
+
+- **Title block**: project, owner, contractor, date and revision.
+- **Sheet index** in US National CAD Standard numbering: G-001 cover and project data, A-101… floor plans, A-301 3D model, A-601 schedules, and a sheet for each system (FA fire alarm, T telecommunications, TY security). Each shows Ready or Pending.
+- **Recently added**: each value with the time it was added or last changed.
+- **Floor plan** with layer tick boxes, the 3D model, and the room, door and window schedules.
+- **Device schedule** by level.
+- **Build elements**: every value the output needs, ✓ when it is in, with a link to the page where it is added.
+
+**⧉ Picture in picture** keeps the plan in a small window while you fill in other pages. **🖨 Print** prints the page.` },
+  { id: 'spectrum', title: 'RF spectrum analyzer', page: 'spectrum', keywords: 'spectrum analyzer rf sdr tinysa tinysa ultra rtl-sdr hackrf usb receiver webusb web serial zadig winusb sweep trace waterfall markers delta peak search channel power occupied bandwidth acpr noise floor danl snr interference hunt tone intermod bda oscillation uplink noise donor downlink limit line mask calibrate ppm cable loss attenuator antenna factor field strength dbuv import csv rtl_power hackrf_sweep', summary: 'A spectrum analyzer that works with USB receivers (tinySA, RTL-SDR, HackRF) or imported sweeps, with markers, measurements, guided tests and calibration.',
+    body: `**RF Spectrum Analyzer** (Tools & reference) turns a USB receiver into a spectrum analyzer in Chrome or Edge (computer or Android) and in the Windows app. iPhone, iPad, Safari and Firefox cannot reach USB receivers; import a saved sweep there instead.
+
+**1. Receiver.** Plug it in and press **Connect tinySA**, **Connect RTL-SDR** or **Connect HackRF One**; the browser asks once, then the receiver is listed under **Receivers plugged in now** whenever it is connected. **Compatible USB receivers** lists every supported receiver with its range, connection and level accuracy:
+- **tinySA / tinySA Ultra**: a real spectrum analyzer with calibrated dBm. Best for measurements.
+- **RTL-SDR** and **HackRF One**: SDR receivers, fast and wide, but levels are relative until calibrated. On Windows install the WinUSB driver with Zadig.
+- Airspy, SDRplay, Signal Hound, bench and handheld analyzers, and rtl_power / hackrf_sweep: **import** their CSV traces.
+- **Use test signals** for training and the self-test.
+
+**2. Analyzer.** Band presets (VHF, UHF, 700/800 MHz public safety, FirstNet, Wi-Fi, FM), start/stop or center/span, points, RBW, detector (peak, average, sample), trace mode (clear, average, max hold, min hold), reference level and dB/div, units (dBm, dBµV, dBµV/m, mW, µV). Click the trace for up to 4 markers with deltas; **Peak** and **Next peak** jump between signals. A waterfall shows the last 120 sweeps. Project frequencies are drawn as dashed lines.
+
+**3. Measurements**: strongest signal, noise floor, SNR, channel power, 99 % occupied bandwidth, adjacent-channel power ratio, limit pass / fail, the signals found and any intermodulation products that land on a signal or project channel.
+
+**4. Tests**: analyzer self-test, calibration with a known signal (level offset and ppm), noise floor and noise figure, BDA uplink noise, BDA oscillation, donor signal by channel (sends the level to Emergency Radio), downlink level against −95 dBm, interference hunt with a tone, intermod check, limit line / mask, and carrier measurements. Save each test with the project (with GPS when allowed).
+
+**5. Corrections**: calibration offset, frequency correction, cable loss, attenuator, preamp gain, antenna gain or antenna factor, so readings are at the antenna port or in field strength.\n\n**6. Benchmarks and certification**: benchmark the receiver against a signal generator (level accuracy at several points, frequency accuracy, noise floor, dynamic range, 10 dB step linearity, calibration date, sweep speed) for a grade: **Measurement grade** (fit for acceptance tests), **Survey grade** or **Indicative only**. Certification tests: the **ERCES acceptance grid test** (IFC 510 / NFPA 1225: −95 dBm, 95 % general, 99 % critical areas, captured cell by cell into Live Signal Readings), the **FCC 90.210 emission mask** (Mask B or D) and **signal booster checks** (out-of-band emissions, uplink noise, oscillation). Each saves a signed report, also in Reports → Certification test reports.
+
+Save sweeps, add marker readings to **Live Signal Readings**, and download CSV or a picture. Readings from uncalibrated receivers are marked relative.` },
+  { id: 'audio', title: 'Audio & acoustic analyzer', page: 'audio', keywords: 'audio acoustic analyzer sound level meter spl leq lmax lmin l10 l50 l90 a weighting c weighting fast slow impulse rta octave third octave rt60 reverberation edt t20 t30 sti intelligibility nfpa 72 audibility thd distortion noise criteria nc microphone calibration file umik calibrator 94 114 generator pink noise sine sweep impulse response loopback benchmark certification report', summary: 'A sound level meter, real-time analyzer, room acoustics (RT60, STI), distortion and noise tool with calibration, benchmarks and certification reports.',
+    body: `**Audio & Acoustic Analyzer** (Tools & reference) works with the computer's or phone's microphone, and properly with a measurement microphone (USB like miniDSP UMIK-1/UMIK-2, or a Dayton EMM-6 with an audio interface). Browser echo cancellation, noise suppression and auto gain are turned off.
+
+**1. Input and calibration**: pick the input and **Start**. Put an acoustic calibrator on the microphone and press **Calibrate (94 dB)** or **(114 dB)**, so levels read in dB SPL. Load the microphone's **calibration file** (UMIK, Dayton or REW .txt) to correct its frequency response.
+
+**2. Sound level meter**: A, C or Z weighting (IEC 61672-1), Fast, Slow or Impulse time weighting, and Leq, Lmax, Lmin, L10, L50 and L90. The **real-time analyzer** shows 1/3- or 1/1-octave bands (IEC 61260) and saves them as CSV.
+
+**3. Signal generator**: sine, pink noise and white noise.
+
+**4. Measurements, benchmarks and certification**:
+- **Room: RT60 & STI**: a sine sweep through the speakers gives the impulse response, EDT, T20 and T30 by octave (ISO 3382) and the speech transmission index (IEC 60268-16 indirect method). Measure background noise first to include it.
+- **Background noise & NC**: 10 s Leq, L90, Lmax and the noise criteria (NC) rating.
+- **Distortion**: THD and THD+N of a tone.
+- **NFPA 72 audibility**: ambient for 60 s, then the alarm signal; pass / fail for public, private or sleeping areas and the 110 dBA maximum.
+- **Intelligibility acceptance**: STI points by location against NFPA 72 Annex D (average ≥ 0.50, 90 % of points ≥ 0.45).
+- **Benchmark the measuring chain**: calibrator check and stability, self-noise, mic calibration file, processing off, sample rate, loopback flatness and THD, graded against IEC 61672-1 Class 1 / Class 2 tolerances. This verifies the chain; legal certification still needs a type-approved meter.
+
+Each test saves a **certification report** with the equipment, calibration, requirements, results and signature lines; all of them print in **Reports → Certification test reports** (Closeout package).` },
   { id: 'weather', title: 'Weather & radar (NOAA)', page: 'weather', keywords: 'weather radar forecast noaa national weather service nws rain storm thunder lightning wind gust temperature cold heat alerts warning watch advisory current conditions hourly 7 day work day tower climbing lift offline', summary: 'Live NOAA radar, alerts, current conditions and the 7-day forecast for the job site or where you are, with work-day checks.',
     body: `Open **Tools & reference → Weather & Radar (NOAA)**. The place is the project's Site A (Asheville, NC when no site is set). Tap **📡 Use where I am now** for your GPS position, or type a GPS point.
 
@@ -620,14 +690,18 @@ Everything is a starting layout from rules of thumb; a designer must check it ag
 **4. Cable schedule** and **5. Materials for the whole site** add up every building and every link; download either as a spreadsheet, or **Add to Materials list**.
 
 Routes are straight lines with 15% added for bends; a designer must walk the route, call 811 before digging, and check everything against the codes and the AHJ.` },
-  { id: 'theory', title: 'Low-voltage principles', page: 'theory', keywords: 'theory training basics advanced principles ohm law voltage drop cabling fiber plenum riser grounding bonding systems installation troubleshooting learn study index', summary: 'A built-in reading guide to low-voltage work, from basic electrical theory to advanced design and troubleshooting, with an index.',
-    body: `**Low-Voltage Principles** (in Tools) is a reading guide built into the app, so it works offline. It runs in a logical order:
+  { id: 'theory', title: 'Low-voltage & RF design principles', page: 'theory', keywords: 'theory training basics advanced principles ohm law voltage drop cabling fiber plenum riser grounding bonding systems installation troubleshooting learn study index rf radio frequency decibels dbm vswr return loss antennas eirp erp propagation fresnel path loss hata longley rice fading noise sinad daq modulation p25 dmr interference intermod pim isolation mpe emi surge poe redundancy network wifi das erces structured cabling tia drawings scales', summary: 'A built-in reading guide to low-voltage and RF work, from basic electrical theory to RF engineering, design concepts and troubleshooting, with an index.',
+    body: `**Low-Voltage & RF Design Principles** (in Tools) is a reading guide built into the app, so it works offline. It runs in a logical order:
 
 1. **Electrical fundamentals**: Ohm's law, AC and DC, power-limited circuits, series and parallel, supervision and EOL resistors, wire size and voltage drop, power supplies and batteries, signals and decibels, grounding and bonding, safety.
 2. **Cabling, pathways and media**: twisted pair, coax, fiber, cable fire ratings, pathways and firestopping, networks and PoE, radio basics.
 3. **The systems**: fire alarm, intrusion, access control, CCTV, intercom, nurse call, paging, pro sound, mass notification, call boxes, DAS/ERCES, two-way radio, design services, and service contracts.
 4. **Installation practice**: from the site walk through rough-in, trim-out, programming, testing and closeout.
 5. **Advanced design and troubleshooting**: NAC design, audibility and intelligibility, survivability, a troubleshooting method, RF interference, and estimating.
+6. **RF engineering principles**: waves, bands and polarization; decibels (dBm, dBi, dBd, µV); transmission lines, VSWR and return loss; antennas, ERP and EIRP; propagation, horizon and Fresnel zones; path loss models (Hata, Longley-Rice, P.1238, multi-wall); fading, margins and diversity; noise, sensitivity, SINAD and DAQ; modulation and channel access; interference, intermod, PIM and BDA isolation; RF exposure.
+7. **Low-voltage system design concepts**: EMI, shielding and surge protection; power, batteries and PoE; reliability and redundancy; networks; Wi-Fi; DAS, BDA and ERCES; structured cabling (TIA-568, 569, 606, 607); drawings, scales, symbols and sheets.
+
+Every section ends with **✔ Industry best practices** from the referenced standards and common trade practice.
 
 Click any line in the **Index** to jump to it. Filter by **Basic**, **Intermediate** or **Advanced**, or search the text. Under many sections, **🧮 Calculators** opens the matching calculators right there, and **Open … →** goes to the page that puts it to work.
 

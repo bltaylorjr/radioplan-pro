@@ -91,11 +91,15 @@ export const MENU_PAGES: MenuPage[] = [
 
   { id: 'reports', label: 'Reports, Proposals & Closeout', group: 'closeout', keywords: 'report proposal quote pdf word closeout package' },
 
+  { id: 'floorplan', label: 'Floor Plan to 2D / 3D', group: 'tools', keywords: 'floor plan blueprint upload pdf jpg png dxf scan photo drawing 2d 3d model trace walls doors windows rooms area scale calibrate to scale custom scale sheet size print draw create plan drag drop picture in picture layers' },
+  { id: 'buildout', label: 'Project Build Output', group: 'tools', keywords: 'final output build sheet index cover sheet live progress schedules room door window device schedule picture in picture' },
   { id: 'calculators', label: 'Calculators', group: 'tools', keywords: 'calculator azimuth calculator voltage drop battery reset apply to fields' },
-  { id: 'theory', label: 'Low-Voltage Principles', group: 'tools', keywords: 'training basics theory learn' },
+  { id: 'theory', label: 'Low-Voltage & RF Design Principles', group: 'tools', keywords: 'training basics theory learn low voltage principles rf radio frequency propagation antennas link budget decibels modulation transmission lines vswr fresnel interference noise shielding emi power design concepts' },
   { id: 'contacts', label: 'Contacts & Web Resources', group: 'tools', keywords: 'phone fire marshal inspector ahj' },
   { id: 'directions', label: 'Map & Directions', group: 'tools', keywords: 'directions drive route navigate' },
   { id: 'devices', label: 'Bluetooth & Wi-Fi Devices', group: 'tools', keywords: 'bluetooth wifi device meter gps receiver laser distance scanner connect' },
+  { id: 'spectrum', label: 'RF Spectrum Analyzer', group: 'tools', keywords: 'spectrum analyzer rf sdr tinysa rtl-sdr hackrf usb receiver sweep trace waterfall markers peak channel power occupied bandwidth acpr noise floor interference hunt intermod bda oscillation uplink noise donor downlink limit mask calibrate dbm dbuv field strength' },
+  { id: 'audio', label: 'Audio & Acoustic Analyzer', group: 'tools', keywords: 'audio acoustic analyzer sound level meter spl dba leq lmax l90 rta octave third octave fft rt60 reverberation edt t20 t30 sti intelligibility speech transmission index nfpa 72 audibility thd distortion noise criteria nc background noise microphone calibration umik calibrator 94 db generator pink noise sine sweep impulse response benchmark certification' },
   { id: 'magnetic', label: 'Magnetic Field & Space Weather', group: 'tools', keywords: 'magnetic declination variation compass true north magnetic north wmm world magnetic model noaa ncei dip inclination field strength nanotesla prediction forecast space weather geomagnetic storm kp solar flare radio blackout gps aurora swpc' },
   { id: 'weather', label: 'Weather & Radar (NOAA)', group: 'tools', keywords: 'weather radar forecast noaa national weather service nws rain storm thunder lightning wind gust temperature cold heat alerts warning watch advisory tornado hurricane snow ice current conditions hourly 7 day work day tower climb' },
   { id: 'mappacks', label: 'Offline Map Packs', group: 'tools', keywords: 'offline maps download area map pack no internet' },
