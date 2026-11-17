@@ -263,6 +263,7 @@ export default function App() {
   }, [go]);
   /** Folded menu sections (remembered on this device). */
   const [folded, setFolded] = useState<string[]>(() => { try { return JSON.parse(localStorage.getItem('lvplan.menuFolded') || '[]'); } catch { return []; } });
+  useEffect(() => { const r = () => setFolded([]); window.addEventListener('lvplan:menu-reset', r); return () => window.removeEventListener('lvplan:menu-reset', r); }, []);
   const toggleFold = (id: string) => setFolded((f) => { const n = f.includes(id) ? f.filter((x) => x !== id) : [...f, id]; try { localStorage.setItem('lvplan.menuFolded', JSON.stringify(n)); } catch { /* ignore */ } return n; });
   const [welcome, setWelcome] = useState(false);
   /** After "Clear all fields": the page's entries before clearing (for Undo) and a counter that resets typed-in boxes. */

@@ -69,7 +69,7 @@ export function AudioPage() {
       raf = requestAnimationFrame(loop); const I = inp.current; if (!I || t - last < 50) return; const dt = (t - last) / 1000; last = t;
       const x = I.last(8192), { p: ps, df } = powerSpectrum(x); const d = df(I.ctx.sampleRate);
       applyCal(ps, d, mic);
-      const lvl = totalLevel(ps, d, w, cal ?? 0, 20, 20000); const a = Math.exp(-dt / TAU[tw]); s = a * s + (1 - a) * 10 ** (lvl / 10);
+      const lvl = totalLevel(ps, d, w, cal ?? 0, 20, 20000); if (!Number.isFinite(lvl) || lvl < -150) return; const a = Math.exp(-dt / TAU[tw]); s = s ? a * s + (1 - a) * 10 ** (lvl / 10) : 10 ** (lvl / 10);
       const now = 10 * Math.log10(s + 1e-30);
       setLv((o) => ({ now, hist: [...o.hist, now].slice(-1200), bands: bandLevels(ps, d, third, w, cal ?? 0), spec: ps, df: d }));
     };

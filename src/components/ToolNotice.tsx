@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { resetToolView } from '../engine/toolPrefs';
 import { useStore } from '../store';
 import { applyTypeTools, clearToolNotice, neededTools, showToolNotice, toolLabel, useToolNotice } from '../engine/toolPrefs';
 import { projectSystems } from '../data/systems';
@@ -13,8 +14,10 @@ export function useAutoTools() {
   const last = useRef<{ id: string; key: string } | null>(null);
   useEffect(() => {
     const prev = last.current; last.current = { id: lib.projectId, key };
-    if (!prev || prev.key === key) return; // first start, or nothing changed: leave the user's choice alone
     const meta = { projectType: p.meta.projectType, subSystems: p.meta.subSystems };
+    // project cleared (no project type or sub-projects): back to the default view with every tool and menu showing
+    if (!projectSystems(meta).length) { if (prev && (prev.key !== key || prev.id !== lib.projectId)) resetToolView(); return; }
+    if (!prev || prev.key === key) return; // first start, or nothing changed: leave the user's choice alone
     const { on } = applyTypeTools(meta);
     let added: string[] = [];
     if (prev.id === lib.projectId && p.meta.projectType === 'custom' && p.meta.customPages?.length) {
@@ -33,7 +36,7 @@ export function ToolNotice() {
   if (!n) return null;
   return (
     <div className="tool-notice no-print" role="status">
-      <div className="small muted">Menu set up for: {n.why}</div>
+      {n.reset ? <b>Project cleared: every tool and menu section is showing again (the default view).</b> : <div className="small muted">Menu set up for: {n.why}</div>}
       {n.pages.length > 0 && <><b>✓ Turned on {n.pages.length} tool{n.pages.length > 1 ? 's' : ''} this job needs</b>
         <ul>{n.pages.map((id) => <li key={id}><a href={`#${id}`} onClick={(e) => { e.preventDefault(); go(id); clearToolNotice(); }}>{toolLabel(id)}</a></li>)}</ul></>}
       {(n.hid?.length ?? 0) > 0 && <><b>Hid {n.hid!.length} tool{n.hid!.length > 1 ? 's' : ''} this job does not use</b>
