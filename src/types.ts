@@ -23,6 +23,8 @@ export interface ProjectMeta {
   customPages?: string[];
   /** Steps the user chose to skip on this project (still open from the menu). */
   skipped?: string[];
+  /** Date (YYYY-MM-DD) the project was marked complete on Reports & Closeout; empty while the job is open. */
+  completed?: string;
 }
 export interface Site {
   id: string; name: string; address: string; lat: number; lon: number; groundElevM: number | null;

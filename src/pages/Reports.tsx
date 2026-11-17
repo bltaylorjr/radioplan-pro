@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useStore, downloadText } from '../store';
+import { resetToolView } from '../engine/toolPrefs';
 import { ImportFiles } from '../components/ImportFiles';
 import { GUIDES, GUIDES_FOR, guideCtx } from './Install';
 import { Card, Check, fmt } from '../components/ui';
@@ -285,6 +286,18 @@ export function ReportsPage() {
         </div>
         <p className="small">Total: <b>{money(pr.total)}</b> ({pr.hours} h labor{q.laborHours ? '' : ', estimated'})</p>
       </Card>}
+      <Card title="Project complete" className="no-print project-complete" tip="When the job is finished and the closeout package is handed over, mark the project complete. The menu goes back to the default view, with every tool showing, ready for the next job.">
+        {m.completed
+          ? <div className="row wrap"><span className="pill ok">✓ Completed {m.completed}</span>
+              <button onClick={() => update((d) => { delete d.meta.completed; })} title="Mark the project open again (the completion date is removed)">Reopen project</button></div>
+          : <div className="row wrap"><button className="primary" onClick={async () => {
+              const yes = await askConfirm({ title: 'Mark this project complete?', message: <>Today's date is saved as the completion date, and the menu goes back to the default view with every tool and menu section showing, ready for the next job. Nothing is deleted. The project stays in Projects, and you can reopen it here.</>, ok: 'Yes, mark it complete', cancel: 'Not yet' });
+              if (!yes) return;
+              update((d) => { d.meta.completed = new Date().toISOString().slice(0, 10); });
+              resetToolView('complete');
+            }}>✓ Mark project complete</button>
+            <span className="small muted">Resets the menu for the next job. Nothing is deleted.</span></div>}
+      </Card>
       <div className="no-print"><ImportFiles compact /></div>
       <div className="report">
         {chosen.map(([k, label], i) => <section key={k} className="rpt-page">{(i === 0 || P.id === 'engineering') && <Head title={P.id === 'engineering' ? label : P.title} />}<h3 className="rpt-sec">{i + 1}. {label}</h3>{sections[k]()}<Foot /></section>)}

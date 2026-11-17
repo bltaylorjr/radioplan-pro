@@ -33,7 +33,7 @@
  },
  {
   "id": "info.vi1",
-  "text": "Every value box has a small i beside it.\nPoint at it with the mouse, or tap it on a phone, to see what the value means in plain words, its unit, and the normal range."
+  "text": "Every value box has a small i beside it.\nPoint at it with the mouse, or tap it on a phone, to see what the value means in plain English, its unit, and the normal range."
  },
  {
   "id": "info.vi2",
@@ -117,7 +117,7 @@
  },
  {
   "id": "tour-survey.t-terrain",
-  "text": "Map and Terrain shows your sites on topo maps or satellite pictures.\nZoom in close for street-level detail.\nThe maps are sharp on phones and tablets, and they fill in from saved map areas when you are offline."
+  "text": "Map and Terrain shows your sites on topo maps or satellite pictures.\nZoom in [close](/klˈOs/) for street-level detail.\nThe maps are sharp on phones and tablets, and they fill in from saved map areas when you are offline."
  },
  {
   "id": "tilt.tilt1",
@@ -209,7 +209,7 @@
  },
  {
   "id": "signal.sg3",
-  "text": "The app compares the real readings with the prediction and tells you in plain words how well they match.\nThe map shows the readings, the difference, or a heat map.\nIndoors, the grid test shows pass or fail on each floor."
+  "text": "The app compares the real readings with the prediction and tells you in plain English how well they match.\nThe map shows the readings, the difference, or a heat map.\nIndoors, the grid test shows pass or fail on each floor."
  },
  {
   "id": "tour-lv.t-autodesign",
@@ -621,7 +621,7 @@
  },
  {
   "id": "settings.st3",
-  "text": "When a number is out of range, the box turns red, says what is wrong in plain words, and offers a one-tap fix.\nA blank box is never counted as zero."
+  "text": "When a number is out of range, the box turns red, says what is wrong in plain English, and offers a one-tap fix.\nA blank box is never counted as zero."
  },
  {
   "id": "settings.st4",

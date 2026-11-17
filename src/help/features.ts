@@ -334,6 +334,16 @@ export const FEATURES: Feature[] = [
   { id: 'reset-view', version: '1.5.77', title: 'Cleared project shows every tool again', page: 'systems', alsoOn: ['settings'], where: 'Menu, after clearing the project or starting a blank one',
     summary: 'Clearing the project type (or starting a new blank project) brings back every tool the menu had hidden and opens every folded menu section, the default view.',
     steps: ['Clear the project type on Project Systems & Toolkits, or press New.', 'Every tool and menu section shows again.'], keywords: 'reset menu show all tools hidden default view cleared new project', topic: 'menu-guide' },
+  { id: 'show-all-tools', version: '1.5.78', title: 'Show all tools button', page: 'systems', alsoOn: ['settings'], where: 'Top of the menu, under Find a tool (shows when tools are hidden or menu sections are folded)',
+    summary: 'One tap brings back every hidden tool and opens every folded menu section. Nothing is deleted, and you can hide tools again in User Settings.',
+    steps: ['Tap ↺ Show all tools at the top of the menu.', 'Every tool and menu section shows again.'], keywords: 'show all tools restore menu hidden folded unhide default view', topic: 'menu-guide',
+    tour: [ { target: 'text:Show all tools', title: '↺ Show all tools', text: 'Brings back every hidden tool and folded menu section.' } ] },
+  { id: 'project-complete', version: '1.5.78', title: 'Mark a project complete', page: 'reports', where: 'Reports & closeout → Reports, Proposals & Closeout → Project complete',
+    summary: 'When the job is done, mark it complete. The completion date is saved with the project and the menu goes back to the default view for the next job. You can reopen the project at any time.',
+    steps: ['Finish the closeout package.', 'Press ✓ Mark project complete and confirm.', 'The menu shows every tool again for the next job.'], keywords: 'project complete done finished closeout reset menu reopen', topic: 'reports' },
+  { id: 'menu-order', version: '1.5.78', title: 'Menu follows the job in order', page: 'company', alsoOn: ['*'], where: 'Menu',
+    summary: 'Live Signal Readings now comes before Drive Test & Calibration, Floor Plan to 2D / 3D starts the low-voltage design steps, Project Build Output sits with Reports & closeout, and Tools & reference is ordered by how often each is used.',
+    steps: ['Work down the numbered menu sections from Project setup to Reports & closeout.', 'Open Tools & reference any time.'], keywords: 'menu order workflow steps sequence tools reference', topic: 'menu-guide' },
 ];
 
 /** Features that live on, or also show on, a page. Features marked for every page ('*') are left out unless `all`. */
