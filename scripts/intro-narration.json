@@ -73,7 +73,7 @@
  },
  {
   "id": "tour-setup.t-locate",
-  "text": "Find Location and Auto-Plan takes an address or G P S coordinates, and shows the spot on a map and in three D, with its ground height.\nTap Build plan for this location, and the app looks over the terrain for a good tower spot nearby, and sets up the sites for you to review."
+  "text": "Find Location and Auto-Plan takes an address or G P S coordinates, and shows the spot on a map and in [3D](/θɹˌi dˈi/), with its ground height.\nTap Build plan for this location, and the app looks over the terrain for a good tower spot nearby, and sets up the sites for you to review."
  },
  {
   "id": "tour-setup.t-sites",
@@ -109,7 +109,7 @@
  },
  {
   "id": "photosurvey.ps7",
-  "text": "Each survey spot and its view cones show on every flat map, and in the three D tilt view over the satellite pictures."
+  "text": "Each survey spot and its view cones show on every flat map, and in the [3D](/θɹˌi dˈi/) tilt view over the satellite pictures."
  },
  {
   "id": "photosurvey.ps8",
@@ -121,11 +121,11 @@
  },
  {
   "id": "tilt.tilt1",
-  "text": "Above every map, tap three D tilt view.\nThe map turns into a three D model of the ground, with satellite pictures on top.\nDrag the tilt slider, or tap Straight down, Tilted, or Low angle."
+  "text": "Above every map, tap [3D](/θɹˌi dˈi/) tilt view.\nThe map turns into a [3D](/θɹˌi dˈi/) model of the ground, with satellite pictures on top.\nDrag the tilt slider, or tap Straight down, Tilted, or Low angle."
  },
  {
   "id": "tilt.tilt2",
-  "text": "Next, plot your radio path.\nType G P S coordinates or an address for point [A](/ˈA/) and point B, use your phone's G P S, or tap Pick on three D and touch the ground."
+  "text": "Next, plot your radio path.\nType G P S coordinates or an address for point [A](/ˈA/) and point B, use your phone's G P S, or tap Pick on [3D](/θɹˌi dˈi/) and touch the ground."
  },
  {
   "id": "tilt.tilt3",
@@ -149,7 +149,7 @@
  },
  {
   "id": "azimuth.az3",
-  "text": "In the three D tilt view, every hop shows where to aim the antenna at each end, and how far to tilt it up or down."
+  "text": "In the [3D](/θɹˌi dˈi/) tilt view, every hop shows where to aim the antenna at each end, and how far to tilt it up or down."
  },
  {
   "id": "lines.dl1",
@@ -169,11 +169,11 @@
  },
  {
   "id": "lines.dl5",
-  "text": "Turn on the signal heat map to shade predicted signal around your lines.\nIn the three D tilt view, the lines and the heat map show right on the ground."
+  "text": "Turn on the signal heat map to shade predicted signal around your lines.\nIn the [3D](/θɹˌi dˈi/) tilt view, the lines and the heat map show right on the ground."
  },
  {
   "id": "fullpage.fl1",
-  "text": "Every map and three D view can open on a full page with its own buttons.\nTap Full page above the map to open it."
+  "text": "Every map and [3D](/θɹˌi dˈi/) view can open on a full page with its own buttons.\nTap Full page above the map to open it."
  },
  {
   "id": "fullpage.fl2",
@@ -185,7 +185,7 @@
  },
  {
   "id": "fullpage.fl4",
-  "text": "Tap Tilt to see the same area in three D.\nUse the up and down arrows to tilt, and the round arrows to turn the view.\nTap [N](/ˈɛn/) to put north back at the top."
+  "text": "Tap Tilt to see the same area in [3D](/θɹˌi dˈi/).\nUse the up and down arrows to tilt, and the round arrows to turn the view.\nTap [N](/ˈɛn/) to put north back at the top."
  },
  {
   "id": "fullpage.fl5",
@@ -213,11 +213,11 @@
  },
  {
   "id": "tour-lv.t-autodesign",
-  "text": "Section three is low-voltage design.\nOn Auto-Design, describe the building: its type, floors and size.\nThe app recommends the devices for each system, lays them out, and shows them on a two D plan and a three D model."
+  "text": "Section three is low-voltage design.\nOn Auto-Design, describe the building: its type, floors and size.\nThe app recommends the devices for each system, lays them out, and shows them on a [2D](/tˌu dˈi/) plan and a [3D](/θɹˌi dˈi/) model."
  },
  {
   "id": "models.m1",
-  "text": "The page called two D and three D Models with Layers shows every system on the job."
+  "text": "The page called [2D](/tˌu dˈi/) and [3D](/θɹˌi dˈi/) Models with Layers shows every system on the job."
  },
  {
   "id": "models.m2",
@@ -225,7 +225,7 @@
  },
  {
   "id": "models.m3",
-  "text": "The two D plan is drawn to true scale.\nEvery system has its own layers: devices, coverage, cable runs and signal heat maps.\nTap Only this to see one system by itself, and tap anything to see what it is."
+  "text": "The [2D](/tˌu dˈi/) plan is drawn to true scale.\nEvery system has its own layers: devices, coverage, cable runs and signal heat maps.\nTap Only this to see one system by itself, and tap anything to see what it is."
  },
  {
   "id": "models.m4",
@@ -233,7 +233,7 @@
  },
  {
   "id": "models.m5",
-  "text": "Switch to the three D model to see the whole building.\nPull the floors apart to look inside, and drag to turn it."
+  "text": "Switch to the [3D](/θɹˌi dˈi/) model to see the whole building.\nPull the floors apart to look inside, and drag to turn it."
  },
  {
   "id": "models.m6",
@@ -257,7 +257,7 @@
  },
  {
   "id": "campus.k5",
-  "text": "The three D site model shows the whole campus, with the links between the buildings."
+  "text": "The [3D](/θɹˌi dˈi/) site model shows the whole campus, with the links between the buildings."
  },
  {
   "id": "campus.k6",
@@ -281,7 +281,7 @@
  },
  {
   "id": "tour-lv.t-indoor",
-  "text": "Indoor Coverage and [DAS](/dˈæs/) lets you draw the walls, pick what they are made of, and place antennas.\nThe coverage shows right away, on the plan or in three D."
+  "text": "Indoor Coverage and [DAS](/dˈæs/) lets you draw the walls, pick what they are made of, and place antennas.\nThe coverage shows right away, on the plan or in [3D](/θɹˌi dˈi/)."
  },
  {
   "id": "tour-lv.t-solar",
@@ -333,11 +333,11 @@
  },
  {
   "id": "truescale.ts4",
-  "text": "Tap three D view to see the beam as a green wedge over the terrain.\nIt stops where it meets the ground.\nTilt the view, and turn on the signal heat map."
+  "text": "Tap the [3D](/θɹˌi dˈi/) view button to see the beam as a green wedge over the terrain.\nIt stops where it meets the ground.\nTilt the view, and turn on the signal heat map."
  },
  {
   "id": "truescale.ts5",
-  "text": "The same true scale choice is on the path profile, the drawn line chart, the run profiles, and every three D view."
+  "text": "The same true scale choice is on the path profile, the drawn line chart, the run profiles, and every [3D](/θɹˌi dˈi/) view."
  },
  {
   "id": "tour-rf.t-network",
@@ -349,7 +349,7 @@
  },
  {
   "id": "tour-rf.t-view3d",
-  "text": "three D Model shows the terrain, the towers and the [Fresnel](/fɹənˈɛl/) zone in three D.\nWhile you are online, the app downloads the terrain and existing towers around your sites by itself, and saves them for offline use."
+  "text": "[3D](/θɹˌi dˈi/) Model shows the terrain, the towers and the [Fresnel](/fɹənˈɛl/) zone in [3D](/θɹˌi dˈi/).\nWhile you are online, the app downloads the terrain and existing towers around your sites by itself, and saves them for offline use."
  },
  {
   "id": "tour-rf.t-lfhf",
