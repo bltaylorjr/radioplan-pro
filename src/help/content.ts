@@ -22,7 +22,7 @@ const GUIDE_TOPICS: HelpTopic[] = [
     body: [
       '**🔎 Find a tool** at the top of the menu searches every page, tool and help topic. Type a word such as “azimuth”, “battery”, “relay” or “clear”, then tap a result. Results marked ▶ open the page and show you the button.',
       '**Sections**: tap a section heading to fold it up or open it again. The section with the page you are on always stays open.',
-      '**Steps**: the numbered sections are the job in order. Use **→** at the bottom of a page to go to the next step, or **Skip this step** if the job does not need it. The last two sections are tools you can open any time. Tools you turn off in **User Settings** are left out of the menu (Find a tool skips them too).',
+      '**Steps**: the numbered sections are the job in order. Use **→** at the bottom of a step to go to the next step, or **Skip this step** if the job does not need it. The last two sections (Tools & reference, Projects & settings) are tools you can open any time; they are not steps, so they have no Next / Skip buttons at the bottom. Tools you turn off in **User Settings** are left out of the menu (Find a tool skips them too).',
       MENU_GROUPS.map((g) => `**${groupHeading(g)}**: ${g.hint}\n` + MENU_PAGES.filter((p) => p.group === g.id).map((p) => `- ${p.label}`).join('\n')).join('\n\n'),
       'On a phone or small tablet, tap **☰** at the top left to open the menu.',
     ].join('\n\n'),
