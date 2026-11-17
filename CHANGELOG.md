@@ -1,3 +1,13 @@
+# LvPlan Pro 1.5.78
+
+- **New introduction video** (▶ Video): every tool gets about half a minute, in menu order, so each one is covered evenly, all in one narrator's voice, with street-level maps filled in.
+- **Menu follows the job in order:** Live Signal Readings comes before Drive Test & Calibration, Floor Plan to 2D / 3D starts the low-voltage design steps, Project Build Output moves to Reports & closeout, and Tools & reference is ordered by how often each tool is used.
+- **↺ Show all tools** at the top of the menu (when tools are hidden or menu sections folded) brings every tool and section back. Nothing is deleted.
+- **✓ Mark project complete** on Reports, Proposals & Closeout saves the completion date and puts the menu back to the default view for the next job. **Reopen project** undoes it.
+- **Security**, on the same lines as The Logic Grid: a strict Content Security Policy on the web and Windows apps (only the app's own scripts run), a browser security check on every page, checks on every pull request (tests, build, security check, library audit, dependency review), CodeQL code scanning, Dependabot updates, workflow actions pinned to exact commits, SECURITY.md and security.txt.
+- **Security fixes:** the Android app's Capacitor library is updated to 6.2.3 (a critical flaw let remote content load at the app's origin); project, backup and sync files can no longer carry keys that change built-in objects, and have a size limit; the floor plan print window escapes plan names; outside datasheet links open without access back to the app.
+- Help: map buttons are now called navigation buttons, and the ＋ and − buttons "zoom in and zoom out".
+
 # LvPlan Pro 1.5.77
 
 - **Updated introduction video** (▶ Video, about 39 minutes): new parts on Floor Plan to 2D / 3D, the Project Build Output, site conditions in calculations, the RF Spectrum Analyzer and the Audio & Acoustic Analyzer, and real-life examples for each prediction model (Hata and COST-231 coverage, free space and Fresnel zones, radio horizon and knife-edge, reliability margins, indoor P.1238 and wall losses, ground wave and MUF), each in place in the tour with captions.
