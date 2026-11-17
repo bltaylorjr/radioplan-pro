@@ -13,6 +13,7 @@
 // (or °C, km/h and mm when the project is set to km).
 import { kvGet, kvSet } from './projectdb';
 import { registerDataset } from './maintain';
+import { verifyWeather, type DataCheck } from './verify';
 
 export const NWS = 'https://api.weather.gov/';
 export const RADAR_WMS = 'https://opengeo.ncep.noaa.gov/geoserver/conus/conus_bref_qcd/ows';
@@ -44,6 +45,8 @@ export interface Weather {
   fetchedAt: number; place: WxPlace; point: WxPoint; now: WxNow | null; periods: WxPeriod[]; hours: WxHour[]; alerts: WxAlert[];
   /** Parts that could not be downloaded this time (the rest is still fresh). */
   problems: string[];
+  /** Result of the checks run on this download (ranges, freshness). */
+  check?: DataCheck;
 }
 
 // ---------- unit conversion (NOAA observations are metric with WMO unit codes) ----------
@@ -218,7 +221,8 @@ export async function downloadWeather(place: WxPlace, now = Date.now()): Promise
     part('alerts', async () => parseAlerts(await getJson(`${NWS}alerts/active?point=${ll(place.lat)},${ll(place.lon)}`)), same?.alerts ?? []),
   ]);
   if (!periods.length && !now_) throw new Error(problems[0] ?? 'nothing came back from the weather service');
-  const w: Weather = { fetchedAt: now, place, point, now: now_, periods, hours, alerts, problems };
+  const w: Weather = verifyWeather({ fetchedAt: now, place, point, now: now_, periods, hours, alerts, problems }, now);
+  if (!w.periods.length && w.now?.tempF == null) throw new Error(`the download failed the checks (${w.check?.issues.join('; ')}); keeping the last good weather`);
   await kvSet(KEY, w);
   await kvSet(PLACE_KEY, place);
   lastSeen = w; listeners.forEach((f) => f(w));

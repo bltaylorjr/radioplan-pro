@@ -6,6 +6,9 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useStore } from '../store';
 import { Card, Num, Stat } from '../components/ui';
 import { useUnits } from '../units';
+import { NoaaMaps } from '../components/NoaaMaps';
+import { CheckNote } from '../components/CheckNote';
+import { DeclinationMap } from '../components/DeclinationMap';
 import { geomag, decimalYear, getMagModel, fmtDecl, fmtDeg, trueToMag, magToTrue, compassPoint } from '../engine/azimuth';
 import { downloadSpaceWeather, refreshIfStale, savedSpaceWeather, onSpaceWeather, kpSummary, kpWord, kpTone, gOfKp, G_WORDS, stormEffects, swpcTime, type SpaceWeather } from '../engine/spaceweather';
 
@@ -123,6 +126,14 @@ export function MagneticPage() {
         <SpaceWeatherView sw={sw} state={swState} err={swErr} online={online} />
       </Card>
 
+      <Card title="Space weather maps (NOAA)" className="wide" tour="mag-maps" tip="Live maps from NOAA's Space Weather Prediction Center. Each downloads again when NOAA makes a new one while this page is open and online; the last copy is kept on this device with its time.">
+        <NoaaMaps groups={['space']} regionChoice={false} />
+      </Card>
+
+      <Card title="Declination map" className="wide" tour="mag-declmap" tip="Lines of equal compass declination across the US for today, from the World Magnetic Model built into the app. Works with no internet.">
+        <DeclinationMap at={pt} />
+      </Card>
+
       <ProjectValues />
 
       <Card title="Learn more (online)" tip="These open NOAA's own pages in the browser.">
@@ -165,6 +176,7 @@ function SpaceWeatherView({ sw, state, err, online }: { sw: SpaceWeather | null;
     {online && !old && state !== 'error'
       ? <p className="small muted">🟢 <b>Live</b> · updated {new Date(sw.fetchedAt).toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' })} ({ago(now - sw.fetchedAt)}); updates by itself every 15 minutes while the app is open.</p>
       : <p className="small note">{online ? '⚠ Could not update' : '📴 Offline'}: showing conditions from the last connection, <b>{new Date(sw.fetchedAt).toLocaleString([], { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</b> ({ago(now - sw.fetchedAt)}).{old ? ' “Right now” below was predicted then, so it may be out of date.' : ''} It updates by itself when the internet is back.{state === 'error' && err ? ` (${err})` : ''}</p>}
+    <CheckNote check={sw.check} stale={!online || old || state === 'error'} />
     <div className="stats">
       <Stat label="Right now" value={gNow ? `G${gNow} ${G_WORDS[gNow]}` : current ? kpWord(current.kp) : '—'} unit={current ? ` · Kp ${current.kp.toFixed(1)}` : ''} tone={current ? kpTone(current.kp) : undefined} tip="Kp is NOAA's 0–9 measure of how disturbed the magnetic field is. Kp 5 or more is a storm (G1 to G5)." />
       <Stat label="Next 3 days, worst" value={gPeak ? `G${gPeak} ${G_WORDS[gPeak]}` : peak ? kpWord(peak.kp) : '—'} unit={peak ? ` · Kp ${peak.kp.toFixed(1)}` : ''} tone={peak ? kpTone(peak.kp) : undefined} tip={peak ? `Highest predicted at ${swpcTime(peak.t).toLocaleString([], { weekday: 'short', hour: 'numeric' })}.` : undefined} />

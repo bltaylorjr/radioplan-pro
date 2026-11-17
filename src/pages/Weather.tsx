@@ -9,6 +9,8 @@ import { useStore, deviceInfo } from '../store';
 import { uid } from '../defaults';
 import { Card, Num, Stat } from '../components/ui';
 import { MapView } from '../components/MapView';
+import { NoaaMaps } from '../components/NoaaMaps';
+import { CheckNote } from '../components/CheckNote';
 import {
   downloadWeather, savedWeather, onWeather, zoneShape, workNotes, projectWeather, weatherLine, alertActive, alertTone, compass16, fmtTime, ago, fToC,
   RADAR_WMS, RADAR_LAYER, type Weather, type WxPlace, type WxAlert, type WxHour, type WxPeriod,
@@ -125,6 +127,10 @@ export function WeatherPage() {
         <RadarMap place={place} alerts={alerts} online={online} />
       </Card>
 
+      <Card title="NOAA maps" className="wide" tour="wx-maps" tip="Satellite, lightning, severe storm outlooks, alerts and forecast maps straight from NOAA. Each one downloads again when NOAA makes a new one (while this page is open and online), and the last copy is kept on this device with its time, so the maps still show offline.">
+        <NoaaMaps groups={['satellite', 'storms', 'forecast']} />
+      </Card>
+
       <Card title="Work-day check" className="wide" tour="wx-work" tip="Plain checks for outdoor low-voltage, tower, roof and aerial-lift work from the alerts and the next 24 hours of the forecast. Your company safety plan, the equipment's ratings and the AHJ always come first.">
         {!w ? <p className="small muted">Shows once the weather has been downloaded.</p> : <ul className="wx-notes">{notes.map((n, i) => <li key={i} className={`wx-note ${n.tone}`}><span aria-hidden>{n.icon}</span> {n.text}</li>)}</ul>}
       </Card>
@@ -170,13 +176,12 @@ export function WeatherPage() {
 function Freshness({ w, state, err, online, old }: { w: Weather | null; state: string; err: string; online: boolean; old: boolean }) {
   if (!w) return <p className="note">{state === 'loading' ? 'Downloading the weather from NOAA…' : state === 'error' ? `Could not reach the weather service (${err}). Connect to the internet and tap Get the latest; the weather is then kept for offline use.` : 'No weather saved on this device for this place yet. Connect to the internet and tap Get the latest.'}</p>;
   const cls = 'small ' + (old || !online || state === 'error' ? 'note' : 'muted');
-  return <p className={cls} role="status">
+  return <><p className={cls} role="status">
     {!online ? '📴 No internet: showing the last weather downloaded ' : 'Downloaded '}{ago(Date.now() - w.fetchedAt)} ({new Date(w.fetchedAt).toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' })}).
     {online && state !== 'error' && ` Updates by itself every ${REFRESH_MIN} minutes.`}
     {old && online && ' This may be out of date; tap Get the latest.'}
     {state === 'error' && ` Could not refresh (${err}).`}
-    {w.problems.length > 0 && <><br />Not refreshed this time: {w.problems.join('; ')}.</>}
-  </p>;
+  </p><CheckNote check={w.check} stale={state === 'error' || !online} /></>;
 }
 
 function CurrentView({ w }: { w: Weather }) {
@@ -227,7 +232,23 @@ function RadarMap({ place, alerts, online }: { place: WxPlace; alerts: WxAlert[]
     const t = window.setInterval(() => r.setParams(radarParams() as unknown as L.WMSParams), 300e3);
     return () => { clearInterval(t); r.remove(); };
   }, [map]); // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => { const r = radar.current; if (!r || !map) return; if (show) r.addTo(map); else r.remove(); }, [show, map]);
+  // Moving loop: the last hour in 10-minute steps (NOAA keeps about 2 hours of radar; each frame snaps to the nearest scan).
+  const [loop, setLoop] = useState(false);
+  const [frame, setFrame] = useState<{ i: number; times: string[] }>({ i: 0, times: [] });
+  const frames = useRef<L.TileLayer.WMS[]>([]);
+  useEffect(() => {
+    if (!map || !loop) return;
+    const end = Math.floor((Date.now() - 4 * 60e3) / 600e3) * 600e3;
+    const times = Array.from({ length: 7 }, (_, k) => new Date(end - (6 - k) * 600e3).toISOString().replace('.000Z', 'Z'));
+    frames.current = times.map((t) => L.tileLayer.wms(RADAR_WMS, { ...radarParams(), time: t, opacity: 0, pane: 'wxRadar' } as L.WMSOptions).addTo(map));
+    let i = 0; setFrame({ i, times });
+    const tick = window.setInterval(() => {
+      frames.current.forEach((f, k) => f.setOpacity(k === i ? opacity : 0));
+      setFrame({ i, times }); i = (i + 1) % times.length;
+    }, 900);
+    return () => { clearInterval(tick); frames.current.forEach((f) => f.remove()); frames.current = []; };
+  }, [map, loop]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { const r = radar.current; if (!r || !map) return; if (show && !loop) r.addTo(map); else r.remove(); }, [show, map, loop]);
   useEffect(() => { radar.current?.setOpacity(opacity); }, [opacity]);
   // Alerts NOAA lists by zone (no drawn area): fetch the zone outlines (kept on the device).
   useEffect(() => {
@@ -247,13 +268,15 @@ function RadarMap({ place, alerts, online }: { place: WxPlace; alerts: WxAlert[]
   };
   return <>
     <div className="row wrap">
-      <label className="check"><input type="checkbox" checked={show} onChange={(e) => setShow(e.target.checked)} /> Show radar</label>
+      <label className="check"><input type="checkbox" checked={show} onChange={(e) => { setShow(e.target.checked); if (!e.target.checked) setLoop(false); }} /> Show radar</label>
+      <span className="radar-loop" data-tour="wx-loop"><button onClick={() => { setShow(true); setLoop((v) => !v); }} disabled={!online}>{loop ? '⏸ Stop loop' : '▶ Play last hour'}</button>
+        {loop && frame.times.length > 0 && <b className="small">{new Date(frame.times[frame.i]).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}{frame.i === frame.times.length - 1 ? ' (latest)' : ''}</b>}</span>
       <label className="small">See-through <input type="range" min={0.2} max={1} step={0.05} value={opacity} onChange={(e) => setOpacity(+e.target.value)} aria-label="Radar opacity" /></label>
       <RadarLegend />
     </div>
     {!online && <p className="small note">📴 No internet: the live radar cannot be shown. Alert areas and saved map pictures still show.</p>}
     <MapView sites={p.sites} height={460} center={center} onMap={setMap} extra={draw} extraKey={`${place.lat},${place.lon},${alerts.map((a) => a.id).join()},${Object.keys(shapes).length}`} />
-    <p className="small muted">Radar refreshes every 5 minutes. Colors: light green is light rain, yellow and orange heavy rain, red and purple very heavy rain or hail. For a moving loop, open the radar.weather.gov link below.</p>
+    <p className="small muted">Radar refreshes every 5 minutes; ▶ Play last hour shows where storms are heading. Colors: light green is light rain, yellow and orange heavy rain, red and purple very heavy rain or hail.</p>
   </>;
 }
 
