@@ -164,7 +164,7 @@ export interface Project {
   /** Certification-level test records (RF and audio) that print as signed reports. */
   certs?: import('./engine/certification').CertRecord[];
   /** Audio analyzer: calibration, mic calibration file and the input used. */
-  audio?: { calDb?: number; calAt?: string; calLevel?: number; micCal?: { name: string; sensDb: number | null; f: number[]; db: number[] }; device?: string };
+  audio?: { calDb?: number; calAt?: string; calLevel?: number; micCal?: { name: string; sensDb: number | null; f: number[]; db: number[]; id?: string; brand?: string; model?: string; kind?: 'measurement' | 'phone' | 'tablet' | 'computer' | 'flat'; source?: 'builtin' | 'file'; note?: string; serial?: string; addedAt?: string; auto?: boolean }; micCalOff?: boolean; device?: string };
   /** Project Build Output: when each element first appeared (key → ISO time). */
   buildSeen?: Record<string, string>;
 }
