@@ -17,6 +17,11 @@ describe('low-voltage principles and reference bodies', () => {
     }
     expect(WORKFLOW_LABELS.theory).toBeTruthy();
   });
+  it('every section has industry best practices', async () => {
+    const { PRACTICES } = await import('../src/data/theoryPractices');
+    for (const p of THEORY) for (const s of p.sections) expect(PRACTICES[s.id]?.length, s.id).toBeGreaterThan(1);
+    for (const id of ['rf-waves', 'rf-prop', 'rf-noise', 'dc-coverage', 'dc-drawings']) expect(THEORY.some((p) => p.sections.some((s) => s.id === id)), id).toBe(true);
+  });
   it('covers all three levels', () => {
     const lv = new Set(THEORY.flatMap((p) => p.sections.map((s) => s.level)));
     expect([...lv].sort()).toEqual(['Advanced', 'Basic', 'Intermediate']);

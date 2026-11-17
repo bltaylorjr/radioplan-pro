@@ -1,4 +1,4 @@
-// Low-voltage principles: theory, systems and installation, from basic to advanced.
+// Low-voltage & RF design principles: theory, systems, RF engineering, design concepts and installation, from basic to advanced.
 // Written as general training text. Code references point to where a rule lives; the adopted
 // edition, the manufacturer's instructions and the AHJ decide what applies on a job.
 
@@ -274,6 +274,145 @@ Ground faults: disconnect the circuit, measure from each conductor to ground (sh
     { id: 'estimating', title: 'Estimating materials and labor', level: 'Advanced', calcs: ['cable-boxes', 'design-hours'], pages: [['materials', 'Materials List'], ['reports', 'Reports & Proposals'], ['sites', 'Runs between sites']], body: `Count every device from the drawings, then add cable by average run length × count, plus waste (about 10%). Measure outside runs on the map and over the terrain; slopes lengthen runs and slow trenching.
 
 Labor: use your own historical hours per device and per foot when you have them. Add time for programming, testing, documentation, travel and project management. Track actual hours on each job to improve the next estimate.` },
+  ] },
+  { id: 'p6', title: 'Part 6. RF engineering principles', intro: 'How radio energy is made, carried, radiated, weakened and received: the theory behind link budgets, coverage maps, DAS and ERCES design.', sections: [
+    { id: 'rf-waves', title: 'Electromagnetic waves, frequency, wavelength and polarization', level: 'Basic', pages: [['radioref', 'RadioReference Frequencies'], ['fcc', 'FCC Towers & Licenses']], body: `A radio signal is an **electromagnetic wave**: electric and magnetic fields at right angles, travelling at the speed of light (c ≈ 300,000,000 m/s).
+
+- **Wavelength** λ = c / f. At 150 MHz λ = 2 m; at 450 MHz 0.67 m; at 800 MHz 0.375 m; at 2.4 GHz 12.5 cm. Antenna size, Fresnel zone size and how well a wave bends around and gets through things all follow wavelength.
+- **Bands**: HF 3–30 MHz (skywave), VHF 30–300 MHz (low band and 150–174 MHz public safety), UHF 300–3,000 MHz (450–470 MHz, 700/800 MHz public safety and cellular, 900 MHz, 2.4 GHz Wi-Fi), SHF 3–30 GHz (5 and 6 GHz Wi-Fi, microwave backhaul).
+- **Polarization** is the direction of the electric field. Two-way radio and DAS are vertical; microwave links can be vertical or horizontal. A 90° mismatch costs 20 dB or more; slant ±45° antennas give polarization diversity.
+- Lower frequencies travel farther and get through buildings better; higher frequencies carry more data and allow smaller, higher-gain antennas.` },
+    { id: 'rf-db', title: 'Decibels in RF: dBm, dBW, dBi, dBd, dBc and µV', level: 'Basic', calcs: ['db-sum'], body: `RF uses **decibels** because power ratios span many powers of ten. A ratio in dB = 10·log10(P2/P1).
+
+- **dBm** is power compared with 1 mW: 0 dBm = 1 mW, 30 dBm = 1 W, 40 dBm = 10 W, 50 dBm = 100 W. **dBW** compares with 1 W (dBW = dBm − 30).
+- **+3 dB** doubles the power, **+10 dB** is ten times. Losses and gains in dB simply add, which is why link budgets are sums.
+- **dBi** is antenna gain against an ideal isotropic radiator; **dBd** against a half-wave dipole. dBi = dBd + 2.15.
+- **dBc** is relative to the carrier (spurious and intermod levels).
+- Receivers are often rated in **µV** into 50 Ω: dBm ≈ 20·log10(µV) − 107. 0.25 µV ≈ −119 dBm; 1 µV ≈ −107 dBm.
+- Two equal signals add to +3 dB, not double the dB number. Use the dB sum calculator for unequal sources.` },
+    { id: 'rf-lines', title: 'Transmission lines, impedance, VSWR and return loss', level: 'Intermediate', pages: [['equipment', 'Equipment & Link Budget']], body: `Coax and waveguide carry RF from the radio to the antenna. Each line has a **characteristic impedance** (50 Ω for radio and DAS, 75 Ω for video and CATV) set by its geometry, not its length.
+
+- When the load does not match the line, part of the power reflects. The **reflection coefficient** Γ = (Z − Z0)/(Z + Z0); **VSWR** = (1 + |Γ|)/(1 − |Γ|); **return loss** = −20·log10|Γ|.
+- VSWR 1.5:1 = 14 dB return loss = 4 % reflected (0.18 dB mismatch loss). 2:1 = 9.5 dB RL = 11 % (0.5 dB). Most sweeps pass at 1.5:1 or better.
+- **Attenuation** rises with frequency and length: 1/2" foam coax loses about 2.7 dB/100 ft at 800 MHz; 7/8" about 1.2 dB. Plenum-rated and smaller cables lose more. Use the datasheet loss at the working frequency.
+- **Distance-to-fault (DTF)** sweeps show where a bad connector, kink or water is along the line.
+- Keep connectors few, torqued and weatherproofed; every one adds loss and a possible **PIM** source.` },
+    { id: 'rf-antennas', diagrams: ['antenna'], title: 'Antennas: gain, beamwidth, patterns, ERP and EIRP', level: 'Intermediate', pages: [['optimize', 'Tilt, Azimuth & Power'], ['equipment', 'Equipment & Link Budget']], body: `An antenna turns current into a radiated wave and back. It cannot add power: **gain** comes from squeezing the energy into fewer directions.
+
+- **Beamwidth** is the angle between the −3 dB points. Higher gain means a narrower beam: a 3 dBi omni is broad; a 15 dBi panel has a ~65° horizontal beam; a 30 dBi dish a few degrees.
+- **Front-to-back ratio** is how much less it radiates behind. For a BDA donor antenna it helps isolation from the building's server antennas.
+- **EIRP** = transmitter power − line losses + gain (dBi). **ERP** uses dBd: ERP = EIRP − 2.15 dB. FCC licenses and Part 90 signal booster rules are written in ERP or EIRP.
+- **Downtilt** (mechanical or electrical) aims the main beam below the horizon so coverage lands where people are, and limits interference far away.
+- **Far field** starts about 2D²/λ from the antenna (D = largest dimension); patterns and gain only apply beyond it. Measure and do MPE checks with that in mind.
+- Common types: whip and collinear omnis (base, mobile, DAS ceiling), Yagi (donor, point-to-point VHF/UHF), log-periodic (wide band), panel and sector (cellular, DAS in big spaces), dish (microwave), and leaky (radiating) coax for tunnels and stairwells.` },
+    { id: 'rf-prop', title: 'Propagation: free space, reflection, diffraction, horizon and Fresnel zones', level: 'Intermediate', pages: [['path', 'Path Profile / LOS / Fresnel'], ['view3d', '3D Model']], body: `**Free-space path loss**: FSPL (dB) = 20·log10(d km) + 20·log10(f MHz) + 32.44. It rises 6 dB each time the distance or the frequency doubles.
+
+Real paths add:
+- **Reflection** from the ground, water, buildings and metal: the reflected wave can add to or cancel the direct one.
+- **Diffraction**: waves bend over hills and roof edges. A single sharp obstacle is modelled as a **knife edge** (ITU-R P.526); losses of 6 dB at grazing and 20 dB or more deep in the shadow are common.
+- **Scattering** from foliage, rough ground and small objects; trees cost a few dB to tens of dB depending on depth, frequency and leaves.
+- **Refraction**: the atmosphere bends waves gently downward, so path designs use an **effective earth radius** k = 4/3. The radio horizon is about 4.12·√h km for an antenna h metres high (add the two antennas' horizons for a link). Ducting can carry signals far beyond, causing interference at night and in humid weather.
+- **Fresnel zones** are ellipsoids around the straight line. Radius of the first zone: r1 = 17.32·√(d1·d2 / (f·d)) metres (d in km, f in GHz). Keep at least **60 % of the first zone clear** at k = 4/3 (and line of sight at k = 2/3 for critical microwave).` },
+    { id: 'rf-models', title: 'Path loss models and when to use them', level: 'Advanced', pages: [['coverage', 'Coverage Prediction'], ['survey', 'Drive Test & Calibration'], ['indoor', 'Indoor Coverage & DAS']], body: `No single formula fits every place, so designers pick a model that matches the frequency, distance and terrain, then **calibrate** it with measurements.
+
+- **Okumura-Hata** (150–1,500 MHz, 1–20 km, base 30–200 m) and **COST-231 Hata** (1,500–2,000 MHz) are empirical fits from measurements in cities, with corrections for suburban and open areas. Fast, good for land mobile; blind to individual hills.
+- **Longley-Rice / ITM** uses the terrain profile with diffraction and troposcatter; the FCC and broadcasters use it. **ITU-R P.1546** gives field strength curves by time and location percentage.
+- **Indoor**: ITU-R **P.1238** uses a distance power law plus floor losses; **multi-wall (COST-231)** adds the loss of each wall and floor crossed, by material. Use the material losses at the working frequency.
+- **Ray tracing** follows reflections and diffraction through a 3D model: the most detailed, and only as good as the model.
+- **Calibrate**: drive or walk test, fit an offset and slope to the predictions, and report the remaining error (standard deviation, typically 6–8 dB outdoors). This app's predictions are labelled with the model used.` },
+    { id: 'rf-fading', title: 'Fading, fade margin, reliability and diversity', level: 'Advanced', pages: [['coverage', 'Coverage Prediction'], ['scenarios', 'Scenarios & Compare']], body: `Received signal varies around the predicted mean:
+
+- **Slow (shadow) fading** from buildings and terrain is **log-normal**, with a spread of about 6–10 dB. A **shadow margin** of 1.28σ gives 90 % location reliability at the cell edge; 1.65σ gives 95 %. **Area reliability** (Jakes) is higher than edge reliability for the same margin.
+- **Fast (multipath) fading** happens when reflections arrive with different delays: **Rayleigh** with no direct path, **Rician** with one. Nulls of 20–30 dB occur a half wavelength apart; this is why a handheld moved a few inches can lose or gain signal.
+- **Delay spread** smears digital symbols; equalizers, OFDM and guard intervals handle it.
+- **Diversity** beats fading: **space** (two antennas apart several wavelengths), **polarization** (±45°), **frequency** and **time** (interleaving, retries). Microwave links add **fade margin** for rain above about 10 GHz (ITU-R P.530) and multipath.
+- Design to a stated reliability (for example 95 % area coverage at DAQ 3.0) and say which margin was used.` },
+    { id: 'rf-noise', title: 'Noise, sensitivity, SNR, SINAD and DAQ', level: 'Advanced', pages: [['signal', 'Live Signal Readings']], body: `Every receiver hears **thermal noise**: −174 dBm per Hz at room temperature, so a 12.5 kHz channel has a floor of about −133 dBm before the receiver adds its own **noise figure** (NF). Floor = −174 + 10·log10(bandwidth Hz) + NF.
+
+- **SNR / C/N**: how far the signal is above noise. **SINAD** (signal + noise + distortion over noise + distortion) rates analog FM; **12 dB SINAD** sensitivity is the usual spec (about −119 dBm for a good portable).
+- Digital systems are rated by **BER** (bit error rate). P25 and DMR specify sensitivity at 5 % BER.
+- **DAQ (Delivered Audio Quality)** is the scale public safety uses (TIA TSB-88): DAQ 3.0 = understandable with repetition only rarely required. ERCES codes require DAQ 3.0 or the stated dBm level.
+- **Uplink noise**: a BDA or DAS amplifies noise too. Too much uplink gain raises the donor site's noise floor and desensitizes it for everyone; set uplink gain to the minimum that meets the design, and use the booster's noise and gain limits.
+- Noise from LED drivers, VFDs, switching supplies and bad grounds can raise the local floor by 10–20 dB. Measure the floor with the transmitters off.` },
+    { id: 'rf-mod', title: 'Modulation, bandwidth and channel access', level: 'Intermediate', pages: [['radioref', 'RadioReference Frequencies']], body: `**Modulation** puts information on the carrier: amplitude (AM), frequency (FM), phase (PM), or their digital forms.
+
+- Land mobile: analog **FM**, **P25 Phase 1** (C4FM, 12.5 kHz FDMA), **P25 Phase 2** (two-slot TDMA in 12.5 kHz), **DMR** (two-slot TDMA), **NXDN** (6.25 kHz FDMA). Part 90 narrowbanding requires 12.5 kHz efficiency below 512 MHz.
+- Wi-Fi and LTE use **OFDM** with **QAM**: higher orders (256-QAM, 1024-QAM) carry more bits per symbol but need much higher SNR.
+- **Shannon**: capacity C = B·log2(1 + SNR). More bandwidth or more SNR gives more data; nothing beats the limit.
+- **Access**: FDMA (each user a channel), TDMA (time slots), CDMA (codes), OFDMA (subcarriers). **Trunking** shares a pool of channels; size it with **Erlang B** for a grade of service.
+- **Simplex**, **half-duplex repeaters** (separate transmit and receive frequencies, a **duplexer** sharing one antenna) and **simulcast** (several sites on the same frequency, needing tight timing and launch-delay design).` },
+    { id: 'rf-interference', title: 'Interference: co-channel, adjacent channel, intermodulation and isolation', level: 'Advanced', pages: [['network', 'Multi-site & Interference'], ['erces', 'Emergency Radio (ERCES / BDA)']], body: `- **Co-channel**: another transmitter on the same frequency; protect with distance, antenna pattern and C/I (carrier to interference) targets, often 17–20 dB for analog FM.
+- **Adjacent channel**: energy spilling from the next channel; fixed with filtering and channel spacing.
+- **Intermodulation (IM)**: two or more strong signals mix in a non-linear device and make new ones. Third order products at **2f1 − f2** and **2f2 − f1** land near the originals. Check every frequency at a site before adding one (the Calculators page has an IM check).
+- **Receiver desense**: a strong nearby transmitter overloads a receiver even off-channel. Use cavity filters, more antenna spacing (vertical separation isolates far better than horizontal) and isolators.
+- **PIM (passive intermodulation)**: loose or dirty connectors, dissimilar metals and rusty hardware near antennas generate IM. Use low-PIM parts and test with a PIM analyzer.
+- **BDA isolation**: the path from the server antennas back to the donor must be at least about **15 dB more than the booster gain**, or it oscillates and can jam the public safety system. Measure isolation before turning up gain.` },
+    { id: 'rf-safety', title: 'RF exposure and safety', level: 'Intermediate', pages: [['equipment', 'Equipment & Link Budget']], body: `The FCC limits RF exposure (47 CFR 1.1310, OET Bulletin 65). Limits depend on frequency, with lower **general population** limits than **occupational / controlled** limits, averaged over 30 and 6 minutes.
+
+- Exposure falls with the square of distance in the far field; close to high-gain antennas and in the main beam it can exceed limits even at modest power.
+- Work in front of antennas only after the transmitter is off and locked out, or after confirming the levels with a calibrated meter.
+- Post RF signs (Notice, Caution, Warning) at rooftop and tower access, and fence or mark the areas that exceed the limits.
+- Also check: tower climbing (ANSI/ASSP A10.48, fall protection), lightning and weather (stop tower and roof work when lightning is within about 10 miles) and ladder and lift safety.
+- This app's MPE distances use the FCC formulas; they are a planning check, not a site survey.` },
+  ] },
+  { id: 'p7', title: 'Part 7. Low-voltage system design concepts', intro: 'The design ideas that run across every system: noise and protection, power, reliability, networks, wireless, coverage, structured cabling and the drawings that tie it together.', sections: [
+    { id: 'dc-emc', title: 'EMI, shielding, separation and surge protection', level: 'Intermediate', pages: [['grounding', 'Grounding & Structure']], body: `**EMI (electromagnetic interference)** reaches low-voltage cable by conduction (shared grounds and power), induction (magnetic fields from current) and capacitive coupling (electric fields from voltage).
+
+- **Separate** low-voltage cable from power: cross at 90°, keep distance from motors, transformers, fluorescent and LED drivers (TIA-569 and the manufacturer give distances), and never share a raceway with power conductors unless listed and separated (NEC 725 and 800).
+- **Twisted pairs** cancel induced noise; **shields** stop electric fields only when drained, normally at **one end** (the panel) to avoid ground loops. Foil and braid shields stop different frequencies.
+- **Ground loops**: two grounds at different potentials push current along the shield or signal return, making hum in audio and rolling bars in video. Fix with single-point grounding, isolation transformers or fiber.
+- **Surge protection** (SPDs) at the service, at each building entrance and at equipment: NEC 800.90 primary protectors for communications, listed SPDs on power, and protection on every conductor that leaves the building (tower coax, cameras on poles, call boxes).
+- Lightning: a short, straight, low-impedance bond from every protector to the same grounding electrode system.` },
+    { id: 'dc-power', title: 'Power design: batteries, PoE, DC distribution and derating', level: 'Intermediate', calcs: ['fa-battery', 'psu', 'poe-budget', 'lv-drop'], pages: [['solar', 'Solar & DC Power'], ['alarm', 'Fire Alarm & Batteries']], body: `Start from the **load**: list every device's standby and alarm (or peak) current, then size the supply and batteries with margin.
+
+- **Batteries**: sealed lead-acid (VRLA/AGM) is the life-safety norm; lithium (LiFePO4) is lighter and lasts longer but needs a listed charger and BMS. Derate for temperature (capacity drops in the cold), age (replace at 80 % of rated capacity, typically 3–5 years for VRLA) and the safety factor the code asks for (NFPA 72 commonly 20 %).
+- **PoE** (IEEE 802.3): Type 1 (af) 15.4 W at the switch, Type 2 (at) 30 W, Type 3 (bt) 60 W, Type 4 (bt) 90 W. The device gets less after cable loss. Total the switch's PoE budget and leave headroom; bundles of high-power PoE cable run warmer (TIA TSB-184-A, NEC 725.144).
+- **DC distribution**: keep voltage drop within the device's range at the far end, at end-of-life battery voltage. Use larger wire or a higher voltage (24 V vs 12 V halves the current).
+- **Class 2 / Class 3 / PLFA** limits (NEC 725 and 760) set how much power a circuit may carry and which cable it needs.` },
+    { id: 'dc-reliability', title: 'Reliability, redundancy and survivability', level: 'Advanced', body: `**Availability** = MTBF / (MTBF + MTTR). A system up 99.9 % of the time is down about 8.8 hours a year; 99.99 % about 53 minutes.
+
+- Improve it two ways: fewer failures (quality parts, protection, clean power) and faster repair (monitoring, spares on hand, clear documentation).
+- **Redundancy**: N+1 power supplies and amplifiers, dual network paths, two donor antennas or two head-ends. Redundant parts must not share a single point of failure (same breaker, same conduit, same switch).
+- **Pathway classes** (NFPA 72): Class B (no redundancy), Class A (loop back, survives one open), Class X (survives an open, a short or a ground), Class N (Ethernet). Survivability levels 0–3 add rated cable or enclosures for circuits that must work during a fire.
+- **Topology**: star (simple, one failure loses one device), ring (survives one break), mesh (survives several).
+- **Supervision** turns hidden failures into visible troubles; test it as part of commissioning.` },
+    { id: 'dc-network', title: 'Network design for low-voltage systems', level: 'Intermediate', calcs: ['poe-budget', 'cctv-storage'], pages: [['wifi', 'Wi-Fi & Network Survey'], ['network', 'Multi-site & Interference']], body: `Cameras, access control, intercom, paging and building systems now ride on Ethernet, so the network is part of the design.
+
+- **Segment** each system on its own **VLAN** (or a separate network) with firewall rules between them; keep life-safety and security off the guest and office networks.
+- **Bandwidth**: add up each stream. A 4 MP camera at 15 fps H.265 is about 2–4 Mbps; uplinks carry the sum. Size storage from bitrate × hours × days retained.
+- **QoS** marks voice, paging and intercom as priority traffic; **multicast** (with IGMP snooping) sends one paging or video stream to many receivers without flooding.
+- **Addressing plan**: reserve fixed ranges per system and record every device's IP, MAC and location (it is the as-built for the network).
+- **Security**: change every default password, update firmware, turn off unused services, and follow the owner's IT policy (NIST SP 800-82 and CISA guidance for building systems).
+- Keep horizontal copper within 100 m (90 m permanent link + 10 m cords); use fiber between buildings and for long backbones.` },
+    { id: 'dc-wifi', title: 'Wi-Fi design: coverage, capacity and channels', level: 'Advanced', pages: [['wifi', 'Wi-Fi & Network Survey'], ['models', '2D & 3D Models with Layers']], body: `Design Wi-Fi for **what the users do**, not only for signal bars.
+
+- **Coverage targets**: about −67 dBm with 25 dB SNR for voice and video calls; −70 to −72 dBm for general data; −75 dBm or weaker only for low-rate sensors.
+- **Capacity**: count devices per area and their throughput; high-density rooms (classrooms, auditoriums) need more, lower-power APs with directional antennas, not one loud AP.
+- **Channels**: 2.4 GHz has three non-overlapping channels (1, 6, 11); 5 GHz has many more (use 20 or 40 MHz widths in dense designs); **6 GHz** (Wi-Fi 6E/7) adds clean spectrum. Overlapping APs on the same channel share airtime (**co-channel contention**).
+- **Walls matter**: drywall costs a few dB; brick, block and concrete 10–20 dB or more; low-E glass and metal can block almost everything. Use the materials of the actual building.
+- **Validate** with a post-install survey and adjust power and channels.` },
+    { id: 'dc-coverage', title: 'In-building coverage: DAS, BDA and ERCES design', level: 'Advanced', pages: [['erces', 'Emergency Radio (ERCES / BDA)'], ['indoor', 'Indoor Coverage & DAS'], ['floorplan', 'Floor Plan to 2D / 3D']], body: `Public safety in-building coverage is required by the **IFC 510** and **NFPA 1225** (which absorbed NFPA 1221 in 2022) where the outside system does not reach inside well enough.
+
+- **Grid test** first: divide each floor into a grid (commonly 20 grids per floor) and measure downlink and talk back. Typical requirement: **−95 dBm** at **DAQ 3.0**, in **95 %** of general areas and **99 %** of **critical areas** (fire command center, fire pump room, stairs, exit passageways, elevator lobbies, sprinkler and standpipe rooms), unless the AHJ says otherwise.
+- **Architecture**: **passive** DAS (coax, splitters, couplers; simple, loses more per run), **active** (fiber to remote units; for big or tall buildings), or **hybrid**.
+- **Link budget per antenna**: booster output per channel minus splitter, coupler and cable loss, plus antenna gain, minus wall and floor losses to the farthest point, must stay above the target with margin.
+- **Donor**: aim at the serving site with a directional antenna, check the donor signal and isolation, and get the system licensee's **written permission** (FCC Part 90.219, registered booster).
+- **Survivability**: 2-hour rated enclosures or pathways for the riser, **12 hours** of standby battery, supervision to the fire alarm system, and NEMA 4 enclosures for active equipment.` },
+    { id: 'dc-cabling', title: 'Structured cabling design (TIA-568, 569, 606, 607)', level: 'Intermediate', calcs: ['cable-boxes', 'conduit-fill', 'jhook'], pages: [['materials', 'Materials List & Estimate'], ['campus', 'Multi-Building Site & Campus']], body: `**Structured cabling** is a standard star: work area outlets to the **telecommunications room (TR)** on each floor (horizontal), TRs to the **equipment room** (backbone), and buildings to each other (campus).
+
+- **ANSI/TIA-568**: horizontal permanent link up to **90 m** plus up to 10 m of cords; Cat 6A for 10GBASE-T and higher-power PoE; single-mode fiber for long backbones.
+- **TIA-569** pathways and spaces: TR size, conduit sizes and bends (no more than two 90° bends between pull points), J-hook spacing of 4–5 ft, separation from power and EMI sources.
+- **TIA-606** labeling: every outlet, cable, patch panel and pathway has a unique label that matches the drawings and the records.
+- **TIA-607** bonding: a **TMGB** in the main room and a **TGB** in each TR, bonded with a telecommunications bonding backbone (TBB) to the building's grounding electrode system.
+- Design the TR locations from the floor plan so every outlet is inside the 90 m limit; long floors need more than one TR.` },
+    { id: 'dc-drawings', diagrams: ['floorplan', 'riser'], title: 'Design drawings: floor plans, scales, symbols and sheets', level: 'Basic', pages: [['floorplan', 'Floor Plan to 2D / 3D'], ['blueprints', 'Blueprints & Drawing Sets'], ['buildout', 'Project Build Output']], body: `Low-voltage drawings sit on the architect's **floor plans**, at a stated **scale**, using standard sheet numbers and symbols.
+
+- **Scales**: architectural (1/8" = 1'-0" for large floors, 1/4" = 1'-0" for most plans, 1/2" and larger for rooms and details), engineering (1" = 20', 1" = 40' for site plans), metric (1:50, 1:100). Always include a **graphic scale** too, because copies get resized.
+- **Sheets** (US National CAD Standard): G general (cover, index), A architectural, E electrical, FA fire alarm, T telecommunications, TY security. Numbers run by type: 101 floor plans, 301 sections, 501 details, 601 schedules.
+- **Symbols**: NFPA 170 for fire alarm and life safety devices; manufacturer or BICSI symbols for telecom. Put a legend on the first sheet.
+- **Floor plan elements**: walls (solid or double line), doors with swings and marks, windows with marks, room names and numbers, overall dimensions, north arrow, title and scale under each drawing.
+- **Riser diagrams** show the vertical system (panels, circuits, floors); **one-line diagrams** show power; **schedules** list rooms, doors, devices and cable.
+- Keep the drawings as the record: update them to **as-built** at closeout.` },
   ] },
 ];
 

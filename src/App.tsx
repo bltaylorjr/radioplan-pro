@@ -78,6 +78,10 @@ const SignalReadingsPage = page(() => import('./pages/SignalReadings'), 'SignalR
 const AssetsPage = page(() => import('./pages/Assets'), 'AssetsPage');
 const MagneticPage = page(() => import('./pages/Magnetic'), 'MagneticPage');
 const WeatherPage = page(() => import('./pages/Weather'), 'WeatherPage');
+const FloorPlanPage = page(() => import('./pages/FloorPlan'), 'FloorPlanPage');
+const BuildOutputPage = page(() => import('./pages/BuildOutput'), 'BuildOutputPage');
+const SpectrumPage = page(() => import('./pages/Spectrum'), 'SpectrumPage');
+const AudioPage = page(() => import('./pages/Audio'), 'AudioPage');
 const TerrainPage = lazy(track(() => import('./pages/Terrain')));
 const CoveragePage = lazy(track(() => import('./pages/Coverage')));
 const View3DPage = lazy(track(() => import('./pages/View3D')));
@@ -85,6 +89,10 @@ const FccPage = lazy(track(() => import('./pages/Fcc')));
 const FaaPage = lazy(track(() => import('./pages/Faa')));
 const OfflineArea = page(() => import('./components/OfflineArea'), 'OfflineArea');
 import { MapPackBadge } from './components/MapPacks';
+import { GlobalFileDrop } from './components/DropZone';
+import { PlanPipHost, LiveViewButton } from './components/PlanPip';
+/** Pages where the design is being shaped: their header has the Live view button. */
+const LIVE_PAGES = ['company', 'systems', 'autodesign', 'models', 'campus', 'alarm', 'erces', 'indoor', 'wifi', 'blueprints', 'materials', 'floorplan', 'buildout'];
 
 /** Page components by menu id. The menu order, labels and sections live in src/data/menu.ts. */
 export const PAGE_ELEMENTS: Record<string, React.ReactNode> = {
@@ -135,6 +143,10 @@ export const PAGE_ELEMENTS: Record<string, React.ReactNode> = {
   calculators: <CalculatorsPage />,
   magnetic: <MagneticPage />,
   weather: <WeatherPage />,
+  floorplan: <FloorPlanPage />,
+  buildout: <BuildOutputPage />,
+  spectrum: <SpectrumPage />,
+  audio: <AudioPage />,
   mappacks: <OfflineArea />,
   projects: <ProjectsPage />,
   sync: <SyncPage />,
@@ -154,6 +166,8 @@ function useProjectMagnetic(project: import('./types').Project, update: (fn: (d:
   const s = project.sites[0];
   const [sw, setSw] = useState<import('./engine/spaceweather').SpaceWeather | null>(null);
   const [day, setDay] = useState(() => new Date().toISOString().slice(0, 10));
+  const [mv, setMv] = useState(0);
+  useEffect(() => { let off = () => {}; import('./engine/azimuth').then((m) => { off = m.onMagModel(() => setMv((x) => x + 1)); }); return () => off(); }, []);
   useEffect(() => {
     let live = true, off = () => {};
     import('./engine/spaceweather').then((m) => { if (!live) return; m.keepSpaceWeatherLive(); m.savedSpaceWeather().then((v) => live && setSw(v)); off = m.onSpaceWeather((v) => live && setSw(v)); });
@@ -164,7 +178,7 @@ function useProjectMagnetic(project: import('./types').Project, update: (fn: (d:
     let live = true;
     import('./engine/magproject').then((m) => { if (!live) return; const next = m.nextProjectMagnetic(project, sw); if (next) update((d) => { d.magnetic = next; }); });
     return () => { live = false; };
-  }, [s?.lat, s?.lon, sw, day, project.sync?.projectId, project.meta.created]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [s?.lat, s?.lon, sw, day, mv, project.sync?.projectId, project.meta.created]); // eslint-disable-line react-hooks/exhaustive-deps
 }
 
 /** Keeps project.weather current when the weather for Site A is downloaded in the background (hourly automatic care). */
@@ -187,7 +201,7 @@ function useProjectWeather(project: import('./types').Project, update: (fn: (d: 
 export default function App() {
   const { page, go, project, update, rt, setRt, lib } = useStore();
   const [online, setOnline] = useState(typeof navigator === 'undefined' ? true : navigator.onLine);
-  useEffect(() => { preloadPages(); }, []);
+  useEffect(() => { preloadPages(); import('./engine/azimuth').then((m) => m.loadHighResMagModel()); }, []);
   useProjectMagnetic(project, update);
   useProjectWeather(project, update);
   useEffect(() => { const on = () => setOnline(true), off = () => setOnline(false); window.addEventListener('online', on); window.addEventListener('offline', off); return () => { window.removeEventListener('online', on); window.removeEventListener('offline', off); }; }, []);
@@ -217,6 +231,12 @@ export default function App() {
   /** Previous / next page, passing over skipped steps. */
   const near = (dir: 1 | -1) => { for (let i = idx + dir; i >= 0 && i < VIS.length; i += dir) if (!skipped.has(VIS[i].id)) return VIS[i]; return undefined; };
   const prevW = near(-1), nextW = near(1);
+  /** Bottom-of-page step navigation: only on the numbered project steps, and it moves between steps only
+   *  (never into Tools & reference or Projects & settings, which are not part of the project workflow). */
+  const isStep = !!current?.steps;
+  const stepIdx = isStep && current ? STEPS.indexOf(current) : -1;
+  const nearStep = (dir: 1 | -1) => { if (stepIdx < 0) return undefined; for (let i = stepIdx + dir; i >= 0 && i < STEPS.length; i += dir) if (!skipped.has(STEPS[i].id)) return STEPS[i]; return undefined; };
+  const prevStep = nearStep(-1), nextStep = nearStep(1);
   const setSkip = (id: string, on: boolean) => update((d) => { const s = new Set(d.meta.skipped ?? []); if (on) s.add(id); else s.delete(id); d.meta.skipped = [...s]; });
   const findings = evaluateCompliance({ project, profile: rt.profile });
   const nViol = findings.filter((f) => f.severity === 'violation').length;
@@ -267,6 +287,8 @@ export default function App() {
     <MeasureCtx.Provider value={project.settings.units === 'km' ? 'metric' : 'imperial'}>
     <div className={'app' + (navOpen ? ' nav-open' : '')}>
       <AutoTerrain />
+      <GlobalFileDrop />
+      <PlanPipHost />
       <Updater />
       <Maintainer />
       {welcome && !video && <Welcome onClose={() => setWelcome(false)} onHelp={() => setHelpOpen(true)} />}
@@ -302,8 +324,8 @@ export default function App() {
             </button>
             {open && VIS.filter((w) => w.groupId === g.id).map((w) => (
               <a key={w.id} href={`#${w.id}`} className={(w.id === current?.id ? 'active' : '') + (skipped.has(w.id) ? ' skipped' : '')} title={skipped.has(w.id) ? 'Skipped on this project' : undefined} onClick={(e) => { e.preventDefault(); go(w.id); }}>
-                {(() => { const cl = checklistFor(w.id), pr = cl && progressOf(cl, project), full = !!pr && pr.total > 0 && pr.done === pr.total; return <span className={'step-dot' + (full ? ' done' : '') + (stepNo(w) ? '' : ' tool')} title={pr ? `${pr.done} of ${pr.total} checklist items done` : undefined}>{skipped.has(w.id) ? '–' : full ? '✓' : stepNo(w) ?? '•'}</span>; })()}
                 {w.label}
+                {(() => { const cl = checklistFor(w.id), pr = cl && progressOf(cl, project), full = !!pr && pr.total > 0 && pr.done === pr.total; return full && !skipped.has(w.id) ? <span className="nav-done" title={`${pr!.done} of ${pr!.total} checklist items done`}>✓</span> : null; })()}
                 {w.id === 'compliance' && nViol > 0 && <span className="pill bad">{nViol}</span>}
                 {w.id === 'company' && rt.showRequired && nReq > 0 && <span className="pill bad" title={`${nReq} required field(s) empty`}>{nReq}</span>}
               </a>
@@ -330,9 +352,10 @@ export default function App() {
                 <button disabled={!prevW} onClick={() => prevW && go(prevW.id)} aria-label="Previous page" title={prevW?.label}>←</button>
                 <select value={current.id} onChange={(e) => go(e.target.value)} aria-label="Go to page" data-no-choose>
                   {!VIS.includes(current) && <option value={current.id}>{current.label}</option>}
-                  {groups.map((g) => <optgroup key={g} label={g}>{VIS.filter((w) => w.group === g).map((w) => <option key={w.id} value={w.id}>{stepNo(w) ? `${stepNo(w)}. ` : ''}{w.label}</option>)}</optgroup>)}
+                  {groups.map((g) => <optgroup key={g} label={g}>{VIS.filter((w) => w.group === g).map((w) => <option key={w.id} value={w.id}>{w.label}</option>)}</optgroup>)}
                 </select>
                 <button disabled={!nextW} onClick={() => nextW && go(nextW.id)} aria-label="Next page" title={nextW?.label}>→</button>
+                {LIVE_PAGES.includes(current.id) && <LiveViewButton />}
                 {topic.tour && <button onClick={() => setTour(topic.tour!)} data-tour-btn>▶ Guide me</button>}
                 <button onClick={() => setHelpOpen(true)}>? Page help</button>
                 <ClearPageButton page={current.id} label={current.label} onCleared={(before) => { setCleared({ page: current.id, before }); setResetN((n) => n + 1); }} />
@@ -343,11 +366,11 @@ export default function App() {
             {off.has(current.id) && <p className="note no-print">This tool is turned off in User Settings, so it is not in the menu. <button onClick={() => setToolOn(current.id, true)}>Turn it back on</button></p>}
             {skipped.has(current.id) && <p className="note no-print">This step is skipped on this project. <button onClick={() => setSkip(current.id, false)}>Don't skip it</button></p>}
             <SelfRepair page={current.id}><Suspense fallback={<div className="card">Loading…</div>}><React.Fragment key={resetN}>{current.el}</React.Fragment></Suspense>{checklistFor(current.id) && <div data-tour="checklist" className="no-print" style={{ marginTop: 16 }}><Checklist def={checklistFor(current.id)!} /></div>}</SelfRepair>
-            <footer className="page-foot">
-              <button disabled={!prevW} onClick={() => prevW && go(prevW.id)}>← {prevW?.label ?? 'Back'}</button>
-              {canSkip(current.id) && !skipped.has(current.id) ? <button className="ghost" onClick={() => { setSkip(current.id, true); if (nextW) go(nextW.id); }} title="Mark this step as not needed on this project and go to the next one. You can still open it from the menu.">Skip this step ⤼</button> : <span />}
-              <button className="primary" disabled={!nextW} onClick={() => nextW && go(nextW.id)}>{nextW?.label ?? 'Next'} →</button>
-            </footer>
+            {isStep && <footer className="page-foot">
+              <button disabled={!prevStep} onClick={() => prevStep && go(prevStep.id)}>← {prevStep?.label ?? 'Back'}</button>
+              {canSkip(current.id) && !skipped.has(current.id) ? <button className="ghost" onClick={() => { setSkip(current.id, true); if (nextStep) go(nextStep.id); }} title="Mark this step as not needed on this project and go to the next one. You can still open it from the menu.">Skip this step ⤼</button> : <span />}
+              <button className="primary" disabled={!nextStep} onClick={() => nextStep && go(nextStep.id)}>{nextStep?.label ?? 'Next'} →</button>
+            </footer>}
             <p className="disclaimer">Planning aid only. Calculations and code citations must be verified by a licensed professional and the Authority Having Jurisdiction.</p>
           </>
         )}

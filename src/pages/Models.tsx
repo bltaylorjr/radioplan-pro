@@ -4,7 +4,7 @@ import { Card, Num, Stat } from '../components/ui';
 import { ProjectTypePicker } from '../components/SystemsUI';
 import { LayeredModel } from '../components/LayeredModel';
 import { defaultInputs, AutoInputs, BLDG, BldgType } from '../engine/autodesign';
-import { buildModel, modelDxf, ModelScene } from '../engine/models';
+import { buildModel, modelDxf, ModelScene, hasPlanWalls } from '../engine/models';
 import { BuildingSpec, MAT, MatUse, materialsFor, matLossDb, PRESETS, RF_BANDS, RF_BAND_LABEL, SCENARIOS, specFor, outsideInLossDb } from '../engine/bldgmaterials';
 import { projectSystems } from '../data/systems';
 
@@ -38,7 +38,8 @@ export function ModelsPage() {
   const setIn = <K extends keyof AutoInputs>(k: K, v: AutoInputs[K]) => update((d) => { d.autoDesign = { ...defaultInputs(), ...(d.autoDesign ?? {}), [k]: v }; });
   const setSpec = <K extends keyof BuildingSpec>(k: K, v: BuildingSpec[K]) => update((d) => { d.buildingMaterials = { ...(d.buildingMaterials ?? {}), [k]: v }; });
   const hasIndoor = (p.indoor?.walls?.length ?? 0) > 0;
-  const [wallsFrom, setWallsFrom] = useState<'typical' | 'indoor'>('typical');
+  const hasPlan = hasPlanWalls(p);
+  const [wallsFrom, setWallsFrom] = useState<'typical' | 'indoor' | 'plan'>(hasPlan ? 'plan' : 'typical');
   const scene = useMemo(() => buildModel(p, { wallsFrom }), [p, wallsFrom]);
   const [scn, setScn] = useState('');
   const alt = useMemo(() => { const s = SCENARIOS.find((v) => v.id === scn); return s ? buildModel(p, { wallsFrom, spec: s.spec }) : null; }, [p, wallsFrom, scn]);
@@ -53,7 +54,7 @@ export function ModelsPage() {
         <div className="form">
           <label className="field"><span>Building type</span><select value={x.bldg} onChange={(e) => { const b = e.target.value as BldgType; update((d) => { d.autoDesign = { ...x, bldg: b, smokeCoverage: BLDG[b].smoke }; }); }}>{Object.entries(BLDG).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}</select></label>
           {num('floors', 'Floors')}{num('lengthFt', 'Building length', 'ft')}{num('widthFt', 'Building width', 'ft')}{num('floorHeightFt', 'Floor-to-floor height', 'ft')}{num('ceilingFt', 'Ceiling height', 'ft')}
-          {hasIndoor && <label className="field"><span>Walls from</span><select value={wallsFrom} onChange={(e) => setWallsFrom(e.target.value as 'typical' | 'indoor')} data-no-choose><option value="typical">Typical layout for the building type</option><option value="indoor">My drawing on Indoor Coverage (stretched to fit)</option></select></label>}
+          {(hasIndoor || hasPlan) && <label className="field"><span>Walls from</span><select value={wallsFrom} onChange={(e) => setWallsFrom(e.target.value as 'typical' | 'indoor' | 'plan')} data-no-choose><option value="typical">Typical layout for the building type</option>{hasPlan && <option value="plan">Imported floor plan (Floor Plan to 2D / 3D)</option>}{hasIndoor && <option value="indoor">My drawing on Indoor Coverage (stretched to fit)</option>}</select></label>}
         </div>
         {!systems.length && <p className="warn-text">Pick the project type above so the model knows which systems to show.</p>}
         <p className="small muted">Doors, rooms, parking and call boxes: <a href="#autodesign" onClick={(e) => { e.preventDefault(); go('autodesign'); }}>Auto-Design</a>.</p>

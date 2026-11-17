@@ -10,14 +10,14 @@ export const ALWAYS_PAGES = ['company', 'systems', 'projects', 'settings'];
 export const PAGE_GROUPS: [string, string[]][] = MENU_GROUPS.map((g) => [groupHeading(g), MENU_PAGES.filter((p) => p.group === g.id).map((p) => p.id)]);
 
 /** Pages most low-voltage jobs use, whatever the systems. */
-const COMMON = ['locate', 'sites', 'fieldnotes', 'compliance', 'materials', 'vendors', 'blueprints', 'testing', 'reports', 'troubleshoot', 'directions', 'service', 'assets', 'devices', 'install', 'theory', 'library', 'contacts', 'calculators'];
+const COMMON = ['floorplan', 'buildout', 'locate', 'sites', 'fieldnotes', 'compliance', 'materials', 'vendors', 'blueprints', 'testing', 'reports', 'troubleshoot', 'directions', 'service', 'assets', 'devices', 'install', 'theory', 'library', 'contacts', 'calculators'];
 /** Extra pages for systems that need radio or design pages. */
 const EXTRA: Record<string, string[]> = {
-  firealarm: ['alarm', 'autodesign', 'models', 'campus'], massnotif: ['alarm', 'autodesign', 'models', 'campus'], security: ['autodesign', 'models', 'campus'], access: ['autodesign', 'models', 'campus'], cctv: ['autodesign', 'models', 'campus'],
-  cabling: ['autodesign', 'models', 'campus'], nursecall: ['autodesign', 'models', 'campus'], paging: ['autodesign', 'models', 'campus'], sound: ['autodesign', 'models', 'campus'], intercom: ['autodesign', 'models', 'campus'],
-  erces: ['photosurvey', 'erces', 'indoor', 'models', 'campus', 'survey', 'signal', 'grounding', 'fcc'], das: ['photosurvey', 'indoor', 'erces', 'models', 'campus', 'survey', 'signal', 'grounding', 'fcc'], wifi: ['wifi', 'indoor', 'models', 'campus', 'signal'],
-  radio: ['photosurvey', 'terrain', 'equipment', 'path', 'coverage', 'optimize', 'network', 'scenarios', 'view3d', 'grounding', 'survey', 'signal', 'lfhf', 'fcc', 'faa', 'mappacks'],
-  callbox: ['photosurvey', 'solar', 'terrain', 'coverage', 'equipment', 'faa', 'mappacks', 'signal'], solar: ['solar', 'grounding'],
+  firealarm: ['audio', 'alarm', 'autodesign', 'models', 'campus'], massnotif: ['audio', 'alarm', 'autodesign', 'models', 'campus'], security: ['autodesign', 'models', 'campus'], access: ['autodesign', 'models', 'campus'], cctv: ['autodesign', 'models', 'campus'],
+  cabling: ['autodesign', 'models', 'campus'], nursecall: ['audio', 'autodesign', 'models', 'campus'], paging: ['audio', 'autodesign', 'models', 'campus'], sound: ['audio', 'autodesign', 'models', 'campus'], intercom: ['audio', 'autodesign', 'models', 'campus'],
+  erces: ['spectrum', 'photosurvey', 'erces', 'indoor', 'models', 'campus', 'survey', 'signal', 'grounding', 'fcc'], das: ['spectrum', 'photosurvey', 'indoor', 'erces', 'models', 'campus', 'survey', 'signal', 'grounding', 'fcc'], wifi: ['spectrum', 'wifi', 'indoor', 'models', 'campus', 'signal'],
+  radio: ['spectrum', 'photosurvey', 'terrain', 'equipment', 'path', 'coverage', 'optimize', 'network', 'scenarios', 'view3d', 'grounding', 'survey', 'signal', 'lfhf', 'fcc', 'faa', 'mappacks'],
+  callbox: ['spectrum', 'photosurvey', 'solar', 'terrain', 'coverage', 'equipment', 'faa', 'mappacks', 'signal'], solar: ['solar', 'grounding'],
 };
 
 /** Suggested pages for the picked systems. */

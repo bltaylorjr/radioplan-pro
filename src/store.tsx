@@ -1,6 +1,7 @@
 import { autoLoadEquipment } from './data/projectEquipment';
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { produce, setAutoFreeze } from 'immer';
+import { noteProject } from './engine/memo';
 import type { Project } from './types';
 import { defaultProject } from './defaults';
 import { repairProject } from './engine/repair';
@@ -192,6 +193,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     page, go: (pg) => { location.hash = pg; setPage(pg); window.scrollTo(0, 0); },
     lib,
   }), [project, rt, page, lib]);
+  noteProject(project);
   return <C.Provider value={v}>{children}</C.Provider>;
 }
 

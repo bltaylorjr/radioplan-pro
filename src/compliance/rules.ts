@@ -1,3 +1,4 @@
+import { perProject } from '../engine/memo';
 // Code-compliance rule engine. Each rule cites the specific section it checks.
 // Section numbers follow NFPA 70 (NEC) 2020/2023, NFPA 72 (2019/2022), NFPA 1225 (2022), IFC 2021 and federal rules.
 // THESE ARE PLANNING AIDS. A licensed professional engineer / the AHJ must verify every finding and the adopted edition.
@@ -29,7 +30,14 @@ export function txEirp(p: Project) {
     rxAntGainDbi: r.rxAntGainDbi, rxFeederLossDb: r.rxFeederLossDb, rxSensitivityDbm: r.rxSensitivityDbm });
 }
 
+const profileIds = new WeakMap<object, number>(); let nextProfile = 1;
+const complianceCached = perProject((p: Project, _pid: number, ctx: RuleContext) => evaluateNow(ctx), (pid: number) => String(pid));
+/** Code findings for the project (cached for each version of the project and terrain profile). */
 export function evaluateCompliance(ctx: RuleContext): Finding[] {
+  const pr = ctx.profile; let pid = 0; if (pr) { pid = profileIds.get(pr) ?? 0; if (!pid) { pid = nextProfile++; profileIds.set(pr, pid); } }
+  return complianceCached(ctx.project, pid, ctx);
+}
+function evaluateNow(ctx: RuleContext): Finding[] {
   const p = ctx.project, out: Finding[] = [];
   const g = p.grounding, j = JURISDICTIONS[p.meta.state];
   const tx = p.sites.find((s) => s.id === p.radio.txSiteId) ?? p.sites[0];

@@ -4,11 +4,14 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { PACKS, CONTENT_FORMAT, jsonSafe, packShape, Manifest } from '../src/engine/contentpacks';
 import pkg from '../package.json';
+import { loadHighResMagModel, magModelName } from '../src/engine/azimuth';
 
 const out = process.argv[2] || 'dist/content';
 mkdirSync(out, { recursive: true });
 const version = (pkg as { version: string }).version;
 const manifest: Manifest = { format: CONTENT_FORMAT, builtFrom: version, builtAt: new Date().toISOString(), packs: [] };
+await loadHighResMagModel(); // the magnetic pack carries the high-resolution model (WMMHR)
+console.log(`magnetic model for the content pack: ${magModelName()}`);
 for (const p of PACKS) {
   const data = p.get();
   if (!jsonSafe(data)) { console.error(`content pack ${p.name}: data does not survive JSON, not published`); process.exitCode = 1; continue; }

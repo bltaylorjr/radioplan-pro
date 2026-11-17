@@ -6,7 +6,10 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useStore } from '../store';
 import { Card, Num, Stat } from '../components/ui';
 import { useUnits } from '../units';
-import { geomag, decimalYear, getMagModel, fmtDecl, fmtDeg, trueToMag, magToTrue, compassPoint } from '../engine/azimuth';
+import { NoaaMaps } from '../components/NoaaMaps';
+import { CheckNote } from '../components/CheckNote';
+import { DeclinationMap } from '../components/DeclinationMap';
+import { geomag, decimalYear, getMagModel, onMagModel, magModelDegree, fmtDecl, fmtDeg, trueToMag, magToTrue, compassPoint } from '../engine/azimuth';
 import { downloadSpaceWeather, refreshIfStale, savedSpaceWeather, onSpaceWeather, kpSummary, kpWord, kpTone, gOfKp, G_WORDS, stormEffects, swpcTime, type SpaceWeather } from '../engine/spaceweather';
 
 const ASHEVILLE = { lat: 35.5951, lon: -82.5515, name: 'Asheville, NC (default)' };
@@ -32,15 +35,17 @@ export function MagneticPage() {
     : hasSite ? { lat: s.lat, lon: s.lon, name: `${s.name || 'Site A'}${p.meta.city ? ` · ${[p.meta.city, p.meta.state].filter(Boolean).join(', ')}` : ''}` } : ASHEVILLE;
   const altKm = !here && typed.lat == null && hasSite && s.groundElevM != null && Number.isFinite(s.groundElevM) ? s.groundElevM / 1000 : 0;
 
+  const [, setMv] = useState(0);
+  useEffect(() => onMagModel(() => setMv((x) => x + 1)), []);
   const model = getMagModel();
   const now = new Date();
   const yr = decimalYear(now);
-  const g = useMemo(() => geomag(pt.lat, pt.lon, now, altKm), [pt.lat, pt.lon, altKm, Math.floor(yr * 365)]); // eslint-disable-line react-hooks/exhaustive-deps
-  const g1 = useMemo(() => geomag(pt.lat, pt.lon, Math.min(yr + 1, model.epoch + 5), altKm), [pt.lat, pt.lon, altKm, Math.floor(yr * 365)]); // eslint-disable-line react-hooks/exhaustive-deps
+  const g = useMemo(() => geomag(pt.lat, pt.lon, now, altKm), [pt.lat, pt.lon, altKm, Math.floor(yr * 365), model.name]); // eslint-disable-line react-hooks/exhaustive-deps
+  const g1 = useMemo(() => geomag(pt.lat, pt.lon, Math.min(yr + 1, model.epoch + 5), altKm), [pt.lat, pt.lon, altKm, Math.floor(yr * 365), model.name]); // eslint-disable-line react-hooks/exhaustive-deps
   const span = Math.min(yr + 1, model.epoch + 5) - yr || 1;
   const decRate = (g1.decDeg - g.decDeg) / span, dipRate = (g1.dipDeg - g.dipDeg) / span, fRate = (g1.totalNt - g.totalNt) / span;
   const rad = Math.PI / 180, X = g.horizNt * Math.cos(g.decDeg * rad), Y = g.horizNt * Math.sin(g.decDeg * rad), Z = g.horizNt * Math.tan(g.dipDeg * rad);
-  const years = useMemo(() => Array.from({ length: 11 }, (_, i) => model.epoch + i / 2).map((y) => ({ y, ...geomag(pt.lat, pt.lon, y, altKm) })), [pt.lat, pt.lon, altKm, model.epoch]);
+  const years = useMemo(() => Array.from({ length: 11 }, (_, i) => model.epoch + i / 2).map((y) => ({ y, ...geomag(pt.lat, pt.lon, y, altKm) })), [pt.lat, pt.lon, altKm, model.epoch, model.name]);
   const weak = g.horizNt < 6000;
 
   const locate = () => {
@@ -72,7 +77,7 @@ export function MagneticPage() {
 
   return (
     <div className="grid">
-      <Card title="Magnetic field here today" className="wide" tour="mag-today" tip={`From NOAA's World Magnetic Model (${model.name}, made by NOAA NCEI and the British Geological Survey). It is built into the app, so it works with no internet. A newer model downloads by itself when NOAA publishes one.`}>
+      <Card title="Magnetic field here today" className="wide" tour="mag-today" tip={`From NOAA's World Magnetic Model${magModelDegree() > 12 ? ' High Resolution' : ''} (${model.name}, made by NOAA NCEI${magModelDegree() > 12 ? '; it adds the local crustal field the standard model leaves out' : ' and the British Geological Survey'}). It is built into the app, so it works with no internet. A newer model downloads by itself when NOAA publishes one.`}>
         <p className="small"><b>Place:</b> {pt.name} · GPS {pt.lat.toFixed(4)}, {pt.lon.toFixed(4)}{altKm ? ` · elevation ${u.len(altKm * 1000, 0)}` : ''} · {now.toLocaleDateString()}</p>
         <div className="row wrap">
           <button onClick={locate}>📡 Use where I am now</button>
@@ -93,10 +98,10 @@ export function MagneticPage() {
           <Stat label="Horizontal strength" value={nt(g.horizNt)} tip="The part of the field that turns a compass needle. Below about 6,000 nT (near the magnetic poles) compasses are unreliable." tone={weak ? 'bad' : undefined} />
           <Stat label="North / East / Down" value={`${Math.round(X).toLocaleString()} / ${Math.round(Y).toLocaleString()} / ${Math.round(Z).toLocaleString()}`} unit=" nT" tip="The field split into north (X), east (Y) and straight down (Z) parts." />
         </div>
-        <p className="small muted">Model: <b>{model.name}</b> (NOAA NCEI, good until {(model.epoch + 5).toFixed(0)}) · {online ? <>🟢 online: the app looks for a newer model every day{modelCheck?.at ? `, last checked ${new Date(modelCheck.at).toLocaleString()}` : ''}</> : <>📴 offline: using the model on this device{modelCheck?.at ? `, last checked online ${new Date(modelCheck.at).toLocaleString()}` : ''}</>}.</p>
+        <p className="small muted">Model: <b>{model.name}</b>{magModelDegree() > 12 ? ` (high resolution, degree ${magModelDegree()})` : ''} (NOAA NCEI, good until {(model.epoch + 5).toFixed(0)}) · {online ? <>🟢 online: the app looks for a newer model every day{modelCheck?.at ? `, last checked ${new Date(modelCheck.at).toLocaleString()}` : ''}</> : <>📴 offline: using the model on this device{modelCheck?.at ? `, last checked online ${new Date(modelCheck.at).toLocaleString()}` : ''}</>}.</p>
         {weak && <p className="note req-note">The horizontal field is weak here, so a compass is not reliable. Use GPS for directions.</p>}
         {g.outOfRange && <p className="note req-note">{model.name} covers {model.epoch.toFixed(0)}–{(model.epoch + 5).toFixed(0)}. Connect to the internet once so the newer model downloads; until then the numbers above are estimates.</p>}
-        <p className="small muted">Accuracy: about ±0.5° in the continental US. Local iron, rebar, vehicles, steel buildings and power lines can throw a hand compass off much more, so stand clear or use a GPS alignment tool. Compass bearings everywhere in the app (azimuths, aiming, photo survey) use this same model.</p>
+        <p className="small muted">Accuracy: {magModelDegree() > 12 ? 'about ±0.4° in the continental US (the high-resolution model includes local rock magnetism, which the standard model leaves out).' : 'about ±0.5° in the continental US.'} Local iron, rebar, vehicles, steel buildings and power lines can throw a hand compass off much more, so stand clear or use a GPS alignment tool. Compass bearings everywhere in the app (azimuths, aiming, photo survey) use this same model.</p>
       </Card>
 
       <Card title="How it changes over time" className="wide" tour="mag-predict" tip={`Predicted by ${model.name} for every half year it covers. The magnetic field drifts slowly, so old maps and drawings show an older declination.`}>
@@ -107,7 +112,7 @@ export function MagneticPage() {
             <td>{r.today ? <b>Today</b> : Number.isInteger(r.y) ? `Jan ${r.y}` : `Jul ${Math.floor(r.y)}`}</td><td>{fmtDecl(r.decDeg)}</td><td>{r.dipDeg.toFixed(2)}°</td><td>{nt(r.totalNt)}</td><td>{fmtDeg(trueToMag(0, r.decDeg))}°M</td>
           </tr>)}</tbody>
         </table>
-        <p className="small muted">{model.name} is good until {(model.epoch + 5).toFixed(0)}. NOAA publishes the next model (WMM{(model.epoch + 5).toFixed(0)}) near the end of {(model.epoch + 4).toFixed(0)}; the app picks it up by itself when online. For a drawing, note the declination and the date, for example “Declination {fmtDecl(g.decDeg)} ({now.getFullYear()}), changing {Math.abs(decRate * 60).toFixed(0)}′ {decRate < 0 ? 'W' : 'E'} per year”.</p>
+        <p className="small muted">{model.name} is good until {(model.epoch + 5).toFixed(0)}. NOAA publishes the next model ({magModelDegree() > 12 ? 'WMMHR' : 'WMM'}{(model.epoch + 5).toFixed(0)}) near the end of {(model.epoch + 4).toFixed(0)}; the app picks it up by itself when online. For a drawing, note the declination and the date, for example “Declination {fmtDecl(g.decDeg)} ({now.getFullYear()}), changing {Math.abs(decRate * 60).toFixed(0)}′ {decRate < 0 ? 'W' : 'E'} per year”.</p>
       </Card>
 
       <Card title="Map bearing ↔ compass reading" tour="mag-convert" tip="Uses the declination above for this place and today's date.">
@@ -123,12 +128,20 @@ export function MagneticPage() {
         <SpaceWeatherView sw={sw} state={swState} err={swErr} online={online} />
       </Card>
 
+      <Card title="Space weather maps (NOAA)" className="wide" tour="mag-maps" tip="Live maps from NOAA's Space Weather Prediction Center. Each downloads again when NOAA makes a new one while this page is open and online; the last copy is kept on this device with its time.">
+        <NoaaMaps groups={['space']} regionChoice={false} />
+      </Card>
+
+      <Card title="Declination map" className="wide" tour="mag-declmap" tip="Lines of equal compass declination across the US for today, from the high-resolution World Magnetic Model built into the app. Works with no internet.">
+        <DeclinationMap at={pt} />
+      </Card>
+
       <ProjectValues />
 
       <Card title="Learn more (online)" tip="These open NOAA's own pages in the browser.">
         <ul className="small">
           <li><a href={`https://www.ngdc.noaa.gov/geomag/calculators/magcalc.shtml?lat1=${pt.lat.toFixed(4)}&lon1=${pt.lon.toFixed(4)}`} target="_blank" rel="noreferrer">NOAA magnetic field calculator ↗</a> (check the numbers above)</li>
-          <li><a href="https://www.ncei.noaa.gov/products/world-magnetic-model" target="_blank" rel="noreferrer">World Magnetic Model ↗</a></li>
+          <li><a href="https://www.ncei.noaa.gov/products/world-magnetic-model-high-resolution" target="_blank" rel="noreferrer">World Magnetic Model High Resolution ↗</a></li>
           <li><a href="https://www.swpc.noaa.gov/" target="_blank" rel="noreferrer">NOAA Space Weather Prediction Center ↗</a> · <a href="https://www.swpc.noaa.gov/noaa-scales-explanation" target="_blank" rel="noreferrer">what G, S and R mean ↗</a></li>
         </ul>
       </Card>
@@ -165,6 +178,7 @@ function SpaceWeatherView({ sw, state, err, online }: { sw: SpaceWeather | null;
     {online && !old && state !== 'error'
       ? <p className="small muted">🟢 <b>Live</b> · updated {new Date(sw.fetchedAt).toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' })} ({ago(now - sw.fetchedAt)}); updates by itself every 15 minutes while the app is open.</p>
       : <p className="small note">{online ? '⚠ Could not update' : '📴 Offline'}: showing conditions from the last connection, <b>{new Date(sw.fetchedAt).toLocaleString([], { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</b> ({ago(now - sw.fetchedAt)}).{old ? ' “Right now” below was predicted then, so it may be out of date.' : ''} It updates by itself when the internet is back.{state === 'error' && err ? ` (${err})` : ''}</p>}
+    <CheckNote check={sw.check} stale={!online || old || state === 'error'} />
     <div className="stats">
       <Stat label="Right now" value={gNow ? `G${gNow} ${G_WORDS[gNow]}` : current ? kpWord(current.kp) : '—'} unit={current ? ` · Kp ${current.kp.toFixed(1)}` : ''} tone={current ? kpTone(current.kp) : undefined} tip="Kp is NOAA's 0–9 measure of how disturbed the magnetic field is. Kp 5 or more is a storm (G1 to G5)." />
       <Stat label="Next 3 days, worst" value={gPeak ? `G${gPeak} ${G_WORDS[gPeak]}` : peak ? kpWord(peak.kp) : '—'} unit={peak ? ` · Kp ${peak.kp.toFixed(1)}` : ''} tone={peak ? kpTone(peak.kp) : undefined} tip={peak ? `Highest predicted at ${swpcTime(peak.t).toLocaleString([], { weekday: 'short', hour: 'numeric' })}.` : undefined} />
