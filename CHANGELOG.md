@@ -1,3 +1,10 @@
+# LvPlan Pro 1.5.74
+
+- **Radar loop:** ▶ Play last hour on the Weather & Radar radar map shows how storms are moving.
+- **NOAA maps on Weather & Radar:** GOES-19 satellite (visible-color and infrared), lightning, the weather alerts map, the Storm Prediction Center's severe storm outlook for today, tomorrow and day 3, fronts, high and low temperatures, wind, gusts and rain (1 and 7 days), for the Southeast or the whole US. Each map downloads again when NOAA makes a new one; the last copies stay on this device with their times and show offline.
+- **Space weather maps on Magnetic Field:** NOAA's aurora forecast and HF radio blackout map, and a declination map of the US for today (works offline).
+- **Every NOAA download is checked:** values must be in a sensible range, reports recent and forecasts current. Values that fail are left out instead of shown wrong; a failed download keeps the last good copy. A ✓ Verified line with the time (or ⚠ with what was wrong) shows under the weather and space weather.
+- **High-resolution magnetic model:** compass declination now uses NOAA's World Magnetic Model High Resolution (WMMHR2025, degree 133), which includes the local field of the rocks under the job. It is built in and works offline, and projects save WMMHR2025 as the model. Asheville changes from 7.0° W to 7.3° W. It matches NOAA's own WMMHR results to within 0.001°.
 # LvPlan Pro 1.5.73
 
 - **New page: Tools & reference → RF Spectrum Analyzer.** Connect a **tinySA / tinySA Ultra** (USB serial, calibrated dBm), an **RTL-SDR** or a **HackRF One** (WebUSB) in Chrome or Edge, or **import** sweeps from Airspy, SDRplay, Signal Hound, bench and handheld analyzers, rtl_power and hackrf_sweep. **Compatible USB receivers** lists every supported receiver, its range, connection and level accuracy, and shows which ones are plugged in now. Built-in test signals for training.

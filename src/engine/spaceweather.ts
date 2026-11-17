@@ -6,13 +6,14 @@
 // Plain-language effects are for low-voltage and radio work: hand compass, GPS, HF radio, long cable runs.
 import { kvGet, kvSet } from './projectdb';
 import { registerDataset } from './maintain';
+import { verifySpaceWeather, type DataCheck } from './verify';
 
 export const SWPC = 'https://services.swpc.noaa.gov/';
 const KEY = 'spaceweather.last';
 
 export interface KpPoint { t: string; kp: number; kind: 'observed' | 'estimated' | 'predicted'; scale: string | null }
 export interface ScaleDay { date: string; g: number | null; s: number | null; r: number | null; rMinorProb: number | null; rMajorProb: number | null; sProb: number | null; gText?: string | null }
-export interface SpaceWeather { fetchedAt: number; kp: KpPoint[]; scales: { yesterday?: ScaleDay; now?: ScaleDay; days: ScaleDay[] } }
+export interface SpaceWeather { fetchedAt: number; kp: KpPoint[]; scales: { yesterday?: ScaleDay; now?: ScaleDay; days: ScaleDay[] }; /** Checks run on this download. */ check?: DataCheck }
 
 const num = (v: unknown): number | null => { if (v == null || v === '') return null; const n = Number(v); return Number.isFinite(n) ? n : null; };
 /** SWPC times are UTC without a zone ("2026-11-09T00:00:00" or "2026-11-09 00:00:00"). */
@@ -64,7 +65,7 @@ async function getJson(path: string) {
 /** Download the latest forecast from NOAA and keep it on this device. */
 export async function downloadSpaceWeather(now = Date.now()): Promise<SpaceWeather> {
   const [k, s] = await Promise.all([getJson('products/noaa-planetary-k-index-forecast.json'), getJson('products/noaa-scales.json')]);
-  const sw: SpaceWeather = { fetchedAt: now, kp: parseKp(k), scales: parseScales(s) };
+  const sw: SpaceWeather = verifySpaceWeather({ fetchedAt: now, kp: parseKp(k), scales: parseScales(s) }, now); // throws if unusable: the last good forecast stays
   await kvSet(KEY, sw);
   lastSeen = sw; listeners.forEach((f) => f(sw));
   return sw;

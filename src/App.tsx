@@ -166,6 +166,8 @@ function useProjectMagnetic(project: import('./types').Project, update: (fn: (d:
   const s = project.sites[0];
   const [sw, setSw] = useState<import('./engine/spaceweather').SpaceWeather | null>(null);
   const [day, setDay] = useState(() => new Date().toISOString().slice(0, 10));
+  const [mv, setMv] = useState(0);
+  useEffect(() => { let off = () => {}; import('./engine/azimuth').then((m) => { off = m.onMagModel(() => setMv((x) => x + 1)); }); return () => off(); }, []);
   useEffect(() => {
     let live = true, off = () => {};
     import('./engine/spaceweather').then((m) => { if (!live) return; m.keepSpaceWeatherLive(); m.savedSpaceWeather().then((v) => live && setSw(v)); off = m.onSpaceWeather((v) => live && setSw(v)); });
@@ -176,7 +178,7 @@ function useProjectMagnetic(project: import('./types').Project, update: (fn: (d:
     let live = true;
     import('./engine/magproject').then((m) => { if (!live) return; const next = m.nextProjectMagnetic(project, sw); if (next) update((d) => { d.magnetic = next; }); });
     return () => { live = false; };
-  }, [s?.lat, s?.lon, sw, day, project.sync?.projectId, project.meta.created]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [s?.lat, s?.lon, sw, day, mv, project.sync?.projectId, project.meta.created]); // eslint-disable-line react-hooks/exhaustive-deps
 }
 
 /** Keeps project.weather current when the weather for Site A is downloaded in the background (hourly automatic care). */
@@ -199,7 +201,7 @@ function useProjectWeather(project: import('./types').Project, update: (fn: (d: 
 export default function App() {
   const { page, go, project, update, rt, setRt, lib } = useStore();
   const [online, setOnline] = useState(typeof navigator === 'undefined' ? true : navigator.onLine);
-  useEffect(() => { preloadPages(); }, []);
+  useEffect(() => { preloadPages(); import('./engine/azimuth').then((m) => m.loadHighResMagModel()); }, []);
   useProjectMagnetic(project, update);
   useProjectWeather(project, update);
   useEffect(() => { const on = () => setOnline(true), off = () => setOnline(false); window.addEventListener('online', on); window.addEventListener('offline', off); return () => { window.removeEventListener('online', on); window.removeEventListener('offline', off); }; }, []);
