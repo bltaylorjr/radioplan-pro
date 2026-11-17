@@ -145,6 +145,12 @@ export const PAGE_TOURS: Record<string, TourStep[]> = {
     { target: 'text:Structure', title: 'Structure height', text: 'Type the overall height; the ground height fills in.' },
     { target: 'text:Airports nearby', title: 'Airports nearby', text: 'Each airport’s distance, the rule that applies and your margin.' },
   ],
+  magnetic: [
+    { target: 'mag-today', title: 'Magnetic field here today', text: 'How far a compass points away from true north at the job, from NOAA’s World Magnetic Model. Works with no internet.' },
+    { target: 'mag-predict', title: 'How it changes', text: 'The same numbers for every half year the model covers, with a chart.' },
+    { target: 'mag-convert', title: 'Map bearing ↔ compass', text: 'Type a map bearing to get the compass reading, or the other way round.' },
+    { target: 'mag-space', title: 'Space weather', text: 'NOAA’s live storm forecast. During a strong storm, aim with GPS instead of a compass.' },
+  ],
   mappacks: [
     { target: 'text:Around my project sites', title: 'Choose the area', text: 'Around your sites, or around an address or GPS point.' },
     { target: 'text:Download map pack', title: '⬇ Download map pack', text: 'Shows the size first, then downloads with the percent and time left.' },

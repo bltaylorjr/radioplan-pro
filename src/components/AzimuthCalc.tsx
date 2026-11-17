@@ -102,7 +102,7 @@ export function AzimuthCalc() {
         <div className="calc-out"><span>Distance</span><b>{u.f(res.z.km, 3)}</b></div>
         <div className="calc-out big"><span>Azimuth A → B <Tip text={AZ_TIP} /></span><b>{fmtDeg(res.z.fwd)}°T · {fmtDeg(res.z.fwdMag)}°M {compassPoint(res.z.fwd)}</b></div>
         <div className="calc-out"><span>Back azimuth B → A</span><b>{fmtDeg(res.z.back)}°T · {fmtDeg(res.z.backMag)}°M {compassPoint(res.z.back)}</b></div>
-        <div className="calc-out"><span>Declination at A / B (WMM2025)</span><b>{fmtDecl(res.z.decA)} / {fmtDecl(res.z.decB)}</b></div>
+        <div className="calc-out"><span>Declination at A / B (NOAA WMM)</span><b>{fmtDecl(res.z.decA)} / {fmtDecl(res.z.decB)}</b></div>
         {res.tiltA != null && res.tiltB != null ? <>
           <div className="calc-out"><span>Tilt at A toward B</span><b>{tiltText(res.tiltA)}</b></div>
           <div className="calc-out"><span>Tilt at B toward A</span><b>{tiltText(res.tiltB)}</b></div>

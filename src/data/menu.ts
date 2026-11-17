@@ -96,6 +96,7 @@ export const MENU_PAGES: MenuPage[] = [
   { id: 'contacts', label: 'Contacts & Web Resources', group: 'tools', keywords: 'phone fire marshal inspector ahj' },
   { id: 'directions', label: 'Map & Directions', group: 'tools', keywords: 'directions drive route navigate' },
   { id: 'devices', label: 'Bluetooth & Wi-Fi Devices', group: 'tools', keywords: 'bluetooth wifi device meter gps receiver laser distance scanner connect' },
+  { id: 'magnetic', label: 'Magnetic Field & Space Weather', group: 'tools', keywords: 'magnetic declination variation compass true north magnetic north wmm world magnetic model noaa ncei dip inclination field strength nanotesla prediction forecast space weather geomagnetic storm kp solar flare radio blackout gps aurora swpc' },
   { id: 'mappacks', label: 'Offline Map Packs', group: 'tools', keywords: 'offline maps download area map pack no internet' },
 
   { id: 'projects', label: 'Projects & Storage', group: 'files', keywords: 'save open backup history delete check for updates automatic care' },

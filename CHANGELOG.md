@@ -1,3 +1,10 @@
+# LvPlan Pro 1.5.70
+
+- **New page: Tools & reference → Magnetic Field & Space Weather.** Shows how far a compass points away from true north at the job (Asheville when no site is set), how much that changes each year, the dip and field strength, from NOAA's World Magnetic Model. It is built into the app and works with no internet; the next model (WMM2030) downloads by itself when NOAA publishes it.
+- **Predictions over time:** the numbers for every half year from 2025 to 2030 with a chart, and a map bearing ↔ compass reading converter that shows how far off 1° of error lands at 1 and 10 miles.
+- **Live space weather from NOAA:** the Kp index for the last two days and the next three, storm levels G1–G5, the chance of radio blackouts, and what each means for compass, GPS and HF radio. It downloads by itself every 3 hours when online (Automatic care) and the last forecast is kept for offline use.
+- During a geomagnetic storm, a warning shows beside compass bearings on the other pages, suggesting GPS aiming instead.
+
 # LvPlan Pro 1.5.69
 
 - **New introduction video.** The ▶ Video at the top of the app is a new, full tour, about 30 minutes long. It goes through every page and tool in the order of the menu, from project setup to reports, then the tools and settings. It includes everything new up to this version: costs, vendors and budget, full-page maps, sharper maps and the RadioReference key in User Settings.
