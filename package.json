@@ -15,7 +15,7 @@
     "desktop:build": "tauri icon app-icon.png && tauri build"
   },
   "dependencies": {
-    "@capacitor/android": "^6.2.0",
+    "@capacitor/android": "^6.2.3",
     "@capacitor/core": "^6.2.0",
     "@zxing/library": "^0.21.3",
     "geotiff": "^2.1.3",
