@@ -15,6 +15,7 @@ import { legacyTag } from '../data/lvequipment';
 import { LV_CALCS } from '../data/lvcalcs';
 import { LvCalcCard } from '../components/SystemsUI';
 import { SoundTools, soundToolsMatch } from '../components/SoundTools';
+import { SiteNotes, SiteConditionsCard } from '../components/SiteNotes';
 
 /** One calculator card with its own ↺ Reset. `k` = extra search keywords. Calculators keep their own numbers: they
  * read the project only on "Use project values" and write it only on "Apply to fields", both by the user's choice. */
@@ -25,7 +26,7 @@ function Calc({ id, title, k, q, children, note, group, apply, applyWhat, fromPr
   const reset = React.useContext(CalcResetCtx);
   const hay = (title + ' ' + k + ' ' + (group ?? '')).toLowerCase();
   if (q && !q.toLowerCase().split(/\s+/).every((w) => hay.includes(w))) return null;
-  return <section className="card calc" data-calc={id}><header><h3>{title}</h3><ResetBtn onReset={onReset ?? (() => reset(id))} /></header>{children}{note && <p className="small muted">{note}</p>}
+  return <section className="card calc" data-calc={id}><header><h3>{title}</h3><ResetBtn onReset={onReset ?? (() => reset(id))} /></header>{children}{note && <p className="small muted">{note}</p>}<SiteNotes calcId={id} />
     <CalcActions apply={apply} applyWhat={applyWhat ?? `“${title}”`} fromProject={fromProject} /></section>;
 }
 const In = ({ label, children }: { label: string; children: React.ReactNode }) => <label className="field"><span className="field-label">{label}</span><FieldLabel.Provider value={label}>{children}</FieldLabel.Provider></label>;
@@ -122,6 +123,7 @@ export function CalculatorsPage() {
       <div className="card"><input className="search" type="search" placeholder="Search calculators (e.g. battery, poe, cctv storage, 70v, fiber loss, vswr)…" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Search calculators" />
         <p className="small muted">Each calculator keeps its own numbers: it starts from an example (460 MHz for radio), is not changed by the project, and does not change the project. Press ⇣ Use project values to copy numbers in, ➜ Apply to fields to put a result into the project (it asks first), or ↺ Reset to start a calculator over. Distances use {u.label} (change on Company & Project). Results are planning aids; verify critical values against manufacturer data and the adopted codes.</p></div>
 
+      {!q && <SiteConditionsCard />}
       {[...new Set(LV_CALCS.map((c) => c.group))].map((g) => {
         const words = q.toLowerCase().split(/\s+/).filter(Boolean);
         const list = LV_CALCS.filter((c) => c.group === g && words.every((w) => `${c.title} ${c.keywords} ${g}`.toLowerCase().includes(w)));

@@ -11,6 +11,8 @@ import { writeDxf, DxfEnt } from './fileformats';
 import { specFor, BuildingSpec, MAT, matLossDb, rt60, rtAdvice, jacketFor, ratingsFor, outsideInLossDb } from './bldgmaterials';
 import { SYSTEMS } from '../data/systems';
 import { bearingDeg, haversineKm } from './geo';
+import { planModelWalls } from './floorplan';
+import { perProject } from './memo';
 
 export const SYSTEM_COLOR: Record<string, string> = {
   cabling: '#2e7d32', fiber: '#f9a825', wifi: '#00acc1', firealarm: '#c62828', massnotif: '#ad1457', security: '#6a1b9a', access: '#ef6c00',
@@ -125,9 +127,13 @@ const greedyChain = <T extends { x: number; y: number }>(start: { x: number; y: 
   return out;
 };
 
-export interface ModelOptions { wallsFrom?: 'typical' | 'indoor'; spec?: Partial<BuildingSpec> }
+export interface ModelOptions { wallsFrom?: 'typical' | 'indoor' | 'plan'; spec?: Partial<BuildingSpec> }
+/** Whether the project has an imported floor plan in its plan and build (Floor Plan to 2D / 3D). */
+export const hasPlanWalls = (p: Project) => !!p.floorPlans?.some((f) => f.integrated && f.scale.ftPerPx);
 
-export function buildModel(p: Project, opts: ModelOptions = {}): ModelScene {
+/** The layered model of the building (cached for each version of the project). */
+export const buildModel = perProject((p: Project, opts: ModelOptions = {}): ModelScene => buildModelNow(p, opts), (opts?: ModelOptions) => JSON.stringify(opts ?? {}));
+function buildModelNow(p: Project, opts: ModelOptions = {}): ModelScene {
   const x: AutoInputs = { ...defaultInputs(), ...(p.autoDesign ?? {}) };
   const r = autoDesign(p, x);
   const L = Math.max(20, x.lengthFt), W = Math.max(20, x.widthFt), FH = Math.max(8, x.floorHeightFt), CF = Math.max(7, Math.min(FH - 1, x.ceilingFt)), F = Math.max(1, Math.round(x.floors));
@@ -143,9 +149,11 @@ export function buildModel(p: Project, opts: ModelOptions = {}): ModelScene {
   const sl = (sys: string, sub: SubLayer, label: string, on: boolean, tip: string) => add({ id: `${sys}:${sub}`, group: sys, groupLabel: sysLabel(sys), label, color: SYSTEM_COLOR[sys] ?? '#555', on, tip });
 
   // walls
-  let walls = opts.wallsFrom === 'indoor' ? indoorWallsAsFt(p, L, W, F) : [];
+  const from = opts.wallsFrom ?? (hasPlanWalls(p) ? 'plan' : 'typical');
+  let walls: MWall[] = from === 'indoor' ? indoorWallsAsFt(p, L, W, F) : from === 'plan' ? planModelWalls(p.floorPlans ?? [], spec, MAT) : [];
+  const fromPlan = from === 'plan' && walls.length > 0;
   if (!walls.length) walls = makeWalls(L, W, F, spec, x);
-  const shafts = shaftBoxes(L, W, spec, F);
+  const shafts = fromPlan ? [] : shaftBoxes(L, W, spec, F);
   for (let f = 0; f < F; f++) for (const s of shafts) {
     const c: [number, number][] = [[s.x, s.y], [s.x + s.w, s.y], [s.x + s.w, s.y + s.h], [s.x, s.y + s.h]];
     c.forEach((a, i) => { const b = c[(i + 1) % 4]; walls.push({ layer: 'base:shafts', floor: f, x1: a[0], y1: a[1], x2: b[0], y2: b[1], material: s.material, color: MAT[s.material]?.color ?? '#333', ratedHr: s.ratedHr, part: s.part }); });

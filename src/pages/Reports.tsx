@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useStore, downloadText } from '../store';
 import { ImportFiles } from '../components/ImportFiles';
 import { GUIDES, GUIDES_FOR, guideCtx } from './Install';
@@ -38,10 +38,12 @@ import { askConfirm } from '../components/askConfirm';
 import { PhotoSurveyReport } from './PhotoSurvey';
 import { compareReadings, compareVerdict, gridTest } from '../engine/signal';
 import { nextPm } from '../engine/assets';
+import { PlanSheet2D, PlanSchedules } from '../components/PlanViews';
+import { buildModel } from '../engine/models';
 
 const REPORTS = [
   ['cover', 'Cover letter & summary'], ['scope', 'Scope of work'], ['autoequip', 'Recommended equipment'], ['bom', 'Materials list'], ['price', 'Price'],
-  ['schedule', 'Schedule'], ['terms', 'Terms, exclusions & acceptance'], ['plans', 'Floor plans'], ['devices', 'Device schedule'], ['codes', 'Codes in effect'],
+  ['schedule', 'Schedule'], ['terms', 'Terms, exclusions & acceptance'], ['plans', 'Floor plans'], ['schedules', 'Room, door & window schedules'], ['devices', 'Device schedule'], ['codes', 'Codes in effect'],
   ['contacts', 'Inspection contacts'], ['ck-survey', 'Site survey checklist'], ['ck-permit', 'Permit & submittal checklist'], ['ck-install', 'Installation checklist'], ['ck-testing', 'Testing checklist'],
   ['tests', 'Commissioning / Test Report'], ['ck-closeout', 'Closeout checklist'], ['pm', 'Maintenance schedule'], ['documents', 'Documents index'], ['photos', 'Photos'], ['diagrams', 'Wiring diagrams (color)'], ['warranty', 'Warranty & owner sign-off'],
   ['site', 'Site Data Sheet'], ['link', 'Link Budget & Path Analysis'], ['coverage', 'Coverage Summary'], ['grounding', 'Grounding & Structure'],
@@ -52,8 +54,8 @@ type RK = (typeof REPORTS)[number][0];
 /** Report packages and the sections each starts with. Every section can be ticked on or off. */
 export const PACKAGES: { id: string; label: string; title: string; sections: RK[] }[] = [
   { id: 'proposal', label: 'Project proposal', title: 'Project Proposal', sections: ['cover', 'scope', 'autoequip', 'bom', 'price', 'schedule', 'codes', 'photos', 'terms'] },
-  { id: 'build', label: 'Build plan', title: 'Build Plan', sections: ['scope', 'schedule', 'plans', 'devices', 'autoequip', 'bom', 'codes', 'contacts', 'ck-permit', 'ck-install', 'ck-testing', 'diagrams', 'photos'] },
-  { id: 'closeout', label: 'Closeout package', title: 'Closeout Package', sections: ['cover', 'plans', 'devices', 'assets', 'tests', 'readings', 'photos', 'diagrams', 'ck-closeout', 'pm', 'documents', 'warranty'] },
+  { id: 'build', label: 'Build plan', title: 'Build Plan', sections: ['scope', 'schedule', 'plans', 'schedules', 'devices', 'autoequip', 'bom', 'codes', 'contacts', 'ck-permit', 'ck-install', 'ck-testing', 'diagrams', 'photos'] },
+  { id: 'closeout', label: 'Closeout package', title: 'Closeout Package', sections: ['cover', 'plans', 'schedules', 'devices', 'assets', 'tests', 'readings', 'photos', 'diagrams', 'ck-closeout', 'pm', 'documents', 'warranty'] },
   { id: 'survey', label: 'Site survey report', title: 'Site Survey Report', sections: ['site', 'photosurvey', 'ck-survey', 'readings', 'photos', 'notes', 'codes', 'contacts'] },
   { id: 'engineering', label: 'Engineering reports (radio, power, codes)', title: 'Engineering Report', sections: ['site', 'photosurvey', 'link', 'coverage', 'grounding', 'solar', 'alarm', 'erces', 'compliance', 'bom', 'tests', 'readings', 'notes'] },
 ];
@@ -119,6 +121,8 @@ export function ReportsPage() {
   const devCount = ad.devices.length;
   const runH = siteRunHours(p), autoH = laborEstimate(devCount, systems.length) + runH;
   const bom = buildBom(p);
+  const docPlans = [...(p.floorPlans ?? [])].filter((x) => x.inDocs).sort((a, b) => a.floor - b.floor);
+  const planScene = useMemo(() => (docPlans.some((x) => x.integrated) ? buildModel(p) : null), [p]); // eslint-disable-line react-hooks/exhaustive-deps
   const [book, setBook] = useState<PriceBook>({});
   useEffect(() => { loadPriceBook().then(setBook); }, []);
   const et = totals(p, bom, book);
@@ -163,7 +167,8 @@ export function ReportsPage() {
     terms: () => <><h4>Exclusions</h4><p style={{ whiteSpace: 'pre-wrap' }}>{q.exclusions}</p><h4>Payment terms</h4><p style={{ whiteSpace: 'pre-wrap' }}>{q.paymentTerms}</p>{q.notes && <><h4>Notes</h4><p style={{ whiteSpace: 'pre-wrap' }}>{q.notes}</p></>}
       <p>This proposal is valid for {q.validDays} days. Design quantities are a planning estimate and must be confirmed by a licensed professional and the AHJ.</p>
       <div className="sign"><div>Accepted by (client) ____________________ Title __________ Date ________</div><div>For {c.name || 'the contractor'} ____________________ Date ________</div></div></>,
-    plans: () => !ad.devices.length ? <p>No layout yet. Pick the project type, then describe the building on Auto-Design & 3D Model.</p> : <FloorPlan2D r={ad} lengthFt={p.autoDesign?.lengthFt ?? 200} widthFt={p.autoDesign?.widthFt ?? 100} floor="all" hidden={new Set()} />,
+    plans: () => docPlans.length ? <>{docPlans.map((x) => <div key={x.id} className="rpt-plan"><PlanSheet2D plan={x} scene={x.integrated ? planScene : null} off={[...(x.off ?? []), 'underlay']} title={x.level} northDeg={p.blueprint?.planNorthDeg ?? 0} maxHeight={900} /></div>)}</> : !ad.devices.length ? <p>No layout yet. Pick the project type, then describe the building on Auto-Design & 3D Model.</p> : <FloorPlan2D r={ad} lengthFt={p.autoDesign?.lengthFt ?? 200} widthFt={p.autoDesign?.widthFt ?? 100} floor="all" hidden={new Set()} />,
+    schedules: () => docPlans.filter((x) => x.scale.ftPerPx).length ? <>{docPlans.filter((x) => x.scale.ftPerPx).map((x) => <PlanSchedules key={x.id} plan={x} />)}</> : <p>No floor plans are included in the documentation yet. Tick <b>Include in project documentation</b> on Floor Plan to 2D / 3D.</p>,
     devices: () => <table className="rpt-tbl"><thead><tr><th>Device</th><th>Quantity</th>{Array.from({ length: Math.max(1, p.autoDesign?.floors ?? 1) }, (_, i) => <th key={i}>Floor {i + 1}</th>)}</tr></thead>
       <tbody>{(Object.keys(kindsCount) as Kind[]).map((k) => <tr key={k}><td>{KIND_LABEL[k]}</td><td>{kindsCount[k]}</td>{Array.from({ length: Math.max(1, p.autoDesign?.floors ?? 1) }, (_, i) => <td key={i}>{ad.devices.filter((d) => d.kind === k && d.floor === i).length}</td>)}</tr>)}</tbody></table>,
     codes: () => <CodesHere />,

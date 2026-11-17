@@ -1,3 +1,4 @@
+import { perProject } from './memo';
 // Materials list (bill of materials) generator. Quantities are derived from the design; the user can override any line.
 import { autoDesign, defaultInputs } from './autodesign';
 import { projectSystems } from '../data/systems';
@@ -12,7 +13,10 @@ import { projectRuns } from './siteruns';
 export interface BomLine { key: string; category: string; item: string; brandModel: string; qty: number; unit: string; basis: string; extraId?: string; removed?: boolean; edited?: boolean }
 
 /** The Materials list. Lines taken off the list are left out unless `withRemoved` (then marked `removed`). */
-export function buildBom(p: Project, opts: { withRemoved?: boolean } = {}): BomLine[] {
+/** The Materials list (cached for each version of the project; a fresh array each call). */
+export function buildBom(p: Project, opts: { withRemoved?: boolean } = {}): BomLine[] { return bomCached(p, !!opts.withRemoved).slice(); }
+const bomCached = perProject((p: Project, withRemoved: boolean) => buildBomNow(p, { withRemoved }));
+function buildBomNow(p: Project, opts: { withRemoved?: boolean } = {}): BomLine[] {
   const L: BomLine[] = [];
   const add = (category: string, key: string, item: string, brandModel: string, qty: number, unit: string, basis: string) => {
     if (qty <= 0) return;

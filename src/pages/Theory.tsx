@@ -5,6 +5,7 @@ import React, { useMemo, useState } from 'react';
 import { THEORY, LEVELS, type Level } from '../data/theory';
 import { Md } from '../help/HelpUI';
 import { lvCalc } from '../data/lvcalcs';
+import { PRACTICES } from '../data/theoryPractices';
 import { LvCalcCard } from '../components/SystemsUI';
 import { useStore } from '../store';
 import { THEORY_DIAGRAMS } from '../components/TheoryDiagrams';
@@ -16,17 +17,17 @@ export function TheoryPage() {
   const [lv, setLv] = useState<Level | 'All'>('All');
   const [open, setOpen] = useState<Record<string, boolean>>({});
   const words = q.toLowerCase().split(/\s+/).filter(Boolean);
-  const parts = useMemo(() => THEORY.map((p) => ({ ...p, sections: p.sections.filter((s) => (lv === 'All' || s.level === lv) && words.every((w) => `${s.title} ${s.body} ${p.title}`.toLowerCase().includes(w))) })).filter((p) => p.sections.length), [q, lv]); // eslint-disable-line react-hooks/exhaustive-deps
+  const parts = useMemo(() => THEORY.map((p) => ({ ...p, sections: p.sections.filter((s) => (lv === 'All' || s.level === lv) && words.every((w) => `${s.title} ${s.body} ${p.title} ${(PRACTICES[s.id] ?? []).join(' ')}`.toLowerCase().includes(w))) })).filter((p) => p.sections.length), [q, lv]); // eslint-disable-line react-hooks/exhaustive-deps
   const jump = (id: string) => { const el = document.getElementById(`th-${id}`); if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 70, behavior: 'smooth' }); };
   const count = parts.reduce((a, p) => a + p.sections.length, 0);
   return (
     <div className="theory">
       <div className="card">
         <div className="row wrap">
-          <input className="search" type="search" placeholder="Search the text (e.g. voltage drop, plenum, EOL, STI)…" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Search low-voltage principles" />
+          <input className="search" type="search" placeholder="Search the text (e.g. voltage drop, VSWR, Fresnel, EIRP, PoE)…" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Search low-voltage and RF design principles" />
           <span className="row" role="group" aria-label="Level">{(['All', ...LEVELS] as const).map((l) => <button key={l} className={lv === l ? 'primary' : ''} onClick={() => setLv(l)}>{l}</button>)}</span>
         </div>
-        <p className="small muted">From the basics to advanced design, in the order you need them: fundamentals, cabling, each system, installation, then design and troubleshooting. Built into the app, so it reads offline. General training text: the adopted code edition, the manufacturer's instructions and the AHJ decide what applies on a job.</p>
+        <p className="small muted">From the basics to advanced design, in the order you need them: fundamentals, cabling, each system, installation, design and troubleshooting, RF engineering, then system design concepts. Every section ends with industry best practices. Built into the app, so it reads offline. General training text: the adopted code edition, the manufacturer's instructions and the AHJ decide what applies on a job.</p>
       </div>
       <div className="theory-wrap">
         <nav className="card theory-index" aria-label="Index">
@@ -44,6 +45,7 @@ export function TheoryPage() {
                 <article key={s.id} id={`th-${s.id}`} className="theory-sec">
                   <h3>{s.title} <span className={`lvl lvl-${s.level.toLowerCase()}`}>{s.level}</span></h3>
                   <Md text={s.body} />
+                  {PRACTICES[s.id]?.length ? <div className="practices"><b>✔ Industry best practices</b><ul>{PRACTICES[s.id].map((t) => <li key={t}>{t}</li>)}</ul></div> : null}
                   {s.diagrams?.map((d) => { const td = THEORY_DIAGRAMS[d], g = GUIDES.find((x) => x.id === d); return td || g ? <FullView key={d} title={td ? td.title : `Wiring diagram: ${g!.title}`}><figure className="theory-fig"><figcaption><b>{td ? td.title : `Wiring diagram: ${g!.title}`}</b></figcaption>{td ? <td.el /> : g!.diagram(guideCtx(project))}</figure></FullView> : null; })}
                   {(s.pages?.length || s.calcs?.length) ? <div className="row wrap">
                     {s.pages?.map(([id, label]) => <button key={id + label} onClick={() => go(id)}>Open {label} →</button>)}

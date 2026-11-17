@@ -1,3 +1,4 @@
+import { SiteNotes, useSiteEffects } from './SiteNotes';
 import React, { useState } from 'react';
 import { ResetBtn, CalcActions } from './CalcKit';
 import { getPath } from '../engine/calcApply';
@@ -81,9 +82,12 @@ function CustomPicker({ compact }: { compact?: boolean }) {
 /** One data-driven calculator. Blank boxes are never counted as zero; wrong entries get a message and a fix. */
 export function LvCalcCard({ c }: { c: LvCalc }) {
   const [v, setV] = useState<Record<string, number | null>>({});
-  const chk = checkCalc(c, v); const sys = React.useContext(MeasureCtx);
+  const base = Object.fromEntries(c.inputs.map((i) => [i.k, v[i.k] ?? i.v])) as Record<string, number>;
+  const site = useSiteEffects(c.id, base);
+  const vAdj = { ...v, ...Object.fromEntries(Object.entries(site.adjusted).filter(([k, n]) => n !== base[k])) };
+  const chk = checkCalc(c, vAdj); const sys = React.useContext(MeasureCtx);
   const notes = chk.issues.filter((i) => !i.msg.endsWith('is empty.') && !isRangeIssue(i));
-  const full = () => Object.fromEntries(c.inputs.map((i) => [i.k, v[i.k] ?? i.v])) as Record<string, number>;
+  const full = () => Object.fromEntries(c.inputs.map((i) => [i.k, vAdj[i.k] ?? i.v])) as Record<string, number>;
   return (
     <section className="card calc" data-calc={c.id}><header><h3>{c.title}</h3><ResetBtn onReset={() => setV({})} /></header>
       <div className="form">{c.inputs.map((i) => (
@@ -95,6 +99,7 @@ export function LvCalcCard({ c }: { c: LvCalc }) {
       {chk.out ? chk.out.map((o) => { const [val, un] = shownIn(o.value, o.unit, sys); return <div key={o.label} className={'calc-out' + (o.tone ? ' ' + o.tone : '')}><span>{o.label}</span><b>{val}{un && <small> {un}</small>}</b></div>; })
         : <p className="small calc-wait">{chk.missing.length ? `Fill in ${chk.missing.join(', ')} to see the result.` : notes.some((i) => i.level === 'bad') ? 'Fix the problem above to see the result.' : 'Fix the entry marked in red to see the result.'}</p>}
       {c.note && <p className="small muted">{c.note}</p>}
+      <SiteNotes calcId={c.id} effects={site.all} />
       <CalcActions applyWhat={`“${c.title}”`}
         apply={c.apply && chk.out ? () => c.apply!(full()).map((t) => ({ id: t.id, label: t.label, page: t.page, sets: [[t.path, t.value]], to: t.to, on: t.on, now: (p) => { const x = getPath(p, t.path); return x == null ? '' : t.show ? t.show(x) : String(x); } })) : undefined}
         fromProject={c.fromProject ? (p) => setV({ ...v, ...c.fromProject!(p) }) : undefined} />
