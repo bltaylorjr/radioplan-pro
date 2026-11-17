@@ -153,6 +153,14 @@ export interface Project {
   assets?: import('./engine/assets').Asset[];
   /** NOAA weather for the project site (saved by the Weather page): conditions, 7-day low/high/wind, alerts and work-day notes. */
   weather?: import('./engine/weather').ProjectWeather;
+  /** Floor plans imported from PDF, DXF or image files (Floor Plan to 2D / 3D), one per floor. */
+  floorPlans?: import('./engine/floorplan').FloorPlanImport[];
+  /** Soil iron at the site (USGS soil geochemistry), entered from the USGS data portal. */
+  siteSoil?: { fePct: number; source: string };
+  /** Site condition variables removed from calculations ("calcId:varId"). */
+  siteVarsOff?: string[];
+  /** Project Build Output: when each element first appeared (key → ISO time). */
+  buildSeen?: Record<string, string>;
 }
 export interface Blueprint { size: string; scale: string; drawnBy: string; checkedBy: string; revisions: { rev: string; date: string; desc: string }[]; off: string[];
   /** Azimuth (degrees true) that the top of the plan faces; turns the north arrow. 0 = plan north is true north. */

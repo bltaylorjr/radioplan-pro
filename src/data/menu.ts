@@ -91,8 +91,10 @@ export const MENU_PAGES: MenuPage[] = [
 
   { id: 'reports', label: 'Reports, Proposals & Closeout', group: 'closeout', keywords: 'report proposal quote pdf word closeout package' },
 
+  { id: 'floorplan', label: 'Floor Plan to 2D / 3D', group: 'tools', keywords: 'floor plan blueprint upload pdf jpg png dxf scan photo drawing 2d 3d model trace walls doors windows rooms area scale calibrate to scale custom scale sheet size print draw create plan drag drop picture in picture layers' },
+  { id: 'buildout', label: 'Project Build Output', group: 'tools', keywords: 'final output build sheet index cover sheet live progress schedules room door window device schedule picture in picture' },
   { id: 'calculators', label: 'Calculators', group: 'tools', keywords: 'calculator azimuth calculator voltage drop battery reset apply to fields' },
-  { id: 'theory', label: 'Low-Voltage Principles', group: 'tools', keywords: 'training basics theory learn' },
+  { id: 'theory', label: 'Low-Voltage & RF Design Principles', group: 'tools', keywords: 'training basics theory learn low voltage principles rf radio frequency propagation antennas link budget decibels modulation transmission lines vswr fresnel interference noise shielding emi power design concepts' },
   { id: 'contacts', label: 'Contacts & Web Resources', group: 'tools', keywords: 'phone fire marshal inspector ahj' },
   { id: 'directions', label: 'Map & Directions', group: 'tools', keywords: 'directions drive route navigate' },
   { id: 'devices', label: 'Bluetooth & Wi-Fi Devices', group: 'tools', keywords: 'bluetooth wifi device meter gps receiver laser distance scanner connect' },

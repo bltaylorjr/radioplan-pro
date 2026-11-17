@@ -78,6 +78,8 @@ const SignalReadingsPage = page(() => import('./pages/SignalReadings'), 'SignalR
 const AssetsPage = page(() => import('./pages/Assets'), 'AssetsPage');
 const MagneticPage = page(() => import('./pages/Magnetic'), 'MagneticPage');
 const WeatherPage = page(() => import('./pages/Weather'), 'WeatherPage');
+const FloorPlanPage = page(() => import('./pages/FloorPlan'), 'FloorPlanPage');
+const BuildOutputPage = page(() => import('./pages/BuildOutput'), 'BuildOutputPage');
 const TerrainPage = lazy(track(() => import('./pages/Terrain')));
 const CoveragePage = lazy(track(() => import('./pages/Coverage')));
 const View3DPage = lazy(track(() => import('./pages/View3D')));
@@ -85,6 +87,8 @@ const FccPage = lazy(track(() => import('./pages/Fcc')));
 const FaaPage = lazy(track(() => import('./pages/Faa')));
 const OfflineArea = page(() => import('./components/OfflineArea'), 'OfflineArea');
 import { MapPackBadge } from './components/MapPacks';
+import { GlobalFileDrop } from './components/DropZone';
+import { PlanPipHost } from './components/PlanPip';
 
 /** Page components by menu id. The menu order, labels and sections live in src/data/menu.ts. */
 export const PAGE_ELEMENTS: Record<string, React.ReactNode> = {
@@ -135,6 +139,8 @@ export const PAGE_ELEMENTS: Record<string, React.ReactNode> = {
   calculators: <CalculatorsPage />,
   magnetic: <MagneticPage />,
   weather: <WeatherPage />,
+  floorplan: <FloorPlanPage />,
+  buildout: <BuildOutputPage />,
   mappacks: <OfflineArea />,
   projects: <ProjectsPage />,
   sync: <SyncPage />,
@@ -267,6 +273,8 @@ export default function App() {
     <MeasureCtx.Provider value={project.settings.units === 'km' ? 'metric' : 'imperial'}>
     <div className={'app' + (navOpen ? ' nav-open' : '')}>
       <AutoTerrain />
+      <GlobalFileDrop />
+      <PlanPipHost />
       <Updater />
       <Maintainer />
       {welcome && !video && <Welcome onClose={() => setWelcome(false)} onHelp={() => setHelpOpen(true)} />}
@@ -302,7 +310,7 @@ export default function App() {
             </button>
             {open && VIS.filter((w) => w.groupId === g.id).map((w) => (
               <a key={w.id} href={`#${w.id}`} className={(w.id === current?.id ? 'active' : '') + (skipped.has(w.id) ? ' skipped' : '')} title={skipped.has(w.id) ? 'Skipped on this project' : undefined} onClick={(e) => { e.preventDefault(); go(w.id); }}>
-                {(() => { const cl = checklistFor(w.id), pr = cl && progressOf(cl, project), full = !!pr && pr.total > 0 && pr.done === pr.total; return <span className={'step-dot' + (full ? ' done' : '') + (stepNo(w) ? '' : ' tool')} title={pr ? `${pr.done} of ${pr.total} checklist items done` : undefined}>{skipped.has(w.id) ? '–' : full ? '✓' : stepNo(w) ?? '•'}</span>; })()}
+                {(() => { const cl = checklistFor(w.id), pr = cl && progressOf(cl, project), full = !!pr && pr.total > 0 && pr.done === pr.total; return <span className={'step-dot' + (full ? ' done' : '') + (stepNo(w) ? '' : ' tool')} title={pr ? `${pr.done} of ${pr.total} checklist items done` : undefined}>{skipped.has(w.id) ? '–' : full ? '✓' : '•'}</span>; })()}
                 {w.label}
                 {w.id === 'compliance' && nViol > 0 && <span className="pill bad">{nViol}</span>}
                 {w.id === 'company' && rt.showRequired && nReq > 0 && <span className="pill bad" title={`${nReq} required field(s) empty`}>{nReq}</span>}
@@ -330,7 +338,7 @@ export default function App() {
                 <button disabled={!prevW} onClick={() => prevW && go(prevW.id)} aria-label="Previous page" title={prevW?.label}>←</button>
                 <select value={current.id} onChange={(e) => go(e.target.value)} aria-label="Go to page" data-no-choose>
                   {!VIS.includes(current) && <option value={current.id}>{current.label}</option>}
-                  {groups.map((g) => <optgroup key={g} label={g}>{VIS.filter((w) => w.group === g).map((w) => <option key={w.id} value={w.id}>{stepNo(w) ? `${stepNo(w)}. ` : ''}{w.label}</option>)}</optgroup>)}
+                  {groups.map((g) => <optgroup key={g} label={g}>{VIS.filter((w) => w.group === g).map((w) => <option key={w.id} value={w.id}>{w.label}</option>)}</optgroup>)}
                 </select>
                 <button disabled={!nextW} onClick={() => nextW && go(nextW.id)} aria-label="Next page" title={nextW?.label}>→</button>
                 {topic.tour && <button onClick={() => setTour(topic.tour!)} data-tour-btn>▶ Guide me</button>}

@@ -5,7 +5,7 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
 /** Big data files are saved for offline use after the app is ready, not before it can start. */
-const EXTRA = /\/(nc|sc|ga|tn|va|airports|ashevilleTerrain)-[\w-]+\.js$/;
+const EXTRA = /\/(nc|sc|ga|tn|va|airports|ashevilleTerrain|pdf|pdf\.worker)-[\w-]+\.js$/;
 
 /** Online version only: write sw.js listing every program file so the site keeps working offline. */
 function offlineServiceWorker(): Plugin {
