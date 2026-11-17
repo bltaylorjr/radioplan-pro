@@ -1,3 +1,8 @@
+# LvPlan Pro 1.5.70
+
+- **Introduction video, clearer narration.** "3D" and "2D" are now said clearly as "three-D" and "two-D". The narrator slows down a little whenever he reads through a list. He says "plain language" instead of "plain words", and the zoom buttons are just "plus and minus buttons".
+- The sample projects and suppliers in the video now use made-up business names (Tallpine Medical Center, Downtown Office Renovation, Brightwire Electric Supply, Copperleaf Low Voltage). The example names in the Project name and Company name boxes changed to match.
+
 # LvPlan Pro 1.5.69
 
 - **New introduction video.** The ▶ Video at the top of the app is a new, full tour, about 30 minutes long. It goes through every page and tool in the order of the menu, from project setup to reports, then the tools and settings. It includes everything new up to this version: costs, vendors and budget, full-page maps, sharper maps and the RadioReference key in User Settings.
