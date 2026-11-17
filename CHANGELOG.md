@@ -1,3 +1,6 @@
+# LvPlan Pro 1.5.75
+
+- **Next / Skip bar only on project steps:** the ← Back · Skip this step · Next → bar at the bottom of the page now shows only on the numbered project steps (sections 1 to 10). Tools & reference and Projects & settings pages no longer have it. On the steps, Next and Back move between steps only, so the last step no longer jumps into the Tools pages. The ← → arrows and page list at the top still reach every page.
 # LvPlan Pro 1.5.74
 
 - **Radar loop:** ▶ Play last hour on the Weather & Radar radar map shows how storms are moving.
