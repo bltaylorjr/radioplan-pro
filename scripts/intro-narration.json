@@ -397,7 +397,7 @@
  },
  {
   "id": "estimate.est3",
-  "text": "To look parts up online, tick the lines you want, or Select all, then tap Search online.\nPick a shopping site, a parts distributor, or one of your own vendors."
+  "text": "To look parts up online, tick the lines you want, or Select all, then tap Search online.\nPick Google Shopping, Amazon, [Octopart](/ˈɑktəpˌɑɹt/), [Digi-Key](/dˈɪʤi kˌi/), [Mouser](/mˈWzəɹ/), or one of your own vendors."
  },
  {
   "id": "estimate.est4",
@@ -473,7 +473,7 @@
  },
  {
   "id": "tour-tools.t-directions",
-  "text": "Map and Directions shows the project location, and opens directions to the job site in the map app on your phone."
+  "text": "Map and Directions shows the project location, and opens directions to the job site in Google Maps, Apple Maps or Waze."
  },
  {
   "id": "signal.dv1",
