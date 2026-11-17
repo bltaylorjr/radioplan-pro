@@ -1,0 +1,14 @@
+[
+ {
+  "id": "info.vi1",
+  "text": "Every value box has a small i beside it.\nPoint at it with the mouse, or tap it on a phone, to see what the value means in plain language, its unit, and the normal range."
+ },
+ {
+  "id": "settings.st3",
+  "text": "When a number is out of range, the box turns red, says what is wrong in plain language, and offers a one-tap fix.\nA blank box is never counted as zero."
+ },
+ {
+  "id": "online.u1",
+  "text": "When you are online, code [editions](/ɛdˈɪʃənz/), contacts, the equipment catalog, help, and the magnetic model update by themselves."
+ }
+]

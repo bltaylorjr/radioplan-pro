@@ -1,0 +1,10 @@
+[
+ {
+  "id": "signal.sg3",
+  "text": "The app compares the real readings with the prediction and tells you in plain language how well they match.\nThe map shows the readings, the difference, or a heat map.\nIndoors, the grid test shows pass or fail on each floor."
+ },
+ {
+  "id": "tour-tools.t-theory",
+  "text": "Low-Voltage Principles explains how each system works, in plain language."
+ }
+]

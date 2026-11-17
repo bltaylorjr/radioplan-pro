@@ -33,7 +33,7 @@
  },
  {
   "id": "info.vi1",
-  "text": "Every value box has a small i beside it.\nPoint at it with the mouse, or tap it on a phone, to see what the value means in [laymen's](/lˈAmənz/) terms, its unit, and the normal range."
+  "text": "Every value box has a small i beside it.\nPoint at it with the mouse, or tap it on a phone, to see what the value means in plain language, its unit, and the normal range."
  },
  {
   "id": "info.vi2",
@@ -209,7 +209,7 @@
  },
  {
   "id": "signal.sg3",
-  "text": "The app compares the real readings with the prediction and tells you in [laymen's](/lˈAmənz/) terms how well they match.\nThe map shows the readings, the difference, or a heat map.\nIndoors, the grid test shows pass or fail on each floor."
+  "text": "The app compares the real readings with the prediction and tells you in plain language how well they match.\nThe map shows the readings, the difference, or a heat map.\nIndoors, the grid test shows pass or fail on each floor."
  },
  {
   "id": "tour-lv.t-autodesign",
@@ -465,7 +465,7 @@
  },
  {
   "id": "tour-tools.t-theory",
-  "text": "Low-Voltage Principles explains how each system works, in [laymen's](/lˈAmənz/) terms."
+  "text": "Low-Voltage Principles explains how each system works, in plain language."
  },
  {
   "id": "tour-tools.t-contacts",
@@ -513,7 +513,7 @@
  },
  {
   "id": "online.u1",
-  "text": "When you are online, code [editions](/ɪdˈɪʃənz/), contacts, the equipment catalog, help, and the magnetic model update by themselves."
+  "text": "When you are online, code [editions](/ɛdˈɪʃənz/), contacts, the equipment catalog, help, and the magnetic model update by themselves."
  },
  {
   "id": "online.u2",
@@ -533,7 +533,7 @@
  },
  {
   "id": "settings.st3",
-  "text": "When a number is out of range, the box turns red, says what is wrong in [laymen's](/lˈAmənz/) terms, and offers a one-tap fix.\nA blank box is never counted as zero."
+  "text": "When a number is out of range, the box turns red, says what is wrong in plain language, and offers a one-tap fix.\nA blank box is never counted as zero."
  },
  {
   "id": "settings.st4",
