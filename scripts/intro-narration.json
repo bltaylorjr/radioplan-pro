@@ -516,6 +516,34 @@
   "text": "Low-Voltage Principles explains how each system works, in plain language."
  },
  {
+  "id": "spectrum.sa1",
+  "text": "The R F Spectrum Analyzer turns a U S B receiver into a spectrum analyzer. Plug in a tiny S A, an R T L S D R or a Hack R F, and press Connect. The list of compatible receivers shows which ones are plugged in right now, how far each one tunes, and how accurate its levels are."
+ },
+ {
+  "id": "spectrum.sa2",
+  "text": "Here are the built-in test signals across the eight hundred megahertz band. The self-test finds the eight fifty-one megahertz carrier within a kilohertz, reads its channel power at minus sixty-six dB m, and flags the intermod product at eight fifty point zero one two five, made by two times the first carrier minus the second."
+ },
+ {
+  "id": "spectrum.sa3",
+  "text": "Markers, max hold, the waterfall and the measurements work like a bench analyzer: channel power, occupied bandwidth, adjacent channel power, noise floor and limit lines.\nThe tests set the analyzer up for you: B D A uplink noise and oscillation, the donor signal for each channel, and the minus ninety-five dB m downlink check."
+ },
+ {
+  "id": "spectrum.sa4",
+  "text": "Benchmarks grade the receiver against a signal generator. Only measurement-grade equipment should be used for acceptance tests. The certification tests cover the [ERCES](/ˈɜɹsiz/) grid test, the F C C emission mask and booster checks, and each one saves a signed report."
+ },
+ {
+  "id": "audio.au1",
+  "text": "The Audio and Acoustic Analyzer is a sound level meter and real-time analyzer. Calibrate with a ninety-four dB calibrator and load the microphone's calibration file, and readings are in dB S P L with A, C or Z weighting."
+ },
+ {
+  "id": "audio.au2",
+  "text": "A sine sweep through the speakers measures the room: reverberation time by octave, and the speech transmission index. A classroom with a reverberation time of about one second and a quiet background comes out around zero point five eight, which passes the N F P A seventy-two intelligibility target of zero point five."
+ },
+ {
+  "id": "audio.au3",
+  "text": "The fire alarm audibility test measures the ambient for sixty seconds, then the alarm. In public mode the signal must be fifteen dB over the average, or five dB over the loudest sixty-second sound. It all goes into a signed report under Reports, with the benchmark of the microphone and interface."
+ },
+ {
   "id": "theory.rf1",
   "text": "The principles page is now Low-Voltage and R F Design Principles. Part six covers R F engineering: decibels, transmission lines and V S W R, antennas, propagation and Fresnel zones, path loss models, fading, noise, modulation and interference.\nPart seven covers design concepts, from surge protection and P o E to Wi-Fi, [DAS](/dˈæs/), structured cabling and drawing scales. Every section ends with industry best practices."
  },

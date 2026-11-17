@@ -80,6 +80,8 @@ const MagneticPage = page(() => import('./pages/Magnetic'), 'MagneticPage');
 const WeatherPage = page(() => import('./pages/Weather'), 'WeatherPage');
 const FloorPlanPage = page(() => import('./pages/FloorPlan'), 'FloorPlanPage');
 const BuildOutputPage = page(() => import('./pages/BuildOutput'), 'BuildOutputPage');
+const SpectrumPage = page(() => import('./pages/Spectrum'), 'SpectrumPage');
+const AudioPage = page(() => import('./pages/Audio'), 'AudioPage');
 const TerrainPage = lazy(track(() => import('./pages/Terrain')));
 const CoveragePage = lazy(track(() => import('./pages/Coverage')));
 const View3DPage = lazy(track(() => import('./pages/View3D')));
@@ -88,7 +90,9 @@ const FaaPage = lazy(track(() => import('./pages/Faa')));
 const OfflineArea = page(() => import('./components/OfflineArea'), 'OfflineArea');
 import { MapPackBadge } from './components/MapPacks';
 import { GlobalFileDrop } from './components/DropZone';
-import { PlanPipHost } from './components/PlanPip';
+import { PlanPipHost, LiveViewButton } from './components/PlanPip';
+/** Pages where the design is being shaped: their header has the Live view button. */
+const LIVE_PAGES = ['company', 'systems', 'autodesign', 'models', 'campus', 'alarm', 'erces', 'indoor', 'wifi', 'blueprints', 'materials', 'floorplan', 'buildout'];
 
 /** Page components by menu id. The menu order, labels and sections live in src/data/menu.ts. */
 export const PAGE_ELEMENTS: Record<string, React.ReactNode> = {
@@ -141,6 +145,8 @@ export const PAGE_ELEMENTS: Record<string, React.ReactNode> = {
   weather: <WeatherPage />,
   floorplan: <FloorPlanPage />,
   buildout: <BuildOutputPage />,
+  spectrum: <SpectrumPage />,
+  audio: <AudioPage />,
   mappacks: <OfflineArea />,
   projects: <ProjectsPage />,
   sync: <SyncPage />,
@@ -310,8 +316,8 @@ export default function App() {
             </button>
             {open && VIS.filter((w) => w.groupId === g.id).map((w) => (
               <a key={w.id} href={`#${w.id}`} className={(w.id === current?.id ? 'active' : '') + (skipped.has(w.id) ? ' skipped' : '')} title={skipped.has(w.id) ? 'Skipped on this project' : undefined} onClick={(e) => { e.preventDefault(); go(w.id); }}>
-                {(() => { const cl = checklistFor(w.id), pr = cl && progressOf(cl, project), full = !!pr && pr.total > 0 && pr.done === pr.total; return <span className={'step-dot' + (full ? ' done' : '') + (stepNo(w) ? '' : ' tool')} title={pr ? `${pr.done} of ${pr.total} checklist items done` : undefined}>{skipped.has(w.id) ? '–' : full ? '✓' : '•'}</span>; })()}
                 {w.label}
+                {(() => { const cl = checklistFor(w.id), pr = cl && progressOf(cl, project), full = !!pr && pr.total > 0 && pr.done === pr.total; return full && !skipped.has(w.id) ? <span className="nav-done" title={`${pr!.done} of ${pr!.total} checklist items done`}>✓</span> : null; })()}
                 {w.id === 'compliance' && nViol > 0 && <span className="pill bad">{nViol}</span>}
                 {w.id === 'company' && rt.showRequired && nReq > 0 && <span className="pill bad" title={`${nReq} required field(s) empty`}>{nReq}</span>}
               </a>
@@ -341,6 +347,7 @@ export default function App() {
                   {groups.map((g) => <optgroup key={g} label={g}>{VIS.filter((w) => w.group === g).map((w) => <option key={w.id} value={w.id}>{w.label}</option>)}</optgroup>)}
                 </select>
                 <button disabled={!nextW} onClick={() => nextW && go(nextW.id)} aria-label="Next page" title={nextW?.label}>→</button>
+                {LIVE_PAGES.includes(current.id) && <LiveViewButton />}
                 {topic.tour && <button onClick={() => setTour(topic.tour!)} data-tour-btn>▶ Guide me</button>}
                 <button onClick={() => setHelpOpen(true)}>? Page help</button>
                 <ClearPageButton page={current.id} label={current.label} onCleared={(before) => { setCleared({ page: current.id, before }); setResetN((n) => n + 1); }} />

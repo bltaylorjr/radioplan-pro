@@ -159,6 +159,12 @@ export interface Project {
   siteSoil?: { fePct: number; source: string };
   /** Site condition variables removed from calculations ("calcId:varId"). */
   siteVarsOff?: string[];
+  /** Spectrum analyzer: saved sweeps and tests, corrections, calibration and the channels to watch. */
+  spectrum?: { saved: import('./pages/Spectrum').SavedSweep[]; corr?: Partial<import('./engine/spectrum').Corrections>; ppm?: number; calAt?: string; calDevice?: string; watch?: number[]; bench?: Partial<import('./engine/certification').RfBench> & { points?: { hz: number; ref: number; meas: number; measHz: number }[]; steps?: number[] } };
+  /** Certification-level test records (RF and audio) that print as signed reports. */
+  certs?: import('./engine/certification').CertRecord[];
+  /** Audio analyzer: calibration, mic calibration file and the input used. */
+  audio?: { calDb?: number; calAt?: string; calLevel?: number; micCal?: { name: string; sensDb: number | null; f: number[]; db: number[] }; device?: string };
   /** Project Build Output: when each element first appeared (key → ISO time). */
   buildSeen?: Record<string, string>;
 }

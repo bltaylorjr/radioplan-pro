@@ -40,7 +40,11 @@ It needs two repository secrets: `ANDROID_KEYSTORE_B64` and `ANDROID_STOREPASS` 
 5. **Planning: codes & materials:** Code Compliance · Materials List · Blueprints & Drawing Sets
 6. **Testing & closeout:** Final Testing · Reports, Proposals & Closeout
 7. **Troubleshooting & repair:** Troubleshooting Wizard
-**Tools** (not numbered steps): Map & Directions · Service & Maintenance Resources · Installation Guides (color wiring diagrams) · Specifications Library · Contacts & Web Resources · Calculators · Projects & Storage · Sync Devices
+**Tools** (not numbered steps): Floor Plan to 2D / 3D · Project Build Output · RF Spectrum Analyzer · Audio & Acoustic Analyzer · Calculators (with site conditions) · Low-Voltage & RF Design Principles · Contacts & Web Resources · Map & Directions · Bluetooth & Wi-Fi Devices · Magnetic Field & Space Weather · Weather & Radar (NOAA) · Offline Map Packs · Projects & Storage · Sync Devices
+
+**Measurement hardware:** the RF Spectrum Analyzer connects to a tinySA / tinySA Ultra (USB serial), RTL-SDR or HackRF One (WebUSB) in Chrome or Edge and imports CSV sweeps from other analyzers; the Audio & Acoustic Analyzer uses any microphone input, and a calibrated measurement microphone with an acoustic calibrator for certification-level readings. Both grade the equipment (benchmarks) and save signed certification reports (Reports → Certification test reports).
+
+**Floor plans:** Floor Plan to 2D / 3D traces PDF, DXF and image floor plans into true-scale 2D plans and 3D models, grades the upload, and feeds the project plan, build and documentation.
 
 Plus a searchable Help manual, page help (F1), "Guide me" walkthroughs and `?` tooltips. The first start asks what is being designed
 (fire alarm, ERCES, Wi-Fi, solar or radio) and where, then opens the right page.
