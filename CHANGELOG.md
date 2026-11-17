@@ -8,6 +8,7 @@
 - **New page: Tools & reference → Audio & Acoustic Analyzer.** Sound level meter (A/C/Z, Fast/Slow/Impulse, Leq, Lmax, Lmin, L10/L50/L90), 1/3- and 1/1-octave real-time analyzer, generator (sine, pink, white), calibration with an acoustic calibrator and microphone calibration files, room **RT60** (EDT, T20, T30 by octave) and **STI** from a sine sweep, **THD / THD+N**, background noise with **NC** rating, **NFPA 72 audibility** and **STI acceptance** tests, and a **benchmark of the measuring chain** against IEC 61672-1 tolerances, each saved as a signed report.
 - **Reports → Certification test reports** prints every saved RF and audio certification record (also in the Closeout package).
 - **Menu:** pages are listed by title only (no bullets); a ✓ still shows when a page's checklist is complete.
+- **Documentation:** help topics for both analyzers and certification reports, the README tool list, and new introduction-video narration with worked examples (the self-test signals, a classroom STI, NFPA 72 audibility).
 
 # LvPlan Pro 1.5.72
 
