@@ -3,7 +3,9 @@ import { useStore, downloadText, safeName } from '../store';
 import { Card, Stat } from '../components/ui';
 import { DropZone } from '../components/DropZone';
 import { CertList, useSaveCert } from '../components/CertReport';
-import { bandLevels, essSweep, impulseResponse, micCorr, ncRating, OCT, parseMicCal, powerSpectrum, reverb, stats, stiFromIr, TAU, thd, totalLevel, weightDb, type Weighting } from '../engine/audio';
+import { bandLevels, essSweep, impulseResponse, ncRating, OCT, powerSpectrum, reverb, stats, stiFromIr, TAU, thd, totalLevel, weightDb, type Weighting } from '../engine/audio';
+import { MicCalPanel } from '../components/MicCalLibrary';
+import { applyCal, BUILTIN_CALS, loadUserCals, matchDevice, type MicCal } from '../engine/miccal';
 import { gradeAudio, nfpaAudibility, stiAcceptance, type AudioBench } from '../engine/certification';
 
 // Live input: microphone or interface with all browser processing off, raw samples kept in a ring buffer and in recordings.
@@ -32,7 +34,8 @@ export function AudioPage() {
   const [devs, setDevs] = useState<MediaDeviceInfo[]>([]); const [devId, setDevId] = useState(p.audio?.device ?? '');
   const inp = useRef<Input | null>(null); const [on, setOn] = useState(false); const [err, setErr] = useState(''); const [busy, setBusy] = useState('');
   const [w, setW] = useState<Weighting>('A'), [tw, setTw] = useState<keyof typeof TAU>('F'), [third, setThird] = useState(true);
-  const cal = p.audio?.calDb ?? null, mic = p.audio?.micCal ?? null;
+  const cal = p.audio?.calDb ?? null, mic = (p.audio?.micCal ?? null) as MicCal | null;
+  const pickCal = (c: MicCal | null, auto = false) => update((d) => { d.audio = { ...(d.audio ?? {}), micCal: c ? { ...c, auto: auto || undefined } : undefined, micCalOff: c ? undefined : true }; });
   const [lv, setLv] = useState<{ now: number; hist: number[]; bands: { label: string; db: number }[]; spec: Float64Array | null; df: number }>({ now: NaN, hist: [], bands: [], spec: null, df: 1 });
   const [panel, setPanel] = useState<Panel>('meter');
   const [gen, setGen] = useState({ f: 1000, db: -12, kind: 'sine' as 'sine' | 'pink' | 'white' }); const genNode = useRef<{ stop: () => void } | null>(null);
@@ -49,19 +52,23 @@ export function AudioPage() {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: { deviceId: devId ? { exact: devId } : undefined, echoCancellation: false, noiseSuppression: false, autoGainControl: false, channelCount: 1 } });
       const ctx = new AudioContext({ latencyHint: 'interactive' }); inp.current = new Input(ctx, stream); setOn(true);
       update((d) => { d.audio = { ...(d.audio ?? {}), device: devId }; });
+      // pick a calibration automatically from the input name (the user's own file first), unless the user removed it
+      if (!mic && !p.audio?.micCalOff) {
+        const label = stream.getAudioTracks()[0]?.label ?? '', phone = /Android|iPhone|iPad|Mobile/i.test(navigator.userAgent);
+        const c = matchDevice(label, [...(await loadUserCals().catch(() => [])), ...BUILTIN_CALS], phone); if (c) pickCal(c, true);
+      }
     } catch (e) { setErr(/Permission|denied|NotAllowed/i.test(String(e)) ? 'Microphone access was not allowed. Allow it in the browser address bar and try again.' : String((e as Error).message ?? e)); }
   };
   const stopIn = () => { genNode.current?.stop(); inp.current?.close(); inp.current = null; setOn(false); };
   useEffect(() => () => { genNode.current?.stop(); inp.current?.close(); }, []);
 
   // live analysis loop
-  const k = (f: number) => (mic ? -micCorr(mic, f) : 0);
   useEffect(() => {
     if (!on) return; let raf = 0, last = 0, s = 0;
     const loop = (t: number) => {
       raf = requestAnimationFrame(loop); const I = inp.current; if (!I || t - last < 50) return; const dt = (t - last) / 1000; last = t;
       const x = I.last(8192), { p: ps, df } = powerSpectrum(x); const d = df(I.ctx.sampleRate);
-      if (mic) for (let j = 1; j < ps.length; j++) ps[j] *= 10 ** (k(j * d) / 10);
+      applyCal(ps, d, mic);
       const lvl = totalLevel(ps, d, w, cal ?? 0, 20, 20000); const a = Math.exp(-dt / TAU[tw]); s = a * s + (1 - a) * 10 ** (lvl / 10);
       const now = 10 * Math.log10(s + 1e-30);
       setLv((o) => ({ now, hist: [...o.hist, now].slice(-1200), bands: bandLevels(ps, d, third, w, cal ?? 0), spec: ps, df: d }));
@@ -88,8 +95,8 @@ export function AudioPage() {
   const measureLeq = async (sec: number, label: string) => {
     const I = need(); if (!I) return null; setBusy(`${label}: measuring for ${sec} s…`);
     const x = await I.record(sec), sr = I.ctx.sampleRate, blk = Math.round(sr * 0.125), lv2: number[] = [];
-    for (let i = 0; i + 4096 <= x.length; i += blk) { const { p: ps, df } = powerSpectrum(x.subarray(i, i + 4096)); const d = df(sr); if (mic) for (let j = 1; j < ps.length; j++) ps[j] *= 10 ** (k(j * d) / 10); lv2.push(totalLevel(ps, d, 'A', cal ?? 0)); }
-    const { p: P, df } = powerSpectrum(x.subarray(0, 1 << Math.floor(Math.log2(Math.min(x.length, 1 << 17))))); const d = df(sr);
+    for (let i = 0; i + 4096 <= x.length; i += blk) { const { p: ps, df } = powerSpectrum(x.subarray(i, i + 4096)); const d = df(sr); applyCal(ps, d, mic); lv2.push(totalLevel(ps, d, 'A', cal ?? 0)); }
+    const { p: P, df } = powerSpectrum(x.subarray(0, 1 << Math.floor(Math.log2(Math.min(x.length, 1 << 17))))); const d = df(sr); applyCal(P, d, mic);
     setBusy(''); return { st: stats(lv2)!, oct: bandLevels(P, d, false, 'Z', cal ?? 0) };
   };
   const room = async () => {
@@ -118,7 +125,7 @@ export function AudioPage() {
     const mean = mags.reduce((a, b) => a + b, 0) / mags.length; play('sine', 1000, -6); await new Promise((r) => setTimeout(r, 500)); const t = thd(powerSpectrum(I.last(32768)).p, sr / 32768, 1000); genNode.current?.stop(); setBusy('');
     setBench({ ...bench, loopbackFlatnessDb: Math.max(...mags.map((m) => Math.abs(m - mean))), loopbackThdPct: t.thdPct });
   };
-  const ab: AudioBench = { calDeviationDb: bench.calDeviationDb ?? null, calStabilityDb: bench.calStabilityDb ?? null, selfNoiseDba: bench.selfNoiseDba ?? null, micCalFile: !!mic, processingOff: !!inp.current && inp.current.settings.echoCancellation !== true && inp.current.settings.noiseSuppression !== true && inp.current.settings.autoGainControl !== true,
+  const ab: AudioBench = { calDeviationDb: bench.calDeviationDb ?? null, calStabilityDb: bench.calStabilityDb ?? null, selfNoiseDba: bench.selfNoiseDba ?? null, micCalFile: !!mic && mic.source !== 'builtin', processingOff: !!inp.current && inp.current.settings.echoCancellation !== true && inp.current.settings.noiseSuppression !== true && inp.current.settings.autoGainControl !== true,
     sampleRate: inp.current?.ctx.sampleRate ?? 0, latencyMs: inp.current ? (inp.current.ctx.baseLatency + ((inp.current.ctx as AudioContext & { outputLatency?: number }).outputLatency ?? 0)) * 1000 : null, loopbackFlatnessDb: bench.loopbackFlatnessDb ?? null, loopbackThdPct: bench.loopbackThdPct ?? null };
   const grade = gradeAudio(ab);
   const equip = () => [{ name: devs.find((d) => d.deviceId === devId)?.label || 'Measurement microphone / interface', serial: mic?.name, calibrated: p.audio?.calAt, grade: grade.grade }];
@@ -144,9 +151,8 @@ export function AudioPage() {
           <button disabled={!on || !!busy} onClick={() => calibrate(94)}>Calibrate (94 dB calibrator)</button><button disabled={!on || !!busy} onClick={() => calibrate(114)}>Calibrate (114 dB)</button>
           {mic?.sensDb != null && cal == null && <button onClick={() => update((d) => { d.audio = { ...(d.audio ?? {}), calDb: +(94 - mic.sensDb!).toFixed(2), calAt: undefined, calLevel: undefined }; })} title="Indicative: assumes the interface gain the file was made for">Use the cal file's sensitivity</button>}
         </div>
-        <p className="small">{cal == null ? 'Not calibrated: levels are in dBFS (relative). ' : `Calibration offset ${cal.toFixed(2)} dB${p.audio?.calAt ? `, ${new Date(p.audio.calAt).toLocaleString()} at ${p.audio.calLevel} dB` : ' (from the cal file sensitivity)'}. `}{mic ? `Mic calibration file: ${mic.name}${mic.sensDb != null ? ` (sens ${mic.sensDb} dB)` : ''}.` : 'No microphone calibration file.'} {inp.current && `Sample rate ${inp.current.ctx.sampleRate} Hz.`}</p>
-        <DropZone accept=".txt,.cal,.frd,.csv" compact onFiles={async (fs) => { const f = fs[0]; if (!f) return; const c = parseMicCal(await f.text()); if (!c.f.length) { setErr('No frequency / dB lines in that file.'); return; } update((d) => { d.audio = { ...(d.audio ?? {}), micCal: { name: f.name, ...c } }; }); }} label="Microphone calibration file" hint="UMIK / Dayton / REW .txt" />
-        {mic && <button className="ghost" onClick={() => update((d) => { if (d.audio) d.audio.micCal = undefined; })}>Remove cal file</button>}
+        <p className="small">{cal == null ? 'Level not calibrated yet (use a sound calibrator above): levels are in dBFS (relative). ' : `Calibration offset ${cal.toFixed(2)} dB${p.audio?.calAt ? `, ${new Date(p.audio.calAt).toLocaleString()} at ${p.audio.calLevel} dB` : ' (from the cal file sensitivity)'}. `}{inp.current && `Sample rate ${inp.current.ctx.sampleRate} Hz.`}</p>
+        <MicCalPanel active={mic} onPick={(c) => pickCal(c)} onError={setErr} />
         {busy && <p className="small" role="status"><span className="spin" /> {busy}</p>}{err && <p className="bad-text" role="alert">{err}</p>}{typeof result.cal === 'string' && <p className="ok-text small">{result.cal}</p>}
       </Card>
 

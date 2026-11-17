@@ -1,3 +1,11 @@
+# LvPlan Pro 1.5.76
+
+- **Microphone calibration library** in the Audio & Acoustic Analyzer (1. Input and calibration → 📚 Calibration library). Search by brand, model or serial, or filter by measurement mics, phones, tablets, computers and headsets, and press **Use**. A small graph shows each curve.
+- **Built in, works offline:** typical curves for 28 microphones and devices: miniDSP UMIK-1 and UMIK-2 (0° and 90°), Dayton Audio EMM-6, UMM-6, iMM-6 and iMM-6C, Behringer ECM8000, Superlux ECM999, PreSonus PRM1, Audix TM1, Sonarworks XREF 20, IK Multimedia ARC, Earthworks M23/M30, Beyerdynamic MM 1, class 1 and class 2 sound level meter mics, iPhone, iPad, Galaxy, Pixel and other Android phones and tablets, laptop and headset mics, and Flat. These are LvPlan's own approximations from each model's published specifications, not the makers' files.
+- **Add your mic's own file:** drop a .txt, .cal, .frd or .csv calibration file (miniDSP, Dayton, REW: frequency, dB, optional phase, "Sens Factor" or "Sensitivity … dBFS" header). It is checked first (plain-language reasons if it is not a calibration file), the brand, model, serial and 0° / 90° are read from the file name, and it is saved in the app (offline, included in backups) for every project. Delete it from the library at any time.
+- **Applied automatically:** on Start input, the analyzer picks a curve from the input's name (UMIK, iMM-6 and others, your own file first) or from the phone or tablet in use. A green **Mic calibration on** badge shows which curve is correcting the readings, with **Remove calibration** next to it. The correction now also applies to the octave bands of timed measurements.
+- Certification benchmark: only your own calibration file counts as "Microphone calibration file loaded"; a typical curve does not.
+
 # LvPlan Pro 1.5.75
 
 - **Next / Skip bar only on project steps:** the ← Back · Skip this step · Next → bar at the bottom of the page now shows only on the numbered project steps (sections 1 to 10). Tools & reference and Projects & settings pages no longer have it. On the steps, Next and Back move between steps only, so the last step no longer jumps into the Tools pages. The ← → arrows and page list at the top still reach every page.
