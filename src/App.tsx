@@ -231,6 +231,12 @@ export default function App() {
   /** Previous / next page, passing over skipped steps. */
   const near = (dir: 1 | -1) => { for (let i = idx + dir; i >= 0 && i < VIS.length; i += dir) if (!skipped.has(VIS[i].id)) return VIS[i]; return undefined; };
   const prevW = near(-1), nextW = near(1);
+  /** Bottom-of-page step navigation: only on the numbered project steps, and it moves between steps only
+   *  (never into Tools & reference or Projects & settings, which are not part of the project workflow). */
+  const isStep = !!current?.steps;
+  const stepIdx = isStep && current ? STEPS.indexOf(current) : -1;
+  const nearStep = (dir: 1 | -1) => { if (stepIdx < 0) return undefined; for (let i = stepIdx + dir; i >= 0 && i < STEPS.length; i += dir) if (!skipped.has(STEPS[i].id)) return STEPS[i]; return undefined; };
+  const prevStep = nearStep(-1), nextStep = nearStep(1);
   const setSkip = (id: string, on: boolean) => update((d) => { const s = new Set(d.meta.skipped ?? []); if (on) s.add(id); else s.delete(id); d.meta.skipped = [...s]; });
   const findings = evaluateCompliance({ project, profile: rt.profile });
   const nViol = findings.filter((f) => f.severity === 'violation').length;
@@ -360,11 +366,11 @@ export default function App() {
             {off.has(current.id) && <p className="note no-print">This tool is turned off in User Settings, so it is not in the menu. <button onClick={() => setToolOn(current.id, true)}>Turn it back on</button></p>}
             {skipped.has(current.id) && <p className="note no-print">This step is skipped on this project. <button onClick={() => setSkip(current.id, false)}>Don't skip it</button></p>}
             <SelfRepair page={current.id}><Suspense fallback={<div className="card">Loading…</div>}><React.Fragment key={resetN}>{current.el}</React.Fragment></Suspense>{checklistFor(current.id) && <div data-tour="checklist" className="no-print" style={{ marginTop: 16 }}><Checklist def={checklistFor(current.id)!} /></div>}</SelfRepair>
-            <footer className="page-foot">
-              <button disabled={!prevW} onClick={() => prevW && go(prevW.id)}>← {prevW?.label ?? 'Back'}</button>
-              {canSkip(current.id) && !skipped.has(current.id) ? <button className="ghost" onClick={() => { setSkip(current.id, true); if (nextW) go(nextW.id); }} title="Mark this step as not needed on this project and go to the next one. You can still open it from the menu.">Skip this step ⤼</button> : <span />}
-              <button className="primary" disabled={!nextW} onClick={() => nextW && go(nextW.id)}>{nextW?.label ?? 'Next'} →</button>
-            </footer>
+            {isStep && <footer className="page-foot">
+              <button disabled={!prevStep} onClick={() => prevStep && go(prevStep.id)}>← {prevStep?.label ?? 'Back'}</button>
+              {canSkip(current.id) && !skipped.has(current.id) ? <button className="ghost" onClick={() => { setSkip(current.id, true); if (nextStep) go(nextStep.id); }} title="Mark this step as not needed on this project and go to the next one. You can still open it from the menu.">Skip this step ⤼</button> : <span />}
+              <button className="primary" disabled={!nextStep} onClick={() => nextStep && go(nextStep.id)}>{nextStep?.label ?? 'Next'} →</button>
+            </footer>}
             <p className="disclaimer">Planning aid only. Calculations and code citations must be verified by a licensed professional and the Authority Having Jurisdiction.</p>
           </>
         )}
