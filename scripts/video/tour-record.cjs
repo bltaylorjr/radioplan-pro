@@ -23,15 +23,15 @@ const ACT = {
     await sleep(Math.max(0, ms - 19500)); await tap(pg, 'button.nav-showall'); await sleep(2200); await click(pg, '.tool-notice button:has-text("OK")');
   },
   'use.help': async (pg, ms) => {
-    await sleep(1500); await click(pg, 'button:has-text("Guide me")'); await sleep(3500); await pg.keyboard.press('Escape'); await click(pg, 'button:has-text("Skip"), button:has-text("Close"), button:has-text("End")'); await sleep(800);
+    await sleep(1500); await click(pg, 'button:has-text("Guide me")'); await sleep(3500); await tap(pg, '.tour-bubble button:has-text("Close")'); await pg.keyboard.press('Escape'); await sleep(800);
     const i = pg.locator('.info-i, button.info, [aria-label*="What this"]').first(); await i.hover().catch(() => {}); await i.click().catch(() => {}); await sleep(4000); await pg.mouse.click(900, 150);
-    await click(pg, 'button:has-text("Clear all fields")'); await sleep(3800); await click(pg, 'button:has-text("No"), button:has-text("Cancel"), button:has-text("Keep")'); await sleep(1000);
+    await tap(pg, 'button:has-text("Clear all fields")'); await sleep(3800); await tap(pg, 'button:has-text("No, keep them")'); await sleep(1000);
   },
   't.systems': async (pg) => { await sleep(3000); await pg.selectOption('select[aria-label="Project type"]', 'firealarm').catch((e) => console.warn('type', e.message.split('\n')[0])); await sleep(2500); await pg.getByRole('checkbox', { name: /Emergency Responder Radio/ }).first().check({ timeout: 2000 }).catch((e) => console.warn('erces', e.message.split('\n')[0])); await sleep(1500); await smoothScroll(pg, 9000, 900); },
-  't.locate': async (pg) => { await sleep(1500); const f = pg.locator('input').filter({ visible: true }).nth(1); await f.click().catch(() => {}); await f.type('35.5951, -82.5515', { delay: 90 }).catch(() => {}); await sleep(600); await click(pg, 'button:has-text("Search")'); await sleep(5000); await smoothScroll(pg, 3000, 500); await click(pg, 'button:has-text("Build plan for this location")'); await sleep(4000); await smoothScroll(pg, 6000, 900); },
+  't.locate': async (pg) => { await sleep(1500); const f = pg.locator('input[aria-label="Search address, place or coordinates"]').first(); await f.click().catch(() => {}); await f.type('35.5951, -82.5515', { delay: 90 }).catch(() => {}); await sleep(600); await f.press('Enter').catch(() => {}); await sleep(1500); await tap(pg, 'button[aria-label="Close help"]'); await pg.mouse.move(1050, 690); await sleep(3500); await smoothScroll(pg, 3000, 500); await pg.locator('button:has-text("Build plan for this location"):not([disabled])').first().click({ timeout: 6000 }).catch((e) => console.warn('build', e.message.split('\n')[0])); await sleep(4000); await smoothScroll(pg, 6000, 900); },
   't.terrain': async (pg) => {
     await scrollTo(pg, '.leaflet-container'); await sleep(2200);
-    for (let k = 0; k < 3; k++) { const a = await markerXY(pg, 'A'); if (a) await pg.mouse.dblclick(a.x + 70, a.y - 45); await sleep(1500); }
+    for (let k = 0; k < 3; k++) { const a = await markerXY(pg, 'A'); if (a) { await pg.mouse.move(a.x + 70, a.y - 45); await pg.mouse.wheel(0, -60); } await sleep(1500); }
     await sleep(1500); await click(pg, 'button:has-text("3D tilt view")'); await sleep(7000); await click(pg, 'button:has-text("Flat map")'); await sleep(1500); await click(pg, 'button:has-text("Measure distance")'); await sleep(4000);
   },
   't.coverage': async (pg) => { await sleep(2500); await click(pg, 'button:has-text("Run coverage prediction")'); await sleep(6000); await scrollTo(pg, '.leaflet-container'); await pg.evaluate(() => window.scrollBy(0, -150)); await sleep(5000); await smoothScroll(pg, 8000, 900); },
@@ -49,7 +49,8 @@ const ACT = {
   fs.mkdirSync(OUT, { recursive: true });
   let segs = SCRIPT; const a = FROM ? segs.findIndex((x) => x.id === FROM) : 0; const z = TO ? segs.findIndex((x) => x.id === TO) : segs.length - 1; segs = segs.slice(a, z + 1);
   const b = await L.launch(); const t0 = Date.now(); const { ctx, pg } = await L.newPage(b, OUT);
-  if (segs[0].id === 'use.menu') { await pg.evaluate(() => localStorage.setItem('radioplan.hiddenTools', JSON.stringify(['lfhf', 'audio', 'spectrum']))); await pg.reload(); await sleep(2500); }
+  await pg.addStyleTag({ content: '.leaflet-popup{display:none!important}' });
+  if (segs[0].id === 'use.menu') { await pg.evaluate(() => localStorage.setItem('radioplan.hiddenTools', JSON.stringify(['lfhf', 'audio', 'spectrum']))); await pg.reload(); await sleep(2500); await pg.addStyleTag({ content: '.leaflet-popup{display:none!important}' }); }
   await go(pg, segs[0].page); await sleep(2000);
   const start = (Date.now() - t0) / 1000, marks = [];
   for (const s of segs) {
