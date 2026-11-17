@@ -265,6 +265,11 @@ export const FEATURES: Feature[] = [
     tour: [
       { target: 'text:+ Add vendor', title: 'Add a vendor', text: 'Type the name, phone, email and any other details.' },
     ] },
+  { id: 'magnetic-model', version: '1.5.70', title: 'Magnetic field & space weather', page: 'magnetic', where: 'Tools & reference → Magnetic Field & Space Weather',
+    summary: 'The compass declination at the job from NOAA’s World Magnetic Model (works offline), how it changes over the years, a map ↔ compass converter, and NOAA’s live geomagnetic storm forecast.',
+    steps: ['Open Tools & reference → Magnetic Field & Space Weather.', 'Read how far a compass points from true north here today.', 'Look at How it changes over time for other dates.', 'Check Space weather before aiming antennas with a compass.'],
+    keywords: 'magnetic declination compass true north wmm noaa space weather geomagnetic storm kp forecast', topic: 'magnetic',
+    tour: [ { target: 'mag-today', title: 'Magnetic field here today', text: 'The compass declination at the job, from NOAA’s model.' }, { target: 'mag-space', title: 'Space weather', text: 'NOAA’s live storm forecast.' } ] },
 ];
 
 /** Features that live on, or also show on, a page. Features marked for every page ('*') are left out unless `all`. */

@@ -76,6 +76,7 @@ const CampusPage = page(() => import('./pages/Campus'), 'CampusPage');
 const SettingsPage = page(() => import('./pages/Settings'), 'SettingsPage');
 const SignalReadingsPage = page(() => import('./pages/SignalReadings'), 'SignalReadingsPage');
 const AssetsPage = page(() => import('./pages/Assets'), 'AssetsPage');
+const MagneticPage = page(() => import('./pages/Magnetic'), 'MagneticPage');
 const TerrainPage = lazy(track(() => import('./pages/Terrain')));
 const CoveragePage = lazy(track(() => import('./pages/Coverage')));
 const View3DPage = lazy(track(() => import('./pages/View3D')));
@@ -131,6 +132,7 @@ export const PAGE_ELEMENTS: Record<string, React.ReactNode> = {
   library: <SpecLibraryPage />,
   contacts: <ContactsPage />,
   calculators: <CalculatorsPage />,
+  magnetic: <MagneticPage />,
   mappacks: <OfflineArea />,
   projects: <ProjectsPage />,
   sync: <SyncPage />,
@@ -145,10 +147,29 @@ export const WORKFLOW: WorkflowPage[] = MENU_ORDER.filter((p) => PAGE_ELEMENTS[p
 });
 
 
+/** Keeps project.magnetic (checked declination for Site A + space weather) current: on site moves, each day, and each new forecast. */
+function useProjectMagnetic(project: import('./types').Project, update: (fn: (d: import('./types').Project) => void) => void) {
+  const s = project.sites[0];
+  const [sw, setSw] = useState<import('./engine/spaceweather').SpaceWeather | null>(null);
+  const [day, setDay] = useState(() => new Date().toISOString().slice(0, 10));
+  useEffect(() => {
+    let live = true, off = () => {};
+    import('./engine/spaceweather').then((m) => { if (!live) return; m.keepSpaceWeatherLive(); m.savedSpaceWeather().then((v) => live && setSw(v)); off = m.onSpaceWeather((v) => live && setSw(v)); });
+    const t = setInterval(() => setDay(new Date().toISOString().slice(0, 10)), 15 * 60e3);
+    return () => { live = false; off(); clearInterval(t); };
+  }, []);
+  useEffect(() => {
+    let live = true;
+    import('./engine/magproject').then((m) => { if (!live) return; const next = m.nextProjectMagnetic(project, sw); if (next) update((d) => { d.magnetic = next; }); });
+    return () => { live = false; };
+  }, [s?.lat, s?.lon, sw, day, project.sync?.projectId, project.meta.created]); // eslint-disable-line react-hooks/exhaustive-deps
+}
+
 export default function App() {
   const { page, go, project, update, rt, setRt, lib } = useStore();
   const [online, setOnline] = useState(typeof navigator === 'undefined' ? true : navigator.onLine);
   useEffect(() => { preloadPages(); }, []);
+  useProjectMagnetic(project, update);
   useEffect(() => { const on = () => setOnline(true), off = () => setOnline(false); window.addEventListener('online', on); window.addEventListener('offline', off); return () => { window.removeEventListener('online', on); window.removeEventListener('offline', off); }; }, []);
   const [helpOpen, setHelpOpen] = useState(false);
   const [tour, setTour] = useState<TourStep[] | null>(null);
