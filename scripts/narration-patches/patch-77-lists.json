@@ -1,0 +1,38 @@
+[
+ {
+  "id": "examples.ex6",
+  "text": "Inside a building at eight hundred megahertz, the I T U indoor model predicts about seventy-nine decibels of loss across thirty meters of open office, and about eighty-eight with a floor between.\nEach wall adds its own loss: drywall about two decibels, concrete block ten, poured concrete fourteen, and low-E glass about twenty.\nThat is why an emergency radio system needs antennas on every floor."
+ },
+ {
+  "id": "newtools.fp3",
+  "text": "Now a blurry phone photo of the same plan.\nIt grades an F: the resolution is too low, it is rotated, it was taken at an angle, and it has no scale.\nThe app lists each problem with its fix, and asks for a better file.\nDrop the new file right in the box."
+ },
+ {
+  "id": "newtools.fp4",
+  "text": "Say yes to add the plan to the project.\nThen the [2D](/tˌu dˈi/) and [3D](/θɹˌi dˈi/) Models, Auto-Design, the device layouts, the cable lengths and the Materials list all use it.\nTick boxes turn each layer on and off: walls, doors, windows, room tags, and each system's devices and cabling."
+ },
+ {
+  "id": "newtools.rf1",
+  "text": "Part six covers R F engineering: decibels, transmission lines and V S W R, antennas, propagation and [Fresnel](/fɹənˈɛl/) zones, path loss models, fading, noise, modulation and interference.\nPart seven covers design concepts, from surge protection and P o E to Wi-Fi, [DAS](/dˈæs/), structured cabling and drawing scales.\nEvery section ends with industry best practices."
+ },
+ {
+  "id": "newtools.sa3",
+  "text": "Markers, max hold, the waterfall and the measurements work like a bench analyzer: channel power, occupied bandwidth, adjacent channel power, noise floor and limit lines.\nGuided tests set it up for you: [BDA](/bˌidˌiˈA/) uplink noise and oscillation, the donor signal for each channel, and the downlink check.\nAdd to [Live](/lˈIv/) Signal Readings sends the readings to the [ERCES](/ˈɜɹsiz/) grid test."
+ },
+ {
+  "id": "newtools.sa4",
+  "text": "Benchmarks grade the receiver against a signal generator.\nUse only measurement-grade equipment for acceptance tests.\nThe certification tests cover the [ERCES](/ˈɜɹsiz/) grid test, the F C C emission mask and booster checks, and each one saves a signed report for Reports."
+ },
+ {
+  "id": "noaa.mg4",
+  "text": "Space weather comes live from NOAA's Space Weather Prediction Center: the K P index, the storm level, and the chance of radio blackouts.\nEach download is checked, and marked Verified, with the time.\nDuring a geomagnetic storm, a warning shows beside compass bearings on other pages, so you aim with G P S instead.\nOffline, it shows the last forecast and when it was downloaded."
+ },
+ {
+  "id": "noaa.wx1",
+  "text": "Weather and Radar shows the latest report from the nearest National Weather Service station: temperature, feels-like, wind and gusts, humidity, pressure and visibility.\nEach download is checked, and marked Verified, with the time.\nWith no internet, it shows the last weather downloaded, and how long ago."
+ },
+ {
+  "id": "noaa.wx6",
+  "text": "NOAA maps adds the satellite view, lightning from the last five minutes, severe storm outlooks, alerts and forecast maps.\nEach one shows its time, and the last copy is kept for offline use."
+ }
+]
