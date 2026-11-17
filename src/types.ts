@@ -109,6 +109,8 @@ export interface Project {
   runLog: RunRecord[]; scenarios: Scenario[]; wifi: WifiSurvey;
   /** Sync bookkeeping (per-section change times, deletions). Managed automatically. */
   sync?: SyncMeta;
+  /** Checked magnetic field and space weather values for Site A, kept up to date automatically (engine/magproject.ts). */
+  magnetic?: ProjectMagnetic;
   /** Library equipment used in this project (antennas, feeders, radios). */
   customCatalog?: import('./data/catalog').CustomCatalog;
   /** Field notes with optional photos and GPS. */
@@ -167,4 +169,15 @@ export interface SyncMeta {
   items: Record<string, string[]>;
   tombstones: Record<string, number>;
   peers: Record<string, { name: string; at: number }>;
+}
+
+/** Magnetic field at the project (NOAA World Magnetic Model) and the space weather seen with it (NOAA SWPC). Values are only stored after they pass their checks. */
+export interface ProjectMagnetic {
+  lat: number; lon: number;
+  /** Date the values are for (ISO date) and the model that gave them. */
+  date: string; model: string;
+  /** Declination, east positive (the Southeast US is negative = west), and its yearly change in degrees. */
+  decDeg: number; decPerYearDeg: number; dipDeg: number; totalNt: number;
+  /** Space weather at the last online check, when one was available. */
+  space?: { fetchedAt: string; kpNow: number | null; gNow: number; gPeak3d: number; radioBlackoutPct: number | null };
 }

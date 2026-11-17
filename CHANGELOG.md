@@ -1,9 +1,17 @@
-# LvPlan Pro (next version, number set at merge)
+# LvPlan Pro 1.5.71
 
 - **New page: Weather & Radar (NOAA)** under Tools & reference. For the project site (Asheville, NC when no site is set) or where you are now: NOAA's live radar map with alert areas outlined, the latest checked report from the nearest National Weather Service station (temperature, feels-like, wind and gusts, humidity, pressure, visibility), watches, warnings and advisories with what to do, the next 24 hours and the 7-day forecast. °F, mph and miles.
 - **Live when online, last conditions when offline.** The page updates by itself every 10 minutes while open and as soon as the connection comes back; automatic care refreshes it hourly. With no internet it shows the last weather and how long ago it was downloaded.
 - **Work-day check:** plain warnings for lightning (no tower, roof or lift work), wind for climbing and lifts, cold for cable pulls and batteries, heat, and rain.
 - **Weather on the project:** weather for the project site is saved on the project. Site Data & GPS, Installation guides and Service show a warning during alerts, lightning, high wind, cold or heat; Solar & DC Power checks the forecast low against the design record low; one tap adds today's weather to Field Notes.
+
+# LvPlan Pro 1.5.70
+
+- **New page: Tools & reference → Magnetic Field & Space Weather.** Shows how far a compass points away from true north at the job (Asheville when no site is set), how much that changes each year, the dip and field strength, from NOAA's World Magnetic Model. It is built into the app and works with no internet; the next model (WMM2030) downloads by itself when NOAA publishes it.
+- **Predictions over time:** the numbers for every half year from 2025 to 2030 with a chart, and a map bearing ↔ compass reading converter that shows how far off 1° of error lands at 1 and 10 miles.
+- **Live space weather from NOAA:** the Kp index for the last two days and the next three, storm levels G1–G5, the chance of radio blackouts, and what each means for compass, GPS and HF radio. Online it stays live (every 15 minutes while the app is open, and right away when the internet comes back). Offline it shows the conditions from the last connection with their date and time.
+- **Saved with each project:** the checked declination for Site A (date, model, yearly change) and the storm level are kept on the project by themselves and update when Site A moves, each day and with each new forecast. The Blueprints north arrow, Reports and synced devices use them. Values are only saved after they pass their checks.
+- During a geomagnetic storm (now, or forecast for now by the last download when offline), a warning shows beside compass bearings on the other pages, suggesting GPS aiming instead.
 
 # LvPlan Pro 1.5.69
 

@@ -53,13 +53,12 @@ export function WeatherPage() {
   const siteRef = useRef(isSite); siteRef.current = isSite;
 
   const refresh = async () => {
-    const at = placeRef.current, forSite = siteRef.current;
+    const at = placeRef.current;
     setState('loading'); setErr('');
     try {
       const v = await downloadWeather(at);
       if (Math.abs(placeRef.current.lat - at.lat) > 1e-3 || Math.abs(placeRef.current.lon - at.lon) > 1e-3) return; // moved on meanwhile
       setW(v); setState('idle');
-      if (forSite) update((d) => { d.weather = projectWeather(v); }); // keep the project's weather values current
     } catch (e) { setState('error'); setErr((e as Error).message || 'no connection'); }
   };
 
