@@ -1,0 +1,44 @@
+# Checks every pull request before it can merge: the full test suite, a build, the browser security check
+# (scripts/e2e-security.cjs) and a review of any new or changed libraries for known security problems.
+name: Checks
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - name: No known high or critical security problems in the libraries the app ships
+        run: npm audit --omit=dev --audit-level=high
+      - run: npm test
+      - run: npm run build
+      - name: Browser security check (policy on every page, injected scripts blocked)
+        run: |
+          npm i --no-save playwright@1
+          npx playwright install --with-deps chromium
+          npx vite preview --port 4173 --strictPort &
+          for i in $(seq 1 30); do curl -sf http://localhost:4173/ >/dev/null && break; sleep 2; done
+          node scripts/e2e-security.cjs http://localhost:4173
+  dependencies:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    # Needs Settings > Code security > Dependency graph turned on. Until then it reports instead of blocking;
+    # the npm audit step in the test job still blocks known high and critical problems.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with: { persist-credentials: false }
+      - uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48 # v4.9.0
+        with: { fail-on-severity: high }

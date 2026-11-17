@@ -24,7 +24,7 @@ import { Welcome } from './components/Welcome';
 import { ClearPageButton, UndoClearBar } from './components/ClearPage';
 import type { Project } from './types';
 import { ToolNotice, useAutoTools } from './components/ToolNotice';
-import { useHiddenTools, setToolOn } from './engine/toolPrefs';
+import { useHiddenTools, setToolOn, resetToolView } from './engine/toolPrefs';
 import { MENU_GROUPS, MENU_ORDER, groupHeading } from './data/menu';
 import { FEATURES } from './help/features';
 import type { TourStep } from './help/content';
@@ -315,6 +315,13 @@ export default function App() {
       </header>
       <nav className="sidebar">
         <NavFind pages={VIS} onGo={(id) => go(id)} />
+        {(off.size > 0 || folded.length > 0 || (custom && !showAll)) && (
+          <button type="button" className="nav-showall" data-tour="nav-showall"
+            title="Show every tool and open every menu section (nothing is deleted)"
+            onClick={() => { resetToolView('shown'); if (custom) setShowAll(true); }}>
+            ↺ Show all tools{off.size > 0 ? ` (${off.size} hidden)` : ''}
+          </button>
+        )}
         <div data-tour="nav-groups">
         {MENU_GROUPS.filter((g) => VIS.some((w) => w.groupId === g.id)).map((g) => {
           const open = !folded.includes(g.id) || current?.groupId === g.id;

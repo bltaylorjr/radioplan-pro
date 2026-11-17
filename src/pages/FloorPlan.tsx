@@ -19,11 +19,14 @@ export function sheetSvg(plan: FloorPlanImport): string {
   return xml.replace('<svg', `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"${plan.drawScale && plan.scale.ftPerPx ? '' : ' width="1700" height="1100"'} font-family="Arial, Helvetica, sans-serif"`);
 }
 
+/** Text placed into the print window's HTML: escaped so a plan or level name can never add markup or script. */
+const escHtml = (t: unknown) => String(t ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' } as Record<string, string>)[c]);
+
 /** Prints the plan at its drawing scale on the chosen sheet (print at 100 %, "Actual size"). */
 export function printToScale(plan: FloorPlanImport) {
   const sh = SHEETS.find((x) => x.id === plan.sheet) ?? SHEETS[1];
   const w = window.open('', '_blank'); if (!w) return;
-  w.document.write(`<!doctype html><title>${plan.level}</title><style>@page{size:${sh.w}in ${sh.h}in;margin:0.5in}body{margin:0;font-family:Arial,Helvetica,sans-serif}svg{display:block}</style>${sheetSvg(plan)}<p style="font-size:9pt">Print at 100 % ("Actual size", not "Fit"). ${plan.drawScale ? 'Scale ' + plan.drawScale.label : 'Fit to page: use the graphic scale.'}</p>`);
+  w.document.write(`<!doctype html><title>${escHtml(plan.level)}</title><style>@page{size:${sh.w}in ${sh.h}in;margin:0.5in}body{margin:0;font-family:Arial,Helvetica,sans-serif}svg{display:block}</style>${sheetSvg(plan)}<p style="font-size:9pt">Print at 100 % ("Actual size", not "Fit"). ${plan.drawScale ? 'Scale ' + escHtml(plan.drawScale.label) : 'Fit to page: use the graphic scale.'}</p>`);
   w.document.close(); setTimeout(() => w.print(), 300);
 }
 

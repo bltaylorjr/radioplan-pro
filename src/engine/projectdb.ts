@@ -68,8 +68,16 @@ export function makeBackup(entries: BackupEntry[], now = Date.now()) {
   return { format: BACKUP_FORMAT, exportedAt: now, count: entries.length, projects: entries };
 }
 /** Read a full backup, a sync file, or a single project file. Returns one entry per project. */
+/** JSON from outside the app (project, backup or sync files): keys that could change built-in objects are dropped. */
+export function safeJsonParse(text: string): any { // eslint-disable-line @typescript-eslint/no-explicit-any
+  return JSON.parse(text, (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype' ? undefined : v));
+}
+/** Largest project / backup file the app reads (keeps a damaged or hostile file from freezing the app). */
+export const MAX_PROJECT_FILE = 512 * 1024 * 1024;
+
 export function readBackup(text: string): BackupEntry[] {
-  const j = JSON.parse(text.replace(/^﻿/, ''));
+  if (text.length > MAX_PROJECT_FILE) throw new Error('File is too large to be a LvPlan project, sync or backup file');
+  const j = safeJsonParse(text.replace(/^\uFEFF/, ''));
   if (j?.format === BACKUP_FORMAT && Array.isArray(j.projects)) return j.projects as BackupEntry[];
   const p: Project | undefined = j?.format?.startsWith?.('radioplan-sync') ? j.project : j;
   if (!p || typeof p !== 'object' || !p.meta || !p.radio) throw new Error('Not a LvPlan project, sync or backup file');

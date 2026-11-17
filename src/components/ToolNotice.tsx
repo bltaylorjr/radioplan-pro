@@ -36,7 +36,7 @@ export function ToolNotice() {
   if (!n) return null;
   return (
     <div className="tool-notice no-print" role="status">
-      {n.reset ? <b>Project cleared: every tool and menu section is showing again (the default view).</b> : <div className="small muted">Menu set up for: {n.why}</div>}
+      {n.reset ? <b>{{ cleared: 'Project cleared: every tool and menu section is showing again (the default view).', shown: 'Every tool and menu section is showing again.', complete: 'Project complete. The menu is back to the default view, with every tool and menu section showing, ready for the next job.' }[n.reset]}</b> : <div className="small muted">Menu set up for: {n.why}</div>}
       {n.pages.length > 0 && <><b>✓ Turned on {n.pages.length} tool{n.pages.length > 1 ? 's' : ''} this job needs</b>
         <ul>{n.pages.map((id) => <li key={id}><a href={`#${id}`} onClick={(e) => { e.preventDefault(); go(id); clearToolNotice(); }}>{toolLabel(id)}</a></li>)}</ul></>}
       {(n.hid?.length ?? 0) > 0 && <><b>Hid {n.hid!.length} tool{n.hid!.length > 1 ? 's' : ''} this job does not use</b>

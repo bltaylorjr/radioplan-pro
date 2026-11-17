@@ -1,3 +1,4 @@
+import { safeJsonParse } from './projectdb';
 import { androidBridge, blobToB64 } from '../store';
 // Browser transports for sync: direct device-to-device WebRTC (QR / code handshake, no server),
 // the system share sheet (Bluetooth, Nearby/Quick Share, email, cloud apps) and a synced cloud-drive folder.
@@ -36,7 +37,7 @@ export function exchange(dc: RTCDataChannel, mine: Project, onProgress?: (msg: s
     dc.onmessage = (e) => {
       const m = String(e.data);
       if (m.startsWith('B:')) { expected = Number(m.slice(2)); buf = ''; return; }
-      if (m === 'E') { try { resolve(JSON.parse(buf).project as Project); } catch (err) { reject(err); } return; }
+      if (m === 'E') { try { resolve(safeJsonParse(buf).project as Project); } catch (err) { reject(err); } return; }
       buf += m; if (expected > 0) onProgress?.(`Receiving ${Math.round((buf.length / expected) * 100)} %`);
     };
     dc.onerror = () => reject(new Error('Connection error'));
@@ -83,7 +84,7 @@ export async function folderRound(h: DirHandle, p: Project, slug: string): Promi
   const others: { name: string; project: Project; modified: number }[] = [];
   for await (const e of (h.values?.() ?? [])) {
     if (e.kind !== 'file' || e.name === mine || !e.name.endsWith('.rpsync.json')) continue;
-    try { const f = await (e as FileSystemFileHandle).getFile(); const j = JSON.parse(await f.text()); if (j?.project?.sync?.projectId === p.sync!.projectId) others.push({ name: e.name, project: j.project, modified: f.lastModified }); } catch { /* skip unreadable / partial files */ }
+    try { const f = await (e as FileSystemFileHandle).getFile(); const j = safeJsonParse(await f.text()); if (j?.project?.sync?.projectId === p.sync!.projectId) others.push({ name: e.name, project: j.project, modified: f.lastModified }); } catch { /* skip unreadable / partial files */ }
   }
   return { others, wrote: mine };
 }

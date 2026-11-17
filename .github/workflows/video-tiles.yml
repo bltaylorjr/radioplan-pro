@@ -7,13 +7,37 @@ on:
     inputs:
       lat: { required: false, default: '35.5951' }
       lon: { required: false, default: '-82.5515' }
+      urls_file: { description: 'Instead of the area download: a file in the repo listing tile URLs (one per line) to fetch', required: false, default: '' }
+      asset: { description: 'Zip name on the narration pre-release', required: false, default: 'tiles.zip' }
 permissions:
   contents: write
 jobs:
   tiles:
     runs-on: ubuntu-24.04
     steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        if: ${{ inputs.urls_file != '' }}
+        with: { path: repo, persist-credentials: false }
+      - name: Download listed tiles
+        if: ${{ inputs.urls_file != '' }}
+        env: { LIST: '${{ inputs.urls_file }}' }
+        run: |
+          python3 - <<'PY'
+          import os, urllib.request, urllib.parse, time
+          ok = bad = 0
+          for u in open('repo/' + os.environ['LIST']).read().split():
+              p = urllib.parse.urlparse(u); f = 'tiles/' + p.hostname + p.path
+              os.makedirs(os.path.dirname(f), exist_ok=True)
+              try:
+                  open(f, 'wb').write(urllib.request.urlopen(urllib.request.Request(u, headers={'User-Agent': 'LvPlanPro-video-demo/1.0'}), timeout=30).read()); ok += 1
+              except Exception as e:
+                  bad += 1; print('failed', u, e)
+              time.sleep(0.05)
+          print('tiles ok', ok, 'failed', bad)
+          PY
+          zip -qr tiles.zip tiles
       - name: Download tiles
+        if: ${{ inputs.urls_file == '' }}
         env: { LAT: '${{ inputs.lat }}', LON: '${{ inputs.lon }}' }
         run: |
           python3 - <<'PY'
@@ -70,4 +94,5 @@ jobs:
         env: { GH_TOKEN: '${{ github.token }}' }
         run: |
           gh release view narration -R "$GITHUB_REPOSITORY" >/dev/null 2>&1 || gh release create narration -R "$GITHUB_REPOSITORY" --prerelease --latest=false --title "Intro video narration (not an app release)" --notes "Voice files for the introduction video. Not an app update."
-          gh release upload narration tiles.zip --clobber -R "$GITHUB_REPOSITORY"
+          [ "${{ inputs.asset }}" = tiles.zip ] || mv tiles.zip "${{ inputs.asset }}"
+          gh release upload narration "${{ inputs.asset }}" --clobber -R "$GITHUB_REPOSITORY"
