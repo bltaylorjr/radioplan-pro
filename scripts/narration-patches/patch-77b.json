@@ -1,10 +1,10 @@
 [
  {
   "id": "examples.ex3",
-  "text": "Coverage, with real numbers.\nFor a four hundred sixty megahertz repeater on a hundred fifty-foot tower over suburban ground, the Okumura-Hata model gives about one hundred forty-six decibels of loss at eight miles.\nWith fifty dB m of power out, a portable hears about minus ninety-six dB m there, well above its minus one hundred nineteen sensitivity."
+  "text": "Coverage, with real numbers.\nFor a four hundred sixty megahertz repeater on a hundred fifty-foot tower over suburban ground, the Okumura-Hata model gives about one hundred forty-six decibels of loss at eight miles.\nWith fifty dB m of power out, a portable radio gets about minus ninety-six dB m there, well above its minus one hundred nineteen sensitivity."
  },
  {
   "id": "newtools.au2",
-  "text": "Measure the room plays a sine sweep through the speakers, and works out the reverberation time by octave and the speech transmission index.\nA classroom with about one second of reverberation and a quiet background comes out around zero point five eight, which passes the [NFPA](/ˌɛnˌɛfpˌiˈA/) seventy-two target of zero point five."
+  "text": "Measure the room plays a test sweep through the speakers, and works out the reverberation time by octave and the speech transmission index.\nA classroom with about one second of reverberation and a quiet background comes out around zero point five eight, which passes the [NFPA](/ˌɛnˌɛfpˌiˈA/) seventy-two target of zero point five."
  }
 ]

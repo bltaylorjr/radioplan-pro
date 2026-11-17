@@ -1,10 +1,10 @@
 [
  {
   "id": "newtools.fp3",
-  "text": "Now a blurry phone photo of the same plan.\nIt grades an F: the resolution is too low, it is rotated, it was taken at an angle, and it has no scale.\nThe app lists each problem with its fix, and asks for a better file.\nDrop the new file right in the box."
+  "text": "Now a blurry phone photo of the same plan.\nIt grades an F: the resolution is too low, it is rotated, it was taken at an angle, and it has no scale.\nThe app lists each problem with its fix, and asks for a better file.\nThen drag the new file into the box."
  },
  {
   "id": "noaa.mg4",
-  "text": "Space weather comes live from NOAA's Space Weather Prediction Center: the K P index, the storm level, and the chance of radio blackouts.\nEach download is checked, and marked Verified, with the time.\nDuring a geomagnetic storm, a warning shows beside compass bearings on other pages, so you aim with G P S instead.\nOffline, it shows the last forecast and when it was downloaded."
+  "text": "Space weather comes live from NOAA's Space Weather Prediction Center: the K P index, the storm level, and the chance of radio blackouts.\nEach download is checked, and marked Verified, with the time.\nDuring a geomagnetic storm, a warning shows beside compass bearings on other pages, so you aim with G P S instead.\nWith no internet, it shows the last forecast and when it was downloaded."
  }
 ]
