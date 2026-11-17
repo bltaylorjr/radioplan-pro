@@ -10,7 +10,7 @@ const KEY = 'radioplan.hiddenTools';
 type Listener = () => void;
 const listeners = new Set<Listener>();
 let hidden: string[] = read();
-let notice: { pages: string[]; why: string; hid?: string[] } | null = null;
+let notice: { pages: string[]; why: string; hid?: string[]; reset?: boolean } | null = null;
 const AUTO = 'radioplan.autoHideTools';
 let autoHide: boolean = (() => { try { return localStorage.getItem(AUTO) !== '0'; } catch { return true; } })();
 
@@ -80,3 +80,11 @@ export const toolNotice = () => notice;
 export const useToolNotice = () => useSyncExternalStore(subscribe, toolNotice, toolNotice);
 export function clearToolNotice() { notice = null; emit(); }
 export const toolLabel = (id: string) => WORKFLOW_LABELS[id] ?? id;
+
+/** Default view: every tool shown and every menu section open (used when the project is cleared or a blank project starts). */
+export function resetToolView(): boolean {
+  const had = hidden.length > 0; if (had) setHiddenTools([]);
+  try { localStorage.removeItem('lvplan.menuFolded'); window.dispatchEvent(new Event('lvplan:menu-reset')); } catch { /* ignore */ }
+  if (had) { notice = { pages: [], why: '', reset: true }; emit(); }
+  return had;
+}

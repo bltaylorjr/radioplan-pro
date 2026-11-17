@@ -1,3 +1,10 @@
+# LvPlan Pro 1.5.77
+
+- **Updated introduction video** (▶ Video, about 39 minutes): new parts on Floor Plan to 2D / 3D, the Project Build Output, site conditions in calculations, the RF Spectrum Analyzer and the Audio & Acoustic Analyzer, and real-life examples for each prediction model (Hata and COST-231 coverage, free space and Fresnel zones, radio horizon and knife-edge, reliability margins, indoor P.1238 and wall losses, ground wave and MUF), each in place in the tour with captions.
+- **Cleared project = default view:** when the project is cleared (no project type or sub-projects, or a new blank project), every hidden tool and folded menu section shows again, with a short notice.
+- Sound level meter: the statistics no longer start from silence before the first reading (Lmin read −297 dB for a moment).
+- For maintainers: `scripts/record-intro-inserts.cjs` records new video parts timed to their narration and `scripts/splice-intro.py` places them in the video after the matching narration.
+
 # LvPlan Pro 1.5.76
 
 - **Microphone calibration library** in the Audio & Acoustic Analyzer (1. Input and calibration → 📚 Calibration library). Search by brand, model or serial, or filter by measurement mics, phones, tablets, computers and headsets, and press **Use**. A small graph shows each curve.

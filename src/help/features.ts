@@ -331,6 +331,9 @@ export const FEATURES: Feature[] = [
   { id: 'live-view', version: '1.5.73', title: 'Live view: 2D or 3D in picture in picture or a pop-out window', page: 'company', alsoOn: ['systems', 'autodesign', 'models', 'campus', 'alarm', 'erces', 'indoor', 'wifi', 'blueprints', 'materials', 'floorplan', 'buildout'], where: 'Header of the design pages → ⧉ Live view',
     summary: 'Pick the 2D plan or the 3D model and show it in picture in picture or a pop-out window that updates as you enter the design details on any page.',
     steps: ['Press ⧉ Live view in the page header.', 'Choose 2D plan or 3D model.', 'Choose Picture in picture or Pop-out window.', 'Keep working: the view changes as you type.'], keywords: 'live view picture in picture pop out window 2d 3d real time', topic: 'floorplan' },
+  { id: 'reset-view', version: '1.5.77', title: 'Cleared project shows every tool again', page: 'systems', alsoOn: ['settings'], where: 'Menu, after clearing the project or starting a blank one',
+    summary: 'Clearing the project type (or starting a new blank project) brings back every tool the menu had hidden and opens every folded menu section, the default view.',
+    steps: ['Clear the project type on Project Systems & Toolkits, or press New.', 'Every tool and menu section shows again.'], keywords: 'reset menu show all tools hidden default view cleared new project', topic: 'menu-guide' },
 ];
 
 /** Features that live on, or also show on, a page. Features marked for every page ('*') are left out unless `all`. */
