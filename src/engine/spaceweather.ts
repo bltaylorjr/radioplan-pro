@@ -82,6 +82,25 @@ export async function savedSpaceWeather(): Promise<SpaceWeather | null> {
   return lastSeen;
 }
 
+let inFlight: Promise<SpaceWeather> | null = null;
+/** Download unless the copy on this device is newer than maxAgeMin (one download at a time). Never throws. */
+export async function refreshIfStale(maxAgeMin = 30): Promise<SpaceWeather | null> {
+  const have = await savedSpaceWeather();
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) return have;
+  if (have && Date.now() - have.fetchedAt < maxAgeMin * 60e3) return have;
+  inFlight ??= downloadSpaceWeather().finally(() => { inFlight = null; });
+  return inFlight.catch(() => have);
+}
+
+let liveStarted = false;
+/** Keep the forecast live while the app is open: every 15 minutes when online, and as soon as the connection comes back. */
+export function keepSpaceWeatherLive() {
+  if (liveStarted || typeof window === 'undefined') return; liveStarted = true;
+  window.addEventListener('online', () => { refreshIfStale(15); });
+  setInterval(() => { if (document.visibilityState !== 'hidden') refreshIfStale(15); }, 15 * 60e3);
+  refreshIfStale(30);
+}
+
 /** Kp → NOAA G scale (Kp 5 = G1 ... Kp 9 = G5). */
 export const gOfKp = (kp: number) => (kp >= 9 ? 5 : kp >= 8 ? 4 : kp >= 7 ? 3 : kp >= 6 ? 2 : kp >= 5 ? 1 : 0);
 export const G_WORDS = ['Quiet', 'Minor storm', 'Moderate storm', 'Strong storm', 'Severe storm', 'Extreme storm'];
@@ -110,10 +129,13 @@ export function stormEffects(g: number): string[] {
 
 /** A short warning when a storm strong enough to throw off a compass is happening now (shown beside compass bearings). */
 export function compassWarning(sw: SpaceWeather | null, now = Date.now()): string | null {
-  if (!sw || now - sw.fetchedAt > 12 * 3600e3) return null;
+  // Offline, the last forecast still covers the next 3 days, so it is used (and said to be a forecast) for up to 72 hours.
+  if (!sw || now - sw.fetchedAt > 72 * 3600e3) return null;
   const c = kpSummary(sw, now).current;
   if (!c || c.kp < 5) return null;
-  return `⚠ ${G_WORDS[gOfKp(c.kp)]} (Kp ${c.kp.toFixed(0)}) right now: compass readings can be off. Aim with GPS if you can.`;
+  const stale = now - sw.fetchedAt > 3 * 3600e3;
+  const when = new Date(sw.fetchedAt).toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' });
+  return `⚠ ${G_WORDS[gOfKp(c.kp)]} (Kp ${c.kp.toFixed(0)}) ${stale || c.kind === 'predicted' ? `forecast for now (NOAA, ${when})` : 'right now'}: compass readings can be off. Aim with GPS if you can.`;
 }
 
 registerDataset({

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { parseKp, parseScales, kpSummary, gOfKp, compassWarning, stormEffects, swpcTime } from '../src/engine/spaceweather';
 import { geomag } from '../src/engine/azimuth';
+import { nextProjectMagnetic, magneticValues, projectDeclination, spaceValues } from '../src/engine/magproject';
 import { MENU_PAGES } from '../src/data/menu';
 import { FEATURES } from '../src/help/features';
 
@@ -28,7 +29,8 @@ describe('space weather (NOAA SWPC)', () => {
     const k = kpSummary(sw, now);
     expect(k.current?.kp).toBeCloseTo(5.33); expect(k.peak?.kp).toBe(7);
     expect(compassWarning(sw, now)).toMatch(/Minor storm/);
-    expect(compassWarning(sw, now + 24 * 3600e3)).toBeNull(); // stale forecast: no warning
+    expect(compassWarning(sw, now + 24 * 3600e3)).toMatch(/forecast for now/); // offline: last forecast still used, and said so
+    expect(compassWarning(sw, now + 80 * 3600e3)).toBeNull(); // too old to trust
     expect(gOfKp(4.9)).toBe(0); expect(gOfKp(9)).toBe(5);
     expect(stormEffects(3).join(' ')).toMatch(/GPS/);
   });
@@ -43,5 +45,25 @@ describe('magnetic model page', () => {
     const a = geomag(35.5951, -82.5515, 2026.0), b = geomag(35.5951, -82.5515, 2027.0);
     expect(a.decDeg).toBeLessThan(-5.5); expect(a.decDeg).toBeGreaterThan(-8);
     expect(b.decDeg).toBeLessThan(a.decDeg);
+  });
+});
+
+describe('project magnetic variables', () => {
+  const proj = (lat: number, lon: number, magnetic?: any) => ({ sites: [{ lat, lon }], magnetic } as any);
+  it('stores checked values for Site A and only rewrites when something changed', () => {
+    const when = new Date('2026-11-17T12:00:00Z');
+    const a = nextProjectMagnetic(proj(35.5951, -82.5515), null, when)!;
+    expect(a.date).toBe('2026-11-17'); expect(a.decDeg).toBeLessThan(-6); expect(a.decPerYearDeg).toBeLessThan(0);
+    expect(nextProjectMagnetic(proj(35.5951, -82.5515, a), null, when)).toBeNull();
+    expect(nextProjectMagnetic(proj(35.7, -82.5515, a), null, when)).not.toBeNull(); // site moved
+    expect(projectDeclination(proj(35.5951, -82.5515, a))?.decDeg).toBe(a.decDeg);
+    expect(projectDeclination(proj(36, -80, a))).toBeNull(); // saved for another spot: not used
+  });
+  it('refuses values the model cannot vouch for, and stale forecasts', () => {
+    expect(magneticValues({ lat: 35.6, lon: -82.55 }, new Date('2031-06-01T00:00:00Z'))).toBeNull();
+    expect(nextProjectMagnetic(proj(0, 0), null)).toBeNull();
+    const sw = { fetchedAt: Date.parse('2026-11-16T04:00:00Z'), kp: parseKp([{ time_tag: '2026-11-16T03:00:00', kp: 6, observed: 'estimated' }]), scales: { days: [] } };
+    expect(spaceValues(sw, Date.parse('2026-11-16T05:00:00Z'))).toMatchObject({ gNow: 2, kpNow: 6 });
+    expect(spaceValues(sw, Date.parse('2026-11-17T05:00:00Z'))).toBeUndefined();
   });
 });

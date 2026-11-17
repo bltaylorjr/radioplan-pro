@@ -16,6 +16,7 @@ import { CodesHere } from '../components/CodesHere';
 import { JurisdictionInfo } from '../components/JurisdictionInfo';
 import { fsplDb, mpeComplianceDistanceM } from '../engine/rf';
 import { azimuthPair, fmtAz, fmtDecl, declinationDeg, fmtDeg, trueToMag } from '../engine/azimuth';
+import { G_WORDS } from '../engine/spaceweather';
 import { coverageStats, predictPoint } from '../engine/coverage';
 import { primaryCoverageInputs } from '../engine/network';
 import type { Project, Proposal } from '../types';
@@ -200,7 +201,8 @@ export function ReportsPage() {
       ...(L.tx && L.rx && L.tx !== L.rx ? (() => { const z = azimuthPair(L.tx!, L.rx!); return [
         [`Azimuth ${L.tx!.name} → ${L.rx!.name}`, fmtAz(z.fwd, z.decA)],
         [`Back azimuth ${L.rx!.name} → ${L.tx!.name}`, fmtAz(z.back, z.decB)],
-        ['Magnetic declination', `${fmtDecl(z.decA)} at ${L.tx!.name} (WMM2025, ${new Date().toISOString().slice(0, 10)}); °M = °T − declination`]] as [string, string][]; })() : []),
+        ['Magnetic declination', `${fmtDecl(z.decA)} at ${L.tx!.name} (NOAA ${p.magnetic?.model ?? 'WMM'}, ${p.magnetic?.date ?? new Date().toISOString().slice(0, 10)}${p.magnetic ? `, changing ${Math.abs(p.magnetic.decPerYearDeg * 60).toFixed(1)}′ ${p.magnetic.decPerYearDeg < 0 ? 'W' : 'E'} per year` : ''}); °M = °T − declination`],
+        ...(p.magnetic?.space ? [['Space weather (NOAA SWPC)', `${p.magnetic.space.gNow ? `G${p.magnetic.space.gNow} ${G_WORDS[p.magnetic.space.gNow]}` : 'Quiet'}${p.magnetic.space.kpNow != null ? `, Kp ${p.magnetic.space.kpNow.toFixed(1)}` : ''}; next 3 days up to ${p.magnetic.space.gPeak3d ? `G${p.magnetic.space.gPeak3d}` : 'no storm'} (as of ${p.magnetic.space.fetchedAt.slice(0, 16).replace('T', ' ')} UTC)`]] : [])] as [string, string][]; })() : []),
       ['TX antenna azimuth', L.tx ? fmtAz(p.radio.azimuthDeg, declinationDeg(L.tx)) : `${p.radio.azimuthDeg}°T`],
       ['Frequency', `${p.radio.fMHz} MHz`], ['TX power', `${p.radio.txPowerDbm} dBm`],
       ['Antenna', `${L.ant?.brand} ${L.ant?.model} (${L.ant?.gainDbi} dBi)`], ['Feeder', `${L.fd?.model}, ${p.radio.feederLenM} m, ${fmt(L.feederLoss, 2)} dB`],

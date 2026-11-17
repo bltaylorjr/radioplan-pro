@@ -7,7 +7,7 @@ import { useStore } from '../store';
 import { Card, Num, Stat } from '../components/ui';
 import { useUnits } from '../units';
 import { geomag, decimalYear, getMagModel, fmtDecl, fmtDeg, trueToMag, magToTrue, compassPoint } from '../engine/azimuth';
-import { downloadSpaceWeather, savedSpaceWeather, onSpaceWeather, kpSummary, kpWord, kpTone, gOfKp, G_WORDS, stormEffects, swpcTime, type SpaceWeather } from '../engine/spaceweather';
+import { downloadSpaceWeather, refreshIfStale, savedSpaceWeather, onSpaceWeather, kpSummary, kpWord, kpTone, gOfKp, G_WORDS, stormEffects, swpcTime, type SpaceWeather } from '../engine/spaceweather';
 
 const ASHEVILLE = { lat: 35.5951, lon: -82.5515, name: 'Asheville, NC (default)' };
 const nt = (v: number) => `${Math.round(v).toLocaleString()} nT`;
@@ -17,6 +17,10 @@ const ago = (ms: number) => { const m = Math.round(ms / 60000); return m < 2 ? '
 
 export function MagneticPage() {
   const { project: p } = useStore();
+  const [online, setOnline] = useState(typeof navigator === 'undefined' || navigator.onLine !== false);
+  useEffect(() => { const on = () => setOnline(true), off = () => setOnline(false); window.addEventListener('online', on); window.addEventListener('offline', off); return () => { window.removeEventListener('online', on); window.removeEventListener('offline', off); }; }, []);
+  const [modelCheck, setModelCheck] = useState<{ at?: number; detail?: string } | null>(null);
+  useEffect(() => { import('../engine/datasets').then((m) => m.loadMaintState()).then((st) => setModelCheck({ at: st.content?.lastRefresh, detail: st.content?.detail })).catch(() => {}); }, []);
   const u = useUnits();
   const s = p.sites[0];
   const hasSite = !!s && Number.isFinite(s.lat) && (s.lat !== 0 || s.lon !== 0);
@@ -60,9 +64,10 @@ export function MagneticPage() {
   };
   useEffect(() => {
     let live = true;
-    savedSpaceWeather().then((v) => { if (!live) return; if (v) setSw(v); if (navigator.onLine !== false && (!v || Date.now() - v.fetchedAt > 30 * 60e3)) refresh(); });
+    savedSpaceWeather().then((v) => { if (!live) return; if (v) setSw(v); if (navigator.onLine !== false && (!v || Date.now() - v.fetchedAt > 15 * 60e3)) refresh(); });
+    const t = setInterval(() => { refreshIfStale(10).then((v) => live && v && setSw(v)); }, 5 * 60e3); // live while the page is open
     const off = onSpaceWeather((v) => live && setSw(v));
-    return () => { live = false; off(); };
+    return () => { live = false; off(); clearInterval(t); };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
@@ -88,6 +93,7 @@ export function MagneticPage() {
           <Stat label="Horizontal strength" value={nt(g.horizNt)} tip="The part of the field that turns a compass needle. Below about 6,000 nT (near the magnetic poles) compasses are unreliable." tone={weak ? 'bad' : undefined} />
           <Stat label="North / East / Down" value={`${Math.round(X).toLocaleString()} / ${Math.round(Y).toLocaleString()} / ${Math.round(Z).toLocaleString()}`} unit=" nT" tip="The field split into north (X), east (Y) and straight down (Z) parts." />
         </div>
+        <p className="small muted">Model: <b>{model.name}</b> (NOAA NCEI, good until {(model.epoch + 5).toFixed(0)}) · {online ? <>🟢 online: the app looks for a newer model every day{modelCheck?.at ? `, last checked ${new Date(modelCheck.at).toLocaleString()}` : ''}</> : <>📴 offline: using the model on this device{modelCheck?.at ? `, last checked online ${new Date(modelCheck.at).toLocaleString()}` : ''}</>}.</p>
         {weak && <p className="note req-note">The horizontal field is weak here, so a compass is not reliable. Use GPS for directions.</p>}
         {g.outOfRange && <p className="note req-note">{model.name} covers {model.epoch.toFixed(0)}–{(model.epoch + 5).toFixed(0)}. Connect to the internet once so the newer model downloads; until then the numbers above are estimates.</p>}
         <p className="small muted">Accuracy: about ±0.5° in the continental US. Local iron, rebar, vehicles, steel buildings and power lines can throw a hand compass off much more, so stand clear or use a GPS alignment tool. Compass bearings everywhere in the app (azimuths, aiming, photo survey) use this same model.</p>
@@ -114,8 +120,10 @@ export function MagneticPage() {
       </Card>
 
       <Card title="Space weather (NOAA live forecast)" className="wide" tour="mag-space" tip="Geomagnetic storms from NOAA's Space Weather Prediction Center. Downloaded when online and kept on this device, so the last forecast shows offline too." actions={<button onClick={refresh} disabled={swState === 'loading'}>{swState === 'loading' ? 'Downloading…' : '🔄 Get the latest'}</button>}>
-        <SpaceWeatherView sw={sw} state={swState} err={swErr} />
+        <SpaceWeatherView sw={sw} state={swState} err={swErr} online={online} />
       </Card>
+
+      <ProjectValues />
 
       <Card title="Learn more (online)" tip="These open NOAA's own pages in the browser.">
         <ul className="small">
@@ -145,7 +153,7 @@ function DeclChart({ years, nowYr }: { years: { y: number; decDeg: number }[]; n
   );
 }
 
-function SpaceWeatherView({ sw, state, err }: { sw: SpaceWeather | null; state: string; err: string }) {
+function SpaceWeatherView({ sw, state, err, online }: { sw: SpaceWeather | null; state: string; err: string; online: boolean }) {
   const now = Date.now();
   if (!sw) return <p className="note">{state === 'loading' ? 'Downloading the forecast from NOAA…' : state === 'error' ? `Could not reach NOAA (${err}). Connect to the internet and tap Get the latest; the forecast is then kept for offline use.` : 'No forecast on this device yet. Connect to the internet and tap Get the latest.'}</p>;
   const { current, peak, next } = kpSummary(sw, now);
@@ -154,7 +162,9 @@ function SpaceWeatherView({ sw, state, err }: { sw: SpaceWeather | null; state: 
   const old = now - sw.fetchedAt > 6 * 3600e3;
   const recent = sw.kp.filter((x) => swpcTime(x.t).getTime() >= now - 48 * 3600e3);
   return <>
-    <p className={'small' + (old ? ' note' : ' muted')}>Downloaded {ago(now - sw.fetchedAt)}{old ? ' — this may be out of date. Tap Get the latest when you have internet.' : ''}{state === 'error' && <> · Could not refresh ({err}).</>}</p>
+    {online && !old && state !== 'error'
+      ? <p className="small muted">🟢 <b>Live</b> · updated {new Date(sw.fetchedAt).toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' })} ({ago(now - sw.fetchedAt)}); updates by itself every 15 minutes while the app is open.</p>
+      : <p className="small note">{online ? '⚠ Could not update' : '📴 Offline'}: showing conditions from the last connection, <b>{new Date(sw.fetchedAt).toLocaleString([], { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</b> ({ago(now - sw.fetchedAt)}).{old ? ' “Right now” below was predicted then, so it may be out of date.' : ''} It updates by itself when the internet is back.{state === 'error' && err ? ` (${err})` : ''}</p>}
     <div className="stats">
       <Stat label="Right now" value={gNow ? `G${gNow} ${G_WORDS[gNow]}` : current ? kpWord(current.kp) : '—'} unit={current ? ` · Kp ${current.kp.toFixed(1)}` : ''} tone={current ? kpTone(current.kp) : undefined} tip="Kp is NOAA's 0–9 measure of how disturbed the magnetic field is. Kp 5 or more is a storm (G1 to G5)." />
       <Stat label="Next 3 days, worst" value={gPeak ? `G${gPeak} ${G_WORDS[gPeak]}` : peak ? kpWord(peak.kp) : '—'} unit={peak ? ` · Kp ${peak.kp.toFixed(1)}` : ''} tone={peak ? kpTone(peak.kp) : undefined} tip={peak ? `Highest predicted at ${swpcTime(peak.t).toLocaleString([], { weekday: 'short', hour: 'numeric' })}.` : undefined} />
@@ -186,5 +196,24 @@ function KpChart({ pts, now }: { pts: { t: string; kp: number; kind: string }[];
       {pts.map((x, i) => swpcTime(x.t).getUTCHours() === 0 ? <text key={'d' + x.t} x={L + i * bw} y={H - 8} fontSize="10" fill="var(--muted)">{swpcTime(x.t).toLocaleDateString([], { weekday: 'short' })}</text> : null)}
       {nowI > 0 && <><line x1={L + nowI * bw} x2={L + nowI * bw} y1={T} y2={Y(0)} stroke="var(--ink)" strokeDasharray="3 3" /><text x={L + nowI * bw + 3} y={T + 9} fontSize="10" fill="var(--ink)">now · faded bars are the forecast</text></>}
     </svg>
+  );
+}
+
+/** The checked values saved with the project (project.magnetic), used by drawings, reports and other devices. */
+function ProjectValues() {
+  const { project: p } = useStore();
+  const m = p.magnetic;
+  return (
+    <Card title="Saved with this project" tour="mag-project" tip="The app keeps these checked values on the project by itself: they update when Site A moves, each day, and when a new space weather forecast arrives. Drawings (north arrow), reports and synced devices use them.">
+      {!m ? <p className="small muted">Place Site A on Site Data & GPS and the declination for the job is saved here by itself.</p> : <>
+        <table className="tbl"><tbody>
+          <tr><td>Declination at Site A</td><td><b>{fmtDecl(m.decDeg)}</b>, changing {Math.abs(m.decPerYearDeg * 60).toFixed(1)}′ {m.decPerYearDeg < 0 ? 'W' : 'E'} a year</td></tr>
+          <tr><td>For</td><td>{m.date} · {m.model} · GPS {m.lat.toFixed(4)}, {m.lon.toFixed(4)}</td></tr>
+          <tr><td>Dip / total field</td><td>{m.dipDeg.toFixed(2)}° / {nt(m.totalNt)}</td></tr>
+          <tr><td>Space weather</td><td>{m.space ? <>{m.space.gNow ? `G${m.space.gNow} ${G_WORDS[m.space.gNow]}` : 'Quiet'}{m.space.kpNow != null ? ` (Kp ${m.space.kpNow.toFixed(1)})` : ''}; next 3 days up to {m.space.gPeak3d ? `G${m.space.gPeak3d}` : 'no storm'}{m.space.radioBlackoutPct != null ? `; radio blackout chance ${m.space.radioBlackoutPct}%` : ''} · as of {new Date(m.space.fetchedAt).toLocaleString()}</> : 'not downloaded yet (needs internet once)'}</td></tr>
+        </tbody></table>
+        <p className="small muted">Used on: Blueprints north arrow, Reports (azimuth and declination lines), and storm warnings beside compass bearings.</p>
+      </>}
+    </Card>
   );
 }

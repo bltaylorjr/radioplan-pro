@@ -11,6 +11,7 @@ import { zip } from '../engine/gisexport';
 import { projectSystems } from '../data/systems';
 import type { Project, Blueprint } from '../types';
 import { declinationDeg, fmtDecl } from '../engine/azimuth';
+import { projectDeclination } from '../engine/magproject';
 
 export const defaultBlueprint = (): Blueprint => ({ size: 'ARCH D', scale: 'auto', drawnBy: '', checkedBy: '', revisions: [{ rev: '0', date: new Date().toISOString().slice(0, 10), desc: 'Issued for permit' }], off: [] });
 const T = (s: unknown) => String(s ?? '');
@@ -94,12 +95,12 @@ function PlanSheet({ c, sh }: { c: Ctx; sh: SheetDef }) {
 }
 /** North arrow turned to the plan orientation: solid = true north, half arrow = magnetic north (WMM2025 declination at the site). */
 function NorthArrow({ c, x, y }: { c: Ctx; x: number; y: number }) {
-  const rot = -(c.bp.planNorthDeg ?? 0), s0 = c.p.sites[0], dec = s0 ? declinationDeg(s0) : null;
+  const rot = -(c.bp.planNorthDeg ?? 0), s0 = c.p.sites[0], pd = projectDeclination(c.p), dec = pd ? pd.decDeg : s0 ? declinationDeg(s0) : null, decYr = pd ? pd.date.slice(0, 4) : String(new Date().getFullYear());
   return <g transform={`translate(${x} ${y})`}>
     <circle r={0.3} fill="none" stroke="#000" strokeWidth={0.015} />
     <g transform={`rotate(${rot})`}><polygon points="0,-0.28 0.1,0.1 0,0.02 -0.1,0.1" fill="#000" /><text y={-0.36} fontSize={0.14} textAnchor="middle" fontWeight={700}>N</text></g>
     {dec != null && Math.abs(dec) >= 0.5 && <g transform={`rotate(${rot + dec})`}><line x1={0} y1={0} x2={0} y2={-0.27} stroke="#000" strokeWidth={0.012} /><polygon points="0,-0.27 0.05,-0.17 0,-0.19" fill="#000" /><text x={0.02} y={-0.5} fontSize={0.08} textAnchor="middle">MN</text></g>}
-    <text y={0.44} fontSize={0.075} textAnchor="middle">{dec != null ? `TRUE N · MAG. DECL. ${fmtDecl(dec).toUpperCase()} (${new Date().getFullYear()})` : 'TRUE NORTH'}</text>
+    <text y={0.44} fontSize={0.075} textAnchor="middle">{dec != null ? `TRUE N · MAG. DECL. ${fmtDecl(dec).toUpperCase()} (${decYr})` : 'TRUE NORTH'}</text>
     {(c.bp.planNorthDeg ?? 0) !== 0 && <text y={0.54} fontSize={0.075} textAnchor="middle">PLAN TOP FACES {Math.round(c.bp.planNorthDeg ?? 0)}°T</text>}
   </g>;
 }
