@@ -173,7 +173,7 @@
  },
  {
   "id": "fullpage.fl1",
-  "text": "Every map and three D view has big buttons on its full page.\nTap Full page above the map to open it."
+  "text": "Every map and three D view has navigation buttons on its full page.\nTap Full page above the map to open it."
  },
  {
   "id": "fullpage.fl2",
@@ -181,7 +181,7 @@
  },
  {
   "id": "fullpage.fl3",
-  "text": "The big plus and minus buttons zoom in and out.\nHold a button down to keep zooming.\nThe arrows button shows everything at once."
+  "text": "The plus and minus buttons zoom in and zoom out.\nHold a button down to keep zooming.\nThe arrows button shows everything at once."
  },
  {
   "id": "fullpage.fl4",
