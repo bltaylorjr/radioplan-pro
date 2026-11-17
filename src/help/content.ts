@@ -215,6 +215,42 @@ Traced plans follow the linework in the file. Check sizes against the dimensione
 - **Build elements**: every value the output needs, ✓ when it is in, with a link to the page where it is added.
 
 **⧉ Picture in picture** keeps the plan in a small window while you fill in other pages. **🖨 Print** prints the page.` },
+  { id: 'spectrum', title: 'RF spectrum analyzer', page: 'spectrum', keywords: 'spectrum analyzer rf sdr tinysa tinysa ultra rtl-sdr hackrf usb receiver webusb web serial zadig winusb sweep trace waterfall markers delta peak search channel power occupied bandwidth acpr noise floor danl snr interference hunt tone intermod bda oscillation uplink noise donor downlink limit line mask calibrate ppm cable loss attenuator antenna factor field strength dbuv import csv rtl_power hackrf_sweep', summary: 'A spectrum analyzer that works with USB receivers (tinySA, RTL-SDR, HackRF) or imported sweeps, with markers, measurements, guided tests and calibration.',
+    body: `**RF Spectrum Analyzer** (Tools & reference) turns a USB receiver into a spectrum analyzer in Chrome or Edge (computer or Android) and in the Windows app. iPhone, iPad, Safari and Firefox cannot reach USB receivers; import a saved sweep there instead.
+
+**1. Receiver.** Plug it in and press **Connect tinySA**, **Connect RTL-SDR** or **Connect HackRF One**; the browser asks once, then the receiver is listed under **Receivers plugged in now** whenever it is connected. **Compatible USB receivers** lists every supported receiver with its range, connection and level accuracy:
+- **tinySA / tinySA Ultra**: a real spectrum analyzer with calibrated dBm. Best for measurements.
+- **RTL-SDR** and **HackRF One**: SDR receivers, fast and wide, but levels are relative until calibrated. On Windows install the WinUSB driver with Zadig.
+- Airspy, SDRplay, Signal Hound, bench and handheld analyzers, and rtl_power / hackrf_sweep: **import** their CSV traces.
+- **Use test signals** for training and the self-test.
+
+**2. Analyzer.** Band presets (VHF, UHF, 700/800 MHz public safety, FirstNet, Wi-Fi, FM), start/stop or center/span, points, RBW, detector (peak, average, sample), trace mode (clear, average, max hold, min hold), reference level and dB/div, units (dBm, dBµV, dBµV/m, mW, µV). Click the trace for up to 4 markers with deltas; **Peak** and **Next peak** jump between signals. A waterfall shows the last 120 sweeps. Project frequencies are drawn as dashed lines.
+
+**3. Measurements**: strongest signal, noise floor, SNR, channel power, 99 % occupied bandwidth, adjacent-channel power ratio, limit pass / fail, the signals found and any intermodulation products that land on a signal or project channel.
+
+**4. Tests**: analyzer self-test, calibration with a known signal (level offset and ppm), noise floor and noise figure, BDA uplink noise, BDA oscillation, donor signal by channel (sends the level to Emergency Radio), downlink level against −95 dBm, interference hunt with a tone, intermod check, limit line / mask, and carrier measurements. Save each test with the project (with GPS when allowed).
+
+**5. Corrections**: calibration offset, frequency correction, cable loss, attenuator, preamp gain, antenna gain or antenna factor, so readings are at the antenna port or in field strength.\n\n**6. Benchmarks and certification**: benchmark the receiver against a signal generator (level accuracy at several points, frequency accuracy, noise floor, dynamic range, 10 dB step linearity, calibration date, sweep speed) for a grade: **Measurement grade** (fit for acceptance tests), **Survey grade** or **Indicative only**. Certification tests: the **ERCES acceptance grid test** (IFC 510 / NFPA 1225: −95 dBm, 95 % general, 99 % critical areas, captured cell by cell into Live Signal Readings), the **FCC 90.210 emission mask** (Mask B or D) and **signal booster checks** (out-of-band emissions, uplink noise, oscillation). Each saves a signed report, also in Reports → Certification test reports.
+
+Save sweeps, add marker readings to **Live Signal Readings**, and download CSV or a picture. Readings from uncalibrated receivers are marked relative.` },
+  { id: 'audio', title: 'Audio & acoustic analyzer', page: 'audio', keywords: 'audio acoustic analyzer sound level meter spl leq lmax lmin l10 l50 l90 a weighting c weighting fast slow impulse rta octave third octave rt60 reverberation edt t20 t30 sti intelligibility nfpa 72 audibility thd distortion noise criteria nc microphone calibration file umik calibrator 94 114 generator pink noise sine sweep impulse response loopback benchmark certification report', summary: 'A sound level meter, real-time analyzer, room acoustics (RT60, STI), distortion and noise tool with calibration, benchmarks and certification reports.',
+    body: `**Audio & Acoustic Analyzer** (Tools & reference) works with the computer's or phone's microphone, and properly with a measurement microphone (USB like miniDSP UMIK-1/UMIK-2, or a Dayton EMM-6 with an audio interface). Browser echo cancellation, noise suppression and auto gain are turned off.
+
+**1. Input and calibration**: pick the input and **Start**. Put an acoustic calibrator on the microphone and press **Calibrate (94 dB)** or **(114 dB)**, so levels read in dB SPL. Load the microphone's **calibration file** (UMIK, Dayton or REW .txt) to correct its frequency response.
+
+**2. Sound level meter**: A, C or Z weighting (IEC 61672-1), Fast, Slow or Impulse time weighting, and Leq, Lmax, Lmin, L10, L50 and L90. The **real-time analyzer** shows 1/3- or 1/1-octave bands (IEC 61260) and saves them as CSV.
+
+**3. Signal generator**: sine, pink noise and white noise.
+
+**4. Measurements, benchmarks and certification**:
+- **Room: RT60 & STI**: a sine sweep through the speakers gives the impulse response, EDT, T20 and T30 by octave (ISO 3382) and the speech transmission index (IEC 60268-16 indirect method). Measure background noise first to include it.
+- **Background noise & NC**: 10 s Leq, L90, Lmax and the noise criteria (NC) rating.
+- **Distortion**: THD and THD+N of a tone.
+- **NFPA 72 audibility**: ambient for 60 s, then the alarm signal; pass / fail for public, private or sleeping areas and the 110 dBA maximum.
+- **Intelligibility acceptance**: STI points by location against NFPA 72 Annex D (average ≥ 0.50, 90 % of points ≥ 0.45).
+- **Benchmark the measuring chain**: calibrator check and stability, self-noise, mic calibration file, processing off, sample rate, loopback flatness and THD, graded against IEC 61672-1 Class 1 / Class 2 tolerances. This verifies the chain; legal certification still needs a type-approved meter.
+
+Each test saves a **certification report** with the equipment, calibration, requirements, results and signature lines; all of them print in **Reports → Certification test reports** (Closeout package).` },
   { id: 'weather', title: 'Weather & radar (NOAA)', page: 'weather', keywords: 'weather radar forecast noaa national weather service nws rain storm thunder lightning wind gust temperature cold heat alerts warning watch advisory current conditions hourly 7 day work day tower climbing lift offline', summary: 'Live NOAA radar, alerts, current conditions and the 7-day forecast for the job site or where you are, with work-day checks.',
     body: `Open **Tools & reference → Weather & Radar (NOAA)**. The place is the project's Site A (Asheville, NC when no site is set). Tap **📡 Use where I am now** for your GPS position, or type a GPS point.
 

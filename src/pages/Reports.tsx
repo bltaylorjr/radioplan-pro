@@ -39,13 +39,14 @@ import { PhotoSurveyReport } from './PhotoSurvey';
 import { compareReadings, compareVerdict, gridTest } from '../engine/signal';
 import { nextPm } from '../engine/assets';
 import { PlanSheet2D, PlanSchedules } from '../components/PlanViews';
+import { CertSheet } from '../components/CertReport';
 import { buildModel } from '../engine/models';
 
 const REPORTS = [
   ['cover', 'Cover letter & summary'], ['scope', 'Scope of work'], ['autoequip', 'Recommended equipment'], ['bom', 'Materials list'], ['price', 'Price'],
   ['schedule', 'Schedule'], ['terms', 'Terms, exclusions & acceptance'], ['plans', 'Floor plans'], ['schedules', 'Room, door & window schedules'], ['devices', 'Device schedule'], ['codes', 'Codes in effect'],
   ['contacts', 'Inspection contacts'], ['ck-survey', 'Site survey checklist'], ['ck-permit', 'Permit & submittal checklist'], ['ck-install', 'Installation checklist'], ['ck-testing', 'Testing checklist'],
-  ['tests', 'Commissioning / Test Report'], ['ck-closeout', 'Closeout checklist'], ['pm', 'Maintenance schedule'], ['documents', 'Documents index'], ['photos', 'Photos'], ['diagrams', 'Wiring diagrams (color)'], ['warranty', 'Warranty & owner sign-off'],
+  ['tests', 'Commissioning / Test Report'], ['ck-closeout', 'Closeout checklist'], ['pm', 'Maintenance schedule'], ['documents', 'Documents index'], ['certs', 'Certification test reports'], ['photos', 'Photos'], ['diagrams', 'Wiring diagrams (color)'], ['warranty', 'Warranty & owner sign-off'],
   ['site', 'Site Data Sheet'], ['link', 'Link Budget & Path Analysis'], ['coverage', 'Coverage Summary'], ['grounding', 'Grounding & Structure'],
   ['solar', 'Solar / DC Power Sizing'], ['alarm', 'Fire Alarm Battery Calculation'], ['erces', 'ERCES Design Summary'],
   ['compliance', 'Code Compliance Report'], ['notes', 'Field Notes & Photos'], ['photosurvey', 'Photo site survey'], ['readings', 'Live Signal Readings'], ['assets', 'Equipment list (asset tags)'],
@@ -55,7 +56,7 @@ type RK = (typeof REPORTS)[number][0];
 export const PACKAGES: { id: string; label: string; title: string; sections: RK[] }[] = [
   { id: 'proposal', label: 'Project proposal', title: 'Project Proposal', sections: ['cover', 'scope', 'autoequip', 'bom', 'price', 'schedule', 'codes', 'photos', 'terms'] },
   { id: 'build', label: 'Build plan', title: 'Build Plan', sections: ['scope', 'schedule', 'plans', 'schedules', 'devices', 'autoequip', 'bom', 'codes', 'contacts', 'ck-permit', 'ck-install', 'ck-testing', 'diagrams', 'photos'] },
-  { id: 'closeout', label: 'Closeout package', title: 'Closeout Package', sections: ['cover', 'plans', 'schedules', 'devices', 'assets', 'tests', 'readings', 'photos', 'diagrams', 'ck-closeout', 'pm', 'documents', 'warranty'] },
+  { id: 'closeout', label: 'Closeout package', title: 'Closeout Package', sections: ['cover', 'plans', 'schedules', 'devices', 'assets', 'tests', 'certs', 'readings', 'photos', 'diagrams', 'ck-closeout', 'pm', 'documents', 'warranty'] },
   { id: 'survey', label: 'Site survey report', title: 'Site Survey Report', sections: ['site', 'photosurvey', 'ck-survey', 'readings', 'photos', 'notes', 'codes', 'contacts'] },
   { id: 'engineering', label: 'Engineering reports (radio, power, codes)', title: 'Engineering Report', sections: ['site', 'photosurvey', 'link', 'coverage', 'grounding', 'solar', 'alarm', 'erces', 'compliance', 'bom', 'tests', 'readings', 'notes'] },
 ];
@@ -169,6 +170,7 @@ export function ReportsPage() {
       <div className="sign"><div>Accepted by (client) ____________________ Title __________ Date ________</div><div>For {c.name || 'the contractor'} ____________________ Date ________</div></div></>,
     plans: () => docPlans.length ? <>{docPlans.map((x) => <div key={x.id} className="rpt-plan"><PlanSheet2D plan={x} scene={x.integrated ? planScene : null} off={[...(x.off ?? []), 'underlay']} title={x.level} northDeg={p.blueprint?.planNorthDeg ?? 0} maxHeight={900} /></div>)}</> : !ad.devices.length ? <p>No layout yet. Pick the project type, then describe the building on Auto-Design & 3D Model.</p> : <FloorPlan2D r={ad} lengthFt={p.autoDesign?.lengthFt ?? 200} widthFt={p.autoDesign?.widthFt ?? 100} floor="all" hidden={new Set()} />,
     schedules: () => docPlans.filter((x) => x.scale.ftPerPx).length ? <>{docPlans.filter((x) => x.scale.ftPerPx).map((x) => <PlanSchedules key={x.id} plan={x} />)}</> : <p>No floor plans are included in the documentation yet. Tick <b>Include in project documentation</b> on Floor Plan to 2D / 3D.</p>,
+    certs: () => (p.certs ?? []).length ? <>{(p.certs ?? []).map((c) => <CertSheet key={c.id} r={c} />)}</> : <p>No certification tests saved yet. Run them on RF Spectrum Analyzer or Audio & Acoustic Analyzer.</p>,
     devices: () => <table className="rpt-tbl"><thead><tr><th>Device</th><th>Quantity</th>{Array.from({ length: Math.max(1, p.autoDesign?.floors ?? 1) }, (_, i) => <th key={i}>Floor {i + 1}</th>)}</tr></thead>
       <tbody>{(Object.keys(kindsCount) as Kind[]).map((k) => <tr key={k}><td>{KIND_LABEL[k]}</td><td>{kindsCount[k]}</td>{Array.from({ length: Math.max(1, p.autoDesign?.floors ?? 1) }, (_, i) => <td key={i}>{ad.devices.filter((d) => d.kind === k && d.floor === i).length}</td>)}</tr>)}</tbody></table>,
     codes: () => <CodesHere />,
