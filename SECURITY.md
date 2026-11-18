@@ -1,6 +1,6 @@
 # Security
 
-LvPlan Pro is a low-voltage and radio planning app: the online version at https://bltaylorjr.github.io/radioplan-pro/,
+LvPlan Pro is a low-voltage and radio planning app: the online version at https://lvplan-pro.pages.dev/,
 the Windows desktop app and the Android app. Projects stay on your own device; the app has no accounts and no
 server of its own.
 

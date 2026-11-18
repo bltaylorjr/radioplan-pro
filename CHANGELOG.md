@@ -1,3 +1,9 @@
+# LvPlan Pro 1.5.79
+
+- **New home for updates:** from this version the app gets its updates from LvPlan Pro's own new account (downloads at github.com/lvplanpro/lvplan-pro), and still asks the old place while the new one has nothing yet. Nothing to do: it happens by itself.
+- **Online version moved** to **https://lvplan-pro.pages.dev/** (Cloudflare). Content packs (codes, catalog, help and more) refresh from there, with the old address as a backup.
+- This lets the source code become private while automatic updates keep working.
+
 # LvPlan Pro 1.5.78
 
 - **New introduction video** (▶ Video): every tool gets about half a minute, in menu order, so each one is covered evenly, all in one narrator's voice, with street-level maps filled in.

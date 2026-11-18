@@ -45,3 +45,29 @@ describe('update safety', () => {
     u.bootHealthy('1.1.1'); expect(u.skippedVersion()).toBeNull(); expect(u.lastGoodVersion()).toBe('1.1.1');
   });
 });
+
+describe('update source after the move to the new account', () => {
+  it('asks the new downloads repo first and falls back to the old one when it has no release', async () => {
+    const { checkForUpdate, UPDATE_REPO, OLD_UPDATE_REPO } = await import('../src/engine/update');
+    const asked: string[] = [];
+    const orig = globalThis.fetch;
+    globalThis.fetch = (async (u: string) => {
+      asked.push(u);
+      if (u.includes(UPDATE_REPO)) return new Response('{}', { status: 404 });
+      return new Response(JSON.stringify(rel('v99.0.0')), { status: 200 });
+    }) as typeof fetch;
+    try {
+      const got = await checkForUpdate();
+      expect(got?.version).toBe('99.0.0');
+      expect(asked[0]).toContain('lvplanpro/lvplan-pro');
+      expect(asked[1]).toContain(OLD_UPDATE_REPO);
+    } finally { globalThis.fetch = orig; }
+  });
+  it('uses the new repo alone when it has a release', async () => {
+    const { checkForUpdate } = await import('../src/engine/update');
+    const asked: string[] = [];
+    const orig = globalThis.fetch;
+    globalThis.fetch = (async (u: string) => { asked.push(u); return new Response(JSON.stringify(rel('v99.0.1')), { status: 200 }); }) as typeof fetch;
+    try { expect((await checkForUpdate())?.version).toBe('99.0.1'); expect(asked.length).toBe(1); } finally { globalThis.fetch = orig; }
+  });
+});

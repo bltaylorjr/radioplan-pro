@@ -4,9 +4,12 @@ import { APP_VERSION, cmpVersion, platform } from './update';
 import { getChecked, putChecked, kvKeys, kvSet } from './projectdb';
 import { registerDataset, sha256 } from './maintain';
 import { notify, logRepair } from './carelog';
+import { ONLINE_URL, OLD_ONLINE_URL } from './site';
 
-/** Where the website keeps the packs (published with every update of main). */
-export const CONTENT_URL = 'https://bltaylorjr.github.io/radioplan-pro/content/';
+/** Where the website keeps the packs (published with every update of main): the online app on Cloudflare Pages. */
+export const CONTENT_URL = ONLINE_URL + 'content/';
+/** The old GitHub Pages address, asked only while the new site cannot be reached. */
+export const OLD_CONTENT_URL = OLD_ONLINE_URL + 'content/';
 const KEY = 'content.pack.v1:';
 const keyOf = (name: string) => KEY + name;
 
@@ -52,7 +55,9 @@ async function fetchText(url: string) {
 
 /** Look for newer packs on the website and keep any that pass their checks. */
 export async function refreshPacks(): Promise<{ updated: string[]; needApp: string[] }> {
-  const m = JSON.parse(await fetchText(CONTENT_URL + 'manifest.json')) as Manifest;
+  let base = CONTENT_URL, raw: string;
+  try { raw = await fetchText(base + 'manifest.json'); } catch { base = OLD_CONTENT_URL; raw = await fetchText(base + 'manifest.json'); }
+  const m = JSON.parse(raw) as Manifest;
   if (m?.format !== CONTENT_FORMAT || !Array.isArray(m.packs)) throw new Error('the website sent an unknown content list');
   const updated: string[] = [], needApp: string[] = [], notices: string[] = [];
   for (const e of m.packs) {
@@ -63,7 +68,7 @@ export async function refreshPacks(): Promise<{ updated: string[]; needApp: stri
     if (e.sum === b.sum) continue; // same data as built in
     const have = (await getChecked<StoredPack>(keyOf(p.name)).catch(() => ({ v: undefined }))).v;
     if (have?.sum === e.sum) continue;
-    const text = await fetchText(CONTENT_URL + e.file);
+    const text = await fetchText(base + e.file);
     if ((await sha256(text)) !== e.sum) throw new Error(`${p.label}: download did not match its checksum`);
     const data = JSON.parse(text);
     if (!jsonSafe(data) || packShape(data) !== b.shape) throw new Error(`${p.label}: download is not laid out as expected`);

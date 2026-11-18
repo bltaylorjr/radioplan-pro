@@ -1,7 +1,11 @@
-// Automatic updates from the project's GitHub Releases (free, no account needed by the user).
+// Automatic updates from GitHub Releases of the public downloads repository (free, no account needed by the user).
+// The source code lives in a separate repository that can be private; its release workflow publishes here.
 import pkg from '../../package.json';
 export const APP_VERSION: string = (pkg as { version: string }).version;
-export const UPDATE_REPO = 'bltaylorjr/radioplan-pro';
+export const UPDATE_REPO = 'lvplanpro/lvplan-pro';
+/** Where updates came from before the move to the new account. Asked only when the new place has no release. */
+export const OLD_UPDATE_REPO = 'bltaylorjr/radioplan-pro';
+export const UPDATE_REPOS = [UPDATE_REPO, OLD_UPDATE_REPO] as const;
 export const ASSETS = { windows: 'RadioPlan-Pro-Setup.exe', android: 'RadioPlan-Pro.apk', usb: 'RadioPlan-Pro-FlashDrive.zip' } as const;
 export type Platform = 'windows' | 'android' | 'usb' | 'web';
 
@@ -29,11 +33,22 @@ export function pickUpdate(rel: Release, current: string, plat: Platform): Updat
   const sha = /^sha256:([0-9a-f]{64})$/i.exec(a?.digest ?? '')?.[1]?.toLowerCase();
   return { version: rel.tag_name.replace(/^v/i, ''), notes: (rel.body ?? '').slice(0, 600), url: a?.browser_download_url ?? null, page: rel.html_url, ...(sha ? { sha256: sha } : {}) };
 }
+/** Fetch a release from the downloads repository, or from the old one when the new one does not have it. */
+async function fetchRelease(path: string, signal?: AbortSignal): Promise<Release | null> {
+  let err: Error | null = null;
+  for (const repo of UPDATE_REPOS) {
+    try {
+      const r = await fetch(`https://api.github.com/repos/${repo}/releases/${path}`, { headers: { Accept: 'application/vnd.github+json' }, signal });
+      if (r.ok) return (await r.json()) as Release;
+      if (r.status !== 404) err = new Error(`Update check HTTP ${r.status}`);
+    } catch (e) { if (signal?.aborted) throw e; err = e as Error; }
+  }
+  if (err) throw err;
+  return null; // no release published yet
+}
 export async function checkForUpdate(signal?: AbortSignal): Promise<UpdateInfo | null> {
-  const r = await fetch(`https://api.github.com/repos/${UPDATE_REPO}/releases/latest`, { headers: { Accept: 'application/vnd.github+json' }, signal });
-  if (r.status === 404) return null; // no release published yet
-  if (!r.ok) throw new Error(`Update check HTTP ${r.status}`);
-  return pickUpdate(await r.json(), APP_VERSION, platform());
+  const rel = await fetchRelease('latest', signal);
+  return rel ? pickUpdate(rel, APP_VERSION, platform()) : null;
 }
 const PREF = 'radioplan.autoUpdate', LAST = 'radioplan.updateChecked';
 export const autoUpdateOn = () => { try { return localStorage.getItem(PREF) !== 'off'; } catch { return true; } };
@@ -75,11 +90,11 @@ export const windowsInstallerUrl = (version: string) => `https://github.com/${UP
 /** Reinstall an earlier version (Windows). The bad version is skipped by the automatic updater. */
 export async function rollBackTo(version: string) {
   ls.set(SKIP, APP_VERSION); ls.set(BOOTS, '0');
-  let sha: string | null = null;
+  let sha: string | null = null, url = windowsInstallerUrl(version);
   try {
-    const r = await fetch(`https://api.github.com/repos/${UPDATE_REPO}/releases/tags/v${version}`, { headers: { Accept: 'application/vnd.github+json' } });
-    const rel = r.ok ? (await r.json()) as Release : null;
-    sha = /^sha256:([0-9a-f]{64})$/i.exec(rel?.assets.find((x) => x.name === ASSETS.windows)?.digest ?? '')?.[1]?.toLowerCase() ?? null;
+    const a = (await fetchRelease(`tags/v${version}`))?.assets.find((x) => x.name === ASSETS.windows);
+    if (a?.browser_download_url) url = a.browser_download_url;
+    sha = /^sha256:([0-9a-f]{64})$/i.exec(a?.digest ?? '')?.[1]?.toLowerCase() ?? null;
   } catch { /* install unchecked by digest; the address is still limited to this project's releases */ }
-  await tauri()!.invoke('install_update', { url: windowsInstallerUrl(version), sha256: sha });
+  await tauri()!.invoke('install_update', { url, sha256: sha });
 }
