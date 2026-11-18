@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { releaseFileUrl } from '../engine/site';
 
 /** The introduction video, bundled with the app (public/intro.mp4) so it plays offline. */
-const ONLINE = 'https://bltaylorjr.github.io/radioplan-pro/';
+
 /** Set once the video has opened by itself on the first visit, so it never opens by itself again. */
 export const SEEN_VIDEO_KEY = 'radioplan.seenVideo';
 
@@ -28,7 +29,7 @@ export function IntroVideo({ onClose, first, file = 'intro.mp4', title, about }:
       <div className="intro-video-box" onClick={(e) => e.stopPropagation()}>
         <header className="row"><h3 style={{ margin: 0, flex: 1 }}>▶ {title ?? (first ? 'Welcome! Here is a quick tour of LvPlan Pro' : 'LvPlan Pro introduction')}</h3><button className="ghost" onClick={onClose} aria-label="Close video">✕</button></header>
         <div style={{ position: 'relative' }}>
-          <video ref={v} key={failed ? 'online' : 'local'} src={failed ? ONLINE + file : './' + file} controls playsInline onError={() => { if (!failed) setFailed(true); }} />
+          <video ref={v} key={failed ? 'online' : 'local'} src={failed ? releaseFileUrl(file) : './' + file} controls playsInline onError={() => { if (!failed) setFailed(true); }} />
           {muted && <button className="primary big intro-sound" onClick={sound}>🔊 Tap to turn on the sound</button>}
         </div>
         <div className="row wrap">
