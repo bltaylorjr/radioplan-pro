@@ -10,11 +10,15 @@ import { loadCompanyDefault, applyCompanyDefault } from './engine/companyDefault
 import type { DemGrid, ProfileAnalysis } from './engine/terrain';
 import type { CoverageResult } from './engine/coverage';
 import { stampSync } from './engine/sync';
+import { currentUser, userKey } from './engine/accounts';
+import { storageSealed } from './engine/projectdb';
+import { pushTeamUpdate } from './engine/team';
 import { registerCustom } from './data/catalog';
 import { addVersion, type VersionKeep, BackupEntry, deleteProject, listProjects, folderAllowed, folderCopySupported, getRecordVerified, getVersion, importEntries, loadTerrain, markProjectDeleted, deletedProjectIds, removeFromFolder, newId, putProject, requestPersist, saveTerrain, savedDataFolder, storageAvailable, VERSION_EVERY_MS, writeToFolder } from './engine/projectdb';
 
+// With sign-in on, each user has their own "open project" and no unlocked quick copy is kept.
 const KEY = 'radioplan.project.v1';
-const CUR = 'radioplan.currentId';
+const CUR = () => userKey('radioplan.currentId');
 
 /** Runtime-only (not saved in the project file): large terrain grids and computed results. */
 export interface LocateTarget { lat: number; lon: number; label: string; state?: string; county?: string }
@@ -53,14 +57,15 @@ const C = createContext<Ctx | null>(null);
 
 function load(): Project {
   try {
+    if (currentUser()) return defaultProject();
     const s = localStorage.getItem(KEY);
     if (s) return repairProject(JSON.parse(s)).project;
   } catch { /* storage unavailable */ }
   return defaultProject();
 }
 const fresh = (p: Project): Project => repairProject(p).project;
-function currentId(): string { try { const v = localStorage.getItem(CUR); if (v) return v; const id = newId(); localStorage.setItem(CUR, id); return id; } catch { return newId(); } }
-function setCurrentIdLS(id: string) { try { localStorage.setItem(CUR, id); } catch { /* ignore */ } }
+function currentId(): string { try { const v = localStorage.getItem(CUR()); if (v) return v; const id = newId(); localStorage.setItem(CUR(), id); return id; } catch { return newId(); } }
+function setCurrentIdLS(id: string) { try { localStorage.setItem(CUR(), id); } catch { /* ignore */ } }
 
 export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [project, setProject] = useState<Project>(load);
@@ -102,7 +107,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     clearTimeout(t.current);
     t.current = window.setTimeout(async () => {
       const json = JSON.stringify(project); // once, reused for the quick copy, the size and the checksum
-      try { localStorage.setItem(KEY, json); } catch { /* quota: the library still has it */ }
+      if (!storageSealed()) try { localStorage.setItem(KEY, json); } catch { /* quota: the library still has it */ }
       if (!ready || saveState === 'unavailable') return;
       setSaveState('saving');
       try {
@@ -110,6 +115,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         if (Date.now() - lastVersion.current > VERSION_EVERY_MS) { lastVersion.current = Date.now(); await addVersion(projectId, project, 'Autosave'); }
         setSaveState('saved'); setSaveError('');
         mirrorToFolder(projectId, project);
+        if (project.team) pushTeamUpdate(project);
       } catch (e) { setSaveState('error'); setSaveError(String((e as Error)?.message ?? e)); }
     }, 400);
   }, [project, ready]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -228,8 +234,13 @@ export function downloadText(name: string, text: string, type = 'text/plain') { 
 export function downloadBytes(name: string, data: Uint8Array | Blob, type = 'application/octet-stream') { saveBlob(name, data instanceof Blob ? data : new Blob([data], { type })); }
 export const safeName = (s: string) => (s || 'radioplan').replace(/[^a-z0-9_-]+/gi, '_').replace(/^_+|_+$/g, '').slice(0, 60) || 'radioplan';
 
-/** This device's identity for sync (stored per browser / install). */
+/** Who is working, for sync, notes and service records: the signed-in user on this device. */
 export function deviceInfo(): { id: string; name: string } {
+  const d = deviceOnly(), u = currentUser();
+  return u ? { id: `${d.id}.${u.id}`, name: `${u.name} (${d.name})` } : d;
+}
+/** This device's own identity (stored per browser / install). */
+export function deviceOnly(): { id: string; name: string } {
   try {
     const raw = localStorage.getItem('radioplan.device'); if (raw) return JSON.parse(raw);
     const ua = navigator.userAgent;
@@ -238,4 +249,4 @@ export function deviceInfo(): { id: string; name: string } {
     localStorage.setItem('radioplan.device', JSON.stringify(d)); return d;
   } catch { return { id: 'local', name: 'This device' }; }
 }
-export function setDeviceName(name: string) { const d = deviceInfo(); try { localStorage.setItem('radioplan.device', JSON.stringify({ ...d, name })); } catch { /* ignore */ } }
+export function setDeviceName(name: string) { const d = deviceOnly(); try { localStorage.setItem('radioplan.device', JSON.stringify({ ...d, name })); } catch { /* ignore */ } }
