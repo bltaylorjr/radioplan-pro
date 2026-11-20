@@ -111,6 +111,8 @@ export interface Project {
   runLog: RunRecord[]; scenarios: Scenario[]; wifi: WifiSurvey;
   /** Sync bookkeeping (per-section change times, deletions). Managed automatically. */
   sync?: SyncMeta;
+  /** Shared project: the users working on it together (Users & Sign-in → Work together). */
+  team?: { id: string; members: { id: string; name: string; device?: string }[]; owner?: string };
   /** Checked magnetic field and space weather values for Site A, kept up to date automatically (engine/magproject.ts). */
   magnetic?: ProjectMagnetic;
   /** Library equipment used in this project (antennas, feeders, radios). */
@@ -157,6 +159,8 @@ export interface Project {
   pinTargets?: Record<string, { target?: number; hot?: number }>;
   /** Installed equipment logged by its barcode or QR tag, with PM and service history. */
   assets?: import('./engine/assets').Asset[];
+  /** Outdoor warning sirens: planned / existing sirens, coverage settings, test program and test log (Outdoor Warning Sirens page). */
+  sirens?: import('./engine/sirens').SirenPlan;
   /** NOAA weather for the project site (saved by the Weather page): conditions, 7-day low/high/wind, alerts and work-day notes. */
   weather?: import('./engine/weather').ProjectWeather;
   /** Floor plans imported from PDF, DXF or image files (Floor Plan to 2D / 3D), one per floor. */

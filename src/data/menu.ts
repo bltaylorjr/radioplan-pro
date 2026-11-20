@@ -37,7 +37,7 @@ export const MENU_GROUPS: MenuGroup[] = [
   { id: 'repair', title: 'Service, troubleshooting & repair', hint: 'Service and PM visits, finding faults and fixing them.', steps: true },
   { id: 'closeout', title: 'Reports & closeout', hint: 'The finished build, proposals, reports and the closeout package. Mark the project complete when it is done.', steps: true },
   { id: 'tools', title: 'Tools & reference', hint: 'Calculators, meters and analyzers, directions, contacts, weather and training. Open any time.', steps: false },
-  { id: 'files', title: 'Projects & settings', hint: 'Saved projects, backups, updates, syncing devices and your settings.', steps: false },
+  { id: 'files', title: 'Projects & settings', hint: 'Saved projects, backups, updates, users and sign-in, syncing devices and your settings.', steps: false },
 ];
 
 export const MENU_PAGES: MenuPage[] = [
@@ -58,6 +58,7 @@ export const MENU_PAGES: MenuPage[] = [
   { id: 'models', label: '2D & 3D Models with Layers', group: 'lv', keywords: 'layers 2d 3d plan model building materials walls floors glass concrete block brick rf loss echo fire rating firestop camera view heat map scenario dxf reading pins signal balance advice' },
   { id: 'campus', label: 'Multi-Building Site & Campus', group: 'lv', keywords: 'campus site multi building outbuilding fiber underground aerial conduit handhole pole wireless bridge point to point fresnel cable schedule site plan bom' },
   { id: 'alarm', label: 'Fire Alarm & Batteries', group: 'lv', keywords: 'nfpa 72 battery standby nac voltage drop mass notification' },
+  { id: 'sirens', label: 'Outdoor Warning Sirens', group: 'lv', keywords: 'outdoor warning siren sirens tornado siren flood siren mass notification wide area giant voice speaker array federal signal whelen american signal sentry ati acoustic coverage dbc 100 ft cpg 1-17 fema ipaws nfpa 72 chapter 24 nfpa 1225 1221 noise ordinance siren test schedule growl test silent test monthly test legacy siren nuclear epz dam' },
   { id: 'erces', label: 'Emergency Radio (ERCES / BDA)', group: 'lv', keywords: 'bda das public safety donor antenna aim' },
   { id: 'indoor', label: 'Indoor Coverage & DAS', group: 'lv', keywords: 'indoor walls floor plan das antennas reading pins signal balance advice' },
   { id: 'solar', label: 'Solar & DC Power', group: 'lv', keywords: 'solar panel battery charge controller call box' },
@@ -105,6 +106,7 @@ export const MENU_PAGES: MenuPage[] = [
   { id: 'theory', label: 'Low-Voltage & RF Design Principles', group: 'tools', keywords: 'training basics theory learn low voltage principles rf radio frequency propagation antennas link budget decibels modulation transmission lines vswr fresnel interference noise shielding emi power design concepts' },
 
   { id: 'projects', label: 'Projects & Storage', group: 'files', keywords: 'save open backup history delete check for updates automatic care' },
+  { id: 'users', label: 'Users & Sign-in', group: 'files', keywords: 'login log in sign in sign out user users account accounts password pin fingerprint face windows hello biometric touch id recovery code forgot reset password private lock encrypt share collaborate work together team coworker' },
   { id: 'sync', label: 'Sync Devices', group: 'files', keywords: 'sync phone tablet share qr bluetooth' },
   { id: 'settings', label: 'User Settings', group: 'files', keywords: 'settings turn tools on off hide show data check preferences radioreference app key' },
 ];

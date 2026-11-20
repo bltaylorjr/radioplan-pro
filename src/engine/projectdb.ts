@@ -4,6 +4,7 @@
 import type { Project } from '../types';
 import type { DemGrid } from './terrain';
 import { checksumOf, isIntact, wrapChecked, Checked, sha256 } from './maintain';
+import { seal, open, isSealed, type Cipher, type Sealed } from './vault';
 
 export interface ProjectRecord {
   id: string; name: string; number: string; client: string; state: string;
@@ -87,13 +88,65 @@ export function readBackup(text: string): BackupEntry[] {
 export const fmtBytes = (n: number) => n < 1024 ? `${n} B` : n < 1048576 ? `${(n / 1024).toFixed(0)} KB` : n < 1073741824 ? `${(n / 1048576).toFixed(1)} MB` : `${(n / 1073741824).toFixed(2)} GB`;
 
 // ---------- IndexedDB ----------
-const DB = 'radioplan-data';
-let dbp: Promise<IDBDatabase> | null = null;
+/** The device's own database: the first user's projects, and caches every user shares (maps, packs, upkeep). */
+export const DEVICE_DB = 'radioplan-data';
+/** With sign-in turned on, each user has their own database and everything personal in it is sealed with their key. */
+let USER_DB = DEVICE_DB;
+let cipher: Cipher | null = null;
+/** Key used to read sealed items; stays set while turning sign-in off, so old items can still be opened. */
+let readCipher: Cipher | null = null;
+const dbs = new Map<string, Promise<IDBDatabase>>();
 export const storageAvailable = () => typeof indexedDB !== 'undefined';
-function db(): Promise<IDBDatabase> {
+/** Called once at sign-in, before any page reads storage. */
+export function useUserStorage(dbName: string, c: Cipher | null) { USER_DB = dbName || DEVICE_DB; cipher = c; readCipher = c; }
+/** Stop sealing new writes (turning sign-in off); sealed items can still be read until resealAll has rewritten them. */
+export function stopSealing() { cipher = null; }
+export const currentUserDb = () => USER_DB;
+export const storageSealed = () => !!cipher;
+/** Keys every user of the device shares (downloaded content and caches, automatic care): never sealed. */
+export const isSharedDeviceKey = (k: string) => /^(content\.pack\.|maint\.|mappacks|towers:|weather\.|spaceweather\.|noaamap\.|notices\.cpsc\.|share\.inbox\.)/.test(k);
+const kvDbFor = (k: string) => (isSharedDeviceKey(k) ? DEVICE_DB : USER_DB);
+/** A folder handle cannot be sealed (the browser keeps it as a live object). */
+const sealable = (k: string) => !!cipher && kvDbFor(k) === USER_DB && !isSharedDeviceKey(k) && k !== 'dataFolder';
+async function sealRec<T>(v: T): Promise<T | Sealed> { return cipher ? seal(cipher, v) : v; }
+async function openRec<T>(v: unknown): Promise<T> {
+  if (!isSealed(v)) return v as T;
+  if (!readCipher) throw new Error('This data belongs to a signed-in user. Sign in to open it.');
+  return open<T>(readCipher, v);
+}
+/** Stored form of a project: id and dates in the clear (for sorting), everything else sealed. */
+interface StoredProject { id: string; updated: number; head: Sealed; body: Sealed }
+async function toStored(r: ProjectRecord): Promise<ProjectRecord | StoredProject> {
+  if (!cipher) return r;
+  const { project: _p, ...head } = r; void _p;
+  return { id: r.id, updated: r.updated, head: await seal(cipher, head), body: await seal(cipher, r) };
+}
+async function fromStored(raw: unknown): Promise<ProjectRecord | undefined> {
+  if (!raw) return undefined;
+  const s = raw as StoredProject; return s.body && isSealed(s.body) ? openRec<ProjectRecord>(s.body) : (raw as ProjectRecord);
+}
+async function headOf(raw: unknown): Promise<Omit<ProjectRecord, 'project'> | null> {
+  const s = raw as StoredProject;
+  try { if (s.head && isSealed(s.head)) return await openRec(s.head); } catch { return null; }
+  const { project: _p, ...r } = raw as ProjectRecord; void _p; return r;
+}
+interface StoredVersion { vid?: number; pid: string; at: number; keep?: VersionKeep; body: Sealed }
+async function toStoredVersion(v: VersionRecord): Promise<VersionRecord | StoredVersion> {
+  if (!cipher) return v;
+  const { vid: _v, ...rest } = v; void _v;
+  return { pid: v.pid, at: v.at, ...(v.keep ? { keep: v.keep } : {}), body: await seal(cipher, rest) };
+}
+async function fromStoredVersion(raw: unknown): Promise<VersionRecord | undefined> {
+  if (!raw) return undefined;
+  const s = raw as StoredVersion;
+  if (s.body && isSealed(s.body)) return { ...(await openRec<VersionRecord>(s.body)), vid: s.vid, pid: s.pid, at: s.at, keep: s.keep };
+  return raw as VersionRecord;
+}
+function db(name = USER_DB): Promise<IDBDatabase> {
+  let dbp = dbs.get(name);
   if (!dbp) dbp = new Promise((res, rej) => {
     if (!storageAvailable()) { rej(new Error('Built-in storage is not available on this device')); return; }
-    const r = indexedDB.open(DB, 1);
+    const r = indexedDB.open(name, 1);
     r.onupgradeneeded = () => {
       const d = r.result;
       d.createObjectStore('projects', { keyPath: 'id' });
@@ -102,29 +155,38 @@ function db(): Promise<IDBDatabase> {
       d.createObjectStore('kv');
     };
     r.onsuccess = () => res(r.result);
-    r.onerror = () => { dbp = null; rej(r.error); };
+    r.onerror = () => { dbs.delete(name); rej(r.error); };
   });
+  dbs.set(name, dbp);
   return dbp;
 }
-function run<T>(store: string, mode: IDBTransactionMode, fn: (s: IDBObjectStore) => IDBRequest | void): Promise<T> {
-  return db().then((d) => new Promise<T>((res, rej) => {
+/** Remove a user's whole database (when the owner removes that user). */
+export async function deleteUserDatabase(name: string) {
+  if (!name || name === DEVICE_DB) throw new Error('The first user\'s storage cannot be removed this way');
+  const d = dbs.get(name); if (d) { (await d.catch(() => null))?.close(); dbs.delete(name); }
+  await new Promise<void>((res, rej) => { const r = indexedDB.deleteDatabase(name); r.onsuccess = () => res(); r.onerror = () => rej(r.error); r.onblocked = () => res(); });
+}
+function run<T>(store: string, mode: IDBTransactionMode, fn: (s: IDBObjectStore) => IDBRequest | void, dbName = USER_DB): Promise<T> {
+  return db(dbName).then((d) => new Promise<T>((res, rej) => {
     const t = d.transaction(store, mode); const r = fn(t.objectStore(store));
     t.oncomplete = () => res((r ? r.result : undefined) as T); t.onerror = () => rej(t.error); t.onabort = () => rej(t.error);
   }));
 }
-export const getRecord = (id: string) => run<ProjectRecord | undefined>('projects', 'readonly', (s) => s.get(id));
+export const getRecord = (id: string) => run<unknown>('projects', 'readonly', (s) => s.get(id)).then(fromStored);
 /** `json` = JSON.stringify(p) when the caller already has it (autosave), so a big project is turned into text only once. */
 export async function putProject(id: string, p: Project, now = Date.now(), json?: string): Promise<ProjectRecord> {
   const old = await getRecord(id);
   const text = json ?? JSON.stringify(p);
   const r = summarize(id, p, old?.created ?? now, now, text);
   r.sum = await sha256(text).catch(() => undefined);
-  await run('projects', 'readwrite', (s) => s.put(r)); return r;
+  const stored = await toStored(r);
+  await run('projects', 'readwrite', (s) => s.put(stored)); return r;
 }
 export async function listProjects(): Promise<ProjectSummary[]> {
-  const all = await run<ProjectRecord[]>('projects', 'readonly', (s) => s.getAll());
+  const all = await run<unknown[]>('projects', 'readonly', (s) => s.getAll());
   const terr = new Set(await run<string[]>('terrain', 'readonly', (s) => s.getAllKeys()));
-  return all.map(({ project: _p, ...r }) => ({ ...r, hasTerrain: terr.has(r.id) })).sort((a, b) => b.updated - a.updated);
+  const heads = (await Promise.all(all.map(headOf))).filter((r): r is Omit<ProjectRecord, 'project'> => !!r);
+  return heads.map((r) => ({ ...r, hasTerrain: terr.has(r.id) })).sort((a, b) => b.updated - a.updated);
 }
 export async function deleteProject(id: string) {
   await run('projects', 'readwrite', (s) => s.delete(id));
@@ -141,17 +203,24 @@ export const loadTerrain = (id: string) => run<StoredDem | undefined>('terrain',
 export const terrainIds = () => run<IDBValidKey[]>('terrain', 'readonly', (s) => s.getAllKeys()).then((k) => k.map(String)).catch(() => [] as string[]);
 export async function addVersion(pid: string, p: Project, reason: string, now = Date.now(), keep?: VersionKeep) {
   const sum = await checksumOf(p).catch(() => undefined);
-  await run('versions', 'readwrite', (s) => s.add({ pid, at: now, reason, name: p.meta?.name ?? '', bytes: JSON.stringify(p).length, project: p, sum, ...(keep ? { keep } : {}) } as VersionRecord));
+  const rec = await toStoredVersion({ pid, at: now, reason, name: p.meta?.name ?? '', bytes: JSON.stringify(p).length, project: p, sum, ...(keep ? { keep } : {}) } as VersionRecord);
+  await run('versions', 'readwrite', (s) => s.add(rec));
   const del = pruneIds(await listVersions(pid));
   for (const vid of del) await run('versions', 'readwrite', (s) => s.delete(vid));
 }
 export async function listVersions(pid: string): Promise<VersionRecord[]> {
-  const v = await run<VersionRecord[]>('versions', 'readonly', (s) => s.index('pid').getAll(pid));
+  const raw = await run<unknown[]>('versions', 'readonly', (s) => s.index('pid').getAll(pid));
+  const v: VersionRecord[] = [];
+  for (const x of raw) { try { const r = await fromStoredVersion(x); if (r) v.push(r); } catch { /* a version sealed with another key is skipped */ } }
   return v.sort((a, b) => b.at - a.at);
 }
-export const getVersion = (vid: number) => run<VersionRecord | undefined>('versions', 'readonly', (s) => s.get(vid));
-export const kvGet = <T,>(k: string) => run<T | undefined>('kv', 'readonly', (s) => s.get(k)).catch(() => undefined);
-export const kvSet = (k: string, v: unknown) => run('kv', 'readwrite', (s) => v === undefined ? s.delete(k) : s.put(v, k));
+export const getVersion = (vid: number) => run<unknown>('versions', 'readonly', (s) => s.get(vid)).then(fromStoredVersion);
+const baseKey = (k: string) => k.replace(/#prev$/, '');
+export const kvGet = <T,>(k: string) => run<unknown>('kv', 'readonly', (s) => s.get(k), kvDbFor(baseKey(k))).then((v) => openRec<T | undefined>(v)).catch(() => undefined);
+export const kvSet = async (k: string, v: unknown) => {
+  const stored = v !== undefined && sealable(baseKey(k)) ? await seal(cipher!, v) : v;
+  return run('kv', 'readwrite', (s) => stored === undefined ? s.delete(k) : s.put(stored, k), kvDbFor(baseKey(k)));
+};
 /** The project as saved, checked. If the saved copy is damaged, the newest good version from history is put back.
  *  `restored` says when that happened (for a plain notice). */
 export async function getRecordVerified(id: string): Promise<{ record: ProjectRecord | undefined; restored?: VersionRecord; damaged?: boolean }> {
@@ -178,7 +247,36 @@ export async function getChecked<T>(k: string): Promise<{ v: T | undefined; repa
   return { v: undefined, repaired: cur !== undefined };
 }
 /** Keys in the app database that start with a prefix. */
-export const kvKeys = async (prefix: string) => ((await run<IDBValidKey[]>('kv', 'readonly', (s) => s.getAllKeys()).catch(() => [] as IDBValidKey[])).map(String).filter((k) => k.startsWith(prefix)));
+export const kvKeys = async (prefix: string) => {
+  const names = [...new Set([USER_DB, kvDbFor(prefix)])];
+  const all: string[] = [];
+  for (const n of names) for (const k of await run<IDBValidKey[]>('kv', 'readonly', (s) => s.getAllKeys(), n).catch(() => [] as IDBValidKey[])) all.push(String(k));
+  return [...new Set(all)].filter((k) => k.startsWith(prefix) && kvDbFor(baseKey(k)) === kvDbFor(prefix));
+};
+
+/** Seal (or, when turning sign-in off, unseal) everything personal already stored in this user's database.
+ *  Runs once when sign-in is turned on. Safe to run again: each item is read in whichever form it is in. */
+export async function resealAll(onProgress?: (msg: string) => void): Promise<{ projects: number; versions: number; items: number }> {
+  let projects = 0, versions = 0, items = 0;
+  const pk = await run<IDBValidKey[]>('projects', 'readonly', (s) => s.getAllKeys());
+  for (const id of pk) {
+    const r = await getRecord(String(id)); if (!r) continue;
+    const st = await toStored(r); await run('projects', 'readwrite', (s) => s.put(st)); projects++;
+    onProgress?.(`Projects: ${projects} of ${pk.length}`);
+  }
+  const vk = await run<IDBValidKey[]>('versions', 'readonly', (s) => s.getAllKeys());
+  for (const vid of vk) {
+    const v = await getVersion(Number(vid)).catch(() => undefined); if (!v) continue;
+    const st = await toStoredVersion(v); await run('versions', 'readwrite', (s) => s.put({ ...st, vid: Number(vid) })); versions++;
+  }
+  const kk = await run<IDBValidKey[]>('kv', 'readonly', (s) => s.getAllKeys());
+  for (const k of kk.map(String)) {
+    if (isSharedDeviceKey(baseKey(k)) || baseKey(k) === 'dataFolder') continue;
+    const v = await kvGet<unknown>(k); if (v === undefined) continue;
+    await kvSet(k, v); items++;
+  }
+  return { projects, versions, items };
+}
 
 /** Full backup of every project (with terrain) as one JSON text. */
 export async function backupAll(): Promise<string> {
@@ -234,7 +332,8 @@ export async function importEntries(entries: BackupEntry[], overwrite = false): 
     let id = e.record.id || newId();
     if (!overwrite && (await getRecord(id))) id = newId();
     const r = summarize(id, e.project, e.record.created || Date.now(), e.record.updated || Date.now());
-    await run('projects', 'readwrite', (s) => s.put(r));
+    const st = await toStored(r);
+    await run('projects', 'readwrite', (s) => s.put(st));
     if (e.terrain) await saveTerrain(id, decodeDem(e.terrain));
     ids.push(id);
   }

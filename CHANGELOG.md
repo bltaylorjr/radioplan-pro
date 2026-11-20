@@ -1,8 +1,24 @@
-# LvPlan Pro 1.5.79
+# LvPlan Pro 1.5.81
 
 - **Reading pins on every heat map:** press **📌 Reading pins** on any coverage map (Coverage Prediction, Drive Test, Scenarios, Live Signal Readings) or building model (2D & 3D Models, Auto-Design, Campus), or pick **📌 Drop reading pin** on Indoor Coverage & DAS. Tap where you measured (or **📍 Pin at my GPS position** outdoors), type the reading, and add a note and a photo. Map pins are saved as live signal readings, so they export, calibrate the model and show on Live Signal Readings. Works offline.
 - **Signal balance and advice:** pins are compared with the target and the heat map's prediction and grouped by the antenna, access point, speaker or horn that serves them. Plain-language advice says what to turn up or down (with speaker tap steps for sound), where to move or add a device, when to change antenna downtilt, which single device is weaker than designed, and when the whole system has a common fault. Covers radio, DAS, ERCES (90% / 99% critical areas), Wi-Fi, call boxes, wireless security and locks, paging, pro sound, mass notification, fire alarm (110 dBA limit), intercom, nurse call and camera lighting. Imported drive tests, meter readings and Wi-Fi survey spots are checked too.
 - **Sound level heat maps** on the building models: predicted dBA at ear height for paging, pro sound and mass notification speakers and fire alarm horns, through the walls' sound ratings.
+# LvPlan Pro 1.5.80
+
+- **Outdoor Warning Sirens** (Design: low-voltage systems): plan outdoor siren coverage on the map with the FEMA CPG 1-17 method (background noise + 10 dB, loss per doubling of distance by surroundings), check the level at any spot, and see each siren's reach, hearing-safety distance (123 dBC) and warnings (too low, too loud, mounted too low, legacy, AC only).
+- **Siren database:** over 50 current and legacy sirens (Federal Signal, Whelen, American Signal, Sentry, ATI, ACA) with type, rated dBC at 100 ft, signals, power, years, replacements and the source of each figure. Also in the Specifications Library under Mass notification → Outdoor warning siren.
+- **Codes, laws and ordinances for the address:** federal (NFPA 72 Ch. 24, NFPA 1225, IPAWS, FCC Part 90, NRC nuclear plant rules, OSHA), FEMA CPG 1-17 and the 2006 technical bulletin, state emergency management and dam safety laws for NC, SC, GA, TN and VA, and local rules (Asheville noise ordinance, Buncombe and other western NC flood siren programs, Hamilton and Sevier County TN test days), each with its source. Nuclear plant 10-mile zone notice.
+- **Siren tests:** signals, eight test procedures with pass criteria, five test programs (community, monitored, flood, nuclear zone, campus), a schedule and log per siren with overdue tests in red, and one button to add siren acceptance tests to Final Testing.
+- Works offline; the siren list, codes and test programs refresh online as a content pack.
+
+# LvPlan Pro 1.5.79
+
+- **Users and sign-in** (Projects & settings → **Users & Sign-in**): more than one person can use the app, each with their own private projects, history, library, contacts and settings. Sign-in is **off** until you turn it on, so nothing changes until then. The first user is the owner, keeps every project already in the app, and can add and remove users.
+- **Private for each user:** each person's data is locked (AES-256 encryption) with their own key on this device. Other users cannot open it, not even the owner. Works fully offline.
+- **Sign in with a PIN, password, fingerprint or face:** the Android app uses the phone's fingerprint sensor; the Windows app and the online version use Windows Hello or the phone's screen lock. The PIN or password always works. After 5 wrong tries the app waits before the next try.
+- **Forgot PIN or password:** reset it on the sign-in screen with your fingerprint or the **recovery code** shown when the user was made (print it or write it down). **New recovery code** makes a fresh one.
+- **Work together:** share a project with other users on the same device; each keeps a full offline copy and changes are merged by themselves (newest change for each part, lists combined). For coworkers on other devices, save a **copy locked with a file password** and open theirs to merge it back. Online sync is planned for later.
+- Notes, service calls and asset history now record the signed-in user's name.
 
 # LvPlan Pro 1.5.78
 

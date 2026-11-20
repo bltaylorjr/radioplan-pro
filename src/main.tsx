@@ -4,6 +4,7 @@ import 'leaflet/dist/leaflet.css';
 import './styles.css';
 import App from './App';
 import { StoreProvider } from './store';
+import { SignInGate } from './components/SignIn';
 import { installChunkRecovery } from './components/SelfRepair';
 import { bootStart, platform, rollBackTo } from './engine/update';
 import { logRepair, notify } from './engine/carelog';
@@ -36,7 +37,7 @@ installChunkRecovery();
 installOfflineWeb();
 import('./components/chooseOne').then((m) => m.installChooseOne());
 
-const render = () => createRoot(document.getElementById('root')!).render(<React.StrictMode><RootBoundary><StoreProvider><App /></StoreProvider></RootBoundary></React.StrictMode>);
+const render = () => createRoot(document.getElementById('root')!).render(<React.StrictMode><RootBoundary><SignInGate><StoreProvider><App /></StoreProvider></SignInGate></RootBoundary></React.StrictMode>);
 // Newer codes, contacts, catalog, help and magnetic model downloaded from the website go in before any page opens.
 // After a start that went wrong, start once with only the built-in data (safe mode).
 if (boot.fails >= 2) { logRepair('Started with the built-in data only, after a start that did not finish'); render(); }

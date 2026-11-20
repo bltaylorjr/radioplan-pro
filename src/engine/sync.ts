@@ -9,6 +9,7 @@ const SKIP = new Set(['sync', 'version']);
 /** Collections merged item-by-item: path → id function. */
 const COLLECTIONS: Record<string, (x: any) => string> = { // eslint-disable-line @typescript-eslint/no-explicit-any
   sites: (x) => x.id, scenarios: (x) => x.id, runLog: (x) => x.id, tests: (x) => x.id, fieldNotes: (x) => x.id, serviceLog: (x) => x.id, drawnLines: (x) => x.id, photoSpots: (x) => x.id, signalReadings: (x) => x.id, assets: (x) => x.id,
+  'sirens.units': (x) => x.id, 'sirens.tests': (x) => x.id,
   'wifi.readings': (x) => x.id, 'survey.points': (x) => `${x.lat.toFixed(6)},${x.lon.toFixed(6)},${x.rssiDbm},${x.t ?? ''}`,
 };
 const get = (o: any, path: string) => path.split('.').reduce((a, k) => a?.[k], o); // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -67,6 +68,8 @@ export function mergeProjects(local: Project, remote: Project, now = Date.now())
       for (const x of loser) { const id = idOf(x); if (!byId.has(id) && !tomb[`${path}:${id}`]) { byId.set(id, x); rep.added++; } }
       const merged = [...byId.values()].filter((x) => { const dead = !!tomb[`${path}:${idOf(x)}`]; if (dead) rep.removed++; return !dead; });
       if (path === 'runLog') merged.sort((a: any, b: any) => (b.at as string).localeCompare(a.at)); // eslint-disable-line @typescript-eslint/no-explicit-any
+      // a collection inside an optional section (sirens.*) is only written when that section exists or has items
+      if (path.includes('.') && get(out, path.split('.')[0]) == null) { if (!merged.length) continue; set(out, path.split('.')[0], {}); }
       set(out, path, path === 'runLog' ? merged.slice(0, 50) : merged);
     }
   }

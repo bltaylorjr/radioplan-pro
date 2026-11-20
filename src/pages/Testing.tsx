@@ -27,6 +27,7 @@ export function TestingPage() {
               <td><input value={x.notes} onChange={(e) => set(i, 'notes', e.target.value)} /></td>
               <td><button className="ghost" onClick={() => update((d) => { d.tests.splice(i, 1); })}>✕</button></td>
             </tr>))}</tbody></table></div>
+        {!!p.sirens?.units.length && <p className="small">Outdoor sirens on this project: add their acceptance tests from <a href="#sirens">Outdoor Warning Sirens → Siren test schedule</a>.</p>}
       </> : <p className="muted">No tests yet. Load the standard test plan (sweeps, PIM, grounding, drive test, ERCES grid test, battery run, RF exposure).</p>}
     </Card>
   );

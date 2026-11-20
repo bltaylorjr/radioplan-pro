@@ -42,6 +42,7 @@ export const PAGE_CLEAR: Record<string, PageClear> = {
   autodesign: { what: 'the auto-design answers and the equipment it added to the Materials list', keeps: 'Project type and the other pages.', remove: ['autoDesign'], local: true },
   models: { what: 'the building materials picked on this page (they go back to typical for the building type)', keeps: 'The building size and systems (shared with Auto-Design) and every other page.', remove: ['buildingMaterials'], local: true },
   campus: { what: 'the other buildings on the site, where each one sits, and the links between them', keeps: 'The main building (Auto-Design) and every other page.', remove: ['campus'], local: true },
+  sirens: { what: 'every siren on this project, its test log and the coverage settings', keeps: 'The siren database, codes and the other pages.', remove: ['sirens'], local: true },
   alarm: { what: 'the fire alarm devices, battery and circuit entries', paths: ['alarm'], custom: { clear: (d) => { d.alarm.devices = []; }, restore: () => undefined } },
   erces: { what: 'the ERCES / BDA entries and the donor tower', paths: ['erces'], local: true },
   indoor: { what: 'the floor plan, walls, indoor antennas and settings', paths: ['indoor'], local: true },
