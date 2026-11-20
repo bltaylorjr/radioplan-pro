@@ -79,7 +79,7 @@ export function ModelsPage() {
       </Card>
 
       <Card title="3. 2D plan and 3D model with layers" className="wide" actions={<button className="small-btn" onClick={() => downloadText(`${(p.meta.name || 'building').replace(/[^\w-]+/g, '_')}-layers.dxf`, modelDxf(scene), 'application/dxf')}>⬇ CAD drawing (DXF, with layers)</button>}>
-        <LayeredModel scene={scene} northDeg={p.blueprint?.planNorthDeg ?? 0} planImage={wallsFrom === 'indoor' ? p.indoor?.floorPlanDataUrl : undefined} parking={x.parkingSpaces} title="Building model with layers" />
+        <LayeredModel pinMap="model:models" scene={scene} northDeg={p.blueprint?.planNorthDeg ?? 0} planImage={wallsFrom === 'indoor' ? p.indoor?.floorPlanDataUrl : undefined} parking={x.parkingSpaces} title="Building model with layers" />
         <div className="stats">{scene.stats.map((s) => <Stat key={s.label} label={s.label} value={s.value} tone={s.tone} tip={s.tip} />)}</div>
         <ul className="small">{scene.notes.map((n) => <li key={n}>{n}</li>)}</ul>
         <p className="small muted">Drawn to true scale. Device places, coverage and cable routes are a starting layout from rules of thumb (each layer says its rule when you point at it). A designer must check spacing, candela, audibility, coverage and cable lengths against the adopted codes, the manufacturer and the AHJ.</p>

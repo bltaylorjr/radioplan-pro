@@ -15,7 +15,11 @@ export interface SignalReading {
   /** Indoor grid tests: floor, room or grid cell, and whether the spot is a critical area (NFPA 1225: 99%). */
   floor?: string; spot?: string; critical?: boolean;
   note?: string;
+  /** Small photo taken with a reading pin (JPEG data URL). */
+  photo?: string;
 }
+/** Walk / test name used for pins dropped on a map heat map. */
+export const PIN_SESSION = 'Reading pins';
 export const SOURCE_LABEL: Record<ReadingSource, string> = { typed: 'Typed', bluetooth: 'Bluetooth meter', serial: 'USB / COM meter', wifi: 'Wi-Fi meter', phone: 'Phone', file: 'File' };
 
 const rid = () => Math.random().toString(36).slice(2, 10);
@@ -200,8 +204,8 @@ export function idwGrid(rs: { lat: number; lon: number; v: number }[], n = 80, m
 }
 
 export function readingsCsvRows(rs: SignalReading[], pred?: Map<string, number>): unknown[][] {
-  return [['Time', 'Session', 'Signal (dBm)', 'Predicted (dBm)', 'Measured - predicted (dB)', 'Latitude', 'Longitude', 'GPS accuracy (m)', 'Floor', 'Room / grid', 'Critical area', 'Source', 'Device', 'Technology', 'Frequency (MHz)', 'Channel', 'Note'],
-    ...rs.map((r) => { const p = pred?.get(r.id); return [r.at, r.session, r.dbm, p ?? '', p != null ? Math.round((r.dbm - p) * 10) / 10 : '', r.lat ?? '', r.lon ?? '', r.accM ?? '', r.floor ?? '', r.spot ?? '', r.critical ? 'yes' : '', SOURCE_LABEL[r.source], r.device ?? '', r.tech ?? '', r.fMHz ?? '', r.channel ?? '', r.note ?? '']; })];
+  return [['Time', 'Session', 'Signal (dBm)', 'Predicted (dBm)', 'Measured - predicted (dB)', 'Latitude', 'Longitude', 'GPS accuracy (m)', 'Floor', 'Room / grid', 'Critical area', 'Source', 'Device', 'Technology', 'Frequency (MHz)', 'Channel', 'Note', 'Photo'],
+    ...rs.map((r) => { const p = pred?.get(r.id); return [r.at, r.session, r.dbm, p ?? '', p != null ? Math.round((r.dbm - p) * 10) / 10 : '', r.lat ?? '', r.lon ?? '', r.accM ?? '', r.floor ?? '', r.spot ?? '', r.critical ? 'yes' : '', SOURCE_LABEL[r.source], r.device ?? '', r.tech ?? '', r.fMHz ?? '', r.channel ?? '', r.note ?? '', r.photo ? 'yes' : '']; })];
 }
 
 /** Colour for measured − predicted: green near zero, blue stronger than predicted, red weaker. */

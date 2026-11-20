@@ -19,6 +19,13 @@ import { RouteTools } from './RouteTools';
 import { useStore } from '../store';
 import { destination } from '../engine/geo';
 import type { PhotoSpot } from '../engine/photosurvey';
+import { PinsPanel, type PinRow } from './ReadingPins';
+import { normFor, pinColor, sampleLatLonGrid, toLocalM, fmtQ, type BPoint, type BSource } from '../engine/balance';
+import { PIN_SESSION } from '../engine/signal';
+import { uid } from '../defaults';
+
+const pinIcon = (color: string) => L.divIcon({ className: 'reading-pin', html: `<div style="--c:${color}"></div>`, iconSize: [22, 22], iconAnchor: [11, 22] });
+const MAP_PIN_SYSTEMS = ['rf', 'erces', 'das', 'callbox'];
 
 const camIcon = L.divIcon({ className: 'photo-pin', html: '<div>📷</div>', iconSize: [24, 24], iconAnchor: [12, 12] });
 const PHOTO_SPOT_KEY = 'radioplan.photospot';
@@ -141,12 +148,16 @@ function addLocateControl(m: L.Map) {
   new C({ position: 'topleft' }).addTo(m);
 }
 
-export function MapView({ sites, txId, rxId, coverage, floor = -110, dem, onClick, height = 520, selectedId, center, marker, onMap, base, extra, extraKey }: {
+export function MapView({ sites, txId, rxId, coverage, floor = -110, dem, onClick, height = 520, selectedId, center, marker, onMap, base, extra, extraKey, pins, pinsDrawAll = true }: {
   sites: Site[]; txId?: string; rxId?: string; coverage?: CoverageResult | null; floor?: number; dem?: DemGrid | null;
   onClick?: (lat: number, lon: number) => void; height?: number; selectedId?: string;
   center?: { lat: number; lon: number; zoom?: number } | null; marker?: (LatLon & { label?: string }) | null; onMap?: (m: L.Map) => void; base?: string;
   /** Draw additional layers (contours, survey points, network maps). Redrawn when extraKey changes. */
   extra?: (g: L.LayerGroup) => void; extraKey?: unknown;
+  /** Reading pins and the signal balance check. Default: on wherever a coverage heat map is shown. */
+  pins?: boolean;
+  /** Also draw every live signal reading and drive-test point (off where the page draws them itself). */
+  pinsDrawAll?: boolean;
 }) {
   const el = useRef<HTMLDivElement>(null);
   const map = useRef<L.Map>();
@@ -162,7 +173,15 @@ export function MapView({ sites, txId, rxId, coverage, floor = -110, dem, onClic
   const extraRef = useRef(extra); extraRef.current = extra;
   const [mode3d, setMode3d] = useState(false);
   const u = useUnits();
-  const { project: proj, go } = useStore();
+  const { project: proj, go, update } = useStore();
+  // Reading pins: tap the map (or use GPS) to save a measured reading with a note and photo.
+  const pinsOn = pins ?? !!coverage;
+  const [pinsOpen, setPinsOpen] = useState(false);
+  const [pinArmed, setPinArmed] = useState(false);
+  const [pinAt, setPinAt] = useState<{ lat: number; lon: number; accM?: number } | null>(null);
+  const [pinSys, setPinSys] = useState('rf');
+  const pinRef = useRef(false); pinRef.current = pinsOn && pinsOpen && pinArmed;
+  const pinLayer = useRef<L.LayerGroup>();
   const photoLayer = useRef<L.LayerGroup>();
   // Measure tool: tap points on the map for distance and azimuth (true and magnetic) of each leg.
   const [measuring, setMeasuring] = useState(false);
@@ -177,7 +196,7 @@ export function MapView({ sites, txId, rxId, coverage, floor = -110, dem, onClic
   const baseName = useRef<string>(base ?? DEFAULT_BASE);
   const open3d = () => {
     const m = map.current; if (m) { const b = m.getBounds(); setView({ north: b.getNorth(), south: b.getSouth(), east: b.getEast(), west: b.getWest() }); }
-    setMode3d(true);
+    setMode3d(true); setPinsOpen(false);
   };
   const close3d = () => { setMode3d(false); window.setTimeout(() => map.current?.invalidateSize(), 50); };
   useEffect(() => {
@@ -191,6 +210,7 @@ export function MapView({ sites, txId, rxId, coverage, floor = -110, dem, onClic
     m.on('baselayerchange', (e: L.LayersControlEvent) => { baseName.current = e.name; try { localStorage.setItem('radioplan.basemap', e.name); } catch { /* ignore */ } });
     const towers = towersOverlay(m), fcc = fccOverlay(m);
     const photos = L.layerGroup(); photoLayer.current = photos;
+    const pinsG = L.layerGroup().addTo(m); pinLayer.current = pinsG;
     const sitesG = L.layerGroup().addTo(m), covG = L.layerGroup().addTo(m), demG = L.layerGroup().addTo(m), extraG = L.layerGroup().addTo(m);
     layer.current = sitesG; covLayer.current = covG; demLayer.current = demG; extraLayer.current = extraG;
     overlays.current = [
@@ -198,6 +218,7 @@ export function MapView({ sites, txId, rxId, coverage, floor = -110, dem, onClic
       { id: 'extra', label: '📐 Drawings on this page', g: extraG }, { id: 'dem', label: '⬚ Terrain area outline', g: demG },
       { id: 'towers', label: '📡 Existing towers & comm sites', g: towers }, { id: 'fcc', label: '🗼 FCC registered towers (offline)', g: fcc },
       { id: 'photos', label: '📷 Photo survey spots', g: photos },
+      { id: 'pins', label: '📌 Reading pins', g: pinsG },
     ];
     L.control.layers(bases.current, Object.fromEntries(overlays.current.map((o) => [o.label, o.g])), { position: 'topright' }).addTo(m);
     m.on('overlayadd overlayremove baselayerchange', relayer);
@@ -208,7 +229,7 @@ export function MapView({ sites, txId, rxId, coverage, floor = -110, dem, onClic
     try { if (localStorage.getItem('radioplan.fccTowers') === '1') fcc.addTo(m); } catch { /* ignore */ }
     L.control.scale({ imperial: true, metric: true }).addTo(m);
     addLocateControl(m);
-    m.on('click', (e: L.LeafletMouseEvent) => { if (drawRef.current) return; if (measRef.current) setMpts((x) => [...x, { lat: e.latlng.lat, lon: e.latlng.lng }]); else clickRef.current?.(e.latlng.lat, e.latlng.lng); });
+    m.on('click', (e: L.LeafletMouseEvent) => { if (drawRef.current) return; if (pinRef.current) { setPinAt({ lat: +e.latlng.lat.toFixed(6), lon: +e.latlng.lng.toFixed(6) }); return; } if (measRef.current) setMpts((x) => [...x, { lat: e.latlng.lat, lon: e.latlng.lng }]); else clickRef.current?.(e.latlng.lat, e.latlng.lng); });
     mlayer.current = L.layerGroup().addTo(m);
     map.current = m; setMapObj(m);
     if (!center && sites.length > 1) m.fitBounds(L.latLngBounds(sites.map((s) => [s.lat, s.lon])), { padding: [40, 40] });
@@ -247,6 +268,50 @@ export function MapView({ sites, txId, rxId, coverage, floor = -110, dem, onClic
     drawPhotoSpots(g, proj.photoSpots ?? [], (id) => { try { localStorage.setItem(PHOTO_SPOT_KEY, id); } catch { /* ignore */ } window.dispatchEvent(new CustomEvent('lv-photospot', { detail: id })); go('photosurvey'); });
   }, [proj.photoSpots, mapObj]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { covLayer.current?.eachLayer((l) => (l as L.ImageOverlay).setOpacity?.(heatOp)); }, [heatOp]);
+  // reading pins: every live signal reading with GPS, the drive test, and pins dropped here
+  const gpsReadings = pinsOn ? (proj.signalReadings ?? []).filter((r) => r.lat != null && r.lon != null) : [];
+  const drive = pinsOn ? (proj.survey?.points ?? []) : [];
+  const pinNorm = normFor(pinSys), pinT = proj.pinTargets?.[`map|${pinSys}`];
+  const pinTarget = pinT?.target ?? pinNorm.target, pinHot = pinT?.hot ?? pinNorm.hot;
+  const pinRef0 = sites.find((s) => s.id === txId) ?? sites[0] ?? gpsReadings[0] ?? drive[0] ?? { lat: 35.5951, lon: -82.5515 };
+  const pinData = React.useMemo(() => {
+    if (!pinsOn) return { points: [] as BPoint[], rows: [] as PinRow[], sources: [] as BSource[] };
+    const ref = { lat: pinRef0.lat!, lon: pinRef0.lon! };
+    const pr = (lat: number, lon: number) => { if (!coverage) return null; const v = sampleLatLonGrid(coverage, lat, lon); return Number.isFinite(v) ? v : null; };
+    const step = Math.max(1, Math.ceil(drive.length / 3000));
+    const dr = drive.filter((_, i) => i % step === 0);
+    const points: BPoint[] = [...gpsReadings.map((r) => ({ id: r.id, v: r.dbm, pred: pr(r.lat!, r.lon!), critical: r.critical, ...toLocalM(ref, { lat: r.lat!, lon: r.lon! }) })),
+      ...dr.map((d, i) => ({ id: `dt${i}`, v: d.rssiDbm, pred: pr(d.lat, d.lon), ...toLocalM(ref, d) }))];
+    const rows: PinRow[] = [...gpsReadings.map((r) => ({ id: r.id, v: r.dbm, pred: pr(r.lat!, r.lon!), where: `${r.lat!.toFixed(5)}, ${r.lon!.toFixed(5)}${r.session !== PIN_SESSION ? ` · ${r.session}` : ''}`, at: r.at, note: r.note, photo: r.photo, critical: r.critical })),
+      ...dr.map((d, i) => ({ id: `dt${i}`, v: d.rssiDbm, pred: pr(d.lat, d.lon), where: `${d.lat.toFixed(5)}, ${d.lon.toFixed(5)} · drive test`, at: d.t, readOnly: true }))];
+    // the coverage heat map comes from the transmit site, so it is the source; without one, every site counts
+    const tx = sites.find((s) => s.id === txId);
+    const sources: BSource[] = (tx ? [tx] : sites).map((s) => ({ id: s.id, label: s.name, ...toLocalM(ref, s) }));
+    return { points, rows, sources };
+  }, [pinsOn, proj.signalReadings, proj.survey, coverage, sites, txId]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    const g = pinLayer.current; if (!g) return; g.clearLayers(); if (!pinsOn) return;
+    const pr = (lat: number, lon: number) => (coverage ? sampleLatLonGrid(coverage, lat, lon) : NaN);
+    for (const r of gpsReadings) {
+      const isPin = r.session === PIN_SESSION || !!r.photo || !!r.note, c = pinColor(r.dbm, pinTarget, pinHot, 'dbm'), p0 = pr(r.lat!, r.lon!);
+      if (!isPin && !pinsDrawAll) continue;
+      const tip = `<b>${r.dbm} dBm</b> measured${Number.isFinite(p0) ? `<br>${p0.toFixed(1)} dBm predicted (${r.dbm - p0 >= 0 ? '+' : ''}${(r.dbm - p0).toFixed(1)} dB)` : ''}${r.note ? `<br>${esc(r.note)}` : ''}${r.critical ? '<br>Critical area' : ''}`;
+      const mk = isPin ? L.marker([r.lat!, r.lon!], { icon: pinIcon(c) }) : L.circleMarker([r.lat!, r.lon!], { radius: 4, weight: 1, color: '#222', fillColor: c, fillOpacity: 0.9 });
+      mk.bindTooltip(tip); if (r.photo) mk.bindPopup(`${tip}<br><img src="${r.photo}" alt="" style="width:180px;max-height:130px;object-fit:cover;border-radius:4px;margin-top:4px">`); mk.addTo(g);
+    }
+    if (pinsDrawAll) { const step = Math.max(1, Math.ceil(drive.length / 3000)); drive.forEach((d, i) => { if (i % step) return; L.circleMarker([d.lat, d.lon], { radius: 3, weight: 0, fillColor: pinColor(d.rssiDbm, pinTarget, pinHot, 'dbm'), fillOpacity: 0.85 }).bindTooltip(`${d.rssiDbm} dBm (drive test)`).addTo(g); }); }
+    if (pinAt) L.marker([pinAt.lat, pinAt.lon], { icon: pinIcon('#1e88e5') }).bindTooltip('New pin: type the reading below').addTo(g);
+  }, [pinsOn, proj.signalReadings, proj.survey, coverage, pinAt, pinTarget, pinHot, pinsDrawAll, mapObj]); // eslint-disable-line react-hooks/exhaustive-deps
+  const pinGps = () => {
+    if (!navigator.geolocation) { setPinsOpen(true); return; }
+    navigator.geolocation.getCurrentPosition((g) => { const at = { lat: +g.coords.latitude.toFixed(6), lon: +g.coords.longitude.toFixed(6), accM: Math.round(g.coords.accuracy * 10) / 10 }; setPinAt(at); setPinsOpen(true); map.current?.setView([at.lat, at.lon], Math.max(map.current.getZoom(), 15)); },
+      () => setPinArmed(true), { enableHighAccuracy: true, timeout: 15000, maximumAge: 5000 });
+  };
+  const savePin = (dr: { v: number; note?: string; photo?: string; critical?: boolean }) => {
+    if (!pinAt) return; const at = pinAt;
+    update((d) => { d.signalReadings = [...(d.signalReadings ?? []), { id: uid(), at: new Date().toISOString(), dbm: dr.v, source: 'typed', session: PIN_SESSION, lat: at.lat, lon: at.lon, ...(at.accM != null ? { accM: at.accM } : {}), ...(dr.note ? { note: dr.note } : {}), ...(dr.photo ? { photo: dr.photo } : {}), ...(dr.critical ? { critical: true } : {}), ...(pinSys !== 'rf' ? { tech: pinSys } : {}) }]; });
+    setPinAt(null);
+  };
   const legs = mpts.slice(1).map((b, i) => azimuthPair(mpts[i], b));
   useEffect(() => {
     const g = mlayer.current; if (!g) return; g.clearLayers();
@@ -268,7 +333,7 @@ export function MapView({ sites, txId, rxId, coverage, floor = -110, dem, onClic
     zoomIn: () => map.current?.zoomIn(), zoomOut: () => map.current?.zoomOut(), fit: fitAll,
     extra: [{ icon: '⛰', label: 'Tilt',  title: 'Tilt and turn this area in 3D', onClick: open3d }],
   };
-  const has = (id: string) => id === 'sites' ? sites.length > 0 || !!marker : id === 'cov' ? !!coverage : id === 'dem' ? !!dem : id === 'extra' ? !!extra : true;
+  const has = (id: string) => id === 'sites' ? sites.length > 0 || !!marker : id === 'cov' ? !!coverage : id === 'dem' ? !!dem : id === 'extra' ? !!extra : id === 'pins' ? pinsOn : true;
   const layerItems: LayerItem[] = overlays.current.filter((o) => has(o.id)).map((o) => ({
     id: o.id, label: o.label, on: !!map.current?.hasLayer(o.g),
     set: (v) => { const m = map.current; if (!m) return; if (v) m.addLayer(o.g); else m.removeLayer(o.g); relayer(); },
@@ -284,6 +349,7 @@ export function MapView({ sites, txId, rxId, coverage, floor = -110, dem, onClic
         <button className={!mode3d ? 'primary' : ''} onClick={close3d} aria-pressed={!mode3d}>🗺 Flat map</button>
         <button className={mode3d ? 'primary' : ''} onClick={open3d} aria-pressed={mode3d} title="Tilt the map in 3D with satellite pictures and line of sight">⛰ 3D tilt view</button>
         {!mode3d && <button className={drawing ? 'primary' : ''} aria-pressed={drawing} onClick={() => { setDrawing(!drawing); setMeasuring(false); setMpts([]); }} title="Draw lines by hand or point to point and see signal and obstacles along them">✏️ {drawing ? 'Close drawing' : 'Draw lines'}</button>}
+        {!mode3d && pinsOn && <button className={pinsOpen ? 'primary' : ''} aria-pressed={pinsOpen} data-tour="pins-open" onClick={() => { setPinsOpen(!pinsOpen); setPinArmed(!pinsOpen); setPinAt(null); setMeasuring(false); setDrawing(false); }} title="Drop pins with measured readings on the heat map and get signal balance advice">📌 {pinsOpen ? 'Close reading pins' : `Reading pins${pinData.points.length ? ` (${pinData.points.length})` : ''}`}</button>}
         {!mode3d && <button className={measuring ? 'primary' : ''} aria-pressed={measuring} onClick={() => { setMeasuring(!measuring); setDrawing(false); if (measuring) setMpts([]); }} title="Tap points on the map to measure distance and azimuth">📏 {measuring ? 'Stop measuring' : 'Measure distance & azimuth'}</button>}
       </div>
       {measuring && !mode3d && <div className="note measure-panel">
@@ -305,6 +371,11 @@ export function MapView({ sites, txId, rxId, coverage, floor = -110, dem, onClic
         <ViewPad api={mapApi} />
       </div>
       {!mode3d && <div ref={setResEl} />}
+      {!mode3d && pinsOn && pinsOpen && <PinsPanel system={pinSys} systems={MAP_PIN_SYSTEMS} onSystem={setPinSys} armed={pinArmed} setArmed={(v) => { setPinArmed(v); if (!v) setPinAt(null); }}
+        pending={pinAt ? { where: `${pinAt.lat.toFixed(5)}, ${pinAt.lon.toFixed(5)}${pinAt.accM != null ? ` (GPS ±${pinAt.accM} m)` : ''}${coverage && Number.isFinite(sampleLatLonGrid(coverage, pinAt.lat, pinAt.lon)) ? `, predicted ${fmtQ(sampleLatLonGrid(coverage, pinAt.lat, pinAt.lon), 'dbm')}` : ''}` } : null}
+        onCancel={() => setPinAt(null)} onSave={savePin} onGps={pinGps} rows={pinData.rows} points={pinData.points} sources={pinData.sources} outdoor targetKey="map"
+        onDelete={(id) => update((d) => { d.signalReadings = (d.signalReadings ?? []).filter((x) => x.id !== id); })}
+        dropHint="Tap the map where you took the reading, or use your GPS position. Pins also show on Live Signal Readings." />}
       {mode3d && <Suspense fallback={<div className="three empty" style={{ height }}>Loading 3D view…</div>}>
         <TiltView view={view} sites={sites} txId={txId} rxId={rxId} dem={dem} base={baseName.current} height={height} />
       </Suspense>}

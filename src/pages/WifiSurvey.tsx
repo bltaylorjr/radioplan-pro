@@ -8,6 +8,8 @@ import { toCsv } from '../engine/csv';
 import { uid } from '../defaults';
 import type { WifiAp, WifiReading } from '../types';
 import { askDelete } from '../components/askConfirm';
+import { PinsPanel, type PinRow } from '../components/ReadingPins';
+import type { BPoint, BSource } from '../engine/balance';
 
 const PX = 900;
 const hexRgb = (h: string): [number, number, number] => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
@@ -90,6 +92,14 @@ export function WifiSurveyPage() {
   const covered = (() => { let tot = 0, ok = 0; const g = wifiGrid(indoor, 'signal', { widthM: plan.widthM, heightM: plan.heightM, nx: 90, ssid: w.ssidFilter, targetDbm: w.targetDbm, radiusM: w.radiusM }); for (const v of g.vals) { if (Number.isNaN(v)) continue; tot++; if (v >= w.targetDbm) ok++; } return { tot, pct: tot ? (ok / tot) * 100 : 0 }; })();
   const drawOutdoor = (g: L.LayerGroup) => { for (const r of outdoor) { const m = readingMetrics(r, w.ssidFilter, w.targetDbm); const c = m.best ? signalColor(m.best.rssiDbm, 'signal') : null;
     L.circleMarker([r.lat!, r.lon!], { radius: 6, weight: 1, color: '#333', fillColor: c ? `rgb(${c.join(',')})` : '#999', fillOpacity: 0.9 }).bindTooltip(m.best ? `${m.best.ssid} ${m.best.rssiDbm} dBm ch ${m.best.channel}` : 'no APs').addTo(g); } };
+  // signal balance: each survey spot's best access point is its "source"
+  const bal = useMemo(() => {
+    const points: BPoint[] = [], rows: PinRow[] = [], src = new Map<string, BSource>();
+    for (const r of indoor) { const m = readingMetrics(r, w.ssidFilter, w.targetDbm); if (!m.best) continue; const id = m.best.bssid || `${m.best.ssid}/${m.best.channel}`;
+      src.set(id, { id, label: `${m.best.ssid || '(hidden)'} ch ${m.best.channel}${m.best.bssid ? ` (${m.best.bssid.slice(-5)})` : ''}` });
+      points.push({ id: r.id, v: m.best.rssiDbm, x: r.x, y: r.y, src: id }); rows.push({ id: r.id, v: m.best.rssiDbm, where: `${r.x} m, ${r.y} m`, at: r.t, src: id }); }
+    return { points, rows, sources: [...src.values()] };
+  }, [indoor, w.ssidFilter, w.targetDbm]); // eslint-disable-line react-hooks/exhaustive-deps
   const legend = view === 'channel' || view === 'ap' ? cats.map((c) => [catColor(c), c] as [string, string]) : WIFI_LEGENDS[view] ?? [];
   return (
     <div className="stack">
@@ -133,6 +143,10 @@ export function WifiSurveyPage() {
           <Stat label="Access points heard" value={apTable.length} />
           <Stat label="Outdoor (GPS) readings" value={outdoor.length} />
         </div>
+      </Card>
+      <Card title="Signal balance and advice" tour="wifi-balance" tip="Every survey spot counts as a reading pin. The check groups spots by the access point that serves them best and says which ones to turn up or down, or where to add one.">
+        <PinsPanel title="Survey spots as reading pins" system="wifi" defaults={{ target: w.targetDbm }} armed={false} setArmed={() => undefined} pending={null} onCancel={() => undefined} canDrop={false}
+          rows={bal.rows} points={bal.points} sources={bal.sources} targetKey="wifi" onDelete={(id) => update((d) => { d.wifi.readings = d.wifi.readings.filter((x) => x.id !== id); })} />
       </Card>
       {apTable.length > 0 && <Card title="Access points">
         <div className="tbl-wrap"><table className="tbl"><thead><tr><th>SSID</th><th>BSSID</th><th>Channel</th><th>Band</th><th>Strongest</th><th>Readings</th></tr></thead>

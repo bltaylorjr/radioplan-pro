@@ -153,6 +153,10 @@ export interface Project {
   pmDone?: Record<string, string>;
   /** Live signal readings: typed, from a Bluetooth / USB meter, the phone, or imported. */
   signalReadings?: import('./engine/signal').SignalReading[];
+  /** Reading pins dropped on floor-plan and building-model heat maps (map pins are saved as signal readings). */
+  readingPins?: import('./engine/balance').ReadingPin[];
+  /** Target and too-strong levels you changed for the signal balance check, by heat map and system. */
+  pinTargets?: Record<string, { target?: number; hot?: number }>;
   /** Installed equipment logged by its barcode or QR tag, with PM and service history. */
   assets?: import('./engine/assets').Asset[];
   /** Outdoor warning sirens: planned / existing sirens, coverage settings, test program and test log (Outdoor Warning Sirens page). */

@@ -10,8 +10,12 @@ import type { IndoorDesign } from '../types';
 import { DonorAimCard } from '../components/DonorAim';
 import { Indoor3D, WALL_HEIGHT_M as WALL_H } from '../components/Indoor3D';
 import { askDelete } from '../components/askConfirm';
+import { PinsPanel, drawCanvasPin, type PinRow } from '../components/ReadingPins';
+import { normFor, pinColor, fmtQ, type BPoint, type BSource, type ReadingPin } from '../engine/balance';
+import { useUnits } from '../units';
 
-type Tool = 'wall' | 'antenna' | 'erase';
+type Tool = 'wall' | 'antenna' | 'erase' | 'pin';
+const INDOOR_PIN_SYSTEMS = ['erces', 'das', 'wifi', 'callbox', 'security', 'access'];
 
 export function IndoorPage() {
   const { project: p, update } = useStore();
@@ -24,6 +28,24 @@ export function IndoorPage() {
   const [eirp, setEirp] = useState(15);
   const [model, setModel] = useState('CommScope CELLMAX-O ceiling omni');
   const set = <K extends keyof IndoorDesign>(k: K, v: IndoorDesign[K]) => update((q) => { q.indoor[k] = v; });
+  const u = useUnits();
+  const [pinAt, setPinAt] = useState<{ x: number; y: number } | null>(null);
+  const [pinSysPick, setPinSys] = useState<string | null>(null);
+  const pinSys = pinSysPick ?? (d.targetDbm <= -90 ? 'erces' : d.targetDbm >= -72 ? 'wifi' : 'das'); // guess the system from the plan's target
+  const pinNorm = normFor(pinSys), pinTg = p.pinTargets?.[`indoor|${pinSys}`];
+  const pinTarget = pinTg?.target ?? pinNorm.target, pinHot = pinTg?.hot ?? pinNorm.hot;
+  const pins = (p.readingPins ?? []).filter((r) => r.map === 'indoor' && r.system === pinSys);
+  /** Predicted signal from each antenna at a spot (dBm), same model as the heat map. */
+  const perAnt = (x: number, y: number) => d.antennas.map((a) => a.eirpDbm + d.rxGainDbi - multiWallLossDb(d.fMHz, a.x, a.y, x, y, d.walls));
+  const predAt = (x: number, y: number) => { const v = perAnt(x, y); return v.length ? Math.max(...v) : null; };
+  const pinPoints: BPoint[] = useMemo(() => pins.map((r) => { const v = perAnt(r.x, r.y); const bi = v.length ? v.indexOf(Math.max(...v)) : -1; return { id: r.id, v: r.v, pred: bi >= 0 ? v[bi] : null, x: r.x, y: r.y, critical: r.critical, src: bi >= 0 ? d.antennas[bi].id : undefined }; }), [p.readingPins, d.antennas, d.walls, d.fMHz, d.rxGainDbi, pinSys]); // eslint-disable-line react-hooks/exhaustive-deps
+  const pinSources: BSource[] = d.antennas.map((a) => ({ id: a.id, label: a.label, x: a.x, y: a.y }));
+  const pinWhere = (x: number, y: number) => `${u.len(x, 0)} from the left and ${u.len(y, 0)} from the top`;
+  const pinRows: PinRow[] = pins.map((r) => ({ id: r.id, v: r.v, pred: predAt(r.x, r.y), where: pinWhere(r.x, r.y), at: r.at, note: r.note, photo: r.photo, critical: r.critical }));
+  const savePin = (dr: { v: number; note?: string; photo?: string; critical?: boolean }) => {
+    if (!pinAt) return; const pin: ReadingPin = { id: uid(), at: new Date().toISOString(), map: 'indoor', system: pinSys, qty: 'dbm', v: dr.v, x: pinAt.x, y: pinAt.y, ...(dr.note ? { note: dr.note } : {}), ...(dr.photo ? { photo: dr.photo } : {}), ...(dr.critical ? { critical: true } : {}) };
+    update((q) => { q.readingPins = [...(q.readingPins ?? []), pin]; }); setPinAt(null);
+  };
   const PX = 900, scale = PX / d.widthM, PY = d.heightM * scale;
   useEffect(() => { if (!d.floorPlanDataUrl) { setImg(null); return; } const i = new Image(); i.onload = () => setImg(i); i.src = d.floorPlanDataUrl; }, [d.floorPlanDataUrl]);
 
@@ -57,13 +79,16 @@ export function IndoorPage() {
     for (let m = 0; m <= d.heightM; m += 5) { g.beginPath(); g.moveTo(0, m * scale); g.lineTo(PX, m * scale); g.stroke(); }
     const walls = drag ? [...d.walls, { x1: drag.x, y1: drag.y, x2: drag.x2, y2: drag.y2, material: d.currentMaterial }] : d.walls;
     for (const w of walls) { g.strokeStyle = WALL_MATERIALS[w.material]?.color ?? '#333'; g.lineWidth = 4; g.beginPath(); g.moveTo(w.x1 * scale, w.y1 * scale); g.lineTo(w.x2 * scale, w.y2 * scale); g.stroke(); }
+    for (const r of pins) drawCanvasPin(g, r.x * scale, r.y * scale, pinColor(r.v, pinTarget, pinHot, 'dbm'), String(r.v));
+    if (pinAt) drawCanvasPin(g, pinAt.x * scale, pinAt.y * scale, '#1e88e5', 'new');
     for (const a of d.antennas) { g.fillStyle = '#c62828'; g.beginPath(); g.arc(a.x * scale, a.y * scale, 7, 0, Math.PI * 2); g.fill(); g.fillStyle = '#000'; g.font = '12px sans-serif'; g.fillText(a.label, a.x * scale + 9, a.y * scale - 6); }
-  }, [grid, img, d.walls, d.antennas, drag, PX, PY, scale, d.widthM, d.heightM, d.currentMaterial, view]);
+  }, [grid, img, d.walls, d.antennas, drag, PX, PY, scale, d.widthM, d.heightM, d.currentMaterial, view, p.readingPins, pinAt, pinSys, pinTarget, pinHot]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const toM = (e: React.PointerEvent) => { const r = cv.current!.getBoundingClientRect(); return { x: ((e.clientX - r.left) / r.width) * d.widthM, y: ((e.clientY - r.top) / r.height) * d.heightM }; };
   const snap = (v: number) => Math.round(v * 4) / 4;
   const down = (e: React.PointerEvent) => {
     const m = toM(e);
+    if (tool === 'pin') { setPinAt({ x: Math.round(m.x * 10) / 10, y: Math.round(m.y * 10) / 10 }); return; }
     if (tool === 'wall') setDrag({ x: snap(m.x), y: snap(m.y), x2: snap(m.x), y2: snap(m.y) });
     if (tool === 'antenna') update((q) => { q.indoor.antennas.push({ id: uid(), x: m.x, y: m.y, eirpDbm: eirp, label: `ANT-${q.indoor.antennas.length + 1}`, model }); });
     if (tool === 'erase') update((q) => {
@@ -90,7 +115,7 @@ export function IndoorPage() {
         </div>
         <div className="row wrap toolbar">
           <span>Tool:</span>
-          {(['wall', 'antenna', 'erase'] as Tool[]).map((t) => <button key={t} className={tool === t ? 'primary' : ''} onClick={() => setTool(t)}>{t === 'wall' ? '✏ Draw wall' : t === 'antenna' ? '📡 Place antenna' : '⌫ Erase'}</button>)}
+          {(['wall', 'antenna', 'pin', 'erase'] as Tool[]).map((t) => <button key={t} className={tool === t ? 'primary' : ''} data-tour={t === 'pin' ? 'pins-open' : undefined} onClick={() => { setTool(t); if (t !== 'pin') setPinAt(null); }}>{t === 'wall' ? '✏ Draw wall' : t === 'antenna' ? '📡 Place antenna' : t === 'pin' ? '📌 Drop reading pin' : '⌫ Erase'}</button>)}
           {tool === 'wall' && <Sel value={d.currentMaterial} onChange={(v) => set('currentMaterial', v)} options={Object.entries(WALL_MATERIALS).map(([k, m]) => [k, `${m.label} (${wallLossDb(k, d.fMHz).toFixed(0)} dB)`] as [string, string])} />}
           {tool === 'antenna' && <><Num value={eirp} onChange={(v) => setEirp(v!)} unit="dBm EIRP" /><Txt value={model} onChange={setModel} /></>}
           <button onClick={async () => { if (await askDelete('Delete all walls and antennas?')) update((q) => { q.indoor.walls = []; q.indoor.antennas = []; }); }}>Clear</button>
@@ -112,6 +137,11 @@ export function IndoorPage() {
         </div>
         {d.antennas.length > 0 && <table className="tbl"><thead><tr><th>Label</th><th>Model</th><th>X (m)</th><th>Y (m)</th><th>EIRP (dBm)</th></tr></thead>
           <tbody>{d.antennas.map((a, i) => <tr key={a.id}><td><input value={a.label} onChange={(e) => update((q) => { q.indoor.antennas[i].label = e.target.value; })} /></td><td>{a.model}</td><td>{a.x.toFixed(1)}</td><td>{a.y.toFixed(1)}</td><td><Num value={a.eirpDbm} onChange={(v) => update((q) => { q.indoor.antennas[i].eirpDbm = v!; })} /></td></tr>)}</tbody></table>}
+      </Card>
+      <Card title="Reading pins and signal balance" tour="in-pins" tip="Pick 📌 Drop reading pin above, tap the plan where you measured, and type what your meter shows. Each pin is compared with this plan's heat map and the target; the advice says which antenna to turn up or down, move or add.">
+        <PinsPanel title="Measured readings on this plan" system={pinSys} systems={INDOOR_PIN_SYSTEMS} onSystem={(s) => { setPinSys(s); setPinAt(null); }} armed={tool === 'pin'} setArmed={(v) => { setTool(v ? 'pin' : 'wall'); if (!v) setPinAt(null); }}
+          pending={pinAt ? { where: `${pinWhere(pinAt.x, pinAt.y)}${predAt(pinAt.x, pinAt.y) != null ? `, predicted ${fmtQ(predAt(pinAt.x, pinAt.y)!, 'dbm')}` : ''}` } : null} onCancel={() => setPinAt(null)} onSave={savePin}
+          rows={pinRows} points={pinPoints} sources={pinSources} targetKey="indoor" onDelete={(id) => update((q) => { q.readingPins = (q.readingPins ?? []).filter((x) => x.id !== id); })} dropHint="Tap the floor plan above where you took the reading." />
       </Card>
       <DonorAimCard title="DAS / BDA donor antenna aiming (azimuth)" />
     </div>

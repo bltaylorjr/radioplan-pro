@@ -66,7 +66,7 @@ export function AutoDesignPage() {
       </Card>
 
       <Card title="3. 2D plan and 3D model with layers" className="wide" actions={<button className="small-btn" onClick={() => go('models')}>Building materials and more →</button>}>
-        <LayeredModel scene={scene} northDeg={p.blueprint?.planNorthDeg ?? 0} parking={x.parkingSpaces} title="Auto-design model" />
+        <LayeredModel pinMap="model:autodesign" scene={scene} northDeg={p.blueprint?.planNorthDeg ?? 0} parking={x.parkingSpaces} title="Auto-design model" />
         <p className="small muted">Every system has its own layers (devices, coverage, cable runs, heat maps). Devices are placed on a grid as a starting layout; move them to suit the real floor plan. Pick the building materials on <a href="#models" onClick={(e) => { e.preventDefault(); go('models'); }}>2D & 3D Models with Layers</a>.</p>
       </Card>
 
