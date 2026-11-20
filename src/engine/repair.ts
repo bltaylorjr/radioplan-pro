@@ -3,6 +3,7 @@
 import type { Project } from '../types';
 import { defaultProject } from '../defaults';
 import { countyOfTown, placeFromText } from '../compliance/place';
+import { normalizeIndoorSound, type IndoorSound } from './indoorSound';
 
 const isObj = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
 const LISTS = ['tests', 'runLog', 'scenarios', 'fieldNotes', 'serviceLog', 'bomExtra', 'documents', 'proposal', 'photoSpots', 'signalReadings', 'assets', 'readingPins'] as const;
@@ -67,6 +68,13 @@ export function repairProject(input: unknown): { project: Project; fixes: string
   if (Array.isArray(out.signalReadings)) out.signalReadings = (out.signalReadings as Record<string, unknown>[]).filter((r) => Number.isFinite(Number(r.dbm))).map((r) => ({ ...r, dbm: Number(r.dbm), session: String(r.session ?? 'Readings') }));
   if (Array.isArray(out.readingPins)) out.readingPins = (out.readingPins as Record<string, unknown>[]).filter((r) => Number.isFinite(Number(r.v)) && Number.isFinite(Number(r.x)) && Number.isFinite(Number(r.y)))
     .map((r) => ({ ...r, v: Number(r.v), x: Number(r.x), y: Number(r.y), map: String(r.map ?? 'indoor'), system: String(r.system ?? 'rf'), qty: ['dbm', 'dba', 'lux'].includes(String(r.qty)) ? r.qty : 'dbm', at: String(r.at ?? new Date().toISOString()) }));
+  // Indoor sound plan (speakers, horns, STIPA readings): fill gaps from older or shared copies.
+  if (isObj(out.indoor) && (out.indoor as Record<string, unknown>).sound !== undefined) {
+    const ind = out.indoor as Record<string, unknown>;
+    if (!isObj(ind.sound)) { delete ind.sound; fixes.push('The indoor sound plan was damaged; reset'); }
+    else ind.sound = normalizeIndoorSound(ind.sound as Partial<IndoorSound>);
+    if (ind.mode !== undefined && ind.mode !== 'rf' && ind.mode !== 'sound') ind.mode = 'rf';
+  }
   if (out.pinTargets !== undefined && !isObj(out.pinTargets)) { delete out.pinTargets; fixes.push('Reading pin targets were damaged; reset'); }
   if (Array.isArray(out.assets)) out.assets = (out.assets as Record<string, unknown>[]).map((a) => ({ ...a, tag: String(a.tag ?? ''), name: String(a.name ?? ''), photos: Array.isArray(a.photos) ? a.photos : [], history: Array.isArray(a.history) ? a.history : [], status: a.status ?? 'In service' }));
   // Outdoor sirens: lists must be lists, sirens need a real position.

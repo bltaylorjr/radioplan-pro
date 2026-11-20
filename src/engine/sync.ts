@@ -10,10 +10,17 @@ const SKIP = new Set(['sync', 'version']);
 const COLLECTIONS: Record<string, (x: any) => string> = { // eslint-disable-line @typescript-eslint/no-explicit-any
   sites: (x) => x.id, scenarios: (x) => x.id, runLog: (x) => x.id, tests: (x) => x.id, fieldNotes: (x) => x.id, serviceLog: (x) => x.id, drawnLines: (x) => x.id, photoSpots: (x) => x.id, signalReadings: (x) => x.id, assets: (x) => x.id,
   'sirens.units': (x) => x.id, 'sirens.tests': (x) => x.id,
+  // shared floor plans: pins, antennas, speakers and STIPA readings dropped by different people all survive a merge
+  readingPins: (x) => x.id, 'indoor.antennas': (x) => x.id, 'indoor.sound.speakers': (x) => x.id, 'indoor.sound.sti': (x) => x.id,
   'wifi.readings': (x) => x.id, 'survey.points': (x) => `${x.lat.toFixed(6)},${x.lon.toFixed(6)},${x.rssiDbm},${x.t ?? ''}`,
 };
 const get = (o: any, path: string) => path.split('.').reduce((a, k) => a?.[k], o); // eslint-disable-line @typescript-eslint/no-explicit-any
-const set = (o: any, path: string, v: unknown) => { const ks = path.split('.'); const last = ks.pop()!; ks.reduce((a, k) => a[k], o)[last] = v; }; // eslint-disable-line @typescript-eslint/no-explicit-any
+const set = (o: any, path: string, v: unknown) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+  const ks = path.split('.'); const last = ks.pop()!;
+  // a nested collection whose parent is missing (e.g. indoor.sound on an older copy): only create it when there is something to keep
+  if (ks.some((_, i) => get(o, ks.slice(0, i + 1).join('.')) == null) && Array.isArray(v) && !v.length) return;
+  ks.reduce((a, k) => (a[k] ??= {}), o)[last] = v;
+};
 
 export function fnv(s: string): string { let h = 0x811c9dc5; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193); } return (h >>> 0).toString(36) + s.length.toString(36); }
 const rid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);

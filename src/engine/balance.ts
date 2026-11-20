@@ -284,6 +284,8 @@ export interface ReadingPin {
   /** Plan position: metres on the indoor plans, feet on the building models; floor from 0. */
   x: number; y: number; floor?: number;
   note?: string; photo?: string; critical?: boolean;
+  /** Who dropped it (signed-in user), so shared projects show each person's readings. */
+  by?: string;
 }
 
 /** Local flat metres (x east, y south) around a reference point, for map readings. */

@@ -536,15 +536,29 @@ Before any audible test, tell 911 dispatch, the National Weather Service and the
 
 The downlink budget estimates BDA output, power per antenna after splits, and the signal at the worst point using your path-loss estimate (use the Indoor Planner for a detailed estimate).` },
 
-  { id: 'indoor', title: 'Indoor planning', page: 'indoor', keywords: 'indoor floor plan wall 3d walls das wifi antenna placement heatmap itu p.1238 multi-wall cost 231 in-building', summary: 'Draw walls on a floor plan, place antennas, and see a multi-wall coverage heatmap.',
+  { id: 'indoor', title: 'Indoor planning', page: 'indoor', keywords: 'indoor floor plan wall 3d walls das wifi antenna placement heatmap itu p.1238 multi-wall cost 231 in-building sound speaker horn paging voice evacuation mass notification fire alarm dba sti stipa intelligibility nfpa 72 tap rt60 echo', summary: 'Draw walls on a floor plan, place antennas or speakers and horns, and see a radio coverage, sound level or speech clarity heat map.',
     body: `1. Load a floor-plan image (PNG/JPG) and enter the building width and height in metres.
 2. Choose a wall material and **drag** on the plan to draw walls.
 3. Switch to **Place antenna** and click to place DAS antennas / APs with their EIRP.
 4. Click **🧊 3D walls** to see the walls stand up about 10 ft (3 m) tall in their material colour, with the heat map on the floor and the antennas on the ceiling. Drag to turn, scroll to zoom; switch back to **2D plan** to draw.
 5. The heatmap uses the **COST-231 multi-wall model** (free-space loss + loss of every wall crossed). The ITU-R P.1238 site-general estimate is shown for comparison.
 
-Wall losses are typical values; measure on site for critical designs. Coverage % is compared with the target (−95 dBm for ERCES).`,
+Wall losses are typical values; measure on site for critical designs. Coverage % is compared with the target (−95 dBm for ERCES).
+
+**🔊 Sound planning** (press **🔊 Sound** at the top): the same floor plan and walls are used for speakers and horns.
+1. Pick the **system** (mass notification / voice evacuation, fire alarm horns, paging or pro sound), the **kind of space** (public, private or sleeping rooms), the **background noise** (measure it on Sound & Audio Tools) and the **room finish** (it sets the echo time RT60).
+2. The **target** follows the code: fire alarm and voice evacuation 15 dB over the background in public spaces (NFPA 72 18.4.3), 10 dB in private spaces, 75 dBA at the pillow in sleeping rooms, and never over 110 dBA. Paging aims for 10 to 15 dB over the background and pro sound about 20 dB. You can type your own target.
+3. Pick **🔊 Place speaker** (ceiling, pendant, wall, paging horn, voice evacuation speaker strobe) or **📢 Place horn** for fire alarm, choose the **tap** (¼ to 30 W) or the horn's high / medium / low setting, and tap the plan. Each doubling of the tap adds 3 dB.
+4. The **heat map** shows the sound level at ear height through every wall (each wall type has its own sound loss). For voice systems switch to **🗣 Speech clarity (STI)**: an estimate from the echo time and the background noise. The usual goal is 0.50 STI on average with 0.45 or better at 90% of spots (NFPA 72 Annex D).
+5. **What to change** gives plain-language advice: where to add speakers, which spots are too loud, the spacing for the ceiling height, and how to fix echo.
+6. After install, drop **📌 reading pins** (dBA) and add **🗣 STIPA readings**: the balance advice names the speaker to tap up or down, move or add, and **🧾 Save test records** puts sound level and intelligibility results on the Testing page.
+7. **Codes for indoor voice and alarm sound** shows the NFPA 72 edition adopted in the project's state and the indoor rules (IBC / IFC 907, NFPA 72 Chapters 14, 18 and 24, NEC 760, ADA, OSHA). **Tests and outdoor sirens** shows how loud the project's outdoor warning sirens are inside this building (about 25 dB is lost through closed walls), which is why indoor alerting is needed.
+
+**Shared projects:** when a project is shared (Users & Sign-in → Work together), walls, antennas, speakers, reading pins and STIPA readings each person adds are merged in by themselves, and each pin shows who dropped it.
+
+All of this works offline. It is a planning estimate: a designer, and the fire marshal (AHJ) for fire alarm and voice evacuation, must confirm the layout, and sound levels and STIPA are measured at acceptance.`,
     tour: [
+      { target: 'in-mode', title: 'Radio or sound', text: 'Plan radio signal (DAS, ERCES, Wi-Fi) or sound (speakers, horns) on the same floor plan.' },
       { target: 'in-tools', title: 'Tools', text: 'Draw walls, place antennas or erase. Pick the wall material first.' },
       { target: 'in-canvas', title: 'Floor plan', text: 'Drag to draw walls, click to place antennas. Colours show predicted signal.' },
     ] },

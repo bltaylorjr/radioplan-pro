@@ -60,7 +60,7 @@ export const MENU_PAGES: MenuPage[] = [
   { id: 'alarm', label: 'Fire Alarm & Batteries', group: 'lv', keywords: 'nfpa 72 battery standby nac voltage drop mass notification' },
   { id: 'sirens', label: 'Outdoor Warning Sirens', group: 'lv', keywords: 'outdoor warning siren sirens tornado siren flood siren mass notification wide area giant voice speaker array federal signal whelen american signal sentry ati acoustic coverage dbc 100 ft cpg 1-17 fema ipaws nfpa 72 chapter 24 nfpa 1225 1221 noise ordinance siren test schedule growl test silent test monthly test legacy siren nuclear epz dam' },
   { id: 'erces', label: 'Emergency Radio (ERCES / BDA)', group: 'lv', keywords: 'bda das public safety donor antenna aim' },
-  { id: 'indoor', label: 'Indoor Coverage & DAS', group: 'lv', keywords: 'indoor walls floor plan das antennas reading pins signal balance advice' },
+  { id: 'indoor', label: 'Indoor Coverage & DAS', group: 'lv', keywords: 'indoor walls floor plan das antennas reading pins signal balance advice sound speakers horns paging voice evacuation mass notification fire alarm dba sti stipa intelligibility nfpa 72' },
   { id: 'solar', label: 'Solar & DC Power', group: 'lv', keywords: 'solar panel battery charge controller call box' },
   { id: 'grounding', label: 'Grounding & Structure', group: 'lv', keywords: 'ground rod bonding lightning surge' },
 

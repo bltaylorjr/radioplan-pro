@@ -10,7 +10,9 @@ import type { IndoorDesign } from '../types';
 export const WALL_HEIGHT_M = 3;
 
 /** 3-D view of the room: the walls you drew stand up 3 m tall in their material colour, the coverage heat map lies on the floor, antennas hang from the ceiling. Drag to turn, scroll to zoom. */
-export function Indoor3D({ d, grid }: { d: IndoorDesign; grid: { nx: number; ny: number; v: Float32Array } }) {
+export function Indoor3D({ d, grid, color, marks }: { d: IndoorDesign; grid: { nx: number; ny: number; v: Float32Array };
+  /** Heat map colours (default: radio signal). */ color?: (v: number) => [number, number, number, number];
+  /** Devices to show instead of the antennas (speakers, horns). */ marks?: { x: number; y: number; color: number }[] }) {
   const mount = useRef<HTMLDivElement>(null);
   const orb = useRef<{ camera: THREE.Camera; ctl: OrbitControls } | null>(null);
   const api = useMemo(() => orbitApi(() => orb.current), []);
@@ -29,7 +31,7 @@ export function Indoor3D({ d, grid }: { d: IndoorDesign; grid: { nx: number; ny:
     const tc = document.createElement('canvas'); tc.width = grid.nx; tc.height = grid.ny;
     const tg = tc.getContext('2d')!; tg.fillStyle = '#eceff1'; tg.fillRect(0, 0, grid.nx, grid.ny);
     const im = tg.getImageData(0, 0, grid.nx, grid.ny);
-    for (let i = 0; i < grid.nx * grid.ny; i++) { const [r, gg, b, a] = rssiColor(grid.v[i], -130); if (a) { im.data[i * 4] = r; im.data[i * 4 + 1] = gg; im.data[i * 4 + 2] = b; im.data[i * 4 + 3] = 255; } }
+    for (let i = 0; i < grid.nx * grid.ny; i++) { const [r, gg, b, a] = color ? color(grid.v[i]) : rssiColor(grid.v[i], -130); if (a) { im.data[i * 4] = r; im.data[i * 4 + 1] = gg; im.data[i * 4 + 2] = b; im.data[i * 4 + 3] = 255; } }
     tg.putImageData(im, 0, 0);
     const tex = new THREE.CanvasTexture(tc); tex.magFilter = THREE.LinearFilter; tex.colorSpace = THREE.SRGBColorSpace;
     const floor = new THREE.Mesh(new THREE.PlaneGeometry(W, D), new THREE.MeshBasicMaterial({ map: tex }));
@@ -49,10 +51,11 @@ export function Indoor3D({ d, grid }: { d: IndoorDesign; grid: { nx: number; ny:
       e.position.copy(mesh.position); e.rotation.copy(mesh.rotation); g.add(e);
     }
     // antennas on the ceiling, with a drop line to the floor
-    const am = new THREE.MeshLambertMaterial({ color: 0xc62828 }), ag = new THREE.CylinderGeometry(0.35, 0.35, 0.15, 20);
-    for (const a of d.antennas) {
+    const ag = new THREE.CylinderGeometry(0.35, 0.35, 0.15, 20);
+    for (const a of marks ?? d.antennas.map((x) => ({ x: x.x, y: x.y, color: 0xc62828 }))) {
+      const am = new THREE.MeshLambertMaterial({ color: a.color });
       const s = new THREE.Mesh(ag, am); s.position.set(a.x, H - 0.1, a.y); g.add(s);
-      const ln = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(a.x, H - 0.1, a.y), new THREE.Vector3(a.x, 0.02, a.y)]), new THREE.LineDashedMaterial({ color: 0xc62828, dashSize: 0.2, gapSize: 0.15 }));
+      const ln = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(a.x, H - 0.1, a.y), new THREE.Vector3(a.x, 0.02, a.y)]), new THREE.LineDashedMaterial({ color: a.color, dashSize: 0.2, gapSize: 0.15 }));
       ln.computeLineDistances(); g.add(ln);
     }
     const ctl = new OrbitControls(cam, renderer.domElement); ctl.target.set(0, 0, 0); ctl.maxPolarAngle = Math.PI / 2.05; ctl.update(); orb.current = { camera: cam, ctl };
@@ -60,6 +63,6 @@ export function Indoor3D({ d, grid }: { d: IndoorDesign; grid: { nx: number; ny:
     const onResize = () => { const nw = el.clientWidth; const nh = el.closest('.fullview-on') ? Math.max(300, el.clientHeight) : Math.max(340, Math.min(560, nw * 0.6)); cam.aspect = nw / nh; cam.updateProjectionMatrix(); renderer.setSize(nw, nh); };
     window.addEventListener('resize', onResize);
     return () => { orb.current = null; cancelAnimationFrame(raf); window.removeEventListener('resize', onResize); ctl.dispose(); tex.dispose(); renderer.dispose(); scene.traverse((o) => { (o as THREE.Mesh).geometry?.dispose?.(); }); };
-  }, [d.walls, d.antennas, d.widthM, d.heightM, grid]);
+  }, [d.walls, d.antennas, d.widthM, d.heightM, grid, color, marks]); // eslint-disable-line react-hooks/exhaustive-deps
   return <FullView title="3D walls and coverage"><div className="vc-host"><div ref={mount} className="bldg3d indoor3d" aria-label="3D view of the walls and coverage" /><ViewPad api={api} /></div></FullView>;
 }

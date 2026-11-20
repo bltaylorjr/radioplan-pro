@@ -1,3 +1,13 @@
+# LvPlan Pro 1.5.82
+
+- **Indoor sound planning** (Indoor Coverage & DAS → **🔊 Sound**): place paging, pro sound and voice evacuation speakers or fire alarm horns on the same floor plan and walls as the radio planner. Pick the speaker type and tap (or the horn's high / medium / low setting) and see a **sound level heat map** in dBA at ear height through every wall, in 2D or 3D.
+- **Voice evacuation and mass notification:** the target follows NFPA 72 (15 dB over background in public spaces, 10 dB in private spaces, 75 dBA at the pillow in sleeping rooms, never over 110 dBA). A **speech clarity (STI) map** estimates intelligibility from the room's echo and the background noise, with plain-language advice on spacing, taps and echo.
+- **Reading pins with sound balance advice** on the indoor plan (dBA), and **STIPA readings** compared with the prediction (goal 0.50 average, 0.45 at 90% of spots). **🧾 Save test records** adds sound level and intelligibility results to Testing.
+- **Codes for indoor voice and alarm sound:** the NFPA 72 edition adopted in the project's state plus IBC / IFC 907, NFPA 72 Chapters 14, 18 and 24 and Annex D, NEC 760 / 725 / 640, ADA, OSHA and UFC.
+- **Outdoor sirens inside:** shows how loud the project's outdoor warning sirens are inside the building, and why indoor alerting is needed.
+- **Shared projects:** walls, antennas, speakers, reading pins and STIPA readings that different people add on a shared floor plan are merged together instead of one copy replacing the other, and each pin shows who dropped it.
+- Works offline.
+
 # LvPlan Pro 1.5.81
 
 - **Reading pins on every heat map:** press **📌 Reading pins** on any coverage map (Coverage Prediction, Drive Test, Scenarios, Live Signal Readings) or building model (2D & 3D Models, Auto-Design, Campus), or pick **📌 Drop reading pin** on Indoor Coverage & DAS. Tap where you measured (or **📍 Pin at my GPS position** outdoors), type the reading, and add a note and a photo. Map pins are saved as live signal readings, so they export, calibrate the model and show on Live Signal Readings. Works offline.
