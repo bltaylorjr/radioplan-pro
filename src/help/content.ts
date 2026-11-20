@@ -372,6 +372,28 @@ Pick a baseline (A) and a comparison (B) to see: which inputs changed, how each 
 **ERCES / BDA grid test:** share of readings at or above −95 dBm per floor (90% general areas, 99% critical areas, NFPA 1225 / IFC 510). **Use these results on the ERCES / BDA page** fills in the measured coverage there. Delivered audio quality (DAQ) must still be checked by ear. The AHJ has the final say.`,
     tour: [ { target: 'signal-read', title: 'Take a reading', text: 'Connect a meter or the phone, or type a reading, then save it with GPS.' }, { target: 'signal-import', title: 'Import', text: 'Load a file from a phone app or meter.' }, { target: 'signal-compare', title: 'Compare', text: 'See how real readings compare with the prediction.' }, { target: 'signal-map', title: 'Map', text: 'Measured signal, difference, or heat map.' }, { target: 'signal-grid', title: 'Grid test', text: 'ERCES / BDA pass or fail per floor.' } ] },
 
+  { id: 'reading-pins', title: 'Reading pins and signal balance', page: 'coverage', keywords: 'reading pins drop pin measured reading heat map signal balance hot spot cold spot weak strong uniform even imbalance recommend advice gain tap tilt power move add antenna speaker access point das erces wifi paging sound mass notification fire alarm horn lux camera gps photo note', summary: 'Drop pins with measured readings on any heat map, then get a signal balance check and plain-language advice on what to turn up, turn down, move, tilt or add.',
+    body: `**Where:** every heat map has reading pins. On maps with a coverage heat map (Coverage Prediction, Drive Test, Scenarios, Live Signal Readings) press **📌 Reading pins** above the map. On **2D & 3D Models**, **Auto-Design** and **Campus** press **📌 Reading pins** on the model toolbar (it switches to the 2D plan). On **Indoor Coverage & DAS** pick the **📌 Drop reading pin** tool. On the **Wi-Fi & Network Survey** every survey spot already counts as a pin.
+
+**Drop a pin:** press **📌 Drop a reading pin**, then tap the heat map where you measured, or press **📍 Pin at my GPS position** outdoors. Type what the meter shows, add a note and a photo if you like (📷 opens the camera on a phone), tick **Critical area** for ERCES stairs and fire command rooms, and press **📌 Save pin**. Pins on a map are saved as live signal readings, so they also show on Live Signal Readings, export to CSV and can calibrate the model. Imported drive tests and meter readings are checked too.
+
+**Which system:** pick the system you measured (Wi-Fi, DAS, ERCES, paging, pro sound, mass notification, fire alarm, intercom, nurse call, CCTV lighting, call boxes, wireless security and access control). Radio systems use dBm, sound systems dBA, camera lighting lux. Each has a usual target and a too-strong limit you can change.
+
+**The balance check** compares each pin with the target and with the heat map's prediction, groups pins by the antenna, access point, speaker or horn that serves them, and lists:
+- weak spots, with how much to turn the nearest device up, or where to add one when it is too far away;
+- spots that are too strong, and how much to turn down without leaving the far spots weak;
+- imbalance between devices (one area much louder or stronger than another) and how to even it out;
+- one device much weaker than designed (check its connector, coupler, tap or aim) or the whole system weaker than designed (a common fault such as a bad cable, amplifier gain or BDA setting);
+- outdoors, near-versus-far patterns that call for more or less antenna downtilt;
+- evenness from spot to spot (pro sound aims for ±3 dB).
+Sound advice is given in speaker tap steps (each doubling of the tap is +3 dB). Fire alarm and mass notification readings over 110 dBA are flagged (NFPA 72). ERCES needs 90% of general areas and 99% of critical areas at −95 dBm (NFPA 1225 / IFC 510).
+
+**Heat maps for sound:** the building models now also show predicted sound level heat maps (dBA at ear height) for paging, pro sound and mass notification speakers and fire alarm horns, worked out from speaker output, tap, distance, ceiling speaker spread and the walls' sound ratings.
+
+**Works offline.** Advice is a rule of thumb from your readings: a designer, and the AHJ where a code applies, must confirm each change. Measure again after every change; the advice updates.
+
+**Connects to:** Coverage Prediction and the building models (the predicted values pins are compared with), Live Signal Readings and Drive Test (pins and imported readings share one list and calibrate the model), Indoor Coverage & DAS and Auto-Design (the antennas, access points and speakers the advice names), ERCES / BDA (grid test results) and Bluetooth & Wi-Fi Devices (a connected GPS places pins).`,
+  },
   { id: 'assets', title: 'Equipment & asset tags', page: 'assets', keywords: 'asset tag barcode qr scan camera serial model install date warranty pm preventive maintenance service contract history label print register equipment list inventory', summary: 'Scan a device’s barcode or QR code to find it or add it, with PM dates, service history, photos, reports and labels.',
     body: `**Scan:** press **📷 Scan tag** and hold the barcode or QR code in the box; it reads by itself and beeps. If the camera can't start, use **🖼 Photo of the tag**. A handheld scanner works too: tap the tag box and scan, or connect a Bluetooth / Wi-Fi scanner on Bluetooth & Wi-Fi Devices.
 

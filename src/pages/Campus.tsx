@@ -77,7 +77,7 @@ export function CampusPage() {
       </Card>
 
       <Card title="3. Site plan and 3D site model with layers" className="wide" actions={<button className="small-btn" onClick={() => downloadText('site-layers.dxf', modelDxf(scene), 'application/dxf')}>⬇ CAD drawing (DXF)</button>}>
-        <LayeredModel scene={scene} northDeg={p.blueprint?.planNorthDeg ?? 0} title="Site model with layers" onMoveBuilding={(id, dx, dy) => move(id, dx, dy)} />
+        <LayeredModel pinMap="model:campus" scene={scene} northDeg={p.blueprint?.planNorthDeg ?? 0} title="Site model with layers" onMoveBuilding={(id, dx, dy) => move(id, dx, dy)} />
         <div className="stats">{scene.stats.map((s) => <Stat key={s.label} label={s.label} value={s.value} tone={s.tone} tip={s.tip} />)}</div>
         <ul className="small">{scene.notes.map((n) => <li key={n}>{n}</li>)}</ul>
         <p className="small muted">In the 2D site plan, drag a building to move it. The <b>Buildings</b> layers show or hide a whole building; each system&apos;s layers cover every building at once. <b>Outdoor signal</b> (under Wi-Fi or ERCES) shows indoor antennas reaching outside.</p>

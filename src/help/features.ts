@@ -344,6 +344,15 @@ export const FEATURES: Feature[] = [
   { id: 'menu-order', version: '1.5.78', title: 'Menu follows the job in order', page: 'company', alsoOn: ['*'], where: 'Menu',
     summary: 'Live Signal Readings now comes before Drive Test & Calibration, Floor Plan to 2D / 3D starts the low-voltage design steps, Project Build Output sits with Reports & closeout, and Tools & reference is ordered by how often each is used.',
     steps: ['Work down the numbered menu sections from Project setup to Reports & closeout.', 'Open Tools & reference any time.'], keywords: 'menu order workflow steps sequence tools reference', topic: 'menu-guide' },
+  { id: 'reading-pins', version: '1.5.79', title: 'Reading pins and signal balance advice', page: 'coverage', alsoOn: ['survey', 'scenarios', 'signal', 'models', 'autodesign', 'campus', 'indoor', 'wifi'], where: 'Every heat map → 📌 Reading pins (Indoor Coverage: 📌 Drop reading pin tool)',
+    summary: 'Drop pins with measured readings (tap the heat map or use GPS) with a note and photo on any heat map: radio coverage, DAS and ERCES, Wi-Fi, wireless devices, paging, pro sound, mass notification and fire alarm sound levels, and camera lighting. The balance check finds weak and too-strong spots, uneven coverage and imbalance between devices, and says in plain language what to turn up or down, move, tilt or add.',
+    steps: ['Open a page with a heat map and press 📌 Reading pins.', 'Pick the system you measured.', 'Press 📌 Drop a reading pin and tap where you measured, or 📍 Pin at my GPS position.', 'Type the reading, add a note or photo, and press 📌 Save pin.', 'Read the Signal balance advice; make one change, measure again, and the advice updates.'],
+    keywords: 'reading pins drop pin heat map signal balance advice recommend hot cold spot uniform gain tap tilt power antenna speaker access point das erces wifi paging sound mass notification fire alarm lux camera gps photo note', topic: 'reading-pins',
+    tour: [
+      { target: 'pins-open', title: '📌 Reading pins', text: 'Tap Next to open reading pins on this heat map.', click: true },
+      { target: 'pins-drop', title: 'Drop a pin', text: 'Then tap the heat map where you measured. Outdoors you can use your GPS position instead.' },
+      { target: 'pins-advice', title: 'Signal balance advice', text: 'Weak and too-strong spots, imbalance between devices, and what to turn up, down, move, tilt or add.' },
+    ] },
 ];
 
 /** Features that live on, or also show on, a page. Features marked for every page ('*') are left out unless `all`. */

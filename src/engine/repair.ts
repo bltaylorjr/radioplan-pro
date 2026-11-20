@@ -5,7 +5,7 @@ import { defaultProject } from '../defaults';
 import { countyOfTown, placeFromText } from '../compliance/place';
 
 const isObj = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
-const LISTS = ['tests', 'runLog', 'scenarios', 'fieldNotes', 'serviceLog', 'bomExtra', 'documents', 'proposal', 'photoSpots', 'signalReadings', 'assets'] as const;
+const LISTS = ['tests', 'runLog', 'scenarios', 'fieldNotes', 'serviceLog', 'bomExtra', 'documents', 'proposal', 'photoSpots', 'signalReadings', 'assets', 'readingPins'] as const;
 
 /** Merge a stored section onto its defaults, one level deep, fixing wrong types. */
 function heal(def: Record<string, unknown>, got: unknown, path: string, fixes: string[]): Record<string, unknown> {
@@ -59,12 +59,15 @@ export function repairProject(input: unknown): { project: Project; fixes: string
   });
   if ((out.sites as unknown[]).length < sites.length) fixes.push('A site with bad coordinates was removed');
   // Ids inside every list must be unique, or edits hit the wrong row.
-  for (const k of ['tests', 'fieldNotes', 'serviceLog', 'bomExtra', 'documents', 'photoSpots', 'signalReadings', 'assets'] as const) {
+  for (const k of ['tests', 'fieldNotes', 'serviceLog', 'bomExtra', 'documents', 'photoSpots', 'signalReadings', 'assets', 'readingPins'] as const) {
     const arr = out[k]; if (!Array.isArray(arr)) continue; const ids = new Set<string>();
     out[k] = arr.filter(isObj).map((x) => { let id = String(x.id ?? ''); if (!id || ids.has(id)) { id = Math.random().toString(36).slice(2, 10); fixes.push(`A ${k} entry had a duplicate id; fixed`); } ids.add(id); return { ...x, id }; });
   }
   // Readings need a numeric signal; assets need their lists.
   if (Array.isArray(out.signalReadings)) out.signalReadings = (out.signalReadings as Record<string, unknown>[]).filter((r) => Number.isFinite(Number(r.dbm))).map((r) => ({ ...r, dbm: Number(r.dbm), session: String(r.session ?? 'Readings') }));
+  if (Array.isArray(out.readingPins)) out.readingPins = (out.readingPins as Record<string, unknown>[]).filter((r) => Number.isFinite(Number(r.v)) && Number.isFinite(Number(r.x)) && Number.isFinite(Number(r.y)))
+    .map((r) => ({ ...r, v: Number(r.v), x: Number(r.x), y: Number(r.y), map: String(r.map ?? 'indoor'), system: String(r.system ?? 'rf'), qty: ['dbm', 'dba', 'lux'].includes(String(r.qty)) ? r.qty : 'dbm', at: String(r.at ?? new Date().toISOString()) }));
+  if (out.pinTargets !== undefined && !isObj(out.pinTargets)) { delete out.pinTargets; fixes.push('Reading pin targets were damaged; reset'); }
   if (Array.isArray(out.assets)) out.assets = (out.assets as Record<string, unknown>[]).map((a) => ({ ...a, tag: String(a.tag ?? ''), name: String(a.name ?? ''), photos: Array.isArray(a.photos) ? a.photos : [], history: Array.isArray(a.history) ? a.history : [], status: a.status ?? 'In service' }));
   // Older default sites sat in Charlotte; move untouched ones to the project's town (or the Asheville default).
   const OLD: Record<string, [number, number]> = { A: [35.2271, -80.8431], B: [35.2896, -80.734] };

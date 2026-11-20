@@ -611,3 +611,11 @@ button.nav-group-title:hover { color: #fff; }
 .au-big { font-size: 1rem; margin: 4px 0 10px; } .au-big b { font-size: 3rem; font-variant-numeric: tabular-nums; margin-right: 8px; }
 .live-btn { position: relative; } .live-menu { position: absolute; right: 0; top: calc(100% + 4px); z-index: 950; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,.2); padding: 10px; display: grid; gap: 6px; min-width: 230px; }
 .live-menu > button { justify-content: flex-start; } .popout-doc .pip-body { min-height: 100vh; } .popout-doc .pip-view .plan-sheet { max-height: calc(100vh - 110px) !important; }
+
+/* Reading pins and signal balance (1.5.79) */
+.reading-pin div { width: 16px; height: 16px; margin: 3px; border-radius: 50% 50% 50% 0; background: var(--c, #1e88e5); border: 2px solid #fff; transform: rotate(-45deg); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5); box-sizing: border-box; }
+.pins-panel { border: 1px solid var(--line, #ccd); border-radius: 8px; padding: 8px 10px; margin-top: 8px; background: var(--panel); }
+.pins-panel .toolbar { margin-bottom: 4px; }
+.pins-panel .pin-form { border: 2px solid #1e88e5; border-radius: 8px; padding: 6px 8px; margin: 6px 0; }
+.pins-panel ol.advice { list-style: none; padding: 0; margin: 6px 0; display: grid; gap: 4px; }
+.pins-panel ol.advice li { margin: 0; }

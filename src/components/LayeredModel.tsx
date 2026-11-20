@@ -12,7 +12,26 @@ import { SYMBOL } from '../engine/blueprint';
 import { MAT } from '../engine/bldgmaterials';
 import { rssiColor, RSSI_SCALE } from '../engine/coverage';
 import { layerGroups, ModelScene, MDevice, MHeat, Footprint } from '../engine/models';
-import { downloadText } from '../store';
+import { downloadText, useStore } from '../store';
+import { PinsPanel, PlanPin, type PinRow } from './ReadingPins';
+import { PIN_NORMS, normFor, pinColor, fmtQ, splColor, SPL_SCALE, type BPoint, type BSource, type ReadingPin } from '../engine/balance';
+import { uid } from '../defaults';
+import { useUnits } from '../units';
+
+/** A pin as drawn on the plan or model (plan feet). */
+export interface DrawnPin { id: string; x: number; y: number; floor: number; color: string; label: string; title: string; pending?: boolean }
+const FT = 0.3048;
+/** Devices that put out the signal, sound or light a pin measures, by system. */
+const EMITTERS: Record<string, string[]> = { dbm: ['wap', 'das', 'callbox', 'donor'], dba: ['speaker', 'hornstrobe', 'intercom', 'nurse'], lux: ['camera'] };
+const SECURITY_HUBS: Record<string, string[]> = { security: ['keypad', 'motion'], access: ['reader'], cabling: ['wap', 'tr'], fiber: ['wap', 'tr'] };
+
+/** Value of a heat map at a plan point (handles site plans with moved or turned buildings). NaN outside. */
+export function sampleHeat(h: MHeat, L: number, W: number, x: number, y: number): number {
+  const a = (-(h.rot ?? 0) * Math.PI) / 180, dx = x - (h.ox ?? 0), dy = y - (h.oy ?? 0);
+  const lx = dx * Math.cos(a) - dy * Math.sin(a), ly = dx * Math.sin(a) + dy * Math.cos(a), w = h.w ?? L, hh = h.h ?? W;
+  if (lx < 0 || ly < 0 || lx > w || ly > hh) return NaN;
+  return h.v[Math.min(h.ny - 1, Math.floor((ly / hh) * h.ny)) * h.nx + Math.min(h.nx - 1, Math.floor((lx / w) * h.nx))];
+}
 
 const LS = 'radioplan.modelLayers';
 function loadVis(): Record<string, boolean> { try { return JSON.parse(localStorage.getItem(LS) || '{}') ?? {}; } catch { return {}; } }
@@ -29,7 +48,7 @@ export function useLayerVisibility(scene: ModelScene) {
 
 function heatCanvas(h: MHeat): HTMLCanvasElement {
   const c = document.createElement('canvas'); c.width = h.nx; c.height = h.ny; const g = c.getContext('2d')!; const im = g.createImageData(h.nx, h.ny);
-  for (let i = 0; i < h.nx * h.ny; i++) { const [r, gg, b, a] = rssiColor(h.v[i], -130); im.data[i * 4] = r; im.data[i * 4 + 1] = gg; im.data[i * 4 + 2] = b; im.data[i * 4 + 3] = a ? 255 : 0; }
+  for (let i = 0; i < h.nx * h.ny; i++) { const [r, gg, b, a] = h.qty === 'dba' ? splColor(h.v[i]) : rssiColor(h.v[i], -130); im.data[i * 4] = r; im.data[i * 4 + 1] = gg; im.data[i * 4 + 2] = b; im.data[i * 4 + 3] = a ? 255 : 0; }
   g.putImageData(im, 0, 0); return c;
 }
 
@@ -66,7 +85,8 @@ function symbolPath(shape: string, x: number, y: number, s: number): string {
 }
 
 /** Flat plan of one or every floor with the visible layers. */
-export function Plan2D({ scene, visible, floor, northDeg = 0, heatOpacity = 0.55, planImage, onPick, parking = 0, onMoveBuilding }: { scene: ModelScene; visible: Set<string>; floor: number | 'all'; northDeg?: number; heatOpacity?: number; planImage?: string; onPick?: (s: string) => void; parking?: number; onMoveBuilding?: (id: string, dx: number, dy: number) => void }) {
+export function Plan2D({ scene, visible, floor, northDeg = 0, heatOpacity = 0.55, planImage, onPick, parking = 0, onMoveBuilding, onSpot, pins }: { scene: ModelScene; visible: Set<string>; floor: number | 'all'; northDeg?: number; heatOpacity?: number; planImage?: string; onPick?: (s: string) => void; parking?: number; onMoveBuilding?: (id: string, dx: number, dy: number) => void;
+  /** Tap on the plan (reading pins): plan feet and floor. */ onSpot?: (x: number, y: number, floor: number) => void; pins?: DrawnPin[] }) {
   const metric = useContext(MeasureCtx) === 'metric';
   const { L, W } = scene; const v = (id: string) => visible.has(id);
   const on = (el: { layer: string; bld?: string }) => visible.has(el.layer) && (!el.bld || visible.has('bldg:' + el.bld));
@@ -85,7 +105,8 @@ export function Plan2D({ scene, visible, floor, northDeg = 0, heatOpacity = 0.55
     <div className={floors.length > 1 ? 'plan2d' : ''}>{floors.map((f) => (
       <figure key={f} style={{ margin: 0 }}>
         <figcaption className="small"><b>Floor {f + 1}</b> · {L} × {W} ft{metric ? ` (${(L * 0.3048).toFixed(1)} × ${(W * 0.3048).toFixed(1)} m)` : ''} · true scale</figcaption>
-        <svg ref={svgRef} viewBox={`${x0} ${y0} ${w} ${h}`} role="img" aria-label={`Floor ${f + 1} plan with layers`} style={{ width: '100%', height: 'auto', maxHeight: floors.length > 1 ? 460 : 640, background: 'var(--panel)', touchAction: 'manipulation' }}>
+        <svg ref={svgRef} viewBox={`${x0} ${y0} ${w} ${h}`} role="img" aria-label={`Floor ${f + 1} plan with layers`} style={{ width: '100%', height: 'auto', maxHeight: floors.length > 1 ? 460 : 640, background: 'var(--panel)', touchAction: 'manipulation', cursor: onSpot ? 'crosshair' : undefined }}
+          onClickCapture={onSpot ? (e) => { e.stopPropagation(); const sv = e.currentTarget as SVGSVGElement; const m = sv.getScreenCTM(); if (!m) return; const pt = new DOMPoint(e.clientX, e.clientY).matrixTransform(m.inverse()); onSpot(Math.round(pt.x * 10) / 10, Math.round(pt.y * 10) / 10, f); } : undefined}>
           {v('base:site') && <rect x={x0} y={y0} width={w} height={h} fill="#9ccc65" opacity={0.18} />}
           {v('base:site') && f === 0 && lotH > 0 && <g><rect x={(L - lotW) / 2} y={W + 20} width={lotW} height={lotH} fill="#90a4ae" opacity={0.35} />{Array.from({ length: Math.ceil(parking / 2) + 1 }, (_, i) => <line key={i} x1={(L - lotW) / 2 + i * 9} y1={W + 20} x2={(L - lotW) / 2 + i * 9} y2={W + 38} stroke="#fff" strokeWidth={0.3} />)}<text x={L / 2} y={W + 20 + lotH / 2 + u} fontSize={u * 2.4} textAnchor="middle" fill="var(--text)">Parking ({parking})</text></g>}
           {v('base:shell') && !scene.footprints && <rect x={0} y={0} width={L} height={W} fill="var(--bg, #fff)" stroke="var(--text)" strokeWidth={u * 0.3} />}
@@ -118,6 +139,7 @@ export function Plan2D({ scene, visible, floor, northDeg = 0, heatOpacity = 0.55
               onPointerUp={() => { if (drag?.id === fp.id) { if (Math.hypot(drag.dx, drag.dy) > 1) onMoveBuilding?.(fp.id, drag.dx, drag.dy); setDrag(null); } }}>
               <rect x={-bw / 2} y={-u * 1.8} width={bw} height={u * 3.6} rx={u} fill="#263238" opacity={0.85} /><text x={0} y={u * 0.8} fontSize={u * 2.2} textAnchor="middle" fill="#fff">{onMoveBuilding ? '✥ ' : ''}{fp.name}</text>
               <title>{fp.name}{onMoveBuilding ? ': drag to move this building' : ''}</title></g>; })}
+          {pins?.filter((pn) => pn.floor === f).map((pn) => <PlanPin key={pn.id} x={pn.x} y={pn.y} s={u * (pn.pending ? 2.2 : 1.8)} color={pn.color} label={pn.label} title={pn.title} />)}
           <defs><marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#311b92" /></marker></defs>
           {v('base:dims') && <g pointerEvents="none">
             <g transform={`translate(${x0 + pad / 2} ${y0 + h - pad / 3})`}><line x1={0} y1={0} x2={bar} y2={0} stroke="var(--text)" strokeWidth={u * 0.4} /><line x1={0} y1={-u} x2={0} y2={u} stroke="var(--text)" strokeWidth={u * 0.3} /><line x1={bar} y1={-u} x2={bar} y2={u} stroke="var(--text)" strokeWidth={u * 0.3} /><text x={0} y={-u * 1.4} fontSize={u * 2} fill="var(--text)">{metric ? `${(bar * 0.3048).toFixed(1)} m` : `${bar} ft`}</text></g>
@@ -139,7 +161,7 @@ function textSprite(text: string, color = '#111', size = 3) {
 }
 
 /** 3D model: floors stacked (optionally pulled apart), walls standing at ceiling height in their material colour. */
-export function Model3D({ scene, visible, floor, explode, heatOpacity = 0.7, northDeg = 0, onPick, parking = 0 }: { scene: ModelScene; visible: Set<string>; floor: number | 'all'; explode: number; heatOpacity?: number; northDeg?: number; onPick?: (s: string) => void; parking?: number }) {
+export function Model3D({ scene, visible, floor, explode, heatOpacity = 0.7, northDeg = 0, onPick, parking = 0, pins }: { scene: ModelScene; visible: Set<string>; floor: number | 'all'; explode: number; heatOpacity?: number; northDeg?: number; onPick?: (s: string) => void; parking?: number; pins?: DrawnPin[] }) {
   const mount = useRef<HTMLDivElement>(null);
   const byLayer = useRef<Map<string, THREE.Object3D[]>>(new Map());
   const camState = useRef<{ pos: THREE.Vector3; target: THREE.Vector3 } | null>(null);
@@ -191,6 +213,13 @@ export function Model3D({ scene, visible, floor, explode, heatOpacity = 0.7, nor
       const m = new THREE.Mesh(new THREE.PlaneGeometry(hw, hh), new THREE.MeshBasicMaterial({ map: tex, transparent: true, opacity: heatOpacity, depthWrite: false }));
       m.rotation.x = -Math.PI / 2; m.position.set(hw / 2, base(hm.floor) + (hm.ox != null && hm.layer.endsWith('siteheat') ? 0.05 : 0.15), hh / 2);
       const hg = new THREE.Group(); hg.position.set(hm.ox ?? 0, 0, hm.oy ?? 0); hg.rotation.y = (-(hm.rot ?? 0) * Math.PI) / 180; hg.add(m); put(hm.layer, hg, hm.bld);
+    }
+    // reading pins: a coloured peg at ear height
+    for (const pn of pins ?? []) {
+      if (!show(pn.floor)) continue;
+      const peg = new THREE.Mesh(new THREE.ConeGeometry(0.9, 3, 12), new THREE.MeshBasicMaterial({ color: pn.color }));
+      peg.rotation.x = Math.PI; peg.position.set(pn.x, base(pn.floor) + 6.5, pn.y); peg.userData.info = pn.title; g.add(peg);
+      const head = new THREE.Mesh(new THREE.SphereGeometry(1.1, 12, 10), new THREE.MeshBasicMaterial({ color: pn.color })); head.position.set(pn.x, base(pn.floor) + 8.3, pn.y); head.userData.info = pn.title; g.add(head);
     }
     // coverage areas
     for (const a of scene.areas) {
@@ -263,14 +292,15 @@ export function Model3D({ scene, visible, floor, explode, heatOpacity = 0.7, nor
       scene3.traverse((o) => { const m = o as THREE.Mesh; m.geometry?.dispose?.(); const sm = (o as THREE.Sprite).material as THREE.SpriteMaterial | undefined; if ((o as THREE.Sprite).isSprite) { sm?.map?.dispose(); sm?.dispose(); } });
       mats.forEach((m) => m.dispose()); renderer.dispose();
     };
-  }, [scene, floor, explode, heatOpacity, northDeg, parking]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [scene, floor, explode, heatOpacity, northDeg, parking, pins]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { applyVis(); }, [visible]); // eslint-disable-line react-hooks/exhaustive-deps
   if (err) return <p className="warn-text">{err}</p>;
   return <div className="vc-host"><div ref={mount} className="bldg3d" aria-label="3D model of the building with layers" /><ViewPad api={api} /></div>;
 }
 
 /** The whole viewer: 2D/3D switch, floor picker, pull-apart slider, layer panel, legend and tap-to-identify. */
-export function LayeredModel({ scene, northDeg = 0, planImage, parking = 0, title = '2D & 3D model', onMoveBuilding, initialView }: { scene: ModelScene; northDeg?: number; planImage?: string; parking?: number; title?: string; onMoveBuilding?: (id: string, dx: number, dy: number) => void; initialView?: '2d' | '3d' }) {
+export function LayeredModel({ scene, northDeg = 0, planImage, parking = 0, title = '2D & 3D model', onMoveBuilding, initialView, pinMap }: { scene: ModelScene; northDeg?: number; planImage?: string; parking?: number; title?: string; onMoveBuilding?: (id: string, dx: number, dy: number) => void; initialView?: '2d' | '3d';
+  /** Turns on reading pins, saved under this name (e.g. 'model:models'). */ pinMap?: string }) {
   const { visible, set, reset } = useLayerVisibility(scene);
   const [view, setView] = useState<'2d' | '3d'>(() => { if (initialView) return initialView; try { return localStorage.getItem('radioplan.designView') === '2d' ? '2d' : '3d'; } catch { return '3d'; } });
   const pickView = (v: '2d' | '3d') => { setView(v); try { localStorage.setItem('radioplan.designView', v); } catch { /* ignore */ } };
@@ -285,6 +315,8 @@ export function LayeredModel({ scene, northDeg = 0, planImage, parking = 0, titl
     const s = svgWrap.current?.querySelector('svg'); if (s) downloadText('building-plan.svg', new XMLSerializer().serializeToString(s), 'image/svg+xml');
   };
   const heatOn = scene.heat.some((h) => visible.has(h.layer));
+  const splOn = scene.heat.some((h) => visible.has(h.layer) && h.qty === 'dba'), rfOn = scene.heat.some((h) => visible.has(h.layer) && h.qty !== 'dba');
+  const pins = useModelPins(scene, pinMap, visible, set);
   return (
     <div className="layered-model">
       <div className="row wrap toolbar">
@@ -293,18 +325,66 @@ export function LayeredModel({ scene, northDeg = 0, planImage, parking = 0, titl
         {view === '3d' && scene.floors > 1 && <label className="row small">Pull floors apart <input type="range" min={0} max={40} step={2} value={explode} onChange={(e) => setExplode(+e.target.value)} aria-label="Pull floors apart" /></label>}
         {heatOn && <label className="row small">Heat map <input type="range" min={0.2} max={1} step={0.05} value={heatOp} onChange={(e) => setHeatOp(+e.target.value)} aria-label="Heat map strength" /></label>}
         <button className="small-btn" onClick={savePicture}>⬇ Save picture</button>
+        {pins && <button className={pins.open ? 'primary' : ''} aria-pressed={pins.open} data-tour="pins-open" onClick={() => { pins.setOpen(!pins.open); if (!pins.open) pickView('2d'); }} title="Drop pins with measured readings on the heat map and get balance advice">📌 {pins.open ? 'Close reading pins' : `Reading pins${pins.count ? ` (${pins.count})` : ''}`}</button>}
       </div>
       <div className="layered-body">
         <div className="layered-view" ref={svgWrap}>
           <FullView title={title}>
             <LayersButton><LayerPanel scene={scene} visible={visible} set={set} reset={reset} /></LayersButton>
-            {view === '2d' ? <Plan2D scene={scene} visible={visible} floor={fl} northDeg={northDeg} heatOpacity={heatOp} planImage={planImage} onPick={setPicked} parking={parking} onMoveBuilding={onMoveBuilding} /> : <Model3D scene={scene} visible={visible} floor={fl} explode={explode} heatOpacity={heatOp} northDeg={northDeg} onPick={setPicked} parking={parking} />}
+            {view === '2d' ? <Plan2D scene={scene} visible={visible} floor={fl} northDeg={northDeg} heatOpacity={heatOp} planImage={planImage} onPick={setPicked} parking={parking} onMoveBuilding={pins?.armed ? undefined : onMoveBuilding} onSpot={pins?.armed ? pins.spot : undefined} pins={pins?.drawn} /> : <Model3D scene={scene} visible={visible} floor={fl} explode={explode} heatOpacity={heatOp} northDeg={northDeg} onPick={setPicked} parking={parking} pins={pins?.drawn} />}
           </FullView>
           <p className="small" role="status" aria-live="polite">{picked ? <><b>Selected:</b> {picked} <button className="ghost small-btn" onClick={() => setPicked('')}>✕</button></> : <span className="muted">{view === '3d' ? 'Drag to turn, scroll or pinch to zoom, tap anything to see what it is.' : 'Tap any device, wall or cable to see what it is.'} Turn layers on and off on the right (below on a phone).</span>}</p>
-          {heatOn && <div className="legend small">{RSSI_SCALE.map((s) => <span key={s.min}><span className="lg" style={{ background: `rgb(${s.color.join(',')})` }} />{s.label}</span>)}</div>}
+          {rfOn && <div className="legend small">{RSSI_SCALE.map((s) => <span key={s.min}><span className="lg" style={{ background: `rgb(${s.color.join(',')})` }} />{s.label}</span>)}</div>}
+          {splOn && <div className="legend small">{SPL_SCALE.map((s) => <span key={s.min}><span className="lg" style={{ background: `rgb(${s.color.join(',')})` }} />{s.label}</span>)}</div>}
+          {pins?.open && view === '3d' && <p className="small muted">Pins show as coloured pegs in 3D. Switch to the 2D plan to drop new ones.</p>}
+          {pins?.open && pins.panel}
         </div>
         <LayerPanel scene={scene} visible={visible} set={set} reset={reset} />
       </div>
     </div>
   );
+}
+
+/** Reading pins on a building model: saved per model page, one system at a time, compared with that system's heat map. */
+function useModelPins(scene: ModelScene, pinMap: string | undefined, visible: Set<string>, setVis: (ids: string[], v: boolean) => void) {
+  const { project: p, update } = useStore();
+  const u = useUnits();
+  const [open, setOpen] = useState(false);
+  const [armed, setArmed] = useState(true);
+  const [pending, setPending] = useState<{ x: number; y: number; floor: number } | null>(null);
+  const systems = useMemo(() => [...new Set(scene.devices.map((d) => d.system))].filter((s) => PIN_NORMS[s]), [scene]);
+  const pref = ['wifi', 'erces', 'das', 'massnotif', 'paging', 'sound', 'firealarm'];
+  const visHeat = scene.heat.find((h) => visible.has(h.layer))?.layer.split(':')[0];
+  const [chosen, setChosen] = useState<string | null>(null);
+  const lastSys = (p.readingPins ?? []).filter((x) => x.map === pinMap).pop()?.system;
+  const system = chosen && systems.includes(chosen) ? chosen : lastSys && systems.includes(lastSys) ? lastSys : visHeat && systems.includes(visHeat) ? visHeat : pref.find((s) => systems.includes(s)) ?? systems[0] ?? 'wifi';
+  // show the heat map of the system being measured
+  useEffect(() => { if (open && scene.layers.some((l) => l.id === `${system}:heat`) && !visible.has(`${system}:heat`)) setVis([`${system}:heat`], true); }, [open, system]); // eslint-disable-line react-hooks/exhaustive-deps
+  const nm = normFor(system), saved = p.pinTargets?.[`${pinMap}|${system}`];
+  const target = saved?.target ?? nm.target, hot = saved?.hot ?? nm.hot;
+  const all = (p.readingPins ?? []).filter((x) => x.map === pinMap);
+  const mine = all.filter((x) => x.system === system);
+  const heatOf = (f: number) => scene.heat.filter((h) => h.layer.split(':')[0] === system && h.floor === f);
+  const predAt = (x: number, y: number, f: number) => { for (const h of heatOf(f)) { const v = sampleHeat(h, scene.L, scene.W, x, y); if (Number.isFinite(v)) return v; } return null; };
+  const kinds = SECURITY_HUBS[system] ?? EMITTERS[nm.qty];
+  const srcDevs = scene.devices.filter((d) => d.system === system && kinds.includes(d.kind));
+  const devs = srcDevs.length ? srcDevs : scene.devices.filter((d) => d.system === system);
+  const sources: BSource[] = useMemo(() => devs.map((d, i) => ({ id: `${d.tag}-${d.floor}-${i}`, label: d.tag || d.label, x: d.x * FT, y: d.y * FT, floor: d.floor })), [scene, system]); // eslint-disable-line react-hooks/exhaustive-deps
+  const where = (x: number, y: number, f: number) => `floor ${f + 1}, ${u.lenFt(x)} from the left and ${u.lenFt(y)} from the top of the plan`;
+  const points: BPoint[] = useMemo(() => mine.map((r) => ({ id: r.id, v: r.v, pred: predAt(r.x, r.y, r.floor ?? 0), x: r.x * FT, y: r.y * FT, floor: r.floor ?? 0, critical: r.critical })), [p.readingPins, scene, system]); // eslint-disable-line react-hooks/exhaustive-deps
+  if (!pinMap) return null;
+  const rows: PinRow[] = mine.map((r) => ({ id: r.id, v: r.v, pred: predAt(r.x, r.y, r.floor ?? 0), where: where(r.x, r.y, r.floor ?? 0), at: r.at, note: r.note, photo: r.photo, critical: r.critical }));
+  const drawn: DrawnPin[] = open ? [...mine.map((r) => ({ id: r.id, x: r.x, y: r.y, floor: r.floor ?? 0, color: pinColor(r.v, target, hot, nm.qty), label: fmtQ(r.v, nm.qty).replace(/ (dBm|dBA|lux)$/, ''), title: `${fmtQ(r.v, nm.qty)}${r.note ? `: ${r.note}` : ''}` })),
+    ...(pending ? [{ id: 'new', x: pending.x, y: pending.y, floor: pending.floor, color: '#1e88e5', label: 'new', title: 'New pin', pending: true }] : [])] : [];
+  const pv = pending ? predAt(pending.x, pending.y, pending.floor) : null;
+  const save = (d: { v: number; note?: string; photo?: string; critical?: boolean }) => {
+    if (!pending) return; const at = pending;
+    const pin: ReadingPin = { id: uid(), at: new Date().toISOString(), map: pinMap, system, qty: nm.qty, v: d.v, x: at.x, y: at.y, floor: at.floor, ...(d.note ? { note: d.note } : {}), ...(d.photo ? { photo: d.photo } : {}), ...(d.critical ? { critical: true } : {}) };
+    update((q) => { q.readingPins = [...(q.readingPins ?? []), pin]; }); setPending(null);
+  };
+  const panel = <PinsPanel system={system} systems={systems} onSystem={(s) => { setChosen(s); setPending(null); }} armed={armed} setArmed={(v) => { setArmed(v); if (!v) setPending(null); }}
+    pending={pending ? { where: `${where(pending.x, pending.y, pending.floor)}${pv != null ? `, predicted ${fmtQ(pv, nm.qty)}` : ''}` } : null} onCancel={() => setPending(null)} onSave={save}
+    rows={rows} points={points} sources={sources} targetKey={pinMap} onDelete={(id) => update((q) => { q.readingPins = (q.readingPins ?? []).filter((x) => x.id !== id); })}
+    dropHint="Tap the 2D plan where you took the reading (pick the floor above if the building has several)." />;
+  return { open, setOpen, armed: open && armed, spot: (x: number, y: number, floor: number) => setPending({ x, y, floor }), drawn, panel, count: all.length };
 }

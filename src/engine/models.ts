@@ -5,7 +5,7 @@
 // boxes), labels and the donor antenna aim. Everything is in feet, true scale, plan x along the length
 // and y across the width. Coverage and routes follow stated rules of thumb; a designer must check them.
 import type { Project } from '../types';
-import { autoDesign, defaultInputs, AutoInputs, AutoResult, Device, Kind, KIND_LABEL } from './autodesign';
+import { autoDesign, defaultInputs, AutoInputs, AutoResult, Device, Kind, KIND_LABEL, BLDG } from './autodesign';
 import { tagsFor } from './blueprint';
 import { writeDxf, DxfEnt } from './fileformats';
 import { specFor, BuildingSpec, MAT, matLossDb, rt60, rtAdvice, jacketFor, ratingsFor, outsideInLossDb } from './bldgmaterials';
@@ -28,6 +28,8 @@ export interface MPath { bld?: string; layer: string; pts: [number, number, numb
 export interface MArea { bld?: string; layer: string; floor: number; shape: 'circle' | 'square' | 'poly'; x: number; y: number; r: number; pts?: [number, number][]; z: number; color: string; label: string }
 export interface MWall { bld?: string; layer: string; floor: number; x1: number; y1: number; x2: number; y2: number; material: string; color: string; ratedHr: number; part: string; height?: number }
 export interface MHeat { bld?: string; layer: string; floor: number; nx: number; ny: number; v: Float32Array; label: string; fMHz: number; targetDbm: number; pct: number;
+  /** What the grid holds: radio signal in dBm (default) or sound level in dBA. targetDbm is then the dBA target. */
+  qty?: 'dbm' | 'dba';
   /** Where the grid sits (site plans): top-left corner, size and clockwise turn. Default 0, 0, L × W, 0°. */
   ox?: number; oy?: number; w?: number; h?: number; rot?: number }
 export interface MLabel { bld?: string; layer: string; floor: number; x: number; y: number; z: number; text: string }
@@ -233,6 +235,37 @@ function buildModelNow(p: Project, opts: ModelOptions = {}): ModelScene {
   const e = p.erces; const dasEirp = Math.min(20, Math.max(0, (e?.bdaMaxOutputDbm ?? 27) - (e?.dasCableLossDb ?? 6) - (e?.splitterLossDb ?? 7) + (e?.indoorAntGainDbi ?? 2)));
   heatFor(dasSys, ['das'], dasSys === 'erces' ? 800 : 1900, dasEirp, dasSys === 'erces' ? -95 : -85, dasSys === 'erces' ? 'Public-safety radio 800 MHz' : 'Cellular 1900 MHz');
 
+  // sound-level heat maps: paging, pro sound, mass notification speakers and fire alarm horns (dBA at ear height)
+  const ambient = BLDG[x.bldg]?.ambient ?? 55;
+  const splFor = (sys: string, kinds: Kind[], ref1m: number, watts: number, target: number, label: string, ceiling: boolean) => {
+    const src = devices.filter((d) => kinds.includes(d.kind) && d.system === sys && !d.outdoor); if (!src.length) return;
+    sl(sys, 'heat', 'Sound level heat map', !heat.length, `Predicted ${label} at ear height (5 ft): ${ref1m} dB at 1 W and 1 m${watts !== 1 ? ` on ${watts} W taps` : ''}, inverse-square loss, ${ceiling ? '120° ceiling speaker spread, ' : ''}and the sound lost through each wall (from its STC rating). Target ${target} dBA (${ambient} dBA background + ${target - ambient}). Rule of thumb: measure to confirm.`);
+    const nx = 64, ny = Math.max(8, Math.round((64 * W) / L));
+    for (let f = 0; f < F; f++) {
+      const v = new Float32Array(nx * ny); let ok = 0;
+      const ws = walls.filter((w) => w.floor === f).map((w) => ({ ...w, loss: Math.min(45, (MAT[w.material]?.stc ?? 40) * (w.part === 'Door' ? 0.6 : 0.75)) }));
+      const mine = src.filter((d) => d.floor === f);
+      for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
+        const px = ((i + 0.5) / nx) * L, py = ((j + 0.5) / ny) * W; let e = 0;
+        for (const d of mine) {
+          const dz = Math.max(0.5, d.z - 5), horiz = Math.hypot(px - d.x, py - d.y), dm = Math.max(1, Math.hypot(horiz, dz) * 0.3048);
+          let lvl = ref1m + 10 * Math.log10(watts) - 20 * Math.log10(dm);
+          if (ceiling && Math.atan2(horiz, dz) > Math.PI / 3) lvl -= 6; // outside the cone
+          for (const w of ws) if (segHit(d.x, d.y, px, py, w) != null) lvl -= w.loss;
+          e += 10 ** (lvl / 10);
+        }
+        const val = e > 0 ? 10 * Math.log10(e) : NaN; v[j * nx + i] = val; if (val >= target) ok++;
+      }
+      heat.push({ layer: `${sys}:heat`, floor: f, nx, ny, v, label, fMHz: 0, targetDbm: target, pct: (ok / (nx * ny)) * 100, qty: 'dba' });
+    }
+  };
+  const spkSystems = [...new Set(devices.filter((d) => d.kind === 'speaker').map((d) => d.system))];
+  for (const sys of spkSystems) {
+    const tap = sys === 'sound' ? 2 : 1, rise = sys === 'sound' ? 20 : sys === 'paging' ? 12 : 15;
+    splFor(sys, ['speaker'], 89, tap, Math.min(95, ambient + rise), `${sysLabel(sys)} sound level`, true);
+  }
+  if (devices.some((d) => d.kind === 'hornstrobe' && d.system === 'firealarm')) splFor('firealarm', ['hornstrobe'], 94, 1, Math.min(105, ambient + 15), 'Fire alarm horn sound level', false);
+
   // cable routes
   const paths: MPath[] = [];
   const trs = devices.filter((d) => d.kind === 'tr');
@@ -333,7 +366,7 @@ function buildModelNow(p: Project, opts: ModelOptions = {}): ModelScene {
 
   // stats
   const stats: ModelScene['stats'] = [];
-  for (const h of heat) if (h.floor === 0) { const avg = heat.filter((v) => v.layer === h.layer).reduce((s, v) => s + v.pct, 0) / F; stats.push({ label: `${h.label} area ≥ ${h.targetDbm} dBm`, value: `${avg.toFixed(0)} %`, tone: avg >= 95 ? 'ok' : avg >= 85 ? 'warn' : 'bad', tip: 'Average of all floors, through the chosen walls and floors.' }); }
+  for (const h of heat) if (h.floor === 0) { const avg = heat.filter((v) => v.layer === h.layer).reduce((s, v) => s + v.pct, 0) / F; stats.push({ label: `${h.label} area ≥ ${h.targetDbm} ${h.qty === 'dba' ? 'dBA' : 'dBm'}`, value: `${avg.toFixed(0)} %`, tone: avg >= 95 ? 'ok' : avg >= 85 ? 'warn' : 'bad', tip: 'Average of all floors, through the chosen walls and floors.' }); }
   const outIn = outsideInLossDb(spec, 800, W);
   stats.push({ label: 'Outside signal lost reaching mid-floor (800 MHz)', value: `${outIn.toFixed(0)} dB`, tone: outIn < 15 ? 'ok' : outIn < 25 ? 'warn' : 'bad', tip: 'Outside wall and window mix plus the inside walls to the middle of the floor. Over about 15–20 dB usually means a BDA/DAS for public-safety radio.' });
   if (spec.belowGrade > 0) { const bg = outIn + matLossDb('earth', 800); stats.push({ label: 'Outside signal lost reaching the level below ground (800 MHz)', value: `${bg.toFixed(0)} dB`, tone: 'bad', tip: 'Below-grade levels need their own DAS antennas for public-safety radio.' }); }

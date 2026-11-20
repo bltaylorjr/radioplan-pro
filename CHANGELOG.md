@@ -1,3 +1,9 @@
+# LvPlan Pro 1.5.79
+
+- **Reading pins on every heat map:** press **📌 Reading pins** on any coverage map (Coverage Prediction, Drive Test, Scenarios, Live Signal Readings) or building model (2D & 3D Models, Auto-Design, Campus), or pick **📌 Drop reading pin** on Indoor Coverage & DAS. Tap where you measured (or **📍 Pin at my GPS position** outdoors), type the reading, and add a note and a photo. Map pins are saved as live signal readings, so they export, calibrate the model and show on Live Signal Readings. Works offline.
+- **Signal balance and advice:** pins are compared with the target and the heat map's prediction and grouped by the antenna, access point, speaker or horn that serves them. Plain-language advice says what to turn up or down (with speaker tap steps for sound), where to move or add a device, when to change antenna downtilt, which single device is weaker than designed, and when the whole system has a common fault. Covers radio, DAS, ERCES (90% / 99% critical areas), Wi-Fi, call boxes, wireless security and locks, paging, pro sound, mass notification, fire alarm (110 dBA limit), intercom, nurse call and camera lighting. Imported drive tests, meter readings and Wi-Fi survey spots are checked too.
+- **Sound level heat maps** on the building models: predicted dBA at ear height for paging, pro sound and mass notification speakers and fire alarm horns, through the walls' sound ratings.
+
 # LvPlan Pro 1.5.78
 
 - **New introduction video** (▶ Video): every tool gets about half a minute, in menu order, so each one is covered evenly, all in one narrator's voice, with street-level maps filled in.
