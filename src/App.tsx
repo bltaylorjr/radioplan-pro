@@ -81,6 +81,7 @@ const WeatherPage = page(() => import('./pages/Weather'), 'WeatherPage');
 const FloorPlanPage = page(() => import('./pages/FloorPlan'), 'FloorPlanPage');
 const BuildOutputPage = page(() => import('./pages/BuildOutput'), 'BuildOutputPage');
 const SpectrumPage = page(() => import('./pages/Spectrum'), 'SpectrumPage');
+const SirensPage = page(() => import('./pages/Sirens'), 'SirensPage');
 const AudioPage = page(() => import('./pages/Audio'), 'AudioPage');
 const TerrainPage = lazy(track(() => import('./pages/Terrain')));
 const CoveragePage = lazy(track(() => import('./pages/Coverage')));
@@ -92,7 +93,7 @@ import { MapPackBadge } from './components/MapPacks';
 import { GlobalFileDrop } from './components/DropZone';
 import { PlanPipHost, LiveViewButton } from './components/PlanPip';
 /** Pages where the design is being shaped: their header has the Live view button. */
-const LIVE_PAGES = ['company', 'systems', 'autodesign', 'models', 'campus', 'alarm', 'erces', 'indoor', 'wifi', 'blueprints', 'materials', 'floorplan', 'buildout'];
+const LIVE_PAGES = ['company', 'systems', 'autodesign', 'models', 'campus', 'alarm', 'sirens', 'erces', 'indoor', 'wifi', 'blueprints', 'materials', 'floorplan', 'buildout'];
 
 /** Page components by menu id. The menu order, labels and sections live in src/data/menu.ts. */
 export const PAGE_ELEMENTS: Record<string, React.ReactNode> = {
@@ -110,6 +111,7 @@ export const PAGE_ELEMENTS: Record<string, React.ReactNode> = {
   models: <ModelsPage />,
   campus: <CampusPage />,
   alarm: <AlarmPage />,
+  sirens: <SirensPage />,
   erces: <ErcesPage />,
   indoor: <IndoorPage />,
   solar: <SolarPage />,

@@ -8,6 +8,7 @@ import { AWG_SIZES, AMPACITY_75C_CU, AMPACITY_90C_CU, RESISTANCE_OHM_PER_KFT } f
 const P = 'Product (typical)' as const, S = 'Standard' as const;
 import { bodySpecs } from './bodies';
 import { LV_CATALOG, LEGACY, LegacyInfo } from './lvequipment';
+import { SIREN_MODELS, SIREN_SOURCES } from './sirens';
 export type SpecValue = string | number;
 export interface SpecItem {
   id: string; category: string; sub: string; brand: string; model: string;
@@ -136,4 +137,14 @@ const STANDARDS: SpecItem[] = [
   ...AWG_SIZES.map((a) => std(`awg-${a}`, 'Conductors', 'Copper', `${a} AWG copper`, { 'Size': `${a} AWG`, 'Ampacity 75 °C (A)': AMPACITY_75C_CU[a], 'Ampacity 90 °C (A)': AMPACITY_90C_CU[a], 'DC resistance (Ω/1000 ft)': RESISTANCE_OHM_PER_KFT[a] }, 'NEC Table 310.16 and Chapter 9 Table 8 (uncoated copper, 75 °C)', 'Apply 240.4(D) small-conductor limits and ambient / fill adjustments.')),
 ];
 
-export function builtInSpecs(): SpecItem[] { return [...builtFromCatalog(), ...LV_CATALOG, ...LEGACY, ...STANDARDS, ...LV_TYPICAL, ...bodySpecs()]; }
+/** Outdoor warning sirens from the siren database (src/data/sirens.ts), filed under Mass notification. */
+export function sirenSpecs(): SpecItem[] {
+  return SIREN_MODELS.map((m) => {
+    const legacy: LegacyInfo | undefined = m.status === 'Legacy' ? { status: 'Discontinued', era: m.years, replacedBy: [m.replacedBy ?? 'A current siren of the same output (see Outdoor Warning Sirens)'],
+      service: ['Lock out the siren and wear hearing protection before climbing.', 'Check motor brushes, bearings, rotator and contactors; parts for older units may come only from the maker or salvage.', 'AC-only units give no warning in a power outage: plan a DC/battery replacement.'] } : undefined;
+    return { id: `siren-${m.id}`, category: 'Mass notification', sub: 'Outdoor warning siren', brand: m.maker, model: m.model, kind: P,
+      specs: { ...(legacy ? { 'Status': legacy.status } : {}), 'Device type': m.kind, 'Candela / dB': m.dbc100 != null ? `${m.dbc100} dBC at 100 ft (rated)` : 'See datasheet', 'Signals': m.signals, 'Voice': m.voice ? 'Yes' : 'No', 'Power': m.power, 'Years': m.years },
+      reference: SIREN_SOURCES[m.src]?.[1], notes: [m.notes, 'Rated output as published; confirm on the maker’s datasheet. Plan coverage on Outdoor Warning Sirens.'].filter(Boolean).join(' '), legacy };
+  });
+}
+export function builtInSpecs(): SpecItem[] { return [...builtFromCatalog(), ...LV_CATALOG, ...LEGACY, ...sirenSpecs(), ...STANDARDS, ...LV_TYPICAL, ...bodySpecs()]; }

@@ -153,6 +153,8 @@ export interface Project {
   signalReadings?: import('./engine/signal').SignalReading[];
   /** Installed equipment logged by its barcode or QR tag, with PM and service history. */
   assets?: import('./engine/assets').Asset[];
+  /** Outdoor warning sirens: planned / existing sirens, coverage settings, test program and test log (Outdoor Warning Sirens page). */
+  sirens?: import('./engine/sirens').SirenPlan;
   /** NOAA weather for the project site (saved by the Weather page): conditions, 7-day low/high/wind, alerts and work-day notes. */
   weather?: import('./engine/weather').ProjectWeather;
   /** Floor plans imported from PDF, DXF or image files (Floor Plan to 2D / 3D), one per floor. */

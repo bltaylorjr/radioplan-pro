@@ -1,3 +1,11 @@
+# LvPlan Pro 1.5.79
+
+- **Outdoor Warning Sirens** (Design: low-voltage systems): plan outdoor siren coverage on the map with the FEMA CPG 1-17 method (background noise + 10 dB, loss per doubling of distance by surroundings), check the level at any spot, and see each siren's reach, hearing-safety distance (123 dBC) and warnings (too low, too loud, mounted too low, legacy, AC only).
+- **Siren database:** over 50 current and legacy sirens (Federal Signal, Whelen, American Signal, Sentry, ATI, ACA) with type, rated dBC at 100 ft, signals, power, years, replacements and the source of each figure. Also in the Specifications Library under Mass notification → Outdoor warning siren.
+- **Codes, laws and ordinances for the address:** federal (NFPA 72 Ch. 24, NFPA 1225, IPAWS, FCC Part 90, NRC nuclear plant rules, OSHA), FEMA CPG 1-17 and the 2006 technical bulletin, state emergency management and dam safety laws for NC, SC, GA, TN and VA, and local rules (Asheville noise ordinance, Buncombe and other western NC flood siren programs, Hamilton and Sevier County TN test days), each with its source. Nuclear plant 10-mile zone notice.
+- **Siren tests:** signals, eight test procedures with pass criteria, five test programs (community, monitored, flood, nuclear zone, campus), a schedule and log per siren with overdue tests in red, and one button to add siren acceptance tests to Final Testing.
+- Works offline; the siren list, codes and test programs refresh online as a content pack.
+
 # LvPlan Pro 1.5.78
 
 - **New introduction video** (▶ Video): every tool gets about half a minute, in menu order, so each one is covered evenly, all in one narrator's voice, with street-level maps filled in.
