@@ -15,6 +15,7 @@ import { ANTENNAS, FEEDERS, RADIOS, PV_MODULES, BAND_PRESETS } from '../data/cat
 import { MFR_RECS } from '../data/mfrrecs';
 import { LV_CATALOG, LEGACY } from '../data/lvequipment';
 import { BUILTIN_NOTICES } from '../data/recalls';
+import { SIREN_MODELS, SIREN_SOURCES, SIREN_CODES, SIREN_TEST_KINDS, SIREN_PROGRAMS, SIREN_SIGNALS, NUCLEAR_PLANTS } from '../data/sirens';
 import { HELP } from '../help/content';
 import { getMagModel, setMagModel } from './azimuth';
 
@@ -40,6 +41,7 @@ export const PACKS: PackDef[] = [
   { name: 'catalog', label: 'Equipment catalog', restartOnly: true, ...bundle({ ANTENNAS, FEEDERS, RADIOS, PV_MODULES, BAND_PRESETS }) },
   { name: 'lvequipment', label: 'Low-voltage and legacy equipment', restartOnly: true, ...bundle({ LV_CATALOG, LEGACY }) },
   { name: 'recalls', label: 'Recall and service bulletin notices', notice: true, ...bundle({ BUILTIN_NOTICES }) },
+  { name: 'sirens', label: 'Outdoor siren database, codes and test programs', notice: true, ...bundle({ SIREN_MODELS, SIREN_SOURCES, SIREN_CODES, SIREN_TEST_KINDS, SIREN_PROGRAMS, SIREN_SIGNALS, NUCLEAR_PLANTS }) },
   { name: 'mfrrecs', label: 'Manufacturer recommendations', ...bundle({ MFR_RECS }) },
   { name: 'help', label: 'Help and manual', ...bundle({ HELP }) },
   { name: 'magnetic', label: 'Magnetic model (compass bearings)', get: getMagModel, apply: (d) => setMagModel(d as ReturnType<typeof getMagModel>) },

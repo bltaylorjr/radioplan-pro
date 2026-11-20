@@ -66,6 +66,14 @@ export function repairProject(input: unknown): { project: Project; fixes: string
   // Readings need a numeric signal; assets need their lists.
   if (Array.isArray(out.signalReadings)) out.signalReadings = (out.signalReadings as Record<string, unknown>[]).filter((r) => Number.isFinite(Number(r.dbm))).map((r) => ({ ...r, dbm: Number(r.dbm), session: String(r.session ?? 'Readings') }));
   if (Array.isArray(out.assets)) out.assets = (out.assets as Record<string, unknown>[]).map((a) => ({ ...a, tag: String(a.tag ?? ''), name: String(a.name ?? ''), photos: Array.isArray(a.photos) ? a.photos : [], history: Array.isArray(a.history) ? a.history : [], status: a.status ?? 'In service' }));
+  // Outdoor sirens: lists must be lists, sirens need a real position.
+  if (isObj(out.sirens)) {
+    const sr = out.sirens as Record<string, unknown>;
+    const units = Array.isArray(sr.units) ? (sr.units as unknown[]).filter(isObj) : [];
+    sr.units = units.filter((u) => Number.isFinite(Number(u.lat)) && Number.isFinite(Number(u.lon))).map((u, i) => ({ ...u, id: String(u.id ?? `siren${i}`), name: String(u.name ?? `Siren ${i + 1}`), modelId: String(u.modelId ?? ''), lat: Number(u.lat), lon: Number(u.lon), heightFt: Number.isFinite(Number(u.heightFt)) ? Number(u.heightFt) : 50 }));
+    if ((sr.units as unknown[]).length < units.length) fixes.push('A siren with bad coordinates was removed');
+    sr.tests = Array.isArray(sr.tests) ? (sr.tests as unknown[]).filter(isObj) : [];
+  } else if (out.sirens !== undefined) { delete out.sirens; fixes.push('Damaged siren plan removed'); }
   // Older default sites sat in Charlotte; move untouched ones to the project's town (or the Asheville default).
   const OLD: Record<string, [number, number]> = { A: [35.2271, -80.8431], B: [35.2896, -80.734] };
   const mm = out.meta as { city?: string; state?: string; siteAddress?: string };

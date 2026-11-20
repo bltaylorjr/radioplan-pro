@@ -123,7 +123,7 @@ export const SYSTEMS: LvSystem[] = [
     repair: ['Same as paging and fire alarm; check the autonomous control unit log.'],
     pm: [{ task: 'Functional test of MNS equipment and messages', every: 'Annually', ref: 'NFPA 72 Ch. 14 / 24' }],
     standards: ['NFPA 72 Chapter 24', 'UL 2572', 'UFC 4-021-01 (DoD projects)'],
-    calcs: ['spl', 'line70', 'spk-spacing', 'sti', 'rt60', 'horn-range', 'amp-size', 'spk-wire', 'fa-battery'], libCats: ['Mass notification', 'Paging & sound', 'Fire alarm'], pages: ['alarm', 'install', 'troubleshoot'] },
+    calcs: ['spl', 'line70', 'spk-spacing', 'sti', 'rt60', 'horn-range', 'amp-size', 'spk-wire', 'fa-battery'], libCats: ['Mass notification', 'Paging & sound', 'Fire alarm'], pages: ['alarm', 'sirens', 'install', 'testing', 'troubleshoot'] },
   { id: 'callbox', label: 'Wireless Emergency Call Boxes', icon: '🆘', summary: 'Blue-light emergency phones and call boxes on cellular or radio, often solar powered.',
     plan: ['Place boxes so one is in sight from the next on paths and in parking areas.', 'Check cellular signal at each spot or plan a radio link.', 'Size solar and battery for winter sun and the call load.'],
     install: ['Set pole foundations per the maker; ground the pole.', 'Mount the box at ADA reach height (48 in max to the button).', 'Program the call destination and location message.'],

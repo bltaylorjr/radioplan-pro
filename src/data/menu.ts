@@ -58,6 +58,7 @@ export const MENU_PAGES: MenuPage[] = [
   { id: 'models', label: '2D & 3D Models with Layers', group: 'lv', keywords: 'layers 2d 3d plan model building materials walls floors glass concrete block brick rf loss echo fire rating firestop camera view heat map scenario dxf' },
   { id: 'campus', label: 'Multi-Building Site & Campus', group: 'lv', keywords: 'campus site multi building outbuilding fiber underground aerial conduit handhole pole wireless bridge point to point fresnel cable schedule site plan bom' },
   { id: 'alarm', label: 'Fire Alarm & Batteries', group: 'lv', keywords: 'nfpa 72 battery standby nac voltage drop mass notification' },
+  { id: 'sirens', label: 'Outdoor Warning Sirens', group: 'lv', keywords: 'outdoor warning siren sirens tornado siren flood siren mass notification wide area giant voice speaker array federal signal whelen american signal sentry ati acoustic coverage dbc 100 ft cpg 1-17 fema ipaws nfpa 72 chapter 24 nfpa 1225 1221 noise ordinance siren test schedule growl test silent test monthly test legacy siren nuclear epz dam' },
   { id: 'erces', label: 'Emergency Radio (ERCES / BDA)', group: 'lv', keywords: 'bda das public safety donor antenna aim' },
   { id: 'indoor', label: 'Indoor Coverage & DAS', group: 'lv', keywords: 'indoor walls floor plan das antennas' },
   { id: 'solar', label: 'Solar & DC Power', group: 'lv', keywords: 'solar panel battery charge controller call box' },
