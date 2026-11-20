@@ -13,6 +13,8 @@ import { askDelete } from '../components/askConfirm';
 import { PinsPanel, drawCanvasPin, type PinRow } from '../components/ReadingPins';
 import { normFor, pinColor, fmtQ, type BPoint, type BSource, type ReadingPin } from '../engine/balance';
 import { useUnits } from '../units';
+import { IndoorSoundPlanner } from '../components/IndoorSoundPlanner';
+import { currentUser } from '../engine/accounts';
 
 type Tool = 'wall' | 'antenna' | 'erase' | 'pin';
 const INDOOR_PIN_SYSTEMS = ['erces', 'das', 'wifi', 'callbox', 'security', 'access'];
@@ -41,9 +43,9 @@ export function IndoorPage() {
   const pinPoints: BPoint[] = useMemo(() => pins.map((r) => { const v = perAnt(r.x, r.y); const bi = v.length ? v.indexOf(Math.max(...v)) : -1; return { id: r.id, v: r.v, pred: bi >= 0 ? v[bi] : null, x: r.x, y: r.y, critical: r.critical, src: bi >= 0 ? d.antennas[bi].id : undefined }; }), [p.readingPins, d.antennas, d.walls, d.fMHz, d.rxGainDbi, pinSys]); // eslint-disable-line react-hooks/exhaustive-deps
   const pinSources: BSource[] = d.antennas.map((a) => ({ id: a.id, label: a.label, x: a.x, y: a.y }));
   const pinWhere = (x: number, y: number) => `${u.len(x, 0)} from the left and ${u.len(y, 0)} from the top`;
-  const pinRows: PinRow[] = pins.map((r) => ({ id: r.id, v: r.v, pred: predAt(r.x, r.y), where: pinWhere(r.x, r.y), at: r.at, note: r.note, photo: r.photo, critical: r.critical }));
+  const pinRows: PinRow[] = pins.map((r) => ({ id: r.id, v: r.v, pred: predAt(r.x, r.y), where: pinWhere(r.x, r.y), at: r.at, note: [r.by ? `by ${r.by}` : '', r.note ?? ''].filter(Boolean).join(' · ') || undefined, photo: r.photo, critical: r.critical }));
   const savePin = (dr: { v: number; note?: string; photo?: string; critical?: boolean }) => {
-    if (!pinAt) return; const pin: ReadingPin = { id: uid(), at: new Date().toISOString(), map: 'indoor', system: pinSys, qty: 'dbm', v: dr.v, x: pinAt.x, y: pinAt.y, ...(dr.note ? { note: dr.note } : {}), ...(dr.photo ? { photo: dr.photo } : {}), ...(dr.critical ? { critical: true } : {}) };
+    if (!pinAt) return; const pin: ReadingPin = { id: uid(), at: new Date().toISOString(), map: 'indoor', system: pinSys, qty: 'dbm', v: dr.v, x: pinAt.x, y: pinAt.y, ...(dr.note ? { note: dr.note } : {}), ...(dr.photo ? { photo: dr.photo } : {}), ...(dr.critical ? { critical: true } : {}), ...(currentUser()?.name ? { by: currentUser()!.name } : {}) };
     update((q) => { q.readingPins = [...(q.readingPins ?? []), pin]; }); setPinAt(null);
   };
   const PX = 900, scale = PX / d.widthM, PY = d.heightM * scale;
@@ -103,9 +105,35 @@ export function IndoorPage() {
   const up = () => { if (drag && Math.hypot(drag.x2 - drag.x, drag.y2 - drag.y) > 0.3) update((q) => { q.indoor.walls.push({ x1: drag.x, y1: drag.y, x2: drag.x2, y2: drag.y2, material: q.indoor.currentMaterial }); }); setDrag(null); };
   const onPlan = (f?: File) => { if (!f) return; const r = new FileReader(); r.onload = () => set('floorPlanDataUrl', r.result as string); r.readAsDataURL(f); };
   const p1238 = p1238LossDb(d.fMHz, 20, d.env, d.floors);
+  const mode = d.mode ?? 'rf';
+  const modeBar = (
+    <div className="row wrap toolbar" role="tablist" aria-label="What are you planning" data-tour="in-mode">
+      <b>Plan:</b>
+      <button className={mode === 'rf' ? 'primary' : ''} aria-pressed={mode === 'rf'} onClick={() => set('mode', 'rf')}>📡 Radio signal (DAS, ERCES, Wi-Fi, wireless)</button>
+      <button className={mode === 'sound' ? 'primary' : ''} aria-pressed={mode === 'sound'} onClick={() => set('mode', 'sound')}>🔊 Sound (paging, voice evacuation, fire alarm horns)</button>
+    </div>
+  );
+  const team = p.team && p.team.members.length > 1 ? p.team : null;
+  const shared = team && <p className="note small" data-tour="in-shared">👥 Shared project with {team.members.filter((m) => m.id !== currentUser()?.id).map((m) => m.name).join(', ')}. Walls, antennas, speakers, reading pins and STIPA readings each of you adds on this floor plan merge in by themselves; each pin shows who dropped it.</p>;
+  if (mode === 'sound') return (
+    <div className="stack">
+      <Card title="Indoor planner" tour="in-tools">
+        {modeBar}
+        <div className="form">
+          <Field label="Building width × depth"><span className="row"><Num value={d.widthM} onChange={(v) => set('widthM', Math.max(5, v!))} unit="m" />×<Num value={d.heightM} onChange={(v) => set('heightM', Math.max(5, v!))} unit="m" /></span></Field>
+          <Field label="Floor plan image"><span className="row"><input type="file" accept="image/*" onChange={(e) => onPlan(e.target.files?.[0])} />{d.floorPlanDataUrl && <button onClick={() => set('floorPlanDataUrl', undefined)}>Remove</button>}</span></Field>
+        </div>
+        <p className="small muted">The same floor plan and walls are used for radio and sound. Switch back to 📡 Radio signal for DAS and ERCES antennas.</p>
+        {shared}
+      </Card>
+      <IndoorSoundPlanner d={d} PX={PX} />
+    </div>
+  );
   return (
     <div className="stack">
       <Card title="Indoor planner" tour="in-tools">
+        {modeBar}
+        {shared}
         <div className="form">
           <Field label="Frequency"><Num value={d.fMHz} onChange={(v) => set('fMHz', v!)} unit="MHz" /><RrFreqPicker onPick={(f) => set('fMHz', f)} /></Field>
           <Field label="Building width × depth"><span className="row"><Num value={d.widthM} onChange={(v) => set('widthM', Math.max(5, v!))} unit="m" />×<Num value={d.heightM} onChange={(v) => set('heightM', Math.max(5, v!))} unit="m" /></span></Field>

@@ -1,6 +1,6 @@
 {
   "name": "radioplan",
-  "version": "1.5.81",
+  "version": "1.5.82",
   "private": true,
   "type": "module",
   "description": "LvPlan Pro - radio site and equipment planning workstation (multi-user sign-in)",

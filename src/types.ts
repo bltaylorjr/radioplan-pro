@@ -99,6 +99,10 @@ export interface IndoorAntenna { id: string; x: number; y: number; eirpDbm: numb
 export interface IndoorDesign {
   fMHz: number; widthM: number; heightM: number; walls: Wall[]; antennas: IndoorAntenna[]; floorPlanDataUrl?: string; env: 'residential' | 'office' | 'commercial';
   targetDbm: number; rxGainDbi: number; currentMaterial: string; floors: number;
+  /** What the planner shows: radio signal (default) or sound (speakers and horns). */
+  mode?: 'rf' | 'sound';
+  /** Speakers, horns, STIPA readings and sound settings on this floor plan. */
+  sound?: import('./engine/indoorSound').IndoorSound;
 }
 export interface TestRecord { id: string; item: string; standard: string; expected: string; measured: string; pass: boolean | null; date: string; tech: string; notes: string }
 

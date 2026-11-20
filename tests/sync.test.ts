@@ -32,6 +32,24 @@ describe('sync', () => {
     const { project: m2 } = mergeProjects(phone, base, 3000);
     expect(m2.sites.map((s) => s.id).sort()).toEqual(['A', 'C']); expect(m2.radio.txPowerDbm).toBe(40); expect(m2.company.name).toBe('Field Co');
   });
+  it('shared floor plans keep everyone\'s pins, speakers and STIPA readings', () => {
+    const base = stamp(defaultProject(), 'pc', 1000);
+    const phone = structuredClone(base); phone.sync!.deviceId = 'phone';
+    base.readingPins = [{ id: 'p1', at: 'a', map: 'indoor', system: 'das', qty: 'dbm', v: -80, x: 1, y: 1, by: 'Ann' }];
+    base.indoor.sound = { system: 'massnotif', occupancy: 'public', ambientDba: 55, ceilingM: 2.7, rt60: 1, speakers: [{ id: 's1', label: 'SPK-1', x: 2, y: 2, kind: 'ceiling', watts: 1, ref: 89 }], sti: [], currentKind: 'ceiling', currentWatts: 1 };
+    stamp(base, 'pc', 2000);
+    phone.readingPins = [{ id: 'p2', at: 'b', map: 'indoor', system: 'massnotif', qty: 'dba', v: 72, x: 3, y: 3, by: 'Bo' }];
+    phone.indoor.sound = { system: 'massnotif', occupancy: 'public', ambientDba: 55, ceilingM: 2.7, rt60: 1, speakers: [{ id: 's2', label: 'SPK-2', x: 5, y: 5, kind: 'ceiling', watts: 1, ref: 89 }], sti: [{ id: 't1', x: 4, y: 4, sti: 0.52, at: 'c' }], currentKind: 'ceiling', currentWatts: 1 };
+    stamp(phone, 'phone', 2500);
+    for (const m of [mergeProjects(base, phone, 3000).project, mergeProjects(phone, base, 3000).project]) {
+      expect(m.readingPins!.map((x) => x.id).sort()).toEqual(['p1', 'p2']);
+      expect(m.indoor.sound!.speakers.map((x) => x.id).sort()).toEqual(['s1', 's2']);
+      expect(m.indoor.sound!.sti.length).toBe(1);
+    }
+    // an older copy with no indoor sound plan merges without errors
+    const old = stamp(defaultProject(), 'old', 1000); old.sync!.projectId = base.sync!.projectId;
+    expect(mergeProjects(old, base, 4000).project.indoor.sound!.speakers.length).toBe(1);
+  });
   it('packs codes and reads packages', async () => {
     const o = { sdp: 'v=0\r\n'.repeat(50), t: 'offer' };
     expect(await unpackCode(await packCode(o))).toEqual(o);
