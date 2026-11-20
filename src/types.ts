@@ -111,6 +111,8 @@ export interface Project {
   runLog: RunRecord[]; scenarios: Scenario[]; wifi: WifiSurvey;
   /** Sync bookkeeping (per-section change times, deletions). Managed automatically. */
   sync?: SyncMeta;
+  /** Shared project: the users working on it together (Users & Sign-in → Work together). */
+  team?: { id: string; members: { id: string; name: string; device?: string }[]; owner?: string };
   /** Checked magnetic field and space weather values for Site A, kept up to date automatically (engine/magproject.ts). */
   magnetic?: ProjectMagnetic;
   /** Library equipment used in this project (antennas, feeders, radios). */

@@ -20,6 +20,8 @@ import { CHECKLISTS, checklistFor, progressOf } from './data/checklists';
 import { readBackup } from './engine/projectdb';
 import { Updater } from './components/Updater';
 import { Maintainer } from './components/Maintainer';
+import { TeamSync } from './components/TeamSync';
+import { currentUser } from './engine/accounts';
 import { Welcome } from './components/Welcome';
 import { ClearPageButton, UndoClearBar } from './components/ClearPage';
 import type { Project } from './types';
@@ -60,6 +62,7 @@ const WifiSurveyPage = page(() => import('./pages/WifiSurvey'), 'WifiSurveyPage'
 const CalculatorsPage = page(() => import('./pages/Calculators'), 'CalculatorsPage');
 const TheoryPage = page(() => import('./pages/Theory'), 'TheoryPage');
 const SyncPage = page(() => import('./pages/Sync'), 'SyncPage');
+const UsersPage = page(() => import('./pages/Users'), 'UsersPage');
 const ProjectsPage = page(() => import('./pages/Projects'), 'ProjectsPage');
 const SpecLibraryPage = page(() => import('./pages/SpecLibrary'), 'SpecLibraryPage');
 const InstallPage = page(() => import('./pages/Install'), 'InstallPage');
@@ -152,6 +155,7 @@ export const PAGE_ELEMENTS: Record<string, React.ReactNode> = {
   mappacks: <OfflineArea />,
   projects: <ProjectsPage />,
   sync: <SyncPage />,
+  users: <UsersPage />,
   settings: <SettingsPage />,
 };
 
@@ -294,6 +298,7 @@ export default function App() {
       <PlanPipHost />
       <Updater />
       <Maintainer />
+      <TeamSync />
       {welcome && !video && <Welcome onClose={() => setWelcome(false)} onHelp={() => setHelpOpen(true)} />}
       <header className="topbar">
         <button className="ghost menu" onClick={() => setNavOpen(!navOpen)} aria-label="Menu">☰</button>
@@ -306,6 +311,7 @@ export default function App() {
         {devs.roles.length > 0 && <a href="#devices" className="chip on" title={devs.roles.map((r) => `${ROLE_LABEL[r]}: ${devs.state(r)?.name}`).join('\n')} onClick={(e) => { e.preventDefault(); go('devices'); }}>🔵 {devs.roles.length} device{devs.roles.length > 1 ? 's' : ''}</a>}
         <div className="proj">{project.company.name && <span className="muted">{project.company.name} · </span>}{project.meta.name} <span className="muted">({project.meta.state})</span></div>
         <div className="top-actions">
+          {currentUser() && <button className="chip user" onClick={() => go('users')} title="Signed in. Open Users & Sign-in to sign out, switch user or share this project" data-tour="user-chip">👤 {currentUser()!.name}{project.team ? ' 🤝' : ''}</button>}
           <span className={'chip save ' + lib.saveState} title={lib.saveError || 'Projects save automatically in the app'}>{{ loading: '… Opening', saving: '● Saving', saved: '✓ Saved', error: '⚠ Not saved', unavailable: 'File only' }[lib.saveState]}</span>
           <button onClick={() => go('projects')} title="All projects stored in the app">Projects</button>
           <button onClick={open} title="Import a .radioplan.json project file into the app">Open file</button>
