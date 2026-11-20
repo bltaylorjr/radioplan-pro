@@ -1,9 +1,9 @@
 {
   "name": "radioplan",
-  "version": "1.5.78",
+  "version": "1.5.79",
   "private": true,
   "type": "module",
-  "description": "LvPlan Pro - radio site and equipment planning workstation (single-user)",
+  "description": "LvPlan Pro - radio site and equipment planning workstation (multi-user sign-in)",
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build && vite-node scripts/build-content.ts dist/content",
@@ -36,6 +36,7 @@
     "@types/react-dom": "^18.3.1",
     "@types/three": "^0.187.0",
     "@vitejs/plugin-react": "^4.3.4",
+    "fake-indexeddb": "^6.2.8",
     "topojson-client": "^3.1.0",
     "typescript": "^5.6.3",
     "us-atlas": "^3.0.1",

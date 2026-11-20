@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import qrcode from 'qrcode-generator';
 import jsQR from 'jsqr';
-import { useStore, deviceInfo, setDeviceName, downloadText, safeName } from '../store';
+import { useStore, deviceInfo, deviceOnly, setDeviceName, downloadText, safeName } from '../store';
 import { Card, Stat } from '../components/ui';
 import { mergeProjects, fromPackage, stampSync, toPackage, MergeReport } from '../engine/sync';
 import { hostLink, joinLink, exchange, DirectLink, canShareFiles, shareProject, folderSyncSupported, pickSyncFolder, savedSyncFolder, forgetSyncFolder, folderPermission, folderRound } from '../engine/syncTransport';
@@ -47,7 +47,7 @@ type Phase = 'idle' | 'host-wait' | 'join-show' | 'connected' | 'done';
 export function SyncPage() {
   const { project: p, replace } = useStore();
   const dev = deviceInfo();
-  const [name, setName] = useState(dev.name);
+  const [name, setName] = useState(deviceOnly().name);
   const [msg, setMsg] = useState('');
   const [report, setReport] = useState<MergeReport | null>(null);
   // direct link
@@ -101,7 +101,7 @@ export function SyncPage() {
   };
   useEffect(() => { if (!folder || !folderOk) return; round(); const iv = setInterval(round, 60000); return () => clearInterval(iv); }, [folder, folderOk]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const importFile = async (f?: File) => { if (!f) return; try { await applyRemote(fromPackage(await f.text()), `file ${f.name}`); } catch (e) { setMsg(`Could not read ${f.name}: ${(e as Error).message}`); } };
+  const importFile = async (f?: File) => { if (!f) return; if (/"format":"lvplan-protected/.test((await f.text()).slice(0, 200))) { setMsg(`${f.name} is a locked copy. Open it in Users & Sign-in → Coworkers on other devices, with the file password.`); return; } try { await applyRemote(fromPackage(await f.text()), `file ${f.name}`); } catch (e) { setMsg(`Could not read ${f.name}: ${(e as Error).message}`); } };
   const fileName = `${safeName(p.meta.name)}.${dev.id}.rpsync.json`;
   const peers = Object.entries(p.sync?.peers ?? {});
 

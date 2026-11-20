@@ -1,3 +1,12 @@
+# LvPlan Pro 1.5.79
+
+- **Users and sign-in** (Projects & settings → **Users & Sign-in**): more than one person can use the app, each with their own private projects, history, library, contacts and settings. Sign-in is **off** until you turn it on, so nothing changes until then. The first user is the owner, keeps every project already in the app, and can add and remove users.
+- **Private for each user:** each person's data is locked (AES-256 encryption) with their own key on this device. Other users cannot open it, not even the owner. Works fully offline.
+- **Sign in with a PIN, password, fingerprint or face:** the Android app uses the phone's fingerprint sensor; the Windows app and the online version use Windows Hello or the phone's screen lock. The PIN or password always works. After 5 wrong tries the app waits before the next try.
+- **Forgot PIN or password:** reset it on the sign-in screen with your fingerprint or the **recovery code** shown when the user was made (print it or write it down). **New recovery code** makes a fresh one.
+- **Work together:** share a project with other users on the same device; each keeps a full offline copy and changes are merged by themselves (newest change for each part, lists combined). For coworkers on other devices, save a **copy locked with a file password** and open theirs to merge it back. Online sync is planned for later.
+- Notes, service calls and asset history now record the signed-in user's name.
+
 # LvPlan Pro 1.5.78
 
 - **New introduction video** (▶ Video): every tool gets about half a minute, in menu order, so each one is covered evenly, all in one narrator's voice, with street-level maps filled in.

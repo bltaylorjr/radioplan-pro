@@ -37,7 +37,7 @@ export const MENU_GROUPS: MenuGroup[] = [
   { id: 'repair', title: 'Service, troubleshooting & repair', hint: 'Service and PM visits, finding faults and fixing them.', steps: true },
   { id: 'closeout', title: 'Reports & closeout', hint: 'The finished build, proposals, reports and the closeout package. Mark the project complete when it is done.', steps: true },
   { id: 'tools', title: 'Tools & reference', hint: 'Calculators, meters and analyzers, directions, contacts, weather and training. Open any time.', steps: false },
-  { id: 'files', title: 'Projects & settings', hint: 'Saved projects, backups, updates, syncing devices and your settings.', steps: false },
+  { id: 'files', title: 'Projects & settings', hint: 'Saved projects, backups, updates, users and sign-in, syncing devices and your settings.', steps: false },
 ];
 
 export const MENU_PAGES: MenuPage[] = [
@@ -105,6 +105,7 @@ export const MENU_PAGES: MenuPage[] = [
   { id: 'theory', label: 'Low-Voltage & RF Design Principles', group: 'tools', keywords: 'training basics theory learn low voltage principles rf radio frequency propagation antennas link budget decibels modulation transmission lines vswr fresnel interference noise shielding emi power design concepts' },
 
   { id: 'projects', label: 'Projects & Storage', group: 'files', keywords: 'save open backup history delete check for updates automatic care' },
+  { id: 'users', label: 'Users & Sign-in', group: 'files', keywords: 'login log in sign in sign out user users account accounts password pin fingerprint face windows hello biometric touch id recovery code forgot reset password private lock encrypt share collaborate work together team coworker' },
   { id: 'sync', label: 'Sync Devices', group: 'files', keywords: 'sync phone tablet share qr bluetooth' },
   { id: 'settings', label: 'User Settings', group: 'files', keywords: 'settings turn tools on off hide show data check preferences radioreference app key' },
 ];

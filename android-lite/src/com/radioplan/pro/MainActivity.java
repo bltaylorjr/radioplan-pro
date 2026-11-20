@@ -57,6 +57,7 @@ public class MainActivity extends Activity {
     byte[] pendingSave;
     String geoOrigin; GeolocationPermissions.Callback geoCallback;
     PermissionRequest camRequest;
+    Fingerprint finger;
 
     @Override protected void onCreate(Bundle state) {
         super.onCreate(state);
@@ -177,6 +178,16 @@ public class MainActivity extends Activity {
 
     /** Called from the page: window.RadioPlanAndroid.saveFile / shareFile. */
     class Bridge {
+        /** Fingerprint sign-in (see Fingerprint.java). Results come back through window.__lvBio(id, ok, payload). */
+        @JavascriptInterface public String bioAvailable() { return fp().available(); }
+        @JavascriptInterface public void bioEnroll(final String id, final String alias, final String dataKeyB64) {
+            runOnUiThread(new Runnable() { public void run() { fp().enroll(safeAlias(alias), dataKeyB64, bioDone(id)); } });
+        }
+        @JavascriptInterface public void bioUnlock(final String id, final String alias, final String iv, final String ct) {
+            runOnUiThread(new Runnable() { public void run() { fp().unlock(safeAlias(alias), iv, ct, bioDone(id)); } });
+        }
+        @JavascriptInterface public void bioCancel() { runOnUiThread(new Runnable() { public void run() { fp().stop(); } }); }
+        @JavascriptInterface public void bioRemove(String alias) { fp().remove(safeAlias(alias)); }
         /** The phone's own signal for the Live Signal Readings page: every cell heard (dBm) and the Wi-Fi link. */
         @JavascriptInterface public String phoneSignal() {
             JSONObject out = new JSONObject();
@@ -313,6 +324,15 @@ public class MainActivity extends Activity {
             final String js = "window.__lanDone&&window.__lanDone('" + id.replaceAll("[^A-Za-z0-9]", "") + "'," + ok + ",'" + Base64.encodeToString(out, Base64.NO_WRAP) + "')";
             runOnUiThread(new Runnable() { public void run() { web.evaluateJavascript(js, null); } });
         }}).start();
+    }
+
+    Fingerprint fp() { if (finger == null) finger = new Fingerprint(this); return finger; }
+    static String safeAlias(String a) { return "lvplan." + (a == null ? "" : a).replaceAll("[^A-Za-z0-9.]", ""); }
+    Fingerprint.Done bioDone(final String id) {
+        return new Fingerprint.Done() { public void done(boolean ok, String payload) {
+            final String js = "window.__lvBio&&window.__lvBio('" + id.replaceAll("[^A-Za-z0-9_-]", "") + "'," + ok + ",'" + (payload == null ? "" : payload.replaceAll("[^A-Za-z0-9+/=:{}\",. ()-]", "").replace("'", "")) + "')";
+            runOnUiThread(new Runnable() { public void run() { web.evaluateJavascript(js, null); } });
+        }};
     }
 
     @Override public void onBackPressed() { if (web.canGoBack()) web.goBack(); else super.onBackPressed(); }
