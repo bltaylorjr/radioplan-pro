@@ -9,9 +9,10 @@ from capline import render as render_line, cmaps, FONTS
 
 OLD, NARR, REC, OUT = sys.argv[1:5]; CRF = sys.argv[5] if len(sys.argv) > 5 else '26'
 SR = 44100; TMP = tempfile.mkdtemp(prefix='tour')
-SCRIPT = {x['id']: x for x in json.load(open('/home/claude/radioplan-pro/scripts/tour-script.json'))}
+SCRIPT = {x['id']: x for x in json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'tour-script.json')))}
 FONT_B = '/usr/share/fonts/opentype/inter/Inter-Bold.otf'
-INTRO_END, OUTRO_START = 55.57, 2319.73
+# Opening and closing cards in the old video (the 1.5.78 tour: 55.57 and 1305.85)
+INTRO_END, OUTRO_START = float(os.environ.get('INTRO_END', '55.57')), float(os.environ.get('OUTRO_START', '1305.85'))
 run = lambda *a: subprocess.run(a, check=True)
 VENC = ['-c:v', 'libx264', '-preset', 'medium', '-crf', CRF, '-pix_fmt', 'yuv420p', '-r', '30', '-g', '120']
 AENC = ['-c:a', 'aac', '-b:a', '96k', '-ar', str(SR), '-ac', '2']

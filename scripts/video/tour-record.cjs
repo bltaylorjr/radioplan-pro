@@ -3,7 +3,7 @@
 const L = require('./rec-lib.cjs'); const { go, click, scrollTo, sleep } = L;
 const fs = require('fs'), path = require('path');
 const [NARR, OUT, FROM, TO] = process.argv.slice(2);
-const SCRIPT = JSON.parse(fs.readFileSync('/home/claude/radioplan-pro/scripts/tour-script.json', 'utf8'));
+const SCRIPT = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'tour-script.json'), 'utf8'));
 const wavSec = (id) => { const b = fs.readFileSync(path.join(NARR, id + '.wav')); return b.readUInt32LE(40) / b.readUInt32LE(28); };
 const GAP = 0.9;
 
@@ -42,6 +42,32 @@ const ACT = {
   't.models': async (pg) => { await sleep(2500); await smoothScroll(pg, 16000, 2000); },
   't.spectrum': async (pg) => { await sleep(2500); await click(pg, 'button:has-text("Use test signals")'); await sleep(1000); await scrollTo(pg, '.sa-trace'); await click(pg, 'button:has-text("Run")'); await sleep(9000); await click(pg, 'button:has-text("Stop")'); await smoothScroll(pg, 6000, 900); },
   't.audio': async (pg) => { await sleep(2000); await click(pg, 'button:has-text("Start input")'); await sleep(3000); await scrollTo(pg, '.au-big'); await sleep(8000); await smoothScroll(pg, 6000, 900); },
+  't.sirens': async (pg) => {
+    await sleep(2500); await scrollTo(pg, '[data-tour="siren-plan"]'); await sleep(1200); await click(pg, 'button:has-text("Tap map to place")'); await sleep(800);
+    const m = await pg.locator('[data-tour="siren-plan"] .leaflet-container').first().boundingBox().catch(() => null);
+    if (m) { for (const [dx, dy] of [[-120, -40], [140, 60]]) { await pg.mouse.click(m.x + m.width / 2 + dx, m.y + m.height / 2 + dy); await sleep(1800); } }
+    await sleep(2500); await smoothScroll(pg, 9000, 1800);
+  },
+  't.indoorsound': async (pg) => {
+    await sleep(1200); await click(pg, 'button:has-text("Sound (paging")'); await sleep(2000); await scrollTo(pg, '[data-tour="in-sound-canvas"]'); await sleep(800);
+    const c = await pg.locator('[data-tour="in-sound-canvas"] canvas').first().boundingBox().catch(() => null);
+    if (c) { for (const [fx, fy] of [[0.25, 0.3], [0.7, 0.3], [0.25, 0.72], [0.7, 0.72]]) { await pg.mouse.click(c.x + c.width * fx, c.y + c.height * fy); await sleep(900); } }
+    await sleep(3000); await click(pg, 'button:has-text("Speech clarity")'); await sleep(4500); await click(pg, 'button:has-text("Sound level")'); await sleep(1000);
+    await smoothScroll(pg, 8000, 1600);
+  },
+  't.pins': async (pg) => {
+    await sleep(1500); await click(pg, 'button:has-text("Run coverage prediction")'); await sleep(5000); await scrollTo(pg, '.leaflet-container'); await pg.evaluate(() => window.scrollBy(0, -150)); await sleep(1200);
+    await click(pg, '[data-tour="pins-open"]'); await sleep(1500);
+    const m = await pg.locator('.leaflet-container').first().boundingBox().catch(() => null);
+    if (m) { await pg.mouse.click(m.x + m.width * 0.6, m.y + m.height * 0.45); await sleep(1500); }
+    const v = pg.locator('[data-tour="pins-form"] input').first(); await v.scrollIntoViewIfNeeded().catch(() => {}); await pg.evaluate(() => window.scrollBy(0, 160)); await sleep(800); await v.fill('').catch(() => {}); await v.type('-97', { delay: 150 }).catch(() => {}); await sleep(600); const nt = pg.locator('[data-tour="pins-form"] input[aria-label="Note"]'); await nt.type('Lobby, by the elevator', { delay: 60 }).catch(() => {}); await sleep(800);
+    await click(pg, 'button:has-text("Save pin")'); await sleep(2500); await smoothScroll(pg, 9000, 1200);
+  },
+  't.users': async (pg) => {
+    await sleep(2500); const n = pg.locator('[data-tour="users-name"]'); await n.click().catch(() => {}); await n.type('Pat', { delay: 140 }).catch(() => {}); await sleep(600);
+    for (const f of await pg.locator('[data-tour="users-enable"] input[type="password"]').all()) { await f.type('482916', { delay: 90 }).catch(() => {}); await sleep(300); }
+    await sleep(1200); await click(pg, 'button:has-text("Turn on sign-in")'); await sleep(6000); await pg.getByRole('checkbox', { name: /wrote it down/ }).first().check({ timeout: 2000 }).catch((e) => console.warn('wrote', e.message.split('\n')[0])); await sleep(1000); await click(pg, 'button:has-text("Done")'); await sleep(1500); await click(pg, '.toast button:has-text("OK"), button:has-text("OK")'); await smoothScroll(pg, 9000, 1600);
+  },
   't.reports': async (pg) => { await sleep(2500); await smoothScroll(pg, 9000, 900); await scrollTo(pg, '.project-complete'); await sleep(5000); },
 };
 
