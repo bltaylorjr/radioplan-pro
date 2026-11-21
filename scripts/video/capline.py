@@ -6,6 +6,8 @@ from fontTools.ttLib import TTFont
 FONTS = ['/usr/share/fonts/opentype/inter/Inter-SemiBold.otf', '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf',
          '/usr/share/fonts/truetype/freefont/FreeSerifBold.ttf', '/usr/share/fonts/truetype/freefont/FreeSerif.ttf']
 EMOJI = '/usr/share/fonts/truetype/noto/NotoColorEmoji.ttf'
+import os
+FONTS = [f for f in FONTS if os.path.exists(f)]
 cmaps = {f: TTFont(f, lazy=True, fontNumber=0).getBestCmap() for f in FONTS}
 def pick(ch):
     for f in FONTS:

@@ -1,3 +1,7 @@
+# LvPlan Pro 1.5.83
+
+- **New introduction video** covering everything up to 1.5.82: new tour sections for Outdoor Warning Sirens, indoor sound planning (speakers, horns, speech clarity), reading pins with signal balance advice, and Users & Sign-in. Fresh NOAA weather, radar and space weather pictures.
+
 # LvPlan Pro 1.5.82
 
 - **Indoor sound planning** (Indoor Coverage & DAS → **🔊 Sound**): place paging, pro sound and voice evacuation speakers or fire alarm horns on the same floor plan and walls as the radio planner. Pick the speaker type and tap (or the horn's high / medium / low setting) and see a **sound level heat map** in dBA at ear height through every wall, in 2D or 3D.
