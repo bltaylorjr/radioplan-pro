@@ -60,13 +60,13 @@ const ACT = {
     await click(pg, '[data-tour="pins-open"]'); await sleep(1500);
     const m = await pg.locator('.leaflet-container').first().boundingBox().catch(() => null);
     if (m) { await pg.mouse.click(m.x + m.width * 0.6, m.y + m.height * 0.45); await sleep(1500); }
-    const v = pg.locator('input[type="number"]:visible').last(); await v.fill('').catch(() => {}); await v.type('-97', { delay: 150 }).catch(() => {}); await sleep(800);
+    const v = pg.locator('[data-tour="pins-form"] input').first(); await v.scrollIntoViewIfNeeded().catch(() => {}); await pg.evaluate(() => window.scrollBy(0, 160)); await sleep(800); await v.fill('').catch(() => {}); await v.type('-97', { delay: 150 }).catch(() => {}); await sleep(600); const nt = pg.locator('[data-tour="pins-form"] input[aria-label="Note"]'); await nt.type('Lobby, by the elevator', { delay: 60 }).catch(() => {}); await sleep(800);
     await click(pg, 'button:has-text("Save pin")'); await sleep(2500); await smoothScroll(pg, 9000, 1200);
   },
   't.users': async (pg) => {
     await sleep(2500); const n = pg.locator('[data-tour="users-name"]'); await n.click().catch(() => {}); await n.type('Pat', { delay: 140 }).catch(() => {}); await sleep(600);
     for (const f of await pg.locator('[data-tour="users-enable"] input[type="password"]').all()) { await f.type('482916', { delay: 90 }).catch(() => {}); await sleep(300); }
-    await sleep(1200); await click(pg, 'button:has-text("Turn on sign-in")'); await sleep(7000); await click(pg, 'button:has-text("Done")'); await sleep(1500); await smoothScroll(pg, 9000, 1600);
+    await sleep(1200); await click(pg, 'button:has-text("Turn on sign-in")'); await sleep(6000); await pg.getByRole('checkbox', { name: /wrote it down/ }).first().check({ timeout: 2000 }).catch((e) => console.warn('wrote', e.message.split('\n')[0])); await sleep(1000); await click(pg, 'button:has-text("Done")'); await sleep(1500); await click(pg, '.toast button:has-text("OK"), button:has-text("OK")'); await smoothScroll(pg, 9000, 1600);
   },
   't.reports': async (pg) => { await sleep(2500); await smoothScroll(pg, 9000, 900); await scrollTo(pg, '.project-complete'); await sleep(5000); },
 };
