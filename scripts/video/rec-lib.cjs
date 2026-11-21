@@ -16,7 +16,7 @@ async function newPage(b, recordDir) {
     const f = path.join(TILES, u.hostname.replace(/^[abc]\./, ''), u.pathname);
     let tile = null; if (HOSTS.test(href)) { try { tile = fs.readFileSync(f); } catch { /* not saved */ } }
     if (tile) return route.fulfill({ status: 200, body: tile, headers: { 'access-control-allow-origin': '*', 'content-type': f.endsWith('.png') ? 'image/png' : 'image/jpeg' } });
-    const c = CAPTURE[href] || CAPTURE[key(href)] || (/api\.weather\.gov/.test(href) && CAPTURE[href.replace(/-?\d+\.\d+,-?\d+\.\d+/, '35.5951,-82.5515')]);
+    const c = CAPTURE[href] || CAPTURE[key(href)] || (new URL(href).hostname === 'api.weather.gov' && CAPTURE[href.replace(/-?\d+\.\d+,-?\d+\.\d+/, '35.5951,-82.5515')]);
     if (c) return route.fulfill({ status: c.s, body: Buffer.from(c.b, 'base64'), headers: { 'access-control-allow-origin': '*', 'content-type': c.ct } });
     fs.appendFileSync(MISS, href + '\n'); return route.fulfill({ status: 404, body: '', headers: { 'access-control-allow-origin': '*' } });
   });
